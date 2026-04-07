@@ -164,7 +164,7 @@ function App() {
               <div key={item.slug} className={`d-flex align-items-center justify-content-center justify-content-xl-start my-2 ${paginaAtiva === item.slug ? 'pag_ativa' : ''}`}
                 onClick={() => setPaginaAtiva(item.slug)} id="item_lateral">
                 <i className={`fi ${item.icon} mx-2 fs-5`}></i>
-                <span className="ms-2 d-none d-xl-block fs-4">{dicionario[user.lingua][item.label]}</span>
+                <span className="ms-2 d-none d-xl-block fs-5">{dicionario[user.lingua][item.label]}</span>
               </div>
             ))}
           </div>

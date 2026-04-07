@@ -1,0 +1,21 @@
+{
+    "home": "Home page",
+    "galeria": "Galeria", 
+    "estatisticas": "Estatísticas", 
+    "candidaturas": "Candidaturas", 
+    "utilizadores": "Utilizadores", 
+    "atividade": "Atividade",
+    "editar": "Editar",
+    "definicoes": "Definições",
+    "objetivos": "Objetivos",
+    "talent": "Talent Manager",
+    "service": "Service Line Leader",
+    "consultor": "Consultor",
+    "admin": "Administrador",
+    "lingua": "Idioma",
+    "portugues": "Português",
+    "espanhol": "Espanhol",
+    "ingles": "Inglês",
+    "notificacao_titulo": "Notificações",
+    "notificacao_vazia": "Não tem notificações"
+}

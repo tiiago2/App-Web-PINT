@@ -1,0 +1,109 @@
+#layout{
+    color: #374957;
+}
+
+#barra_horizontal{
+    background-color: #FFFFFF;
+    max-height: 13%;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+
+#softinsa_logo{
+    max-width: 310px;
+    height: auto;
+}
+
+#bell_icon, #flag_icon, #user_image{
+    cursor: pointer;
+}
+
+#bolinha_sino{
+    top: 5px;
+    left: 100%;
+    background-color: #A7EFFF;
+    font-size: 0.65rem;
+}
+
+#barra_lateral{
+    color: #FFFFFF;
+    background-color: #39639C;
+    box-shadow: 4px 0px 4px 0px rgba(0, 0, 0, 0.20);
+    font-size: 24px;
+}
+
+.pag_ativa {
+    color: #A7EFFF !important; /* Coloca aqui o teu código de cor favorito */
+    font-weight: bold;
+}
+
+#item_lateral{
+    cursor: pointer;
+}
+
+#pop_up_lingua{
+    background-color: #FFFFFF;
+    box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.12);
+    top: 63%;
+    right:5%;
+    width: 170px; 
+    border: 1px solid #cbd5e1;
+}
+
+#pop_up_option{
+    border: 1px solid #CAD5E2;
+    border-radius: 14px;
+}
+
+#pop_up_option:hover{
+    background-color: #A7EFFF;
+    cursor: pointer;
+}
+
+#pop_up_notification{
+    background-color: #FFFFFF;
+    box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.12);
+    top: 63%;
+    width: 350px; 
+    border: 1px solid #cbd5e1;
+    right: 5%;
+    font-size: 13px;
+}
+
+#bolinha_sino{
+    background-color: #00B8E0;
+    color: #374957;
+    left: 80%;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;    /* Igual à height */
+    padding: 0 !important; /*remover padding bootstrap*/
+    text-align: center;
+}
+
+#notification_list{
+    max-height: 190px;
+    overflow-y: auto;
+}
+
+#notification_option{
+    border: 1px solid #CAD5E2;
+    border-radius: 14px;
+}
+
+#notification_esquerda{
+    flex: 1;
+}
+
+#nome_notificacao{
+    cursor: pointer;
+}
+
+#notification_direita{
+    min-width: 30px;
+    white-space: nowrap;
+    font-size: 10px;
+}
+
+#notification_direita i{
+    font-size: 25px;
+}

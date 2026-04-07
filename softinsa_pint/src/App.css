@@ -1,9 +1,17 @@
+:root{
+    --fontes: #374957;
+    --selecao: #A7EFFF;
+    --fundo: #FFFFFF;
+    --barra_lateral: #39639C;
+    --contorno: #CAD5E2;
+}
+
 #layout{
-    color: #374957;
+    color: var(--fontes);
 }
 
 #barra_horizontal{
-    background-color: #FFFFFF;
+    background-color: var(--fundo);
     max-height: 13%;
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
 }
@@ -20,19 +28,19 @@
 #bolinha_sino{
     top: 5px;
     left: 100%;
-    background-color: #A7EFFF;
+    background-color: var(--selecao);
     font-size: 0.65rem;
 }
 
 #barra_lateral{
     color: #FFFFFF;
-    background-color: #39639C;
+    background-color: var(--barra_lateral);
     box-shadow: 4px 0px 4px 0px rgba(0, 0, 0, 0.20);
     font-size: 24px;
 }
 
 .pag_ativa {
-    color: #A7EFFF !important; /* Coloca aqui o teu código de cor favorito */
+    color: var(--selecao) !important; /* Coloca aqui o teu código de cor favorito */
     font-weight: bold;
 }
 
@@ -41,37 +49,37 @@
 }
 
 #pop_up_lingua{
-    background-color: #FFFFFF;
+    background-color: var(--fundo);
     box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.12);
     top: 63%;
     right:5%;
     width: 170px; 
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--contorno);
 }
 
 #pop_up_option{
-    border: 1px solid #CAD5E2;
+    border: 1px solid var(--contorno);
     border-radius: 14px;
 }
 
 #pop_up_option:hover{
-    background-color: #A7EFFF;
+    background-color: var(--selecao);
     cursor: pointer;
 }
 
 #pop_up_notification{
-    background-color: #FFFFFF;
+    background-color: var(--fundo);
     box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.12);
     top: 63%;
     width: 350px; 
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--contorno);
     right: 5%;
     font-size: 13px;
 }
 
 #bolinha_sino{
     background-color: #00B8E0;
-    color: #374957;
+    color: var(--fontes);
     left: 80%;
     width: 18px;
     height: 18px;
@@ -86,7 +94,7 @@
 }
 
 #notification_option{
-    border: 1px solid #CAD5E2;
+    border: 1px solid var(--contorno);
     border-radius: 14px;
 }
 

@@ -5,6 +5,8 @@ import {iconesNotificacao } from './defs/dicionario.jsx';
 import './i18n';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
+//paginas
+import HomeTalent from './pages/home_talent.jsx';
 //imagens
 import softinsa_logo from './assets/logotipo_softinsa.png';
 import user_logo from './assets/utilizador.png';
@@ -17,7 +19,7 @@ function App() {
     nome: "Tiago",
     cargo: "talent",
     foto: user_logo, // a imagem que importaste no topo
-    lingua: "pt"
+    ultimoLoginlogin: '11/11/2025'
   });
 
   const [paginaAtiva, setPaginaAtiva] = useState('home');
@@ -78,6 +80,68 @@ function App() {
 
     setMenuItems(itensFiltrados);
   }, [user.cargo]);
+
+  const Saudacao = () => {
+
+        if(!user.ultimoLogin){
+            return(t('saudacao_1'));
+        }
+        else{
+            const data_atual = new Date();
+            const data_ultimo_login = new Date(user.ultimoLogin);
+            const hora_atual = data_atual.getHours();
+
+            const diferencaEmMilissegundos = Math.abs(data_atual - data_ultimo_login);
+            const milissegundosNumDia = 1000 * 60 * 60 * 24;
+
+            const diasPassados = diferencaEmMilissegundos / milissegundosNumDia;
+
+            if(diasPassados >= 15){
+                return(t('saudacao_15'));
+            }
+            else if(hora_atual < 6 || hora_atual > 19){
+                return(t('saudacao_noite'));
+            }
+            else if(hora_atual < 12){
+                return(t('saudacao_dia'));
+            }
+            else{
+                return(t('saudacao_tarde'));
+            }
+        }  
+    }
+
+    const renderPagina = () =>{
+      if(user.cargo === "consultor"){
+
+      }
+      if(user.cargo === "talent"){
+        if(paginaAtiva === "home"){
+          return <HomeTalent user={user} saudacao={Saudacao()}/>
+        }
+        else if(paginaAtiva === "galeria"){
+
+        }
+        else if(paginaAtiva === "estatisticas"){
+
+        }
+        else if(paginaAtiva === "candidaturas"){
+
+        }
+        else if(paginaAtiva === "utilizadores"){
+
+        }
+        else if(paginaAtiva === "atividade"){
+
+        }
+      }
+      if(user.cargo === "service"){
+
+      }
+      if(user.cargo === "admin"){
+
+      }
+    }
 
   return (
     <div className="vh-100 d-flex flex-column" id="layout">
@@ -176,6 +240,7 @@ function App() {
           </div>
         </div>
         <div className="col-10" id="Container">
+            {renderPagina()}
         </div>
       </div>
     </div>

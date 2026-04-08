@@ -17,5 +17,10 @@
     "espanhol": "Spanish",
     "ingles": "English",
     "notificacao_titulo": "Notifications",
-    "notificacao_vazia": "You have no notifications"
+    "notificacao_vazia": "You have no notifications",
+    "saudacao_1": "Welcome!",
+    "saudacao_15": "Welcome back!",
+    "saudacao_noite": "Good evening!",
+    "saudacao_dia": "Good morning!",
+    "saudacao_tarde": "Good afternoon!"
 }

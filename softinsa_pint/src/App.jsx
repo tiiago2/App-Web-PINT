@@ -6,7 +6,7 @@ import './i18n';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 //paginas
-import HomeTalent from './pages/home_talent.jsx';
+import HomeTalent from './pages/Talent_Manager/home_talent.jsx';
 //imagens
 import softinsa_logo from './assets/logotipo_softinsa.png';
 import user_logo from './assets/utilizador.png';
@@ -14,10 +14,10 @@ import user_logo from './assets/utilizador.png';
 function App() {
 
   const { t, i18n } = useTranslation();
-
+  
   const [user, setUser] = useState({ //-------------trocar para base dados
-    nome: "Tiago",
-    cargo: "talent",
+    nome: "Gonçalo",
+    cargo: "admin",
     foto: user_logo, // a imagem que importaste no topo
     ultimoLoginlogin: '11/11/2025'
   });

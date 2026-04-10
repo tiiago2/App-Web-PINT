@@ -15,11 +15,11 @@ import user_logo from './assets/utilizador.png';
 function App() {
 
   const { t, i18n } = useTranslation();
-
+  
   const [user, setUser] = useState({ //-------------trocar para base dados
-    nome: "Tiago",
-    cargo: "talent",
-    foto: user_logo, 
+    nome: "Gonçalo",
+    cargo: "admin",
+    foto: user_logo, // a imagem que importaste no topo
     ultimoLoginlogin: '11/11/2025'
   });
 

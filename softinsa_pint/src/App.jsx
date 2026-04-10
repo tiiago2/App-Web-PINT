@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import {menu_lateral} from './defs/barra_lateral.jsx';
 import {iconesNotificacao } from './defs/dicionario.jsx';
 import './i18n';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 //paginas
-import HomeTalent from './pages/home_talent.jsx';
+import HomeTalent from './pages/talent/home_talent.jsx';
 //imagens
 import softinsa_logo from './assets/logotipo_softinsa.png';
 import user_logo from './assets/utilizador.png';
@@ -18,11 +19,12 @@ function App() {
   const [user, setUser] = useState({ //-------------trocar para base dados
     nome: "Tiago",
     cargo: "talent",
-    foto: user_logo, // a imagem que importaste no topo
+    foto: user_logo, 
     ultimoLoginlogin: '11/11/2025'
   });
 
-  const [paginaAtiva, setPaginaAtiva] = useState('home');
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [menuItems, setMenuItems] = useState([]);
 
@@ -43,21 +45,16 @@ function App() {
     { id: 10, texto: "Bem-vindo à nova plataforma da Softinsa!", tipo: "Candidatura", data: "21/08/2025 19:40", remetente: "João Silva", lida: false },
     ]);
 
-  // 1. Conta apenas as que não foram lidas (para mostrar no sino)
   const notificacoesNaoLidas = notificacoes.filter(n => !n.lida).length;
 
-  // 2. Pega nas primeiras 50 notificações (assumindo que a base de dados as envia ordenadas das mais recentes para as mais antigas)
   const notificacoesRecentes = notificacoes.slice(0, 30);
 
   const escolherLingua = (novaLingua) => {
-    i18n.changeLanguage(novaLingua); // Faz a magia da tradução acontecer
-
-    setUser((userAnterior) => ({
-      ...userAnterior,
-      lingua: novaLingua
-    }));
+    i18n.changeLanguage(novaLingua); 
     setMenuLinguaAberto(false); 
   };
+
+  const linguaAtual = i18n.resolvedLanguage;
 
   const CliqueSino = () => {
     
@@ -113,33 +110,38 @@ function App() {
 
     const renderPagina = () =>{
       if(user.cargo === "consultor"){
-
+        /*return(
+          <Routes>
+            <Route path="/" element={} />     
+            <Route path="/candidaturas" element={} />
+            <Route path="/galeria" element={} />
+          </Routes>
+        )*/
       }
-      if(user.cargo === "talent"){
-        if(paginaAtiva === "home"){
-          return <HomeTalent user={user} saudacao={Saudacao()}/>
-        }
-        else if(paginaAtiva === "galeria"){
-
-        }
-        else if(paginaAtiva === "estatisticas"){
-
-        }
-        else if(paginaAtiva === "candidaturas"){
-
-        }
-        else if(paginaAtiva === "utilizadores"){
-
-        }
-        else if(paginaAtiva === "atividade"){
-
-        }
+      else if(user.cargo === "talent"){
+        return(
+          <Routes>
+            <Route path="/home" element={<HomeTalent user={user} saudacao={Saudacao()}/>} />
+          </Routes>
+        )
       }
-      if(user.cargo === "service"){
-
+      else if(user.cargo === "service"){
+        /*return(
+          <Routes>
+            <Route path="/" element={} />     
+            <Route path="/candidaturas" element={} />
+            <Route path="/galeria" element={} />
+          </Routes>
+        )*/
       }
-      if(user.cargo === "admin"){
-
+      else if(user.cargo === "admin"){
+        /*return(
+          <Routes>
+            <Route path="/" element={} />     
+            <Route path="/candidaturas" element={} />
+            <Route path="/galeria" element={} />
+          </Routes>
+        )*/
       }
     }
 
@@ -151,7 +153,7 @@ function App() {
         </div>
         <div className="d-flex align-items-center pe-2" id="info_direita">
           <div className="position-relative">
-            <i id="bell_icon" className="fi fi-br-bell pt-1 mx-2" onClick={CliqueSino}></i>
+            <i id="bell_icon" className="fi fi-br-bell mx-2 " onClick={CliqueSino}></i>
             {!menuNotificacoesAberto && notificacoesNaoLidas > 0 && (
               <span className="d-flex position-absolute translate-middle badge rounded-pill align-items-center justify-content-center" id="bolinha_sino">
                 {notificacoesNaoLidas > 9 ? '9+' : notificacoesNaoLidas}
@@ -187,7 +189,7 @@ function App() {
               </div>
             </div>
           )}
-          <span id="flag_icon" className={`flag-icon flag-icon-${user.lingua} flag-icon-squared rounded-circle fs-5 mx-2 `}
+          <span id="flag_icon" className={`flag-icon flag-icon-${linguaAtual} flag-icon-squared rounded-circle fs-5 mx-2 `}
           onClick={() => setMenuLinguaAberto(!menuLinguaAberto)}></span>
           {menuLinguaAberto && (
             <div className="position-absolute p-2 rounded-4" id="pop_up_lingua">
@@ -230,13 +232,19 @@ function App() {
       <div className="row m-0 flex-grow-1">
         <div className="col-2" id="barra_lateral">
           <div className="mt-3 justify-content-center">
-            {menuItems.map((item) => (
-              <div key={item.slug} className={`d-flex align-items-center justify-content-center justify-content-xl-start my-2 ${paginaAtiva === item.slug ? 'pag_ativa' : ''}`}
-                onClick={() => setPaginaAtiva(item.slug)} id="item_lateral">
-                <i className={`fi ${item.icon} mx-2 fs-5`}></i>
-                <span className="ms-2 d-none d-xl-block fs-5">{t(item.label)}</span>
-              </div>
-            ))}
+            {menuItems.map((item) => {
+              
+              const isActive = location.pathname.includes(item.slug); //precisamos desta variavel para saber qual pagina esta ativa
+
+              return (
+                  <div key={item.slug} 
+                      className={`d-flex align-items-center justify-content-center justify-content-xl-start my-2 ${isActive ? 'pag_ativa' : ''}`}
+                      onClick={() => navigate(`/${item.slug}`)} id="item_lateral">
+                      <i className={`fi ${item.icon} mx-2 fs-5`}></i>
+                      <span className="ms-2 d-none d-xl-block fs-5">{t(item.label)}</span>
+                  </div>
+              );
+          })}
           </div>
         </div>
         <div className="col-10" id="Container">

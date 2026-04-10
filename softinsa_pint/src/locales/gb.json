@@ -22,5 +22,7 @@
     "saudacao_15": "Welcome back!",
     "saudacao_noite": "Good evening!",
     "saudacao_dia": "Good morning!",
-    "saudacao_tarde": "Good afternoon!"
+    "saudacao_tarde": "Good afternoon!",
+    "candidaturas_recentes": "Recent applications",
+    "ver_mais": "See more"
 }

@@ -110,7 +110,7 @@ const HomeTalent = ({ user, saudacao }) => {
                                     <h6 className="mt-3 fw-bold mb-0">Low Code</h6>
                                     <span className="text-muted" style={{ fontSize: '0.75rem' }}>100%</span>
                                     <div className="progress my-2" style={{ height: '5px' }}>
-                                        <div className="progress-bar bg-success" style={{ width: '100%' }}></div>
+                                        <div className="progress-bar bg-success" style={{ width: '100%'}}></div>
                                     </div>
                                     <div className="d-flex align-items-center justify-content-center my-2">
                                         <div className="bg-secondary bg-opacity-25 rounded-circle me-2 d-flex justify-content-center align-items-center" style={{ width: '30px', height: '30px' }}>

@@ -34,6 +34,11 @@ const HomeTalent = ({ user, saudacao }) => {
             
             const user_escolhido = users.find((search_user) => search_user.id === candidatura.user_id);
 
+            if (!badge_escolhido || !user_escolhido) {
+                console.warn(`Erro na BD: Dados em falta na candidatura ID ${candidatura.id}`);
+                return null; 
+            }
+
             return(
                 <div className="col-4">
                     <div className="card text-center border-0 p-1">
@@ -48,7 +53,7 @@ const HomeTalent = ({ user, saudacao }) => {
                                 <img className="mx-3 rounded-1 user_image_candidaturas" src={user.foto}/>
                             </div>
                             <div className="text-start">
-                                <div className="fw-bold text-dark" style={{ fontSize: '0.8rem', lineHeight: '1' }}>{user_escolhido.nome}</div>
+                                <div className="fw-medium nome_candidatura" style={{ fontSize: '0.8rem', lineHeight: '0.8' }}>{user_escolhido.nome}</div>
                                 <div className="text-muted" style={{ fontSize: '0.7rem' }}>{user_escolhido.area}</div>
                             </div>
                         </div>

@@ -17,10 +17,11 @@ function App() {
   const { t, i18n } = useTranslation();
   
   const [user, setUser] = useState({ //-------------trocar para base dados
+    id: 1,
     nome: "Gonçalo",
-    cargo: "admin",
+    cargo: "talent",
     foto: user_logo, // a imagem que importaste no topo
-    ultimoLoginlogin: '11/11/2025'
+    ultimoLogin: new Date("2026-04-10")
   });
 
   const navigate = useNavigate();
@@ -85,10 +86,9 @@ function App() {
         }
         else{
             const data_atual = new Date();
-            const data_ultimo_login = new Date(user.ultimoLogin);
             const hora_atual = data_atual.getHours();
 
-            const diferencaEmMilissegundos = Math.abs(data_atual - data_ultimo_login);
+            const diferencaEmMilissegundos = Math.abs(data_atual - user.ultimoLogin);
             const milissegundosNumDia = 1000 * 60 * 60 * 24;
 
             const diasPassados = diferencaEmMilissegundos / milissegundosNumDia;

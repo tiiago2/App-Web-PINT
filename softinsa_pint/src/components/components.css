@@ -1,0 +1,27 @@
+.ver_mais_btn{
+    color: var(--fontes);
+}
+
+.aceitar_btn{
+    background-color: var(--aceitar);
+    border-color: var(--aceitar);
+    color: #FFFFFF;
+}
+
+.aceitar_btn:hover{
+    background-color: #FFFFFF;
+    border-color: var(--aceitar);
+    color: var(--aceitar);
+}
+
+.rejeitar_btn{
+    background-color: var(--rejeitar);
+    border-color: var(--rejeitar);
+    color: #FFFFFF;
+}
+
+.rejeitar_btn:hover{
+    background-color: #FFFFFF;
+    border-color: var(--rejeitar);
+    color: var(--rejeitar);
+}

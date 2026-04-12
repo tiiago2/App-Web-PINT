@@ -12,6 +12,8 @@ import HomeTalent from './pages/talent/home_talent.jsx';
 import softinsa_logo from './assets/logotipo_softinsa.png';
 import user_logo from './assets/utilizador.png';
 
+import Galeria from './pages/talent/Galeria.jsx';
+
 function App() {
 
   const { t, i18n } = useTranslation();
@@ -122,6 +124,7 @@ function App() {
         return(
           <Routes>
             <Route path="/home" element={<HomeTalent user={user} saudacao={Saudacao()}/>} />
+            <Route path="/galeria" element={<Galeria />} />
           </Routes>
         )
       }

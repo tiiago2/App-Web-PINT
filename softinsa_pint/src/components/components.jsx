@@ -41,3 +41,10 @@ export function BotaoRejeitar({onClick, tamanho}) {
         </button>
     );
 };
+
+export function Rankings({linhas}){
+
+    const{ t } = useTranslation();
+
+    
+}

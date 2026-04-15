@@ -7,3 +7,31 @@
     min-height: 13vh;
     max-height: 13vh;
 }
+
+.chart-container-relative {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.donut-center-text {
+    position: absolute;
+    top: 50%;
+    /* 🔒 LOCK nos 45% */
+    left: 45%; 
+    transform: translate(-50%, -50%); /* Centra o bloco de texto no ponto 45% */
+    text-align: center;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    z-index: 5;
+}
+
+#total_meio{
+    font-size: 28px; 
+    fill: var(--fontes);
+}
+
+#total_meio_palavra{
+    font-size: 12px;
+}

@@ -168,7 +168,7 @@ function Galeria() {
                 className="btn btn-light px-4" 
                 style={{ color: "var(--fontes)", border: "1px solid var(--contorno)" }}
                 onClick={() => setMostrarExportar(false)}
-              >
+                >
                 Cancelar
               </button>
               <button 

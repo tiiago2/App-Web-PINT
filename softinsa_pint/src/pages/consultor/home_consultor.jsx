@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import './home_consultor.css';
+import {BotaoVerMais} from '../../components/components.jsx'
 import user_logo from '../../assets/utilizador.png';
 import ClassificacaoModal from '../../components/ClassificacaoModal';
 import AtividadeModal from '../../components/AtividadeModal';
@@ -55,8 +56,8 @@ const HomeConsultor = ({ user, saudacao }) => {
     const [showAtividade, setShowAtividade] = useState(false);
 
     return (
-        <div className="p-4" style={{ color: 'var(--fontes)', backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
-            <h2 className="fw-bold mb-4">{saudacao}</h2>
+        <div className="m-4" style={{ color: 'var(--fontes)', backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
+            <h1>{saudacao}</h1>
 
             {/* ── Linha 1: Badges + Classificação ───────────────────── */}
             <div className="row g-3 mb-3">
@@ -66,13 +67,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                     <div className="badges-container p-4 h-100">
                         <div className="d-flex justify-content-between align-items-center mb-4">
                             <h5 className="m-0 fw-bold">{t('badges_progresso')}</h5>
-                            <button
-                                className="btn-ver-mais-figma"
-                                onClick={() => navigate('/galeria')}
-                            >
-                                <i className="fi fi-br-eye" style={{ fontSize: '0.8rem' }}></i>
-                                {t('ver_mais')}
-                            </button>
+                            <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.7}/>
                         </div>
 
                         <div className="badges-grid">

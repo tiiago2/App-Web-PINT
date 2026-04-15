@@ -266,7 +266,7 @@ const HomeTalent = ({ user, saudacao }) => {
 
             </div>
             <div className="col-4" id="classificacao_container">
-
+                
             </div>
             <div className="col-4" id="grafico2_container">
                 <GraficoCandidaturas/>

@@ -1,0 +1,103 @@
+/* ── Modal Atividade Recente ────────────────────────────── */
+
+.ativ-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: ativFadeIn 0.18s ease;
+}
+
+@keyframes ativFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.ativ-modal {
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 28px 28px 20px;
+    width: 600px;
+    max-width: 95vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+    animation: ativSlideUp 0.22s ease;
+}
+
+@keyframes ativSlideUp {
+    from { transform: translateY(24px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* Botão fechar */
+.ativ-btn-close {
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    color: #666;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+}
+.ativ-btn-close:hover { background: #f0f4f8; }
+
+/* Lista scrollable */
+.ativ-lista {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
+}
+
+.ativ-lista::-webkit-scrollbar { width: 4px; }
+.ativ-lista::-webkit-scrollbar-thumb {
+    background-color: #CAD5E2;
+    border-radius: 4px;
+}
+
+/* Cada linha de atividade */
+.ativ-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 8px;
+    border-bottom: 1px solid #f0f4f8;
+}
+.ativ-item:last-child { border-bottom: none; }
+
+/* Ícone grande */
+.ativ-icon-wrap {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    background-color: #f0f4f8;
+}
+
+.ativ-icon-wrap.success { background-color: #E8F8F0; color: #28a745; }
+.ativ-icon-wrap.danger  { background-color: #FEE8E8; color: #dc3545; }
+.ativ-icon-wrap.primary { background-color: #E8EFF8; color: #39639C; }
+.ativ-icon-wrap.warning { background-color: #FFF8E1; color: #E6A817; }
+
+/* Texto + tempo */
+.ativ-texto { flex: 1; font-size: 0.88rem; color: #374957; }
+.ativ-texto.expirado { text-decoration: line-through; color: #aaa; }
+
+.ativ-tempo {
+    font-size: 0.72rem;
+    color: #9aacbc;
+    white-space: nowrap;
+}

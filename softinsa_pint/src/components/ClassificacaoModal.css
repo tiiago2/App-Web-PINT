@@ -1,0 +1,202 @@
+/* ── Modal Classificação ────────────────────────────────── */
+
+.classif-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.18s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.classif-modal {
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 28px 28px 20px;
+    width: 460px;
+    max-width: 95vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+    animation: slideUp 0.22s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(24px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Botão fechar */
+.classif-btn-close {
+    background: none;
+    border: none;
+    font-size: 0.8rem;
+    color: #666;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+}
+
+.classif-btn-close:hover {
+    background: #f0f4f8;
+}
+
+/* Filtros */
+.classif-filtro-btn {
+    border: 1px solid #CAD5E2;
+    border-radius: 18px;
+    background: transparent;
+    color: #374957;
+    font-size: 0.78rem;
+    padding: 5px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.15s;
+}
+
+.classif-filtro-btn:hover {
+    background: #f0f4f8;
+}
+
+/* Pódio 3 cards */
+.classif-podio {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.classif-podio-card {
+    flex: 1;
+    border: 1.5px solid #CAD5E2;
+    border-radius: 14px;
+    padding: 18px 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #FFFFFF;
+}
+
+.classif-podio-card.ouro {
+    border-color: #FFD700;
+    background-color: #FFFBEA;
+}
+
+.classif-podio-card.prata {
+    border-color: #C0C0C0;
+    background-color: #F8F8F8;
+}
+
+.classif-podio-card.bronze {
+    border-color: #CD7F32;
+    background-color: #FDF6EC;
+}
+
+/* Lista scrollable */
+.classif-lista {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 2px;
+}
+
+.classif-lista::-webkit-scrollbar {
+    width: 4px;
+}
+
+.classif-lista::-webkit-scrollbar-thumb {
+    background-color: #CAD5E2;
+    border-radius: 4px;
+}
+
+/* ── Dropdowns ──────────────────────────────────────────── */
+
+/* Wrapper relativo para posicionar o dropdown */
+.classif-dropdown-wrap {
+    position: relative;
+}
+
+/* Botão ativo (dropdown aberto) */
+.classif-filtro-btn.active {
+    background-color: #f0f4f8;
+    border-color: #39639C;
+}
+
+/* Painel do dropdown */
+.classif-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: #FFFFFF;
+    border: 1px solid #CAD5E2;
+    border-radius: 12px;
+    min-width: 160px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+    z-index: 10;
+    padding: 8px 0;
+    animation: fadeIn 0.12s ease;
+}
+
+/* Dropdown alinhado à direita (botão Semana) */
+.classif-dropdown-right {
+    left: auto;
+    right: 0;
+}
+
+/* Título do grupo no dropdown */
+.classif-dropdown-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #374957;
+    padding: 4px 14px 8px;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+}
+
+/* Item do dropdown */
+.classif-dropdown-item {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    color: #374957;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+
+.classif-dropdown-item:hover {
+    background-color: #f0f4f8;
+}
+
+/* Item selecionado */
+.classif-dropdown-item.selected {
+    color: #39639C;
+    font-weight: 600;
+    background-color: #EEF4FF;
+}

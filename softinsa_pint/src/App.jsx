@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import {menu_lateral} from './defs/barra_lateral.jsx';
-import {iconesNotificacao } from './defs/dicionario.jsx';
+import { menu_lateral } from './defs/barra_lateral.jsx';
+import { iconesNotificacao } from './defs/dicionario.jsx';
 import './i18n';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 //paginas
+import HomeConsultor from './pages/consultor/home_consultor.jsx';
 import HomeTalent from './pages/talent/home_talent.jsx';
 //imagens
 import softinsa_logo from './assets/logotipo_softinsa.png';
@@ -17,11 +18,11 @@ import Galeria from './pages/talent/Galeria.jsx';
 function App() {
 
   const { t, i18n } = useTranslation();
-  
+
   const [user, setUser] = useState({ //-------------trocar para base dados
     id: 1,
     nome: "Gonçalo",
-    cargo: "talent",
+    cargo: "consultor",
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10")
   });
@@ -46,29 +47,29 @@ function App() {
     { id: 8, texto: "Bem-vindo à nova plataforma da Softinsa!", tipo: "Candidatura", data: "21/08/2025 19:40", remetente: "João Silva", lida: false },
     { id: 9, texto: "Bem-vindo à nova plataforma da Softinsa!", tipo: "Candidatura", data: "21/08/2025 19:40", remetente: "João Silva", lida: false },
     { id: 10, texto: "Bem-vindo à nova plataforma da Softinsa!", tipo: "Candidatura", data: "21/08/2025 19:40", remetente: "João Silva", lida: false },
-    ]);
+  ]);
 
   const notificacoesNaoLidas = notificacoes.filter(n => !n.lida).length;
 
   const notificacoesRecentes = notificacoes.slice(0, 30);
 
   const escolherLingua = (novaLingua) => {
-    i18n.changeLanguage(novaLingua); 
-    setMenuLinguaAberto(false); 
+    i18n.changeLanguage(novaLingua);
+    setMenuLinguaAberto(false);
   };
 
   const linguaAtual = i18n.resolvedLanguage;
 
   const CliqueSino = () => {
-    
+
     setMenuNotificacoesAberto(!menuNotificacoesAberto);
 
     if (!menuNotificacoesAberto && notificacoesNaoLidas > 0) {
-      
+
       const notificacoesAtualizadas = notificacoes.map((notif) => {
         return { ...notif, lida: true };
       });
-      
+
       setNotificacoes(notificacoesAtualizadas);
     }
   };
@@ -83,76 +84,74 @@ function App() {
 
   const Saudacao = () => {
 
-        if(!user.ultimoLogin){
-            return(t('saudacao_1'));
-        }
-        else{
-            const data_atual = new Date();
-            const hora_atual = data_atual.getHours();
-
-            const diferencaEmMilissegundos = Math.abs(data_atual - user.ultimoLogin);
-            const milissegundosNumDia = 1000 * 60 * 60 * 24;
-
-            const diasPassados = diferencaEmMilissegundos / milissegundosNumDia;
-
-            if(diasPassados >= 15){
-                return(t('saudacao_15'));
-            }
-            else if(hora_atual < 6 || hora_atual > 19){
-                return(t('saudacao_noite'));
-            }
-            else if(hora_atual < 12){
-                return(t('saudacao_dia'));
-            }
-            else{
-                return(t('saudacao_tarde'));
-            }
-        }  
+    if (!user.ultimoLogin) {
+      return (t('saudacao_1'));
     }
+    else {
+      const data_atual = new Date();
+      const hora_atual = data_atual.getHours();
 
-    const renderPagina = () =>{
-      if(user.cargo === "consultor"){
-        /*return(
-          <Routes>
-            <Route path="/" element={} />     
-            <Route path="/candidaturas" element={} />
-            <Route path="/galeria" element={} />
-          </Routes>
-        )*/
+      const diferencaEmMilissegundos = Math.abs(data_atual - user.ultimoLogin);
+      const milissegundosNumDia = 1000 * 60 * 60 * 24;
+
+      const diasPassados = diferencaEmMilissegundos / milissegundosNumDia;
+
+      if (diasPassados >= 15) {
+        return (t('saudacao_15'));
       }
-      else if(user.cargo === "talent"){
-        return(
-          <Routes>
-            <Route path="/home" element={<HomeTalent user={user} saudacao={Saudacao()}/>} />
-            <Route path="/galeria" element={<Galeria />} />
-          </Routes>
-        )
+      else if (hora_atual < 6 || hora_atual > 19) {
+        return (t('saudacao_noite'));
       }
-      else if(user.cargo === "service"){
-        /*return(
-          <Routes>
-            <Route path="/" element={} />     
-            <Route path="/candidaturas" element={} />
-            <Route path="/galeria" element={} />
-          </Routes>
-        )*/
+      else if (hora_atual < 12) {
+        return (t('saudacao_dia'));
       }
-      else if(user.cargo === "admin"){
-        /*return(
-          <Routes>
-            <Route path="/" element={} />     
-            <Route path="/candidaturas" element={} />
-            <Route path="/galeria" element={} />
-          </Routes>
-        )*/
+      else {
+        return (t('saudacao_tarde'));
       }
     }
+  }
+
+  const renderPagina = () => {
+    if (user.cargo === "consultor") {
+      return (
+        <Routes>
+          <Route path="/home" element={<HomeConsultor user={user} saudacao={Saudacao()} />} />
+        </Routes>
+      )
+    }
+    else if (user.cargo === "talent") {
+      return (
+        <Routes>
+          <Route path="/home" element={<HomeTalent user={user} saudacao={Saudacao()} />} />
+          <Route path="/galeria" element={<Galeria />} />
+        </Routes>
+      )
+    }
+    else if (user.cargo === "service") {
+      /*return(
+        <Routes>
+          <Route path="/" element={} />     
+          <Route path="/candidaturas" element={} />
+          <Route path="/galeria" element={} />
+        </Routes>
+      )*/
+    }
+    else if (user.cargo === "admin") {
+      /*return(
+        <Routes>
+          <Route path="/" element={} />     
+          <Route path="/candidaturas" element={} />
+          <Route path="/galeria" element={} />
+        </Routes>
+      )*/
+    }
+  }
 
   return (
     <div className="vh-100 d-flex flex-column" id="layout">
       <header className="d-flex justify-content-between align-items-center px-2 py-1 position-relative z-3" id="barra_horizontal">
         <div id="image_esquerda">
-          <img id="softinsa_logo" className="px-2" src={softinsa_logo}  alt="Softinsa Logo"/>
+          <img id="softinsa_logo" className="px-2" src={softinsa_logo} alt="Softinsa Logo" />
         </div>
         <div className="d-flex align-items-center pe-2" id="info_direita">
           <div className="position-relative">
@@ -170,7 +169,7 @@ function App() {
               <hr className="mt-0 mb-3" style={{ opacity: 0.15 }} />
 
               <div className="d-flex flex-column gap-1" id="notification_list">
-                
+
                 {notificacoesRecentes.length === 0 ? (
                   <p className="text-center my-3">{t('notificacao_vazia')}</p>
                 ) : (
@@ -183,7 +182,7 @@ function App() {
 
                       <div className="d-flex flex-column align-items-center justify-content-center" id="notification_direita">
                         <i className={`${iconesNotificacao[notif.tipo].desenho}`}
-                        style={{ color: iconesNotificacao[notif.tipo].cor}}></i>
+                          style={{ color: iconesNotificacao[notif.tipo].cor }}></i>
                         <span>{notif.data}</span>{/*resolver o prooblema da data----------------------*/}
                       </div>
                     </div>
@@ -193,7 +192,7 @@ function App() {
             </div>
           )}
           <span id="flag_icon" className={`flag-icon flag-icon-${linguaAtual} flag-icon-squared rounded-circle fs-5 mx-2 `}
-          onClick={() => setMenuLinguaAberto(!menuLinguaAberto)}></span>
+            onClick={() => setMenuLinguaAberto(!menuLinguaAberto)}></span>
           {menuLinguaAberto && (
             <div className="position-absolute p-2 rounded-4" id="pop_up_lingua">
 
@@ -201,7 +200,7 @@ function App() {
               <hr className="mt-0 mb-2" style={{ opacity: 0.15 }} />
 
               <div className="position-relative d-flex justify-content-center align-items-center mb-1 p-2 user-select-none"
-                  onClick={() => escolherLingua('pt')}
+                onClick={() => escolherLingua('pt')}
                 id="pop_up_option"
               >
                 <span className="position-absolute start-0 ms-2 flag-icon flag-icon-pt flag-icon-squared rounded-circle fs-4"></span>
@@ -229,29 +228,29 @@ function App() {
             <span><b>{user.nome}</b></span>
             <span style={{ fontSize: '0.8rem' }}>{t(user.cargo)}</span>
           </div>
-          <img id="user_image" className="mx-3 rounded-2" src={user_logo} width="30" height="30" alt="Utilizador"/>
+          <img id="user_image" className="mx-3 rounded-2" src={user_logo} width="30" height="30" alt="Utilizador" />
         </div>
       </header>
       <div className="row m-0 flex-grow-1">
         <div className="col-2" id="barra_lateral">
           <div className="mt-3 justify-content-center">
             {menuItems.map((item) => {
-              
+
               const isActive = location.pathname.includes(item.slug); //precisamos desta variavel para saber qual pagina esta ativa
 
               return (
-                  <div key={item.slug} 
-                      className={`d-flex align-items-center justify-content-center justify-content-xl-start my-2 ${isActive ? 'pag_ativa' : ''}`}
-                      onClick={() => navigate(`/${item.slug}`)} id="item_lateral">
-                      <i className={`fi ${item.icon} mx-2 fs-5`}></i>
-                      <span className="ms-2 d-none d-xl-block fs-5">{t(item.label)}</span>
-                  </div>
+                <div key={item.slug}
+                  className={`d-flex align-items-center justify-content-center justify-content-xl-start my-2 ${isActive ? 'pag_ativa' : ''}`}
+                  onClick={() => navigate(`/${item.slug}`)} id="item_lateral">
+                  <i className={`fi ${item.icon} mx-2 fs-5`}></i>
+                  <span className="ms-2 d-none d-xl-block fs-5">{t(item.label)}</span>
+                </div>
               );
-          })}
+            })}
           </div>
         </div>
         <div className="col-10" id="Container">
-            {renderPagina()}
+          {renderPagina()}
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import './home_talent.css';
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
+import AtividadeRecente from '../../components/AtividadeModal.jsx';
 import badge_logo from '../../assets/teste_badge.png';
 import {BotaoVerMais, BotaoAceitar, BotaoRejeitar} from '../../components/components.jsx'
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, Label, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
@@ -47,6 +48,18 @@ const classificacao = [
     { pos: 7, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
     { pos: 8, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
     { pos: 9, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" }
+];
+
+const atividadeRecente = [
+    { icone: "fi-br-check", cor: "text-success", texto: "Low code concluído", tempo: "Há 2 horas", expirado: false },
+    { icone: "fi-br-badge", cor: "text-warning", textoNegrito: "Administrador1", texto: "atualizou Low Code", tempo: "Há 2 horas", expirado: false },
+    { icone: "fi-br-document", cor: "text-primary", textoNegrito: "Candidataste-te ao Low Code", tempo: "Há 2 horas", expirado: false },
+    { icone: "fi-br-cross", cor: "text-danger", texto: "Low Code expirado", tempo: "Há 2 horas", expirado: true },
+    { icone: "fi-br-check", cor: "text-success", texto: "Low Code concluído", tempo: "Há 2 horas", expirado: false },
+    { icone: "fi-br-cross", cor: "text-danger", texto: "Low Code expirado", tempo: "Há 2 horas", expirado: true },
+    { icone: "fi-br-document", cor: "text-primary", textoNegrito: "Candidataste-te ao Low Code", tempo: "Há 2 horas", expirado: false },
+    { icone: "fi-br-check", cor: "text-success", texto: "Low Code concluído", tempo: "Há 2 horas", expirado: false },
+    { icone: "fi-br-badge", cor: "text-warning", textoNegrito: "Administrador1", texto: "atualizou Low Code", tempo: "Há 2 horas", expirado: false }
 ];
 //---------------------------------------------------------------------------------------------------------------------------------
 
@@ -277,7 +290,7 @@ const HomeTalent = ({ user, saudacao }) => {
         </div>
         <div className="row mt-3" style={{ maxHeight: '35vh', overflowY: 'auto', overflowX: 'hidden' }}>
             <div className="col-4" id="atividade_container">
-                
+                <AtividadeRecente atividades={atividadeRecente} />
             </div>
             <div className="col-4" id="classificacao_container">
                 <ClassificacaoGeral classificacao={classificacao}/>

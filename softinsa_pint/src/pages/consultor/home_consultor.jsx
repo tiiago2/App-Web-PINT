@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import './home_consultor.css';
 import { BotaoVerMais } from '../../components/components.jsx';
-import AtividadeModal from '../../components/AtividadeModal';
+import AtividadeRecente from '../../components/AtividadeModal.jsx';
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import badge_logo from '../../assets/teste_badge.png';
 
@@ -88,29 +88,8 @@ const HomeConsultor = ({ user, saudacao }) => {
             </div>
             <div className="row gy-3 mt-1">
                 {/* Atividade Recente */}
-                <div className="col-12 col-lg-4">
-                    <div className="border border-2 rounded-4 p-4 h-100 d-flex flex-column" style={{ overflow: 'hidden' }}>
-                        <div className="d-flex justify-content-between align-items-center mb-4">
-                            <h5>{t('atividade_recente')}</h5>
-                            <i className="fi fi-br-expand text-muted" style={{ cursor: 'pointer' }} onClick={() => setShowAtividade(true)}></i>
-                        </div>
-                        <div className="d-flex flex-column gap-4" style={{ overflow: 'hidden', flex: 1 }}>
-                            {atividadeRecente.slice(0, 6).map((item, i) => (
-                                <div key={i} className={`atividade-item${item.expirado ? ' expirado' : ''}`}>
-                                    <span className="d-flex align-items-center gap-2">
-                                        <i className={`fi ${item.icone} ${item.cor}`}></i>
-                                        <span className="texto">
-                                            {item.textoNegrito && <strong>{item.textoNegrito} </strong>}
-                                            {item.texto}
-                                        </span>
-                                    </span>
-                                    <span className="text-muted" style={{ fontSize: '0.7rem', whiteSpace: 'nowrap', marginLeft: '8px' }}>
-                                        {item.tempo}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                <div className="col-12 col-lg-4 mb-4 mb-lg-0">
+                    <AtividadeRecente atividades={atividadeRecente} />
                 </div>
                 {/* Objetivos Propostos */}
                 <div className="col-12 col-lg-4">

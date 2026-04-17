@@ -169,7 +169,7 @@ const GraficoEstatistica = () => {
                     
                     <YAxis tick={{ fontSize: 11 }} />
                     
-                    <Tooltip />
+                    <Tooltip isAnimationActive={false}/>
                     <Legend 
                         verticalAlign="bottom"
                         iconType="circle"

@@ -1,27 +1,66 @@
-.ver_mais_btn{
-    color: var(--fontes);
+.ver_mais_btn {
+  color: var(--fontes);
 }
 
-.aceitar_btn{
-    background-color: var(--aceitar);
-    border-color: var(--aceitar);
-    color: #FFFFFF;
+.aceitar_btn {
+  background-color: var(--aceitar);
+  border-color: var(--aceitar);
+  color: #ffffff;
 }
 
-.aceitar_btn:hover{
-    background-color: #FFFFFF;
-    border-color: var(--aceitar);
-    color: var(--aceitar);
+.aceitar_btn:hover {
+  background-color: #ffffff;
+  border-color: var(--aceitar);
+  color: var(--aceitar);
 }
 
-.rejeitar_btn{
-    background-color: var(--rejeitar);
-    border-color: var(--rejeitar);
-    color: #FFFFFF;
+.rejeitar_btn {
+  background-color: var(--rejeitar);
+  border-color: var(--rejeitar);
+  color: #ffffff;
 }
 
-.rejeitar_btn:hover{
-    background-color: #FFFFFF;
-    border-color: var(--rejeitar);
-    color: var(--rejeitar);
+.rejeitar_btn:hover {
+  background-color: #ffffff;
+  border-color: var(--rejeitar);
+  color: var(--rejeitar);
+}
+
+/* ── Classificação Geral ──────────────────────────────────── */
+.ranking-row {
+  border: 1.5px solid #cad5e2;
+  border-radius: 12px;
+  background-color: #ffffff;
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ranking-row.ouro {
+  border-color: #ffd700;
+  background-color: #fffbea;
+}
+
+.ranking-row.prata {
+  border-color: #c0c0c0;
+  background-color: #f8f8f8;
+}
+
+.ranking-row.bronze {
+  border-color: #cd7f32;
+  background-color: #fdf6ec;
+}
+
+/* ── Atividade Recente ────────────────────────────────────── */
+.atividade-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+}
+
+.atividade-item.expirado span.texto {
+  text-decoration: line-through;
+  color: #aaa;
 }

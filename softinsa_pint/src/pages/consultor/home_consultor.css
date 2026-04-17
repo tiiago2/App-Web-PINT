@@ -2,9 +2,8 @@
 
 .caixa-branca {
     background-color: #FFFFFF;
-    border: 1px solid #CAD5E2;
+    border: 2px solid var(--outline);
     border-radius: 16px;
-    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 /* ── Badges em Progresso ─────────────────────────────────── */

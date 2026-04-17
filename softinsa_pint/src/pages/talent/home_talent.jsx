@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import './home_talent.css';
-
+import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import badge_logo from '../../assets/teste_badge.png';
 import {BotaoVerMais, BotaoAceitar, BotaoRejeitar} from '../../components/components.jsx'
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, Label, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
@@ -35,6 +35,20 @@ const dados_linhas = [
     { periodo: 'mar', media_badges: 2.8, pontos: 250, atribuicoes: 28 },
     { periodo: 'abr', media_badges: 3.5, pontos: 310, atribuicoes: 35 },
 ];
+
+//------------------------------------------------------------------------------------------------------------------------------------
+const classificacao = [
+    { pos: 1, nome: "João Silva", area: "Hybrid Systems", pontos: "374 957", cor: "#FFD700", classe: "ouro" },
+    { pos: 2, nome: "João Silva", area: "Hybrid Systems", pontos: "374 957", cor: "#C0C0C0", classe: "prata" },
+    { pos: 3, nome: "João Silva", area: "Hybrid Systems", pontos: "374 957", cor: "#CD7F32", classe: "bronze" },
+    { pos: 4, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
+    { pos: 5, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
+    { pos: 6, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
+    { pos: 7, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
+    { pos: 8, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
+    { pos: 9, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" }
+];
+//---------------------------------------------------------------------------------------------------------------------------------
 
 const GraficoCandidaturas = () => {
 
@@ -243,8 +257,8 @@ const HomeTalent = ({ user, saudacao }) => {
         <div className="row">
             <h1>{saudacao}</h1>
         </div>
-        <div className="row mt-3">
-            <div className="col-8" style={{ maxHeight: '35vh', overflowY: 'auto', overflowX: 'hidden' }} id="candidaturas_container">
+        <div className="row mt-3" style={{ maxHeight: '35vh', overflowY: 'auto', overflowX: 'hidden' }}>
+            <div className="col-8" id="candidaturas_container">
                 <div className="d-flex justify-content-between align-items-center">
                     <div className="ps-2">
                         <h4 className="m-0">{t('candidaturas_recentes')}</h4>
@@ -261,12 +275,12 @@ const HomeTalent = ({ user, saudacao }) => {
                 <GraficoEstatistica/>
             </div>
         </div>
-        <div className="row mt-3">
+        <div className="row mt-3" style={{ maxHeight: '35vh', overflowY: 'auto', overflowX: 'hidden' }}>
             <div className="col-4" id="atividade_container">
-
+                
             </div>
             <div className="col-4" id="classificacao_container">
-                
+                <ClassificacaoGeral classificacao={classificacao}/>
             </div>
             <div className="col-4" id="grafico2_container">
                 <GraficoCandidaturas/>

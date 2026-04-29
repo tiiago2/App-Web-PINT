@@ -22,7 +22,7 @@ function App() {
     //-------------trocar para base dados
     id: 1,
     nome: "Gonçalo",
-    cargo: "talent",
+    cargo: "admin",
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10"),
   });

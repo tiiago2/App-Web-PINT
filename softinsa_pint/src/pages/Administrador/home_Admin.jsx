@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+
 import { BotaoVerMais } from "../../components/components.jsx";
 import AtividadeModal from "../../components/AtividadeModal.jsx";
 import ClassificacaoModal from "../../components/ClassificacaoModal.jsx";
@@ -12,6 +13,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+// --- DADOS FALSOS ---
 const dados_esta_semana = [
   { nome: "Aceites", quantidade: 60, cor: "#4ade80" },
   { nome: "Pendentes", quantidade: 25, cor: "#60a5fa" },
@@ -40,7 +42,7 @@ const dados_atividade = [
     texto: "foi rejeitado em Low Code",
     textoNegrito: "João Silva",
     tempo: "Há 5 horas",
-    expirado: true,
+    expirado: false,
   },
   {
     icone: "fi-br-check",
@@ -92,18 +94,28 @@ const lista_classificacao = [
 function AcaoRapida({ cor, icone, texto }) {
   return (
     <div
-      className="rounded-4 d-flex flex-column align-items-center justify-content-center text-center p-2 shadow-sm"
+      className="rounded-4 d-flex flex-column align-items-center justify-content-center text-center shadow-sm"
       style={{
         backgroundColor: cor,
-        width: "110px",
-        height: "110px",
+        flex: "1 1 0",
+        aspectRatio: "1 / 1",
+        maxWidth: "140px",
+        minWidth: "70px",
         cursor: "pointer",
         color: "white",
+        padding: "2%",
       }}
     >
-      <i className={`fi ${icone} mb-2`} style={{ fontSize: "1.8rem" }}></i>
+      <i
+        className={`fi ${icone} mb-1`}
+        style={{ fontSize: "clamp(1.2rem, 2vw, 2rem)" }}
+      ></i>
       <span
-        style={{ fontSize: "0.75rem", fontWeight: "500", lineHeight: "1.2" }}
+        style={{
+          fontSize: "clamp(0.55rem, 1vw, 0.8rem)",
+          fontWeight: "500",
+          lineHeight: "1.2",
+        }}
       >
         {texto}
       </span>
@@ -111,16 +123,34 @@ function AcaoRapida({ cor, icone, texto }) {
   );
 }
 
-// --- 3. A PÁGINA PRINCIPAL ---
-const HomeAdmin = () => {
+// --- 2. PÁGINA PRINCIPAL ---
+const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="p-4 d-flex flex-column gap-3">
-      {/* --- Linha 1: Ações Rápidas --- */}
-      <div>
-        <h6 className="text-muted mb-3 ms-2">Ações Rápidas</h6>
-        <div className="d-flex flex-wrap justify-content-center gap-4 w-100 px-2">
+    <div
+      className="p-3 d-flex flex-column gap-2"
+      style={{ height: "calc(100vh - 80px)", overflow: "hidden" }}
+    >
+      {/* Saudação */}
+      <div className="flex-shrink-0 ms-2">
+        <h2
+          className="fw-bold m-0"
+          style={{ fontSize: "clamp(1.5rem, 2.5vw, 2rem)" }}
+        >
+          {saudacao}
+        </h2>
+      </div>
+
+      {/* Ações Rápidas */}
+      <div className="flex-shrink-0 mt-2">
+        <h6
+          className="text-muted mb-2 ms-2"
+          style={{ fontSize: "clamp(0.8rem, 1.2vw, 1rem)" }}
+        >
+          Ações Rápidas
+        </h6>
+        <div className="d-flex w-100 px-2" style={{ gap: "5%" }}>
           <AcaoRapida
             cor="#00b4d8"
             icone="fi-br-user-add"
@@ -153,112 +183,167 @@ const HomeAdmin = () => {
 
           <AcaoRapida
             cor="#dc2f02"
-            icone="fi-br-crosshair"
+            icone="fi-br-target"
             texto="Editar Áreas"
           ></AcaoRapida>
         </div>
       </div>
 
-      {/* --- Linha 2: Estatísticas --- */}
-      <div className="row mt-2">
-        <div className="col-4">
+      {/* Estatísticas */}
+      {/* A altura é 20% do espaço restante */}
+      <div className="row mt-1" style={{ height: "20%", minHeight: "100px" }}>
+        <div className="col-4 h-100">
           <div className="border border-2 rounded-4 p-3 bg-white d-flex flex-column justify-content-between h-100">
             <div className="d-flex justify-content-between align-items-start">
-              <span className="text-muted" style={{ fontSize: "0.9rem" }}>
+              <span
+                className="text-muted"
+                style={{ fontSize: "clamp(0.75rem, 1vw, 1rem)" }}
+              >
                 Total de Utilizadores
               </span>
-              <i className="fi fi-br-user text-dark fs-5"></i>
+              <i
+                className="fi fi-br-user text-dark"
+                style={{ fontSize: "clamp(1rem, 1.5vw, 1.5rem)" }}
+              ></i>
             </div>
-            <h3 className="fw-bold mt-3 mb-3">345</h3>
+            <h3
+              className="fw-bold m-0"
+              style={{ fontSize: "clamp(1.5rem, 3vw, 2.5rem)" }}
+            >
+              345
+            </h3>
             <div className="text-end">
               <BotaoVerMais
                 onClick={() => navigate("/utilizadores")}
-                tamanho={0.7}
+                tamanho={0.6}
               />
             </div>
           </div>
         </div>
-        <div className="col-4">
+        <div className="col-4 h-100">
           <div className="border border-2 rounded-4 p-3 bg-white d-flex flex-column justify-content-between h-100">
             <div className="d-flex justify-content-between align-items-start">
-              <span className="text-muted" style={{ fontSize: "0.9rem" }}>
+              <span
+                className="text-muted"
+                style={{ fontSize: "clamp(0.75rem, 1vw, 1rem)" }}
+              >
                 Badges por Utilizador
               </span>
             </div>
-            <h3 className="fw-bold mt-3 mb-3">4.8</h3>
+            <h3
+              className="fw-bold m-0"
+              style={{ fontSize: "clamp(1.5rem, 3vw, 2.5rem)" }}
+            >
+              4.8
+            </h3>
             <div className="text-end">
               <BotaoVerMais
                 onClick={() => navigate("/estatisticas")}
-                tamanho={0.7}
+                tamanho={0.6}
               />
             </div>
           </div>
         </div>
-        <div className="col-4">
+        <div className="col-4 h-100">
           <div className="border border-2 rounded-4 p-3 bg-white d-flex flex-column justify-content-between h-100">
             <div className="d-flex justify-content-between align-items-start">
-              <span className="text-muted" style={{ fontSize: "0.9rem" }}>
+              <span
+                className="text-muted"
+                style={{ fontSize: "clamp(0.75rem, 1vw, 1rem)" }}
+              >
                 Badges Atribuídos
               </span>
-              <i className="fi fi-br-settings text-dark fs-5"></i>
+              <i
+                className="fi fi-br-settings text-dark"
+                style={{ fontSize: "clamp(1rem, 1.5vw, 1.5rem)" }}
+              ></i>
             </div>
-            <h3 className="fw-bold mt-3 mb-3">3.456</h3>
+            <h3
+              className="fw-bold m-0"
+              style={{ fontSize: "clamp(1.5rem, 3vw, 2.5rem)" }}
+            >
+              3.456
+            </h3>
             <div className="text-end">
               <BotaoVerMais
                 onClick={() => navigate("/estatisticas")}
-                tamanho={0.7}
+                tamanho={0.6}
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* --- Linha 3: Widgets Inferiores --- */}
-      <div className="row flex-grow-1 mt-2" style={{ minHeight: "350px" }}>
-        {/* Contentor 1: Atividade*/}
-        <div className="col-4 h-100">
-          <AtividadeModal atividades={dados_atividade} />
+      {/* Widgets Inferiores */}
+      <div className="row mt-1 flex-grow-1" style={{ minHeight: 0 }}>
+        <div className="col-4 h-100 d-flex flex-column">
+          <div className="flex-grow-1" style={{ overflow: "hidden" }}>
+            <AtividadeModal atividades={dados_atividade} />
+          </div>
         </div>
 
-        {/* Contentor 2: Classificação*/}
-        <div className="col-4 h-100">
-          <ClassificacaoModal classificacao={lista_classificacao} />
+        <div className="col-4 h-100 d-flex flex-column">
+          <div className="flex-grow-1" style={{ overflow: "hidden" }}>
+            <ClassificacaoModal classificacao={lista_classificacao} />
+          </div>
         </div>
 
-        {/* Contentor 3: Gráfico Esta Semana */}
-        <div className="col-4 h-100">
-          <div className="border border-2 rounded-4 p-3 h-100 bg-white d-flex flex-column">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h5 className="m-0 fw-bold">Esta semana</h5>
-              <span className="fw-bold fs-5">10</span>
+        <div className="col-4 h-100 d-flex flex-column">
+          <div
+            className="caixa-branca p-4 d-flex flex-column flex-grow-1"
+            style={{ overflow: "hidden" }}
+          >
+            <div className="d-flex justify-content-between align-items-center mb-1">
+              <h5
+                className="m-0 fw-bold"
+                style={{ fontSize: "clamp(1rem, 1.5vw, 1.25rem)" }}
+              >
+                Esta semana
+              </h5>
+              <span
+                className="fw-bold"
+                style={{ fontSize: "clamp(1rem, 1.5vw, 1.25rem)" }}
+              >
+                10
+              </span>
             </div>
 
-            <div className="flex-grow-1" style={{ minHeight: "200px" }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={dados_esta_semana}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius="40%"
-                    outerRadius={100}
-                    nameKey="nome"
-                    dataKey="quantidade"
-                    stroke="none"
-                  >
-                    {dados_esta_semana.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.cor} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend
-                    layout="vertical"
-                    verticalAlign="middle"
-                    align="right"
-                    iconType="circle"
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="flex-grow-1 position-relative w-100">
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={dados_esta_semana}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius="50%"
+                      outerRadius="75%"
+                      nameKey="nome"
+                      dataKey="quantidade"
+                      stroke="none"
+                    >
+                      {dados_esta_semana.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.cor} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend
+                      layout="horizontal"
+                      verticalAlign="bottom"
+                      align="center"
+                      iconType="circle"
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         </div>

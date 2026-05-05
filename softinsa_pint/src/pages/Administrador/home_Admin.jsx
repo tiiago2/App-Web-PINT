@@ -190,7 +190,6 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
       </div>
 
       {/* Estatísticas */}
-      {/* A altura é 20% do espaço restante */}
       <div className="row mt-1" style={{ height: "20%", minHeight: "100px" }}>
         <div className="col-4 h-100">
           <div className="border border-2 rounded-4 p-3 bg-white d-flex flex-column justify-content-between h-100">

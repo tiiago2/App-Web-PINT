@@ -65,5 +65,11 @@
     "out": "Oct",
     "nov": "Nov",
     "dez": "Dic",
-    "evo_users": "Evolución de Usuarios"
+    "evo_users": "Evolución de Usuarios",
+    "notificacoes": "Notificaciones",
+    "politicas_rgpd": "Políticas RGPD",
+    "sla": "SLA",
+    "niveis_permissoes": "Niveles de Permisos",
+    "gerir_roles": "Gestionar roles y permisos de usuarios",
+    "acesso_total": "Acceso total al sistema"
 }

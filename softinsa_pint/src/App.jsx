@@ -10,6 +10,7 @@ import "./App.css";
 import HomeConsultor from "./pages/consultor/home_consultor.jsx";
 import HomeTalent from "./pages/talent/home_talent.jsx";
 import HomeAdmin from "./pages/Administrador/home_Admin.jsx";
+import DefinicoesAdmin from "./pages/Administrador/definicoes_Admin.jsx";
 import Galeria from "./pages/talent/Galeria.jsx";
 //imagens
 import softinsa_logo from "./assets/logotipo_softinsa.png";
@@ -212,6 +213,7 @@ function App() {
           />
           {/*<Route path="/candidaturas" element={} />*/}
           <Route path="/galeria" element={<Galeria />} />
+          <Route path="/definicoes" element={<DefinicoesAdmin />} />
         </Routes>
       );
     }

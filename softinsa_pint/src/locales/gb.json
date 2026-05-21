@@ -65,5 +65,11 @@
     "out": "Oct",
     "nov": "Nov",
     "dez": "Dec",
-    "evo_users": "User Growth"
+    "evo_users": "User Growth",
+    "notificacoes": "Notifications",
+    "politicas_rgpd": "GDPR Policies",
+    "sla": "SLA",
+    "niveis_permissoes": "Permission Levels",
+    "gerir_roles": "Manage user roles and permissions",
+    "acesso_total": "Full access to the system"
 }

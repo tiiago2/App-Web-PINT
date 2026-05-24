@@ -1,5 +1,5 @@
 {
-    "home": "Home page",
+    "home": "Página Inicial",
     "galeria": "Galería",
     "estatisticas": "Estadísticas",
     "candidaturas": "Candidaturas",
@@ -71,5 +71,17 @@
     "sla": "SLA",
     "niveis_permissoes": "Niveles de Permisos",
     "gerir_roles": "Gestionar roles y permisos de usuarios",
-    "acesso_total": "Acceso total al sistema"
+    "acesso_total": "Acceso total al sistema",
+    "acoes_rapidas": "Acciones Rápidas",
+    "add_utilizador": "Añadir Usuario",
+    "add_badge": "Añadir Badge",
+    "consultar_equipa": "Consultar Equipo",
+    "editar_service_lines": "Editar Service Lines",
+    "editar_learning_paths": "Editar Learning Paths",
+    "editar_areas": "Editar Áreas",
+    "total_utilizadores": "Total de Usuarios",
+    "badges_por_utilizador": "Badges por Usuario",
+    "badges_atribuidos": "Badges Asignados",
+    "esta_semana": "Esta semana",
+    "pendentes": "Pendientes"
 }

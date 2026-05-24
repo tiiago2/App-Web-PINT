@@ -71,5 +71,17 @@
     "rankear": "Rankear:",
     "mes": "Mês",
     "ano": "Ano",
-    "sempre": "Sempre"
+    "sempre": "Sempre",
+    "acoes_rapidas": "Ações Rápidas",
+    "add_utilizador": "Adicionar Utilizador",
+    "add_badge": "Adicionar Badge",
+    "consultar_equipa": "Consultar Equipa",
+    "editar_service_lines": "Editar Service Lines",
+    "editar_learning_paths": "Editar Learning Paths",
+    "editar_areas": "Editar Áreas",
+    "total_utilizadores": "Total de Utilizadores",
+    "badges_por_utilizador": "Badges por Utilizador",
+    "badges_atribuidos": "Badges Atribuídos",
+    "esta_semana": "Esta semana",
+    "pendentes": "Pendentes"
 }

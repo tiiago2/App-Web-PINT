@@ -71,5 +71,17 @@
     "sla": "SLA",
     "niveis_permissoes": "Permission Levels",
     "gerir_roles": "Manage user roles and permissions",
-    "acesso_total": "Full access to the system"
+    "acesso_total": "Full access to the system",
+    "acoes_rapidas": "Quick Actions",
+    "add_utilizador": "Add User",
+    "add_badge": "Add Badge",
+    "consultar_equipa": "Consult Team",
+    "editar_service_lines": "Edit Service Lines",
+    "editar_learning_paths": "Edit Learning Paths",
+    "editar_areas": "Edit Areas",
+    "total_utilizadores": "Total Users",
+    "badges_por_utilizador": "Badges per User",
+    "badges_atribuidos": "Awarded Badges",
+    "esta_semana": "This week",
+    "pendentes": "Pending"
 }

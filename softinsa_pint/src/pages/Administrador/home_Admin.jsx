@@ -1,5 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import "./home_Admin.css";
 
 import { BotaoVerMais } from "../../components/components.jsx";
 import AtividadeModal from "../../components/AtividadeModal.jsx";
@@ -14,11 +16,6 @@ import {
 } from "recharts";
 
 // --- DADOS FALSOS ---
-const dados_esta_semana = [
-  { nome: "Aceites", quantidade: 60, cor: "#4ade80" },
-  { nome: "Pendentes", quantidade: 25, cor: "#60a5fa" },
-  { nome: "Rejeitadas", quantidade: 15, cor: "#f87171" },
-];
 
 const dados_atividade = [
   {
@@ -94,12 +91,13 @@ const lista_classificacao = [
 function AcaoRapida({ cor, icone, texto }) {
   return (
     <div
-      className="rounded-4 d-flex flex-column align-items-center justify-content-center text-center shadow-sm"
+      className="acao-rapida-btn rounded-4 d-flex flex-column align-items-center justify-content-center text-center shadow-sm"
       style={{
         backgroundColor: cor,
         flex: "1 1 0",
         aspectRatio: "1 / 1",
-        maxWidth: "140px",
+        maxHeight: "100px",
+        maxWidth: "100px",
         minWidth: "70px",
         cursor: "pointer",
         color: "white",
@@ -126,11 +124,18 @@ function AcaoRapida({ cor, icone, texto }) {
 // --- 2. PÁGINA PRINCIPAL ---
 const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const dados_esta_semana = [
+    { nome: t("aceites"), quantidade: 60, cor: "#4ade80" },
+    { nome: t("pendentes"), quantidade: 25, cor: "#60a5fa" },
+    { nome: t("rejeitadas"), quantidade: 15, cor: "#f87171" },
+  ];
 
   return (
     <div
       className="p-3 d-flex flex-column gap-2"
-      style={{ height: "calc(100vh - 80px)", overflow: "hidden" }}
+      style={{ height: "100%", overflow: "hidden" }}
     >
       {/* Saudação */}
       <div className="flex-shrink-0 ms-2">
@@ -148,57 +153,63 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
           className="text-muted mb-2 ms-2"
           style={{ fontSize: "clamp(0.8rem, 1.2vw, 1rem)" }}
         >
-          Ações Rápidas
+          {t("acoes_rapidas")}
         </h6>
-        <div className="d-flex w-100 px-2" style={{ gap: "5%" }}>
+        <div
+          className="d-flex w-100 px-2 justify-content-center"
+          style={{ gap: "6%" }}
+        >
           <AcaoRapida
             cor="#00b4d8"
             icone="fi-br-user-add"
-            texto="Adicionar Utilizador"
+            texto={t("add_utilizador")}
           />
 
           <AcaoRapida
             cor="#ffb703"
             icone="fi-br-badge"
-            texto="Adicionar Badge"
+            texto={t("add_badge")}
           />
 
           <AcaoRapida
             cor="#3a5a92"
             icone="fi-br-users"
-            texto="Consultar Equipa"
+            texto={t("consultar_equipa")}
           />
 
           <AcaoRapida
             cor="#2dc653"
             icone="fi-br-apps"
-            texto="Editar Service Lines"
+            texto={t("editar_service_lines")}
           />
 
           <AcaoRapida
             cor="#f48c06"
             icone="fi-br-road"
-            texto="Editar Learning Paths"
+            texto={t("editar_learning_paths")}
           />
 
           <AcaoRapida
             cor="#dc2f02"
             icone="fi-br-target"
-            texto="Editar Áreas"
+            texto={t("editar_areas")}
           ></AcaoRapida>
         </div>
       </div>
 
       {/* Estatísticas */}
-      <div className="row mt-1" style={{ height: "20%", minHeight: "100px" }}>
-        <div className="col-4 h-100">
-          <div className="border border-2 rounded-4 p-3 bg-white d-flex flex-column justify-content-between h-100">
+      <div className="row mt-2" style={{ flex: "0 0 auto" }}>
+        <div className="col-4">
+          <div
+            className="border border-2 rounded-4 p-3 bg-white d-flex flex-column justify-content-between h-100"
+            style={{ minHeight: "110px" }}
+          >
             <div className="d-flex justify-content-between align-items-start">
               <span
                 className="text-muted"
                 style={{ fontSize: "clamp(0.75rem, 1vw, 1rem)" }}
               >
-                Total de Utilizadores
+                {t("total_utilizadores")}
               </span>
               <i
                 className="fi fi-br-user text-dark"
@@ -207,7 +218,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
             </div>
             <h3
               className="fw-bold m-0"
-              style={{ fontSize: "clamp(1.5rem, 3vw, 2.5rem)" }}
+              style={{ fontSize: "clamp(1.2rem, 2.5vw, 2rem)" }}
             >
               345
             </h3>
@@ -219,19 +230,22 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
             </div>
           </div>
         </div>
-        <div className="col-4 h-100">
-          <div className="border border-2 rounded-4 p-3 bg-white d-flex flex-column justify-content-between h-100">
+        <div className="col-4">
+          <div
+            className="border border-2 rounded-4 p-3 bg-white d-flex flex-column justify-content-between h-100"
+            style={{ minHeight: "110px" }}
+          >
             <div className="d-flex justify-content-between align-items-start">
               <span
                 className="text-muted"
                 style={{ fontSize: "clamp(0.75rem, 1vw, 1rem)" }}
               >
-                Badges por Utilizador
+                {t("badges_por_utilizador")}
               </span>
             </div>
             <h3
               className="fw-bold m-0"
-              style={{ fontSize: "clamp(1.5rem, 3vw, 2.5rem)" }}
+              style={{ fontSize: "clamp(1.2rem, 2.5vw, 2rem)" }}
             >
               4.8
             </h3>
@@ -243,14 +257,17 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
             </div>
           </div>
         </div>
-        <div className="col-4 h-100">
-          <div className="border border-2 rounded-4 p-3 bg-white d-flex flex-column justify-content-between h-100">
+        <div className="col-4">
+          <div
+            className="border border-2 rounded-4 p-3 bg-white d-flex flex-column justify-content-between h-100"
+            style={{ minHeight: "110px" }}
+          >
             <div className="d-flex justify-content-between align-items-start">
               <span
                 className="text-muted"
                 style={{ fontSize: "clamp(0.75rem, 1vw, 1rem)" }}
               >
-                Badges Atribuídos
+                {t("badges_atribuidos")}
               </span>
               <i
                 className="fi fi-br-settings text-dark"
@@ -259,7 +276,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
             </div>
             <h3
               className="fw-bold m-0"
-              style={{ fontSize: "clamp(1.5rem, 3vw, 2.5rem)" }}
+              style={{ fontSize: "clamp(1.2rem, 2.5vw, 2rem)" }}
             >
               3.456
             </h3>
@@ -275,29 +292,44 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
 
       {/* Widgets Inferiores */}
       <div className="row mt-1 flex-grow-1" style={{ minHeight: 0 }}>
-        <div className="col-4 h-100 d-flex flex-column">
-          <div className="flex-grow-1" style={{ overflow: "hidden" }}>
+        <div
+          className="col-4 h-100 d-flex flex-column"
+          style={{ minHeight: 0 }}
+        >
+          <div
+            className="flex-grow-1"
+            style={{ overflow: "hidden", minHeight: 0 }}
+          >
             <AtividadeModal atividades={dados_atividade} />
           </div>
         </div>
 
-        <div className="col-4 h-100 d-flex flex-column">
-          <div className="flex-grow-1" style={{ overflow: "hidden" }}>
+        <div
+          className="col-4 h-100 d-flex flex-column"
+          style={{ minHeight: 0 }}
+        >
+          <div
+            className="flex-grow-1"
+            style={{ overflow: "hidden", minHeight: 0 }}
+          >
             <ClassificacaoModal classificacao={lista_classificacao} />
           </div>
         </div>
 
-        <div className="col-4 h-100 d-flex flex-column">
+        <div
+          className="col-4 h-100 d-flex flex-column"
+          style={{ minHeight: 0 }}
+        >
           <div
-            className="caixa-branca p-4 d-flex flex-column flex-grow-1"
-            style={{ overflow: "hidden" }}
+            className="border border-2 rounded-4 p-3 bg-white d-flex flex-column flex-grow-1"
+            style={{ overflow: "hidden", minHeight: 0 }}
           >
             <div className="d-flex justify-content-between align-items-center mb-1">
               <h5
                 className="m-0 fw-bold"
                 style={{ fontSize: "clamp(1rem, 1.5vw, 1.25rem)" }}
               >
-                Esta semana
+                {t("esta_semana")}
               </h5>
               <span
                 className="fw-bold"

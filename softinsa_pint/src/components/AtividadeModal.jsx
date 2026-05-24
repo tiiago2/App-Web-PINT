@@ -60,7 +60,7 @@ const AtividadeRecente = ({ atividades }) => {
     if (!atividades || atividades.length === 0) return null;
 
     return (
-        <div className="border border-2 bg-white rounded-4 p-3 d-flex flex-column" style={{ height: '35vh' }}>
+        <div className="border border-2 bg-white rounded-4 p-3 d-flex flex-column" style={{ height: '100%' }}>
             
             <div className="d-flex justify-content-between align-items-center mb-2">
                 <h5>{t('atividade_recente')}</h5>

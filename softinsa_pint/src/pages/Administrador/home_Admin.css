@@ -35,3 +35,13 @@
 .titulo-estatistica {
     font-size: 0.9rem;
 }
+
+/* Hover para botões de Ações Rápidas */
+.acao-rapida-btn {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.acao-rapida-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15) !important;
+}

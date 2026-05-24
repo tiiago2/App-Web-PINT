@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { menu_lateral } from "./defs/barra_lateral.jsx";
 import { iconesNotificacao } from "./defs/dicionario.jsx";
 import "./i18n";
@@ -184,6 +184,8 @@ function App() {
             path="/home"
             element={<HomeConsultor user={user} saudacao={Saudacao()} />}
           />
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       );
     } else if (user.cargo === "talent") {
@@ -194,6 +196,8 @@ function App() {
             element={<HomeTalent user={user} saudacao={Saudacao()} />}
           />
           <Route path="/galeria" element={<Galeria />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       );
     } else if (user.cargo === "service") {
@@ -214,6 +218,8 @@ function App() {
           {/*<Route path="/candidaturas" element={} />*/}
           <Route path="/galeria" element={<Galeria />} />
           <Route path="/definicoes" element={<DefinicoesAdmin />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       );
     }
@@ -351,7 +357,7 @@ function App() {
           />
         </div>
       </header>
-      <div className="row m-0 flex-grow-1">
+      <div className="row m-0 flex-grow-1" style={{ minHeight: 0 }}>
         <div className="col-2" id="barra_lateral">
           <div className="mt-3 justify-content-center">
             {menuItems.map((item) => {
@@ -373,7 +379,7 @@ function App() {
             })}
           </div>
         </div>
-        <div className="col-10" id="Container">
+        <div className="col-10 h-100 d-flex flex-column" id="Container" style={{ overflow: 'hidden' }}>
           {renderPagina()}
         </div>
       </div>

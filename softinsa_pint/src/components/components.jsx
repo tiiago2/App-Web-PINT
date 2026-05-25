@@ -1,5 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 
 import "./components.css";
 
@@ -74,4 +75,86 @@ export function BotaoRejeitar({ onClick, tamanho }) {
 
 export function Rankings({ linhas }) {
   const { t } = useTranslation();
+}
+
+
+export const GraficoCandidaturas = ({dados_grafico_candidaturas}) => {
+
+    const {t} = useTranslation();
+
+    const total = dados_grafico_candidaturas.reduce((acumulador, dado) => {
+        return acumulador + dado.quantidade;
+    }, 0);
+
+    const dados_traduzidos = dados_grafico_candidaturas.map((dado) => {
+        return {
+            ...dado,
+            nome: t(dado.nome) // Traduz "Aceites", "Rejeitadas", etc., logo aqui!
+        };
+    });
+
+    return (
+        <div className="border border-2 rounded-4 p-2 d-flex flex-column h-100">
+            <h5 className="ms-1 mb-2">{t('titulo_candidaturas')}</h5>
+            
+            <div className="flex-grow-1" style={{ width: '100%', minHeight: '200px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie
+                            cx="50%"
+                            cy="50%"
+                            data={dados_traduzidos}
+                            innerRadius="60%"
+                            outerRadius="85%" 
+                            dataKey="quantidade"
+                            nameKey="nome"
+                            stroke="none"
+                            isAnimationActive={false}
+                            labelLine={false}
+                            label={({ cx, cy, index }) => {
+                                if (index !== 0) return null; 
+                                return (
+                                    <g>
+                                        <text 
+                                            x={cx} 
+                                            y={cy - 5} 
+                                            textAnchor="middle" 
+                                            dominantBaseline="central" 
+                                            className="fw-bold" 
+                                            style={{ fontSize: '28px', fill: 'var(--fontes)'}}
+                                        >
+                                            {total}
+                                        </text>
+                                        <text 
+                                            x={cx} 
+                                            y={cy + 15} 
+                                            textAnchor="middle" 
+                                            dominantBaseline="central" 
+                                            style={{ fontSize: '12px', fill: 'var(--fontes)' }}
+                                        >
+                                            {t('total')}
+                                        </text>
+                                    </g>
+                                );
+                            }}
+                        >
+                            {dados_traduzidos.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.cor} />
+                            ))}
+                        </Pie>
+                        
+                        <Tooltip />
+                        
+                        <Legend 
+                            layout="vertical" 
+                            verticalAlign="middle" 
+                            align="right" 
+                            iconType="circle" 
+                            wrapperStyle={{ right: 0 }}
+                        /> 
+                    </PieChart>
+                </ResponsiveContainer>
+            </div>
+        </div>
+    );
 }

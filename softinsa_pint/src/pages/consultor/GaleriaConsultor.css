@@ -1,0 +1,81 @@
+.galeria-consultor-page {
+  padding: 32px;
+  background: #f7f9fc;
+  min-height: 100%;
+}
+
+.galeria-consultor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.galeria-consultor-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.galeria-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.galeria-search {
+  flex: 1;
+  height: 44px;
+  border: 1px solid #d7dde8;
+  border-radius: 12px;
+  padding: 0 16px;
+  font-size: 15px;
+  background: white;
+  outline: none;
+}
+
+.galeria-search:focus {
+  border-color: #0062a8;
+}
+
+.galeria-toolbar-btn {
+  height: 44px;
+  padding: 0 18px;
+  border: 1px solid #d7dde8;
+  border-radius: 12px;
+  background: white;
+  color: #1f2937;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.galeria-toolbar-btn:hover {
+  border-color: #0062a8;
+  color: #0062a8;
+}
+
+.galeria-status-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.status-tab {
+  border: 1px solid #d7dde8;
+  background: white;
+  color: #4b5563;
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.status-tab.ativo {
+  background: #0062a8;
+  border-color: #0062a8;
+  color: white;
+}

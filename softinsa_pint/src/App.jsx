@@ -12,6 +12,7 @@ import HomeTalent from "./pages/talent/home_talent.jsx";
 import HomeAdmin from "./pages/Administrador/home_Admin.jsx";
 import DefinicoesAdmin from "./pages/Administrador/definicoes_Admin.jsx";
 import Galeria from "./pages/talent/Galeria.jsx";
+import GaleriaConsultor from "./pages/consultor/GaleriaConsultor.jsx";
 //imagens
 import softinsa_logo from "./assets/logotipo_softinsa.png";
 import user_logo from "./assets/utilizador.png";
@@ -23,7 +24,7 @@ function App() {
     //-------------trocar para base dados
     id: 1,
     nome: "Gonçalo",
-    cargo: "admin",
+    cargo: "consultor",
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10"),
   });
@@ -184,8 +185,16 @@ function App() {
             path="/home"
             element={<HomeConsultor user={user} saudacao={Saudacao()} />}
           />
+<<<<<<< Updated upstream
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
+=======
+
+          <Route 
+            path="/galeria" 
+            element={<GaleriaConsultor />} 
+          />
+>>>>>>> Stashed changes
         </Routes>
       );
     } else if (user.cargo === "talent") {

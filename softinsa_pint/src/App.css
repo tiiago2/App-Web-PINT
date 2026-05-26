@@ -1,3 +1,6 @@
+/* Importação do ficheiro que comanda o estilo de texto de todo o projeto, que é usada pelo projeto todo */
+@import "./styles/estilos_texto.css";
+
 :root{
     --fontes: #374957;
     --selecao: #A7EFFF;

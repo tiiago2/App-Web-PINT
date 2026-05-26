@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import "./home_Admin.css";
 
-import { BotaoVerMais } from "../../components/components.jsx";
+import { BotaoVerMais, GraficoCandidaturas } from "../../components/components.jsx";
 import AtividadeModal from "../../components/AtividadeModal.jsx";
 import ClassificacaoModal from "../../components/ClassificacaoModal.jsx";
 import {
@@ -16,6 +16,11 @@ import {
 } from "recharts";
 
 // --- DADOS FALSOS ---
+const dados_grafico_candidaturas = [
+    { nome: 'aceites', quantidade: 405, cor: '#3bb413' },    
+    { nome: 'rejeitadas', quantidade: 15, cor: '#de2121' }, 
+    { nome: 'em_analise', quantidade: 25, cor: '#1c8cae' }  
+];
 
 const dados_atividade = [
   {
@@ -291,7 +296,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
       </div>
 
       {/* Widgets Inferiores */}
-      <div className="row mt-1 flex-grow-1" style={{ minHeight: 0 }}>
+      <div className="row mt-1 flex-grow-1" style={{ maxHeight: "35vh" }}>
         <div
           className="col-4 h-100 d-flex flex-column"
           style={{ minHeight: 0 }}
@@ -320,63 +325,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
           className="col-4 h-100 d-flex flex-column"
           style={{ minHeight: 0 }}
         >
-          <div
-            className="border border-2 rounded-4 p-3 bg-white d-flex flex-column flex-grow-1"
-            style={{ overflow: "hidden", minHeight: 0 }}
-          >
-            <div className="d-flex justify-content-between align-items-center mb-1">
-              <h5
-                className="m-0 fw-bold"
-                style={{ fontSize: "clamp(1rem, 1.5vw, 1.25rem)" }}
-              >
-                {t("esta_semana")}
-              </h5>
-              <span
-                className="fw-bold"
-                style={{ fontSize: "clamp(1rem, 1.5vw, 1.25rem)" }}
-              >
-                10
-              </span>
-            </div>
-
-            <div className="flex-grow-1 position-relative w-100">
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                }}
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={dados_esta_semana}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius="50%"
-                      outerRadius="75%"
-                      nameKey="nome"
-                      dataKey="quantidade"
-                      stroke="none"
-                    >
-                      {dados_esta_semana.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.cor} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend
-                      layout="horizontal"
-                      verticalAlign="bottom"
-                      align="center"
-                      iconType="circle"
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
+          <GraficoCandidaturas dados_grafico_candidaturas={dados_grafico_candidaturas}/>
         </div>
       </div>
     </div>

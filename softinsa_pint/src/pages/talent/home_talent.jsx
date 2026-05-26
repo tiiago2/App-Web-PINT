@@ -5,7 +5,7 @@ import './home_talent.css';
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import AtividadeRecente from '../../components/AtividadeModal.jsx';
 import badge_logo from '../../assets/teste_badge.png';
-import {BotaoVerMais, BotaoAceitar, BotaoRejeitar} from '../../components/components.jsx'
+import {BotaoVerMais, BotaoAceitar, BotaoRejeitar, GraficoCandidaturas} from '../../components/components.jsx'
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, Label, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 const users = [
@@ -63,86 +63,7 @@ const atividadeRecente = [
 ];
 //---------------------------------------------------------------------------------------------------------------------------------
 
-const GraficoCandidaturas = () => {
 
-    const {t} = useTranslation();
-
-    const total = dados_grafico_candidaturas.reduce((acumulador, dado) => {
-        return acumulador + dado.quantidade;
-    }, 0);
-
-    const dados_traduzidos = dados_grafico_candidaturas.map((dado) => {
-        return {
-            ...dado,
-            nome: t(dado.nome) // Traduz "Aceites", "Rejeitadas", etc., logo aqui!
-        };
-    });
-
-    return (
-        <div className="border border-2 rounded-4 p-2 d-flex flex-column h-100">
-            <h5 className="ms-1 mb-2">{t('titulo_candidaturas')}</h5>
-            
-            <div className="flex-grow-1" style={{ width: '100%', minHeight: '200px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                        <Pie
-                            cx="50%"
-                            cy="50%"
-                            data={dados_traduzidos}
-                            innerRadius="60%"
-                            outerRadius="85%" 
-                            dataKey="quantidade"
-                            nameKey="nome"
-                            stroke="none"
-                            isAnimationActive={false}
-                            labelLine={false}
-                            label={({ cx, cy, index }) => {
-                                if (index !== 0) return null; 
-                                return (
-                                    <g>
-                                        <text 
-                                            x={cx} 
-                                            y={cy - 5} 
-                                            textAnchor="middle" 
-                                            dominantBaseline="central" 
-                                            className="fw-bold" 
-                                            style={{ fontSize: '28px', fill: 'var(--fontes)'}}
-                                        >
-                                            {total}
-                                        </text>
-                                        <text 
-                                            x={cx} 
-                                            y={cy + 15} 
-                                            textAnchor="middle" 
-                                            dominantBaseline="central" 
-                                            style={{ fontSize: '12px', fill: 'var(--fontes)' }}
-                                        >
-                                            {t('total')}
-                                        </text>
-                                    </g>
-                                );
-                            }}
-                        >
-                            {dados_traduzidos.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.cor} />
-                            ))}
-                        </Pie>
-                        
-                        <Tooltip />
-                        
-                        <Legend 
-                            layout="vertical" 
-                            verticalAlign="middle" 
-                            align="right" 
-                            iconType="circle" 
-                            wrapperStyle={{ right: 0 }}
-                        /> 
-                    </PieChart>
-                </ResponsiveContainer>
-            </div>
-        </div>
-    );
-}
 
 const GraficoEstatistica = () => {
 
@@ -233,8 +154,8 @@ const HomeTalent = ({ user, saudacao }) => {
             }
 
             return(
-                <div className="col-4">
-                    <div className="card text-center border-0 p-1">
+                <div className="col-12 col-sm-6 col-xl-4">
+                    <div className="card text-center border-0 p-1" style={{ height: '100%' }}>
                         <div className="mx-auto mt-2 rounded-circle d-flex align-items-center justify-content-center">
                             <img className="rounded-circle badge_logo_candidaturas" src={badge_escolhido.imagem}/>
                         </div>
@@ -266,37 +187,49 @@ const HomeTalent = ({ user, saudacao }) => {
     };
 
   return(
-    <div className="m-4">
-        <div className="row">
-            <h1>{saudacao}</h1>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div className="p-3 p-md-4 flex-shrink-0">
+            <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', marginBottom: '0' }}>{saudacao}</h1>
         </div>
-        <div className="row mt-3" style={{ maxHeight: '35vh', overflowY: 'auto', overflowX: 'hidden' }}>
-            <div className="col-8" id="candidaturas_container">
-                <div className="d-flex justify-content-between align-items-center">
-                    <div className="ps-2">
-                        <h4 className="m-0">{t('candidaturas_recentes')}</h4>
-                    </div>
+        
+        <div style={{ flex: '1 1 auto', overflow: 'auto', paddingLeft: '1rem', paddingRight: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* Primeira linha: Candidaturas e Gráfico Estatísticas */}
+            <div className="row g-2 g-md-3" style={{ flex: '0 0 auto' }}>
+                <div className="col-12 col-xl-8">
                     <div>
-                        <BotaoVerMais onClick={() => navigate('/candidaturas')}  tamanho={0.7} />
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                            <h5 className="m-0" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>{t('candidaturas_recentes')}</h5>
+                            <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.6} />
+                        </div>
+                        <div className="row g-2 g-md-3">
+                            {RenderCandidaturas()}       
+                        </div>
                     </div>
                 </div>
-                <div className="row">
-                    {RenderCandidaturas()}       
+                <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
+                    <div style={{ height: '250px', overflow: 'hidden' }}>
+                        <GraficoEstatistica/>
+                    </div>
                 </div>
             </div>
-            <div className="col-4" id="grafico1_container">
-                <GraficoEstatistica/>
-            </div>
-        </div>
-        <div className="row mt-3" style={{ maxHeight: '35vh', overflowY: 'auto', overflowX: 'hidden' }}>
-            <div className="col-4" id="atividade_container">
-                <AtividadeRecente atividades={atividadeRecente} />
-            </div>
-            <div className="col-4" id="classificacao_container">
-                <ClassificacaoGeral classificacao={classificacao}/>
-            </div>
-            <div className="col-4" id="grafico2_container">
-                <GraficoCandidaturas/>
+
+            {/* Segunda linha: Atividade, Classificação e Gráfico Candidaturas */}
+            <div className="row g-2 g-md-3" style={{ flex: '1 1 auto', minHeight: 0 }}>
+                <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
+                    <div style={{ height: '100%', overflow: 'hidden' }}>
+                        <AtividadeRecente atividades={atividadeRecente} />
+                    </div>
+                </div>
+                <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
+                    <div style={{ height: '100%', overflow: 'hidden' }}>
+                        <ClassificacaoGeral classificacao={classificacao}/>
+                    </div>
+                </div>
+                <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
+                    <div style={{ height: '100%', overflow: 'hidden' }}>
+                        <GraficoCandidaturas dados_grafico_candidaturas={dados_grafico_candidaturas}/>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

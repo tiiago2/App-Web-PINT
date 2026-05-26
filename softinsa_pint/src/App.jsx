@@ -185,16 +185,21 @@ function App() {
             path="/home"
             element={<HomeConsultor user={user} saudacao={Saudacao()} />}
           />
-<<<<<<< Updated upstream
-          <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="*" element={<Navigate to="/home" replace />} />
-=======
 
-          <Route 
-            path="/galeria" 
-            element={<GaleriaConsultor />} 
+          <Route
+            path="/galeria"
+            element={<GaleriaConsultor />}
           />
->>>>>>> Stashed changes
+
+          <Route
+            path="/"
+            element={<Navigate to="/home" replace />}
+          />
+
+          <Route
+            path="*"
+            element={<Navigate to="/home" replace />}
+          />
         </Routes>
       );
     } else if (user.cargo === "talent") {

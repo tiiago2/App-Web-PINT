@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  useNavigate,
+  useLocation,
+  Navigate,
+} from "react-router-dom";
 import { menu_lateral } from "./defs/barra_lateral.jsx";
 import { iconesNotificacao } from "./defs/dicionario.jsx";
 import "./i18n";
@@ -399,7 +405,11 @@ function App() {
             })}
           </div>
         </div>
-        <div className="col-10 h-100 d-flex flex-column" id="Container" style={{ overflow: 'hidden' }}>
+        <div
+          className="col-10 h-100 d-flex flex-column"
+          id="Container"
+          style={{ overflow: "hidden" }}
+        >
           {renderPagina()}
         </div>
       </div>

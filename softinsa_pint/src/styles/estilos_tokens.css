@@ -1,0 +1,17 @@
+:root {
+    /* BORDER RADIUS QUE USAMOS */
+    --border-radius-grande: 14px;
+    --border-radius-pequeno: 8px;
+
+    /*BORDAS / STROKES (ESPESSURA)*/
+    --borda-principal: 1.6px;
+
+    /*ESPAÇAMENTOS/ GAPS*/
+    --gap-titulo-principal-conteudo: 30px;
+    --gap-default-seccoes: 20px;
+
+    /*MARGENS PRINCIPAIS*/
+    --margem-lateral-conteudo: 60px;
+    --margem-superior-conteudo: 30px;
+    --margem-inferior-conteudo: 30px;
+}

@@ -68,7 +68,7 @@ const AtividadeRecente = ({ atividades }) => {
             </div>
 
             {/* 2. MAGIA DO SCROLL: flex-grow-1 e overflow-y-auto com a barra escondida */}
-            <div className="d-flex flex-column gap-3 flex-grow-1 overflow-y-auto pe-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="d-flex flex-column justify-content-between flex-grow-1 overflow-y-auto pe-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 <style>{`.overflow-y-auto::-webkit-scrollbar { display: none; }`}</style>
                 
                 {atividades.slice(0, 6).map((item, i) => (

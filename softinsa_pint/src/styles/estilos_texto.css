@@ -21,9 +21,27 @@ textarea {
 
 /* Estilos de texto */
 .texto-titulo-principal {
-  font-size: 40px;
+  font-size: 36px;
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: 0em;
   color: var(--fontes);
+}
+
+/* texto usado por exemplo nos botões da galeria de badges,
+de selecionar entre "Sugeridos" ou "Todos os Badges" */
+.texto-botoes-1 {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0em;
+  color: var(--fontes);
+}
+
+.texto-botoes-1-ativo {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0em;
+  color: var(--fundo);
 }

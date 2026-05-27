@@ -1,5 +1,8 @@
+/* Importação do ficheiro que comanda os tokens de design, como espaçamentos, bordas, etc. */
+@import "./styles/estilos_tokens.css";
 /* Importação do ficheiro que comanda o estilo de texto de todo o projeto, que é usada pelo projeto todo */
 @import "./styles/estilos_texto.css";
+
 
 :root{
     --fontes: #374957;

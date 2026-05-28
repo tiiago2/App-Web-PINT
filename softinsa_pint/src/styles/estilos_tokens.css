@@ -10,8 +10,20 @@
     --gap-titulo-principal-conteudo: 30px;
     --gap-default-seccoes: 20px;
 
-    /*MARGENS PRINCIPAIS*/
-    --margem-lateral-conteudo: 60px;
+    /* MARGENS PRINCIPAIS DA PÁGINA */
+    --margem-lateral-conteudo: clamp(24px, 3.9vw, 80px);
+        /* 
+        As margens laterais usam clamp() para adaptar o espaço horizontal
+        à largura da viewport. Assim, em ecrãs pequenos ou projetores, a margem
+        reduz automaticamente; em ecrãs maiores, aumenta até um limite máximo,
+        evitando que o conteúdo fique demasiado encostado ou demasiado espalhado.
+
+        As margens verticais mantêm-se fixas porque fazem parte da composição
+        visual da página e não precisam de variar com a largura do ecrã.
+        */
     --margem-superior-conteudo: 30px;
     --margem-inferior-conteudo: 30px;
+
+    /*ALTURAS*/
+    --altura-controlos-1: 44px;
 }

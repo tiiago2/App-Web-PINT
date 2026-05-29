@@ -17,9 +17,10 @@ import HomeConsultor from "./pages/consultor/home_consultor.jsx";
 import HomeTalent from "./pages/talent/home_talent.jsx";
 import HomeAdmin from "./pages/Administrador/home_Admin.jsx";
 import DefinicoesAdmin from "./pages/Administrador/definicoes_Admin.jsx";
+import EditarAdmin from "./pages/Administrador/editar_Admin.jsx";
 import Galeria from "./pages/talent/Galeria.jsx";
 import GaleriaConsultor from "./pages/consultor/GaleriaConsultor.jsx";
-import PerfilPessoal from "./pages/talent/Perfil.jsx"
+import PerfilPessoal from "./pages/talent/Perfil.jsx";
 //imagens
 import softinsa_logo from "./assets/logotipo_softinsa.png";
 import user_logo from "./assets/utilizador.png";
@@ -31,7 +32,7 @@ function App() {
     //-------------trocar para base dados
     id: 1,
     nome: "Gonçalo",
-    cargo: "consultor",
+    cargo: "admin", // pode ser "consultor", "talent", "service" ou "admin"
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10"),
   });
@@ -193,20 +194,11 @@ function App() {
             element={<HomeConsultor user={user} saudacao={Saudacao()} />}
           />
 
-          <Route
-            path="/galeria"
-            element={<GaleriaConsultor />}
-          />
+          <Route path="/galeria" element={<GaleriaConsultor />} />
 
-          <Route
-            path="/"
-            element={<Navigate to="/home" replace />}
-          />
+          <Route path="/" element={<Navigate to="/home" replace />} />
 
-          <Route
-            path="*"
-            element={<Navigate to="/home" replace />}
-          />
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       );
     } else if (user.cargo === "talent") {
@@ -240,6 +232,7 @@ function App() {
           {/*<Route path="/candidaturas" element={} />*/}
           <Route path="/galeria" element={<Galeria />} />
           <Route path="/definicoes" element={<DefinicoesAdmin />} />
+          <Route path="/editar" element={<EditarAdmin />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
@@ -372,7 +365,7 @@ function App() {
           <img
             id="user_image"
             className="mx-3 rounded-2"
-            src={user_logo}//alterar imagem de perfil----------------------------------------------------
+            src={user_logo} //alterar imagem de perfil----------------------------------------------------
             width="30"
             height="30"
             alt="Utilizador"

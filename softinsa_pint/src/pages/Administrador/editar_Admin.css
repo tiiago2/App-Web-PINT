@@ -1,0 +1,255 @@
+.editar-container {
+    padding: 2rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    background-color: var(--fundo);
+}
+
+.editar-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--fontes);
+    margin-bottom: 1.5rem;
+}
+
+.editar-tabs-container {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 2rem;
+}
+
+.editar-tab-btn {
+    background: none;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #6c757d;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease-in-out;
+}
+
+.editar-tab-btn:hover {
+    color: var(--barra_lateral);
+}
+
+.editar-tab-btn.active {
+    color: var(--barra_lateral);
+}
+
+.editar-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--barra_lateral);
+    border-radius: 3px 3px 0 0;
+}
+
+.table-wrapper {
+    background-color: white;
+    border-radius: 1rem;
+    border: 2px solid #dee2e6;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 50vh; 
+}
+
+.table-scrollable {
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+/* Custom scrollbar para a tabela interna */
+.table-scrollable::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-scrollable::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+    border-radius: 4px;
+}
+
+.table-scrollable::-webkit-scrollbar-thumb {
+    background: #c1c1c1; 
+    border-radius: 4px;
+}
+
+.table-scrollable::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8; 
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    color: var(--fontes);
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+    z-index: 1;
+    padding: 1rem;
+    white-space: nowrap;
+}
+
+.table td {
+    padding: 1rem;
+    vertical-align: middle;
+    color: #495057;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    color: #6c757d;
+    transition: color 0.2s;
+    font-size: 1.1rem;
+    padding: 0.2rem;
+}
+
+.action-btn:hover {
+    color: var(--barra_lateral);
+}
+
+/* View Toggle (Galeria/Tabela) */
+.view-toggle-container {
+    display: inline-flex;
+    background-color: white;
+    border: 1px solid var(--contorno);
+    border-radius: 20px;
+    padding: 0.25rem;
+    margin-left: 2rem;
+}
+
+.view-toggle-btn {
+    background: transparent;
+    border: none;
+    padding: 0.4rem 1.5rem;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.view-toggle-btn.active {
+    background-color: var(--barra_lateral);
+    color: white;
+}
+
+/* Gallery Grid */
+.badge-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 2rem;
+    padding: 1rem 0 2rem 0;
+    justify-items: center;
+}
+
+.badge-item-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 120px;
+}
+
+.badge-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s;
+    color: white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.badge-circle:hover {
+    transform: translateY(-5px);
+}
+
+.badge-circle.create-badge {
+    background-color: #e9ecef;
+    color: #6c757d;
+    box-shadow: none;
+    border: 2px dashed #ced4da;
+}
+
+.badge-delete-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #dc3545;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    border: 2px solid white;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.badge-circle:hover .badge-delete-btn {
+    opacity: 1;
+}
+
+.badge-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--fontes);
+    margin-bottom: 0.1rem;
+    line-height: 1.2;
+}
+
+.badge-category {
+    font-size: 0.8rem;
+    color: #6c757d;
+    line-height: 1.2;
+}
+
+.ver-mais-badges-btn {
+    background-color: var(--barra_lateral);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    display: block;
+    margin: 1rem auto 2rem auto;
+    transition: opacity 0.2s;
+}
+
+.ver-mais-badges-btn:hover {
+    opacity: 0.9;
+}

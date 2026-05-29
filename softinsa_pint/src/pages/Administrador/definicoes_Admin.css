@@ -1,5 +1,5 @@
 .definicoes-container {
-  padding: 2rem;
+  padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo);
   background-color: var(--fundo);
   height: 100%;
   overflow-y: auto;
@@ -8,12 +8,6 @@
 .form-switch .form-check-input:checked {
   background-color: var(--barra_lateral);
   border-color: var(--barra_lateral);
-}
-
-.definicoes-title {
-  color: var(--fontes);
-  font-weight: 700;
-  margin-bottom: 1.5rem;
 }
 
 .tabs-container {
@@ -108,90 +102,4 @@
 .btn-editar:hover {
   background-color: var(--selecao);
   border-color: var(--contorno);
-}
-
-/* ── Custom Dropdown ──────────────────────────────────────────── */
-
-.def-dropdown-wrap {
-  position: relative;
-  max-width: 300px;
-}
-
-.def-filtro-btn {
-  border: 1px solid var(--outline, #cad5e2);
-  border-radius: 10px;
-  background: transparent;
-  color: var(--fontes, #374957);
-  font-size: 0.85rem;
-  padding: 8px 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
-  width: 100%;
-}
-
-.def-filtro-btn:hover {
-  background: #f0f4f8;
-}
-
-.def-filtro-btn.active {
-  background-color: #f0f4f8;
-  border-color: #39639c;
-}
-
-.def-dropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  background: #ffffff;
-  border: 1px solid #cad5e2;
-  border-radius: 12px;
-  width: 100%;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  padding: 8px 0;
-  animation: defFadeIn 0.12s ease;
-}
-
-@keyframes defFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.def-dropdown-header {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #374957;
-  padding: 4px 14px 8px;
-  border-bottom: 1px solid #e9ecef;
-  margin-bottom: 4px;
-  letter-spacing: 0.02em;
-}
-
-.def-dropdown-item {
-  padding: 8px 14px;
-  font-size: 0.85rem;
-  color: #374957;
-  cursor: pointer;
-  transition: background 0.12s;
-}
-
-.def-dropdown-item:hover {
-  background-color: #f0f4f8;
-}
-
-.def-dropdown-item.selected {
-  color: #39639c;
-  font-weight: 600;
-  background-color: #eef4ff;
 }

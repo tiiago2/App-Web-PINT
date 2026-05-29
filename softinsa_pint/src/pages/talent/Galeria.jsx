@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import BarraPesquisa from "../../components/ui/BarraPesquisa/BarraPesquisa";
+import BotaoDropdown from "../../components/ui/BotaoDropdown/BotaoDropdown";
+import './Galeria.css';
 
 function Galeria() {
   // Estados
@@ -64,11 +67,11 @@ function Galeria() {
   const totalPaginas = Math.ceil(badgesFiltrados.length / itensPorPagina);
 
   return (
-    <div className="p-4" style={{ backgroundColor: "var(--fundo)", minHeight: "100%" }}>      
+    <div className="galeria-container w-100">      
       {/* 1. Cabeçalho: Título e Botões */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="d-flex align-items-center gap-4">
-          <h2 className="m-0 fw-bold" style={{ color: "var(--fontes)" }}>Galeria</h2>
+          <h1 className="texto-titulo-principal m-0">Galeria</h1>
           
           <div className="btn-group shadow-sm" role="group">
             <button 
@@ -190,80 +193,43 @@ function Galeria() {
 
 
       {/* 2. Barra de Pesquisa e Filtros */}
-      <div className="d-flex gap-3 mb-4">
-        <div className="input-group flex-grow-1 shadow-sm rounded">
-          <span className="input-group-text border-end-0" style={{ backgroundColor: "var(--fundo)", borderColor: "var(--contorno)", color: "var(--fontes)" }}>
-            <i className="fi fi-br-search"></i>
-          </span>
-          <input 
-            type="text" 
-            className="form-control border-start-0" 
+      <div className="d-flex flex-column flex-xl-row gap-3 mb-4">
+        <div className="flex-grow-1">
+          <BarraPesquisa 
+            valor={termoPesquisa} 
+            onChange={setTermoPesquisa} 
             placeholder="Pesquisar Badge..." 
-            style={{ backgroundColor: "var(--fundo)", borderColor: "var(--contorno)", color: "var(--fontes)", boxShadow: "none" }}
-            value={termoPesquisa}
-            onChange={(e) => setTermoPesquisa(e.target.value)} 
-          />          
-          <select 
-            className="form-select border-start-0" 
-            style={{ maxWidth: "200px", backgroundColor: "var(--fundo)", borderColor: "var(--contorno)", color: "var(--fontes)", boxShadow: "none" }}
-            value={ordenacao}
-            onChange={(e) => setOrdenacao(e.target.value)}
-          >
-            <option value="recentes">Mais recentes</option>
-            <option value="antigos">Mais antigos</option>
-            <option value="az">A-Z</option> {/* <-- NOVA OPÇÃO AQUI */}
-          </select>
+          />
+        </div>
+        
+        <div style={{ minWidth: '180px' }}>
+          <BotaoDropdown 
+            titulo="Ordenar por"
+            valor={ordenacao}
+            opcoes={[
+              { valor: 'recentes', label: 'Mais recentes' },
+              { valor: 'antigos', label: 'Mais antigos' },
+              { valor: 'az', label: 'A-Z' }
+            ]}
+            onChange={setOrdenacao}
+          />
         </div>
 
-        {/* --- BOTÃO E MENU DROPDOWN DE FILTROS --- */}
-        <div className="position-relative">
-          <button 
-            className="btn px-4 d-flex align-items-center gap-2 shadow-sm h-100" 
-            style={{ backgroundColor: "var(--barra_lateral)", color: "var(--fundo)" }}
-            onClick={() => setMostrarFiltros(!mostrarFiltros)}
-          >
-            <i className="fi fi-br-filter"></i> Filtrar
-          </button>
-
-          {/* O Pop-up do Design */}
-          {mostrarFiltros && (
-            <div 
-              className="position-absolute shadow-sm rounded-4 p-3 mt-2" 
-              style={{ 
-                top: "100%", 
-                right: 0, 
-                width: "220px", 
-                backgroundColor: "var(--fundo)",
-                border: "1px solid var(--contorno)",
-                zIndex: 1000 
-              }}
-            >
-              <h6 className="mb-2 fs-6" style={{ color: "var(--fontes)" }}>Filtrar por:</h6>
-              <hr className="mt-0 mb-3" style={{ borderColor: "var(--contorno)", opacity: 0.5 }} />
-              
-              {/* Opções de Filtro */}
-              <div className="d-flex flex-column gap-3">
-                <span className="text-decoration-none m-0" style={{ color: "red", cursor: "pointer", fontSize: "1.1rem" }}>
-                  Esta merda é bue inconveniente
-                </span>
-                <span className="text-decoration-none m-0" style={{ color: "red", cursor: "pointer", fontSize: "1.1rem" }}>
-                  Temos de arranjar uma alternativa
-                </span>
-                <span className="text-decoration-none m-0" style={{ color: "var(--fontes)", cursor: "pointer", fontSize: "1.1rem" }}>
-                  Área
-                </span>
-                <span className="text-decoration-none m-0" style={{ color: "var(--fontes)", cursor: "pointer", fontSize: "1.1rem" }}>
-                  Service Line
-                </span>
-                <span className="text-decoration-none m-0" style={{ color: "var(--fontes)", cursor: "pointer", fontSize: "1.1rem" }}>
-                  Learning Path
-                </span>
-                <span className="text-decoration-none m-0" style={{ color: "var(--fontes)", cursor: "pointer", fontSize: "1.1rem" }}>
-                  Data
-                </span>
-              </div>
-            </div>
-          )}
+        <div>
+          <BotaoDropdown
+            titulo="Filtrar"
+            valor=""
+            opcoes={[
+              { valor: "", label: "Todos" },
+              { valor: "area", label: "Área" },
+              { valor: "serviceLine", label: "Service Line" },
+              { valor: "learningPath", label: "Learning Path" },
+            ]}
+            onChange={() => {}}
+            icone="fi fi-br-filter"
+            mostrarValor={false}
+            mostrarSeta={false}
+          />
         </div>
       </div>
 

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TabsAdmin } from '../../components/ui/TabsAdmin';
+import BarraPesquisa from '../../components/ui/BarraPesquisa/BarraPesquisa';
+import BotaoDropdown from '../../components/ui/BotaoDropdown/BotaoDropdown';
 import './editar_Admin.css';
 
 function EditarAdmin() {
@@ -8,6 +10,9 @@ function EditarAdmin() {
   const [abaAtiva, setAbaAtiva] = useState('badges');
   const [viewMode, setViewMode] = useState('galeria'); // 'galeria' ou 'tabela'
   const [searchTerm, setSearchTerm] = useState('');
+  const [ordenacao, setOrdenacao] = useState('recentes');
+  const [filtro, setFiltro] = useState('');
+  const [visibleBadgesCount, setVisibleBadgesCount] = useState(15);
 
   const abasEditar = [
     { id: 'badges', label: 'Badges' },
@@ -43,6 +48,12 @@ function EditarAdmin() {
     { id: 9, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#df7983', icon: 'fi-br-trophy' },
     { id: 10, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#a0e4b8', icon: 'fi-br-database' },
     { id: 11, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#aec87e', icon: 'fi-br-microchip' },
+    { id: 12, nome: 'React Native', categoria: 'Mobile', cor: '#61dafb', icon: 'fi-br-smartphone' },
+    { id: 13, nome: 'Angular Pro', categoria: 'Web UI', cor: '#dd0031', icon: 'fi-br-browser' },
+    { id: 14, nome: 'CyberSec', categoria: 'Security', cor: '#4a4e69', icon: 'fi-br-shield-check' },
+    { id: 15, nome: 'DevOps Master', categoria: 'Infrastructure', cor: '#f4a261', icon: 'fi-br-server' },
+    { id: 16, nome: 'UI/UX Design', categoria: 'Design', cor: '#e76f51', icon: 'fi-br-palette' },
+    { id: 17, nome: 'Python AI', categoria: 'Data Science', cor: '#2a9d8f', icon: 'fi-br-chart-histogram' },
   ];
 
   // Métricas mock
@@ -52,26 +63,50 @@ function EditarAdmin() {
     totalAreas: 4
   };
 
+  const opcoesOrdenacao = [
+    { valor: "recentes", label: "Mais recentes" },
+    { valor: "antigos", label: "Mais antigos" },
+    { valor: "az", label: "A-Z" },
+    { valor: "za", label: "Z-A" },
+  ];
+
+  const opcoesFiltro = [
+    { valor: "", label: "Todos" },
+    { valor: "learningPath", label: "Learning Path" },
+    { valor: "serviceLine", label: "Service Line" },
+    { valor: "area", label: "Área" },
+  ];
+
   const renderFiltros = () => (
-    <div className="d-flex gap-3 mb-4">
-      <div className="input-group flex-grow-1 shadow-sm border rounded-pill overflow-hidden bg-white">
-        <span className="input-group-text bg-white border-0 ps-3">
-          <i className="fi fi-br-search text-muted"></i>
-        </span>
-        <input 
-          type="text" 
-          className="form-control border-0 shadow-none bg-white" 
+    <div className="d-flex flex-column flex-xl-row align-items-stretch gap-3 mb-4">
+      <div className="flex-grow-1">
+        <BarraPesquisa
+          valor={searchTerm}
+          onChange={setSearchTerm}
           placeholder={`Pesquisar ${abaAtiva.replace('_', ' ')}...`}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <span className="input-group-text bg-white border-0 pe-3 text-muted" style={{fontSize: '0.85rem', cursor: 'pointer'}}>
-          Mais recentes <i className="fi fi-br-angle-down ms-1"></i>
-        </span>
       </div>
-      <button className="btn rounded-pill px-4 text-white shadow-sm d-flex align-items-center gap-2" style={{ backgroundColor: 'var(--barra_lateral)' }}>
-        <i className="fi fi-br-filter"></i> Filtrar
-      </button>
+
+      <div style={{ minWidth: '180px' }}>
+        <BotaoDropdown
+          titulo="Ordenar por"
+          valor={ordenacao}
+          opcoes={opcoesOrdenacao}
+          onChange={setOrdenacao}
+        />
+      </div>
+
+      <div>
+        <BotaoDropdown
+          titulo="Filtrar"
+          valor={filtro}
+          opcoes={opcoesFiltro}
+          onChange={setFiltro}
+          icone="fi fi-br-filter"
+          mostrarValor={false}
+          mostrarSeta={false}
+        />
+      </div>
     </div>
   );
 
@@ -157,7 +192,7 @@ function EditarAdmin() {
                     <td>{lp.area}</td>
                     <td>
                       <button className="action-btn me-2" title="Editar"><i className="fi fi-br-edit"></i></button>
-                      <button className="action-btn" title="Eliminar"><i className="fi fi-br-trash"></i></button>
+                      <button className="action-btn action-btn-danger" title="Eliminar"><i className="fi fi-br-trash"></i></button>
                     </td>
                   </tr>
                 )) : (
@@ -175,6 +210,8 @@ function EditarAdmin() {
 
   const renderGaleria = () => {
     const filtrados = mockBadges.filter(b => b.nome.toLowerCase().includes(searchTerm.toLowerCase()));
+    const batch1 = filtrados.slice(0, 15);
+    const batch2 = visibleBadgesCount > 15 ? filtrados.slice(15) : [];
 
     return (
       <div className="d-flex flex-column" style={{ minHeight: '400px' }}>
@@ -190,8 +227,8 @@ function EditarAdmin() {
             <div className="badge-category">Adicionar novo</div>
           </div>
 
-          {/* Lista de Badges */}
-          {filtrados.map(badge => (
+          {/* Lista de Badges - Primeiro Lote (Até 15) */}
+          {batch1.map(badge => (
             <div key={badge.id} className="badge-item-wrapper">
               <div className="badge-circle" style={{ backgroundColor: badge.cor }}>
                 <i className={`fi ${badge.icon}`}></i>
@@ -205,8 +242,31 @@ function EditarAdmin() {
           ))}
         </div>
 
-        {filtrados.length > 0 && (
-          <button className="ver-mais-badges-btn">Ver mais Badges</button>
+        {/* Lista de Badges - Segundo Lote (Restantes) */}
+        {batch2.length > 0 && (
+          <div className="badge-gallery-grid" style={{ paddingTop: '0' }}>
+            {batch2.map(badge => (
+              <div key={badge.id} className="badge-item-wrapper">
+                <div className="badge-circle" style={{ backgroundColor: badge.cor }}>
+                  <i className={`fi ${badge.icon}`}></i>
+                  <div className="badge-delete-btn" title="Eliminar Badge">
+                    <i className="fi fi-br-trash"></i>
+                  </div>
+                </div>
+                <div className="badge-name">{badge.nome}</div>
+                <div className="badge-category">{badge.categoria}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {filtrados.length > visibleBadgesCount && (
+          <button 
+            className="ver-mais-badges-btn"
+            onClick={() => setVisibleBadgesCount(filtrados.length)}
+          >
+            Ver mais Badges
+          </button>
         )}
       </div>
     );
@@ -214,7 +274,7 @@ function EditarAdmin() {
 
   return (
     <div className="editar-container w-100">
-      <h1 className="editar-title d-flex align-items-center">
+      <h1 className="texto-titulo-principal d-flex align-items-center mb-4">
         Editar {getNomeAba()}{abaAtiva !== 'areas' ? 's' : ''}
         
         {abaAtiva === 'badges' && (

@@ -33,7 +33,7 @@ function App() {
     //-------------trocar para base dados
     id: 1,
     nome: "Utilizador",
-    cargo: "talent",
+    cargo: "admin",
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10"),
   });
@@ -233,6 +233,7 @@ function App() {
           />
           {/*<Route path="/candidaturas" element={} />*/}
           <Route path="/galeria" element={<Galeria />} />
+          <Route path="/editar" element={<EditarAdmin />} />
           <Route path="/definicoes" element={<DefinicoesAdmin />} />
           <Route path="/atividade" element={<Atividade />} />
           <Route path="/" element={<Navigate to="/home" replace />} />

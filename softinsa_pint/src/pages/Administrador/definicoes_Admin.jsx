@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TabsAdmin } from "../../components/ui/TabsAdmin";
+import BotaoDropdown from "../../components/ui/BotaoDropdown/BotaoDropdown";
 import "./definicoes_Admin.css";
 
 function DefinicoesAdmin() {
@@ -161,7 +162,7 @@ function DefinicoesAdmin() {
 
   return (
     <div className="definicoes-container w-100">
-      <h1 className="definicoes-title">{t("definicoes")}</h1>
+      <h1 className="texto-titulo-principal mb-4">{t("definicoes")}</h1>
 
       {/* Navegação de Abas */}
       <TabsAdmin 
@@ -177,44 +178,17 @@ function DefinicoesAdmin() {
             <h3 className="section-title">{t("niveis_permissoes")}</h3>
             <p className="section-subtitle">{t("gerir_roles")}</p>
 
-            <div className="mt-4 def-dropdown-wrap" ref={dropdownRef}>
+            <div className="mt-4">
               <label className="form-label fw-medium mb-2">
                 Selecionar Tipo de Utilizador
               </label>
-              <div>
-                <button
-                  className={`def-filtro-btn ${dropdownAberto ? "active" : ""}`}
-                  onClick={() => setDropdownAberto((o) => !o)}
-                  style={{ minWidth: "200px", justifyContent: "space-between" }}
-                >
-                  {roleSelecionada
-                    ? t(roleSelecionada)
-                    : "-- Selecione uma opção --"}
-                  <i
-                    className="fi fi-br-angle-small-down"
-                    style={{ fontSize: "0.9rem" }}
-                  ></i>
-                </button>
-
-                {dropdownAberto && (
-                  <div className="def-dropdown mt-1">
-                    <div className="def-dropdown-header">
-                      Tipos de Utilizador
-                    </div>
-                    {roles.map((op) => (
-                      <div
-                        key={op}
-                        className={`def-dropdown-item ${roleSelecionada === op ? "selected" : ""}`}
-                        onClick={() => {
-                          setRoleSelecionada(op);
-                          setDropdownAberto(false);
-                        }}
-                      >
-                        {t(op)}
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div style={{ maxWidth: "300px" }}>
+                <BotaoDropdown
+                  titulo="Selecione uma opção"
+                  valor={roleSelecionada}
+                  opcoes={roles.map((op) => ({ valor: op, label: t(op) }))}
+                  onChange={setRoleSelecionada}
+                />
               </div>
             </div>
 

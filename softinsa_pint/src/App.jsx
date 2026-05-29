@@ -21,6 +21,7 @@ import EditarAdmin from "./pages/Administrador/editar_Admin.jsx";
 import Galeria from "./pages/talent/Galeria.jsx";
 import GaleriaConsultor from "./pages/consultor/GaleriaConsultor.jsx";
 import PerfilPessoal from "./pages/talent/Perfil.jsx";
+import Atividade from "./pages/atividade/Atividade.jsx";
 //imagens
 import softinsa_logo from "./assets/logotipo_softinsa.png";
 import user_logo from "./assets/utilizador.png";
@@ -31,8 +32,8 @@ function App() {
   const [user, setUser] = useState({
     //-------------trocar para base dados
     id: 1,
-    nome: "Gonçalo",
-    cargo: "admin", // pode ser "consultor", "talent", "service" ou "admin"
+    nome: "Utilizador",
+    cargo: "talent",
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10"),
   });
@@ -210,6 +211,7 @@ function App() {
           />
           <Route path="/galeria" element={<Galeria />} />
           <Route path="/perfil/:id" element={<PerfilPessoal />} />
+          <Route path="/atividade" element={<Atividade />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
@@ -232,7 +234,7 @@ function App() {
           {/*<Route path="/candidaturas" element={} />*/}
           <Route path="/galeria" element={<Galeria />} />
           <Route path="/definicoes" element={<DefinicoesAdmin />} />
-          <Route path="/editar" element={<EditarAdmin />} />
+          <Route path="/atividade" element={<Atividade />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>

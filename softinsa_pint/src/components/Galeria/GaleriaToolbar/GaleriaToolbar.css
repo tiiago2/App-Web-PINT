@@ -1,0 +1,28 @@
+.galeria-toolbar {
+    width: 100%;
+}
+
+.galeria-toolbar-pesquisa {
+    flex: 1;
+    min-width: 0;
+}
+
+.galeria-toolbar-acao--ordenar {
+    width: 300px;
+}
+
+.galeria-toolbar-acao--filtrar {
+    width: 220px;
+}
+
+@media (max-width: 1199.98px) {
+    .galeria-toolbar {
+        align-items: flex-start !important;
+    }
+
+    .galeria-toolbar-pesquisa,
+    .galeria-toolbar-acao {
+        width: 450px;
+        max-width: 100%;
+    }
+}

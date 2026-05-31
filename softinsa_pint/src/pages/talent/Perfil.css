@@ -1,198 +1,138 @@
-/* Estrutura Principal */
-.main-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px;
+/* Container principal com duas colunas */
+.top-section-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #334155;
   background-color: #ffffff;
 }
 
-/* Cabeçalho da Página */
-.page-header {
+/* Títulos das secções */
+.section-title {
+  font-size: 18px;
+  color: #334155;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
 }
 
-.page-header h1 {
-  font-size: 24px;
-  color: #2b3954;
+.section-title h2 {
+  font-size: inherit;
+  font-weight: inherit;
   margin: 0;
 }
 
-.btn-logout {
-  background-color: #3b629c;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
+/* --- Lado Esquerdo: Informação Pessoal --- */
+.info-column {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column; /* Força o título e o conteúdo a ficarem na vertical */
 }
 
-/* Secção Superior (2 Colunas) */
-.top-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-  margin-bottom: 40px;
-}
-
-.section-title {
-  font-size: 18px;
-  color: #475569;
-  margin-bottom: 20px;
-  margin-top: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* Informação Pessoal */
 .info-content {
   display: flex;
+  flex-direction: row; /* Avatar à esquerda, texto à direita */
   gap: 24px;
   align-items: center;
 }
 
 .avatar-placeholder {
-  width: 120px;
-  height: 120px;
+  width: 130px;
+  height: 130px;
   background-color: #cbd5e1;
-  border-radius: 16px;
+  border-radius: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-shrink: 0; /* Impede que o avatar encolha */
 }
 
 .avatar-placeholder svg {
-  width: 50px;
-  height: 50px;
-  fill: #64748b;
+  width: 60px;
+  height: 60px;
+}
+
+/* Força os parágrafos a empilharem-se na vertical */
+.info-details {
+  display: flex;
+  flex-direction: column; 
+  gap: 14px;
 }
 
 .info-details p {
-  margin-bottom: 12px;
-  margin-top: 0;
+  margin: 0;
   font-size: 15px;
   color: #475569;
+  display: block; /* Garante que ocupam a linha toda */
 }
 
 .info-details p strong {
   color: #334155;
+  font-weight: 600;
 }
 
-/* Assinatura Pessoal */
+/* --- Lado Direito: Assinatura Pessoal --- */
+.signature-column {
+  display: flex;
+  flex-direction: column;
+}
+
 .signature-card {
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 24px;
-  text-align: center;
+  display: flex;
+  flex-direction: column; /* Força texto e badges a ficarem na vertical */
+  align-items: center;
+  justify-content: center;
+  height: 100%; /* Para alinhar com a altura da coluna da esquerda */
 }
 
 .signature-text {
   font-size: 12px;
   color: #475569;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   line-height: 1.6;
+  text-align: center;
 }
 
+/* Os Badges ficam lado a lado (horizontal) */
 .badges-row {
   display: flex;
+  flex-direction: row; 
   justify-content: center;
   gap: 16px;
+  flex-wrap: wrap; /* Permite que quebrem de linha se o ecrã for muito pequeno */
 }
 
-/* Círculos de Ícones (Badges) */
+/* Estilos dos Badges */
 .icon-circle {
-  width: 64px;
-  height: 64px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.icon-circle svg { width: 24px; height: 24px; }
+.icon-circle svg {
+  width: 28px;
+  height: 28px;
+}
 
-/* Cores dos Badges */
+/* Cores de fundo dos Badges */
 .bg-green { background-color: #b8dc8e; }
 .bg-yellow { background-color: #eed27b; }
 .bg-red { background-color: #df8385; }
 .bg-blue { background-color: #7da7eb; }
-.bg-purple { background-color: #c0c9f3; }
-.bg-teal { background-color: #a7e3bc; }
-.bg-lightblue { background-color: #cde0f1; }
 
-.bg-green svg { fill: #4d7c0f; }
-.bg-yellow svg { fill: #a16207; }
-.bg-red svg { fill: #b91c1c; }
-.bg-blue svg { fill: #1d4ed8; }
-.bg-purple svg { fill: #4338ca; stroke: #4338ca; }
-.bg-teal svg { fill: #047857; stroke: #047857; }
-.bg-lightblue svg { fill: #0369a1; stroke: #0369a1; }
-
-/* Badges Pessoais (Secção Inferior) */
-.badges-section {
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 24px;
-}
-
-.badges-carousel {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 0;
-  overflow-x: auto;
-}
-
-.badge-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  min-width: 100px;
-}
-
-.badge-item .icon-circle {
-  width: 100px;
-  height: 100px;
-}
-
-.badge-item span {
-  font-size: 14px;
-  color: #334155;
-  font-weight: 500;
-}
-
-/* Scrollbar Visual */
-.custom-scrollbar-track {
-  height: 12px;
-  background-color: #f1f5f9;
-  border-radius: 6px;
-  margin-top: 20px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 0 4px;
-}
-
-.custom-scrollbar-thumb {
-  height: 8px;
-  width: 40px;
-  background-color: #cbd5e1;
-  border-radius: 4px;
-  margin-left: 20px;
-}
-
-.scroll-arrow {
-  font-size: 10px;
-  color: #94a3b8;
-  cursor: pointer;
+/* Ajuste em ecrãs menores */
+@media (max-width: 900px) {
+  .top-section-container {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
 }

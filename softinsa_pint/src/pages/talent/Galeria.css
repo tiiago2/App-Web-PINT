@@ -1,0 +1,7 @@
+.galeria-container {
+    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo);
+    background-color: var(--fundo);
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}

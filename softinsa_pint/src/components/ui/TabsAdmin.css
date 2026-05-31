@@ -1,0 +1,28 @@
+.tabs-admin-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap; /* Para ecrãs mais pequenos */
+}
+
+.tab-admin-btn {
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--contorno);
+  background-color: var(--fundo);
+  color: var(--fontes);
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.tab-admin-btn:hover {
+  background-color: var(--selecao);
+  color: var(--fontes);
+}
+
+.tab-admin-btn.active {
+  background-color: var(--barra_lateral);
+  color: var(--fundo);
+  border-color: var(--barra_lateral);
+}

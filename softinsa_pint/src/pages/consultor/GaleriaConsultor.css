@@ -24,6 +24,20 @@
 .galeria-consultor-conteudo {
     width: 100%;
     padding-top: var(--gap-default-seccoes);
+
     display: flex;
-    gap: var(--gap-default-seccoes);
+    flex-direction: column;
+}
+
+.galeria-consultor-resultados {
+    width: 100%;
+}
+
+.galeria-consultor-resultados.com-toolbar {
+    margin-top: var(--gap-default-seccoes);
+}
+
+.galeria-consultor-seletor {
+    width: 100%;
+    max-width: 450px;
 }

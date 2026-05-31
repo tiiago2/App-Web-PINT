@@ -139,17 +139,13 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
 
   return (
     <div
-      className="p-3 d-flex flex-column gap-2"
-      style={{ height: "100%", overflow: "hidden" }}
+      className="home-admin-container d-flex flex-column gap-2"
     >
       {/* Saudação */}
       <div className="flex-shrink-0 ms-2">
-        <h2
-          className="fw-bold m-0"
-          style={{ fontSize: "clamp(1.5rem, 2.5vw, 2rem)" }}
-        >
+        <h1 className="texto-titulo-principal m-0">
           {saudacao}
-        </h2>
+        </h1>
       </div>
 
       {/* Ações Rápidas */}

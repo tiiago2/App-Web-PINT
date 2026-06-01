@@ -111,5 +111,15 @@
     "ha_horas_plural": "Há {{count}} horas",
     "ha_horas_singular": "Há {{count}} hora",
     "ha_dias_plural": "Há {{count}} dias",
-    "ha_dias_singular": "Há {{count}} dia"
+    "ha_dias_singular": "Há {{count}} dia",
+    "terminar_sessao": "Terminar sessão",
+    "concluir": "Concluir",
+    "perfil_pessoal": "Perfil pessoal",
+    "info_pessoal": "Informação pessoal",
+    "pontos_dots": "Pontos: ",
+    "nome_dots": "Nome: ",
+    "email_dots": "Email: ",
+    "telefone_dots": "telefone: ",
+    "assinatura_pessoal": "Assinatura pessoal",
+    "badges_pessoais": "Badges pessoais"
 }

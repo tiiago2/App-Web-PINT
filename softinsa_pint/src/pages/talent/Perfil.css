@@ -44,6 +44,10 @@
 
 .btn_logout i {
   font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(1.5px); /* Ajuste de precisão para centrar perfeitamente o ícone */
 }
 
 /* Subtítulos de Secções */
@@ -63,6 +67,7 @@
 }
 
 .avatar_wrapper {
+  position: relative; /* Para conter a overlay absoluta */
   width: 160px;
   height: 160px;
   background-color: #DDE4EC;
@@ -70,6 +75,39 @@
   flex-shrink: 0;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
   overflow: hidden; /* Garante que a foto fique contida dentro do contentor */
+}
+
+/* Overlay da Imagem de Perfil (Aparece no Hover) */
+.imagem_overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(57, 99, 156, 0.7) !important; /* Azul translúcido coeso com o tom da Softinsa */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0; /* Invisível por padrão */
+  pointer-events: none; /* Evita bloquear cliques quando invisível */
+  transition: opacity 0.25s ease-in-out !important;
+  cursor: pointer;
+  border-radius: 46px; /* Acompanha o squircle */
+}
+
+.avatar_wrapper:hover .imagem_overlay {
+  opacity: 1 !important; /* Fica visível ao passar o rato */
+  pointer-events: auto;
+}
+
+.imagem_overlay i {
+  font-size: 1.8rem;
+  color: #FFFFFF !important;
+  transition: transform 0.2s ease-in-out !important;
+}
+
+.avatar_wrapper:hover .imagem_overlay i {
+  transform: scale(1.1); /* Micro-animação */
 }
 
 .avatar_icon {
@@ -83,25 +121,58 @@
   object-fit: cover; /* Faz com que a imagem preencha perfeitamente */
 }
 
+.imagem_overlay:hover{
+  
+}
+
+.imagem_overlay{
+  
+}
+
 .info_dados {
   font-size: 0.95rem; /* Reduzido de 1.15rem */
   color: var(--fontes);
   line-height: 1.5;
 }
-
 .info_dado_item {
-  margin-bottom: 6px; /* Reduzido de 8px */
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espaço elegante e controlado */
 }
 
 .info_label {
   font-weight: 500; /* Reduzido de 700 para menos bold */
   color: var(--fontes);
-  margin-right: 6px;
+  margin-right: 2px;
+  white-space: nowrap;
 }
 
 .info_valor {
   font-weight: 400;
   color: var(--fontes);
+}
+
+/* Inputs no Modo de Edição */
+.edit_input {
+  display: inline-block;
+  width: 100%;
+  max-width: 240px;
+  height: 32px; /* Mais compactos verticalmente (mais juntos) */
+  padding: 4px 14px !important;
+  font-size: 0.88rem !important;
+  font-family: 'Inter', sans-serif !important;
+  color: var(--fontes) !important;
+  background-color: #FFFFFF !important;
+  border: 3px solid rgba(202, 213, 226, 0.6) !important; /* Mesma cor e espessura das outras bordas */
+  border-radius: 10px !important; /* Pontas menos redondas e elegantes */
+  outline: none !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+.edit_input:focus {
+  border-color: rgba(202, 213, 226, 1) !important;
+  box-shadow: 0 0 0 3px rgba(202, 213, 226, 0.2) !important;
 }
 
 /* Assinatura Pessoal */
@@ -115,11 +186,15 @@
   color: var(--fontes);
   opacity: 0.8;
   transition: opacity 0.2s, transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(1.5px); /* Ajuste de precisão para centrar perfeitamente o ícone do lápis */
 }
 
 .edit_icon:hover {
   opacity: 1;
-  transform: scale(1.1);
+  transform: translateY(1.5px) scale(1.1); /* Mantém o alinhamento vertical no hover */
 }
 
 .assinatura_card {

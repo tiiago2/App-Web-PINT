@@ -111,5 +111,15 @@
     "ha_horas_plural": "{{count}} hours ago",
     "ha_horas_singular": "{{count}} hour ago",
     "ha_dias_plural": "{{count}} days ago",
-    "ha_dias_singular": "{{count}} day ago"
+    "ha_dias_singular": "{{count}} day ago",
+    "terminar_sessao": "Log out",
+    "concluir": "Done",
+    "perfil_pessoal": "Personal profile",
+    "info_pessoal": "Personal information",
+    "pontos_dots": "Points: ",
+    "nome_dots": "Name: ",
+    "email_dots": "Email: ",
+    "telefone_dots": "Phone: ",
+    "assinatura_pessoal": "Personal signature",
+    "badges_pessoais": "Personal badges"
 }

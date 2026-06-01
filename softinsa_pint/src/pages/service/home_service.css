@@ -1,0 +1,73 @@
+/* Estilos herdados da homepage do consultor (Alinhamento Figma) */
+
+.caixa-branca {
+    background-color: #FFFFFF;
+    border: 2px solid var(--outline);
+    border-radius: 16px;
+}
+
+/* ── Botões Figma ────────────────────────────────────── */
+.btn-ver-mais-figma {
+  border: 1px solid #cad5e2;
+  border-radius: 20px;
+  background: transparent;
+  color: var(--fontes);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 4px 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.btn-ver-mais-figma:hover {
+  background-color: #f0f4f8;
+}
+
+/* ── Estilos das Candidaturas ───────────────── */
+.user_image_candidaturas {
+    min-height: 3vh;
+    max-height: 3vh;
+}
+
+.badge_logo_candidaturas {
+    min-height: 13vh;
+    max-height: 13vh;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease;
+}
+
+.badge_logo_candidaturas:hover {
+    transform: scale(1.03);
+}
+
+/* ── Gráfico de Donut (Candidaturas) ────────────────────── */
+.chart-container-relative {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.donut-center-text {
+    position: absolute;
+    top: 50%;
+    /* 🔒 LOCK nos 45% */
+    left: 45%; 
+    transform: translate(-50%, -50%); /* Centra o bloco de texto no ponto 45% */
+    text-align: center;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    z-index: 5;
+}
+
+#total_meio{
+    font-size: 28px; 
+    fill: var(--fontes);
+}
+
+#total_meio_palavra{
+    font-size: 12px;
+}

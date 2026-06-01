@@ -15,6 +15,7 @@ import "./App.css";
 //paginas
 import HomeConsultor from "./pages/consultor/home_consultor.jsx";
 import HomeTalent from "./pages/talent/home_talent.jsx";
+import HomeService from "./pages/service/home_service.jsx";
 import HomeAdmin from "./pages/Administrador/home_Admin.jsx";
 import DefinicoesAdmin from "./pages/Administrador/definicoes_Admin.jsx";
 import Galeria from "./pages/talent/Galeria.jsx";
@@ -32,7 +33,7 @@ function App() {
     //-------------trocar para base dados
     id: 1,
     nome: "Utilizador",
-    cargo: "talent",
+    cargo: "service",
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10"),
   });
@@ -225,13 +226,19 @@ function App() {
         </Routes>
       );
     } else if (user.cargo === "service") {
-      /*return(
+      return(
         <Routes>
-          <Route path="/" element={} />     
-          <Route path="/candidaturas" element={} />
-          <Route path="/galeria" element={} />
+          <Route
+            path="/home"
+            element={<HomeService user={user} saudacao={Saudacao()} />}
+          />
+          <Route path="/galeria" element={<Galeria />} />
+          <Route path="/perfil/:id" element={<PerfilPessoal />} />
+          <Route path="/atividade" element={<Atividade />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
-      )*/
+      )
     } else if (user.cargo === "admin") {
       return (
         <Routes>

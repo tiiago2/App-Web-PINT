@@ -112,7 +112,7 @@ const ClassificacaoModal = ({ classificacao, onClose }) => {
 };
 
 
-const ClassificacaoGeral = ({ classificacao }) => {
+const ClassificacaoGeral = ({ classificacao, titulo }) => {
     const { t } = useTranslation();
     const [showClassificacao, setShowClassificacao] = useState(false);
 
@@ -121,7 +121,7 @@ const ClassificacaoGeral = ({ classificacao }) => {
     return (
         <div className="border border-2 rounded-4 p-3 d-flex flex-column bg-white" style={{ height: '35vh' }}>
             <div className="d-flex justify-content-between align-items-center mb-2">
-                <h5>{t('classificacao_geral')}</h5>
+                <h5>{titulo || t('classificacao_geral')}</h5>
                 <i className="fi fi-br-expand me-1" style={{ cursor: 'pointer' }} onClick={() => setShowClassificacao(true)}></i>
             </div>
 

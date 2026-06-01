@@ -30,26 +30,7 @@ const dados_grafico_candidaturas = [
     { nome: 'em_analise', quantidade: 25, cor: '#1c8cae' }  
 ];
 
-const classificacao = [
-    { pos: 1, nome: "João Silva", area: "Hybrid Systems", pontos: "374 957", cor: "#FFD700", classe: "ouro" },
-    { pos: 2, nome: "João Silva", area: "Hybrid Systems", pontos: "374 957", cor: "#C0C0C0", classe: "prata" },
-    { pos: 3, nome: "João Silva", area: "Hybrid Systems", pontos: "374 957", cor: "#CD7F32", classe: "bronze" },
-    { pos: 4, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 5, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 6, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 7, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 8, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 9, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" }
-];
 
-// Mocked ranking data specifically for the user's Service Line (e.g., Hybrid Systems)
-const classificacaoServiceLine = [
-    { pos: 1, nome: "João Silva", area: "Hybrid Systems", pontos: "374 957", cor: "#FFD700", classe: "ouro" },
-    { pos: 2, nome: "Afonso Moreira", area: "Hybrid Systems", pontos: "98 120", cor: "#C0C0C0", classe: "prata" },
-    { pos: 3, nome: "Ana Reis", area: "Hybrid Systems", pontos: "35 220", cor: "#CD7F32", classe: "bronze" },
-    { pos: 4, nome: "Carlos Lima", area: "Hybrid Systems", pontos: "12 900" },
-    { pos: 5, nome: "Diana Santos", area: "Hybrid Systems", pontos: "8 450" }
-];
 
 const atividadeRecente = [
     { icone: "fi-br-check", cor: "text-success", texto: "Low code concluído", tempo: "Há 2 horas", expirado: false },
@@ -155,13 +136,15 @@ const HomeService = ({ user, saudacao }) => {
                     </div>
                     <div className="col-12 col-md-4">
                         <div style={{ height: '100%', minHeight: '250px' }}>
-                            <ClassificacaoGeral classificacao={classificacao}/>
+                            <ClassificacaoGeral user={user}/>
                         </div>
                     </div>
                     <div className="col-12 col-md-4">
                         <div style={{ height: '100%', minHeight: '250px' }}>
                             <ClassificacaoGeral 
-                                classificacao={classificacaoServiceLine} 
+                                user={user}
+                                filtroInicial="service_line"
+                                filtroValorInicial="Hybrid Systems"
                                 titulo={t('service_line')}
                             />
                         </div>

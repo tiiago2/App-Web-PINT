@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import './home_consultor.css';
@@ -13,17 +13,7 @@ const badgesEmProgresso = [
     { id: 3, titulo: "Low Code", imagem: badge_logo, progresso: 60 }
 ];
 
-const classificacao = [
-    { pos: 1, nome: "João Silva", area: "Hybrid Systems", pontos: "374 957", cor: "#FFD700", classe: "ouro" },
-    { pos: 2, nome: "João Silva", area: "Hybrid Systems", pontos: "374 957", cor: "#C0C0C0", classe: "prata" },
-    { pos: 3, nome: "João Silva", area: "Hybrid Systems", pontos: "374 957", cor: "#CD7F32", classe: "bronze" },
-    { pos: 4, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 5, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 6, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 7, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 8, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 9, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" }
-];
+
 
 const atividadeRecente = [
     // defs pra meter as cores das notifações bem :verde, amarelo, azul, vermelho e a parte do negrito pra dar url 
@@ -53,7 +43,6 @@ const progressoItems = [
 const HomeConsultor = ({ user, saudacao }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const [showAtividade, setShowAtividade] = useState(false);
 
     return (
         <div className="p-3 p-md-4 d-flex flex-column gap-3">
@@ -85,7 +74,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                     </div>
                 </div>
                 <div className="col-12 col-xl-4">
-                    <ClassificacaoGeral classificacao={classificacao} />
+                    <ClassificacaoGeral user={user} />
                 </div>
             </div>
             <div className="row gy-3 align-items-start">

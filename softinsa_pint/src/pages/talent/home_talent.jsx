@@ -37,18 +37,7 @@ const dados_linhas = [
     { periodo: 'abr', media_badges: 3.5, pontos: 310, atribuicoes: 35 },
 ];
 
-//------------------------------------------------------------------------------------------------------------------------------------
-const classificacao = [
-    { pos: 1, nome: "João Silva", area: "Hybrid Systems", pontos: "374 957", cor: "#FFD700", classe: "ouro" },
-    { pos: 2, nome: "João Silva", area: "Hybrid Systems", pontos: "374 957", cor: "#C0C0C0", classe: "prata" },
-    { pos: 3, nome: "João Silva", area: "Hybrid Systems", pontos: "374 957", cor: "#CD7F32", classe: "bronze" },
-    { pos: 4, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 5, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 6, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 7, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 8, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-    { pos: 9, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" }
-];
+
 
 const atividadeRecente = [
     { icone: "fi-br-check", cor: "text-success", texto: "Low code concluído", tempo: "Há 2 horas", expirado: false },
@@ -138,7 +127,7 @@ const GraficoEstatistica = () => {
 
 const HomeTalent = ({ user, saudacao }) => {
 
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const navigate = useNavigate();
 
     const RenderCandidaturas = () => {
@@ -222,7 +211,7 @@ const HomeTalent = ({ user, saudacao }) => {
                 </div>
                 <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
                     <div style={{ height: '100%', overflow: 'hidden' }}>
-                        <ClassificacaoGeral classificacao={classificacao}/>
+                        <ClassificacaoGeral user={user}/>
                     </div>
                 </div>
                 <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>

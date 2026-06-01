@@ -33,7 +33,7 @@ function App() {
     //-------------trocar para base dados
     id: 1,
     nome: "Utilizador",
-    cargo: "admin",
+    cargo: "talent",
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10"),
   });
@@ -211,7 +211,7 @@ function App() {
           />
           <Route path="/galeria" element={<Galeria />} />
           <Route path="/perfil/:id" element={<PerfilPessoal />} />
-          <Route path="/atividade" element={<Atividade />} />
+          {/*<Route path="/atividade" element={<Atividade />} />*/}
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
@@ -235,7 +235,7 @@ function App() {
           <Route path="/galeria" element={<Galeria />} />
           <Route path="/editar" element={<EditarAdmin />} />
           <Route path="/definicoes" element={<DefinicoesAdmin />} />
-          <Route path="/atividade" element={<Atividade />} />
+          {/*<Route path="/atividade" element={<Atividade />} />*/}
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>

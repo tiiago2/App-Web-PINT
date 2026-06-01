@@ -1,198 +1,218 @@
-/* Estrutura Principal */
-.main-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #334155;
-  background-color: #ffffff;
+/* Estilos Gerais da Página de Perfil */
+.container_perfil {
+  margin-left: var(--margem-lateral-conteudo);
+  margin-right: var(--margem-lateral-conteudo);
+  margin-top: var(--margem-superior-conteudo);
+  margin-bottom: var(--margem-inferior-conteudo);
+  padding: 0;
+  min-height: 100%;
+  background: var(--fundo);
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
-/* Cabeçalho da Página */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
+/* Cabeçalho */
+.header_perfil {
+  border-bottom: 1.6px solid transparent;
 }
 
-.page-header h1 {
-  font-size: 24px;
-  color: #2b3954;
+.titulo_perfil {
+  font-family: 'Inter', 'Outfit', sans-serif;
+  font-size: clamp(1.4rem, 3.5vw, 1.8rem); /* Reduzido de 2.2rem */
+  font-weight: 700;
+  color: var(--fontes);
   margin: 0;
 }
 
-.btn-logout {
-  background-color: #3b629c;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+/* Botão de Terminar Sessão */
+.btn_logout {
+  background-color: var(--barra_lateral) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: var(--border-radius-pequeno) !important;
+  font-weight: 500;
+  font-size: 0.85rem; /* Reduzido de 0.95rem */
+  padding: 6px 14px !important; /* Reduzido */
+  transition: all 0.2s ease-in-out !important;
 }
 
-/* Secção Superior (2 Colunas) */
-.top-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-  margin-bottom: 40px;
+.btn_logout:hover {
+  background-color: #2b4b79 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08) !important;
 }
 
-.section-title {
-  font-size: 18px;
-  color: #475569;
-  margin-bottom: 20px;
-  margin-top: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.btn_logout i {
+  font-size: 1rem;
 }
+
+/* Subtítulos de Secções */
+.subtitulo_perfil {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(1.05rem, 2.2vw, 1.25rem); /* Reduzido de 1.45rem */
+  font-weight: 500; /* Reduzido de 600 para menos bold */
+  color: var(--fontes);
+}
+
+/* --- SECÇÃO SUPERIOR --- */
 
 /* Informação Pessoal */
-.info-content {
-  display: flex;
-  gap: 24px;
-  align-items: center;
+.info_pessoal_wrapper {
+  background: transparent;
+  min-height: 140px; /* Reduzido de 180px */
 }
 
-.avatar-placeholder {
-  width: 120px;
-  height: 120px;
-  background-color: #cbd5e1;
-  border-radius: 16px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.avatar_wrapper {
+  width: 160px;
+  height: 160px;
+  background-color: #DDE4EC;
+  border-radius: 46px; /* Mais arredondado */
+  flex-shrink: 0;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  overflow: hidden; /* Garante que a foto fique contida dentro do contentor */
 }
 
-.avatar-placeholder svg {
-  width: 50px;
-  height: 50px;
-  fill: #64748b;
+.avatar_icon {
+  font-size: 3.6rem;
+  color: #6C8297;
 }
 
-.info-details p {
-  margin-bottom: 12px;
-  margin-top: 0;
-  font-size: 15px;
-  color: #475569;
+.avatar_img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Faz com que a imagem preencha perfeitamente */
 }
 
-.info-details p strong {
-  color: #334155;
+.info_dados {
+  font-size: 0.95rem; /* Reduzido de 1.15rem */
+  color: var(--fontes);
+  line-height: 1.5;
+}
+
+.info_dado_item {
+  margin-bottom: 6px; /* Reduzido de 8px */
+}
+
+.info_label {
+  font-weight: 500; /* Reduzido de 700 para menos bold */
+  color: var(--fontes);
+  margin-right: 6px;
+}
+
+.info_valor {
+  font-weight: 400;
+  color: var(--fontes);
 }
 
 /* Assinatura Pessoal */
-.signature-card {
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 24px;
-  text-align: center;
+.btn_edit_assinatura {
+  cursor: pointer;
+  outline: none;
 }
 
-.signature-text {
-  font-size: 12px;
-  color: #475569;
-  margin-bottom: 20px;
-  line-height: 1.6;
+.edit_icon {
+  font-size: 1.1rem; /* Reduzido de 1.25rem */
+  color: var(--fontes);
+  opacity: 0.8;
+  transition: opacity 0.2s, transform 0.2s;
 }
 
-.badges-row {
+.edit_icon:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.assinatura_card {
+  background-color: #FFFFFF;
+  border: 3px solid rgba(202, 213, 226, 0.6);
+  border-radius: var(--border-radius-grande);
+  min-height: 140px; /* Reduzido de 180px */
   display: flex;
-  justify-content: center;
-  gap: 16px;
-}
-
-/* Círculos de Ícones (Badges) */
-.icon-circle {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 24px 8px; /* Restaurado para margem lateral reduzida */
 }
 
-.icon-circle svg { width: 24px; height: 24px; }
-
-/* Cores dos Badges */
-.bg-green { background-color: #b8dc8e; }
-.bg-yellow { background-color: #eed27b; }
-.bg-red { background-color: #df8385; }
-.bg-blue { background-color: #7da7eb; }
-.bg-purple { background-color: #c0c9f3; }
-.bg-teal { background-color: #a7e3bc; }
-.bg-lightblue { background-color: #cde0f1; }
-
-.bg-green svg { fill: #4d7c0f; }
-.bg-yellow svg { fill: #a16207; }
-.bg-red svg { fill: #b91c1c; }
-.bg-blue svg { fill: #1d4ed8; }
-.bg-purple svg { fill: #4338ca; stroke: #4338ca; }
-.bg-teal svg { fill: #047857; stroke: #047857; }
-.bg-lightblue svg { fill: #0369a1; stroke: #0369a1; }
-
-/* Badges Pessoais (Secção Inferior) */
-.badges-section {
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 24px;
+.assinatura_nome {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem; /* Reduzido de 1.05rem */
+  font-weight: 500;
+  color: var(--fontes);
 }
 
-.badges-carousel {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 0;
-  overflow-x: auto;
+.assinatura_contacto {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem; /* Reduzido de 0.9rem */
+  color: var(--fontes);
+  opacity: 0.8;
 }
 
-.badge-item {
+/* Círculos da Assinatura */
+.assinatura_badges {
+  margin-top: 15px; /* Aumentado para dar mais margem e respiro */
+}
+
+.assinatura_badge {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  min-width: 100px;
+  justify-content: center;
 }
 
-.badge-item .icon-circle {
-  width: 100px;
-  height: 100px;
+.assinatura_badge img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
 }
 
-.badge-item span {
-  font-size: 14px;
-  color: #334155;
+.assinatura_badge span {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  color: var(--fontes);
   font-weight: 500;
+  margin-top: 4px;
 }
 
-/* Scrollbar Visual */
-.custom-scrollbar-track {
-  height: 12px;
-  background-color: #f1f5f9;
-  border-radius: 6px;
-  margin-top: 20px;
-  position: relative;
+/* --- SECÇÃO INFERIOR: BADGES PESSOAIS --- */
+.badges_container_full {
+  background-color: #FFFFFF;
+  border: 3px solid rgba(202, 213, 226, 0.6);
+  border-radius: var(--border-radius-grande);
+  padding: 16px 24px 0px 24px; /* Removido o padding inferior para colar a barra de scroll à borda */
+}
+
+.badges_scroll_box {
+  width: 100%;
+}
+
+.badges_scroll_container {
   display: flex;
+  overflow-x: auto;
+  scrollbar-width: auto;
+  padding-bottom: 12px; /* Margem perfeita e sutil entre a informação dos badges e a barra de rolagem */
+}
+
+.badge_item {
+  min-width: 110px;
+  flex-shrink: 0;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 0 4px;
+  justify-content: center;
 }
 
-.custom-scrollbar-thumb {
-  height: 8px;
-  width: 40px;
-  background-color: #cbd5e1;
-  border-radius: 4px;
-  margin-left: 20px;
+.badge_item img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  margin-bottom: 6px;
 }
 
-.scroll-arrow {
-  font-size: 10px;
-  color: #94a3b8;
-  cursor: pointer;
+.badge_nome {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  color: var(--fontes);
+  font-weight: 500;
 }

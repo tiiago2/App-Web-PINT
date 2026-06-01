@@ -8,6 +8,9 @@
     --fontes: #374957;
     --selecao: #A7EFFF;
     --fundo: #FFFFFF;
+    --fundo2: #F8FAFD;
+    --fundo_submenu_selecionado: rgba(57, 99, 156, 0.12);
+    --fundo_submenu_hover: rgba(57, 99, 156, 0.08);
     --barra_lateral: #39639C;
     --contorno: #CAD5E2;
     --rejeitar: #C40003;

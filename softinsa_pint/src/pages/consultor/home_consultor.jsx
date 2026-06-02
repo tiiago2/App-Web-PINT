@@ -49,11 +49,11 @@ const HomeConsultor = ({ user, saudacao }) => {
             <div className="flex-shrink-0">
                 <h1 className="texto-titulo-principal m-0">{saudacao}</h1>
             </div>
-            <div className="row gy-3">
+            <div className="row" style={{ rowGap: 'var(--gap-default-seccoes)' }}>
                 <div className="col-12 col-xl-8 mb-xl-0">
                     <div className="badges-container d-flex flex-column" style={{ height: '35vh' }}>
                         <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h5 className="m-0 fw-medium" style={{ fontSize: '1.25rem', fontFamily: 'var(--fonte-principal)', color: 'var(--fontes)' }}>{t('badges_progresso')}</h5>
+                            <h5 className="home-card-title m-0 fw-medium">{t('badges_progresso')}</h5>
                             <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.7}/>
                         </div>
                         <div className="badges-grid flex-grow-1 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
@@ -77,7 +77,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                     <ClassificacaoGeral user={user} />
                 </div>
             </div>
-            <div className="row gy-3 flex-grow-1" style={{ minHeight: 0 }}>
+            <div className="row flex-grow-1" style={{ minHeight: 0, rowGap: 'var(--gap-default-seccoes)' }}>
                 {/* Atividade Recente */}
                 <div className="col-12 col-lg-4 mb-4 mb-lg-0 d-flex flex-column">
                     <AtividadeRecente atividades={atividadeRecente} fullHeight={true} />
@@ -85,7 +85,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                 {/* Objetivos Propostos */}
                 <div className="col-12 col-lg-4 d-flex flex-column">
                     <div className="home-card p-3 h-100">
-                        <h5 className="mb-3 fw-medium flex-shrink-0" style={{ fontSize: '1.25rem', fontFamily: 'var(--fonte-principal)', color: 'var(--fontes)' }}>{t('objetivos_propostos')}</h5>
+                        <h5 className="home-card-title mb-3 fw-medium flex-shrink-0">{t('objetivos_propostos')}</h5>
                         <div className="d-flex flex-column gap-2 justify-content-between flex-grow-1 overflow-y-auto pe-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                             {objetivos.map((obj, i) => (
                                 <div key={i} className="objetivo-figma">
@@ -110,7 +110,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                 {/* Progresso */}
                 <div className="col-12 col-lg-4 d-flex flex-column">
                     <div className="home-card p-3 h-100">
-                        <h5 className="mb-3 fw-medium flex-shrink-0" style={{ fontSize: '1.25rem', fontFamily: 'var(--fonte-principal)', color: 'var(--fontes)' }}>{t('progresso')}</h5>
+                        <h5 className="home-card-title mb-3 fw-medium flex-shrink-0">{t('progresso')}</h5>
                         <div className="d-flex flex-column gap-2 justify-content-between flex-grow-1 overflow-y-auto pe-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                             {progressoItems.map((prog, i) => (
                                 <div key={i} className="progresso-figma">

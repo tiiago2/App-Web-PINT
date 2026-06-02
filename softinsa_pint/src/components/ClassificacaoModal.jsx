@@ -247,7 +247,9 @@ const ClassificacaoGeral = ({
     user, 
     filtroInicial = null, 
     filtroValorInicial = null,
-    titulo 
+    titulo,
+    fullHeight = false,
+    maxItems = 5
 }) => {
     const { t } = useTranslation();
     const [showClassificacao, setShowClassificacao] = useState(false);
@@ -306,7 +308,7 @@ const ClassificacaoGeral = ({
 
             <div className="d-flex flex-column gap-2 flex-grow-1 overflow-y-auto pe-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 <style>{`.overflow-y-auto::-webkit-scrollbar { display: none; }`}</style>
-                {classificacao.slice(0, maxItems).map((item, index) => (
+                {listaOrdenada.slice(0, maxItems).map((item, index) => (
                     <div key={index} className={`ranking-row ${item.classe || ''}`}>
                         <div className="d-flex align-items-center gap-2">
                             {item.pos <= 3 ? (

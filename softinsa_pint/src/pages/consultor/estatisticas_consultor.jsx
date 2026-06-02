@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import EvolucaoModal from '../../components/EvolucaoModal.jsx';
+import { mockClassificacao } from '../../defs/classificacao_mock.js';
 import './estatisticas_consultor.css';
 
 /* ── DADOS MOCKUP ─────────────────────────── */
@@ -51,18 +52,6 @@ const dadosNiveis = [
     { ID_Nivel: 5, Nome_Nivel: 'Líder',        total_badges: 2,  cor: '#1a4d7a' },
 ];
 
-const classificacaoMock = [
-    { pos: 1, ID_Utilizador: 101, Nome_User: 'João Silva',     Nome_Area: 'Hybrid Systems', Pontos_Totais: '374 957', classe: 'ouro',   cor: '#FFD700' },
-    { pos: 2, ID_Utilizador: 102, Nome_User: 'João Silva',     Nome_Area: 'Hybrid Systems', Pontos_Totais: '374 957', classe: 'prata',  cor: '#A0A0A0' },
-    { pos: 3, ID_Utilizador: 103, Nome_User: 'João Silva',     Nome_Area: 'Hybrid Systems', Pontos_Totais: '374 957', classe: 'bronze', cor: '#CD7F32' },
-    { pos: 4, ID_Utilizador: 104, Nome_User: 'Afonso Moreira', Nome_Area: 'Hybrid Systems', Pontos_Totais: '37 455',  classe: '', cor: '' },
-    { pos: 5, ID_Utilizador: 105, Nome_User: 'Afonso Moreira', Nome_Area: 'Hybrid Systems', Pontos_Totais: '37 455',  classe: '', cor: '' },
-    { pos: 6, ID_Utilizador: 106, Nome_User: 'Afonso Moreira', Nome_Area: 'Hybrid Systems', Pontos_Totais: '37 455',  classe: '', cor: '' },
-    { pos: 7, ID_Utilizador: 107, Nome_User: 'Afonso Moreira', Nome_Area: 'Hybrid Systems', Pontos_Totais: '37 455',  classe: '', cor: '' },
-    { pos: 8, ID_Utilizador: 108, Nome_User: 'Afonso Moreira', Nome_Area: 'Hybrid Systems', Pontos_Totais: '37 455',  classe: '', cor: '' },
-    { pos: 9, ID_Utilizador: 109, Nome_User: 'Afonso Moreira', Nome_Area: 'Hybrid Systems', Pontos_Totais: '37 455',  classe: '', cor: '' },
-    { pos: 10,ID_Utilizador: 110, Nome_User: 'Afonso Moreira', Nome_Area: 'Hybrid Systems', Pontos_Totais: '37 455',  classe: '', cor: '' },
-];
 
 const COR = '#39639C';
 const TIP = { borderRadius: 'var(--border-radius-pequeno)', border: 'var(--borda-principal) solid var(--contorno)', fontSize: '11px' };
@@ -147,7 +136,7 @@ const EstatisticasConsultor = (user) => {
                       O retângulo vazio fica reservado até haver ideia para o conteúdo.
                       Usamos flex: 1 para garantir o alinhamento perfeito na base com a Classificação Geral.
                     */}
-                    <div style={{ display: 'flex', gap: GAP, flex: 1, minHeight: 0, flexShrink: 0 }}>
+                    <div style={{ display: 'flex', gap: GAP, flex: 1, minHeight: 0 }}>
 
                         {/* Donut — Atribuídos este mês */}
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -230,7 +219,7 @@ const EstatisticasConsultor = (user) => {
                   maxItems={9}     → mostra 9 lugares (homepage usa o default=5)
                 */}
                 <div className="h-100" style={{ width: '300px', flexShrink: 0 }}>
-                    <ClassificacaoGeral classificacao={classificacaoMock} fullHeight={true} maxItems={9} />
+                    <ClassificacaoGeral classificacao={mockClassificacao} fullHeight={true} maxItems={9} />
                 </div>
             </div>
 

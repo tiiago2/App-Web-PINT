@@ -15,6 +15,7 @@ import "./App.css";
 //paginas
 import HomeConsultor from "./pages/consultor/home_consultor.jsx";
 import EstatisticasConsultor from "./pages/consultor/estatisticas_consultor.jsx";
+import ObjetivosConsultor from "./pages/consultor/objetivos_consultor.jsx";
 import HomeTalent from "./pages/talent/home_talent.jsx";
 import HomeService from "./pages/service/home_service.jsx";
 import HomeAdmin from "./pages/Administrador/home_Admin.jsx";
@@ -35,7 +36,7 @@ function App() {
     //-------------trocar para base dados
     id: 1,
     nome: "Utilizador",
-    cargo: "service",
+    cargo: "consultor",
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10"),
   });
@@ -205,6 +206,11 @@ function App() {
           <Route
             path="/galeria"
             element={<GaleriaConsultor />}
+          />
+
+          <Route
+            path="/objetivos"
+            element={<ObjetivosConsultor user={user} />}
           />
 
           <Route

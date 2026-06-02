@@ -21,6 +21,13 @@
     flex-direction: column;
 }
 
+/* Título dos cartões — usa os tokens de texto e cor */
+.home-card-title {
+    font-size: 1.25rem;
+    font-family: var(--fonte-principal);
+    color: var(--fontes);
+}
+
 /* ── Badges em Progresso ─────────────────────────────────── */
 
 /* Container da secção sem borda exterior */

@@ -62,6 +62,14 @@ const dados_atividade = [
     tempo: "Há 1 dia",
     expirado: false,
   },
+  {
+    icone: "fi-br-badge",
+    cor: "text-warning",
+    texto: "atualizou os requisitos",
+    textoNegrito: "Administrador2",
+    tempo: "Há 1 dia",
+    expirado: false,
+  },
 ];
 
 const lista_classificacao = [
@@ -139,7 +147,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
 
   return (
     <div
-      className="home-admin-container d-flex flex-column gap-2"
+      className="home-admin-container d-flex flex-column"
     >
       {/* Saudação */}
       <div className="flex-shrink-0 ms-2">
@@ -149,10 +157,10 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
       </div>
 
       {/* Ações Rápidas */}
-      <div className="flex-shrink-0 mt-2">
+      <div className="flex-shrink-0" style={{ marginTop: 'var(--gap-titulo-principal-conteudo)' }}>
         <h6
-          className="text-muted mb-2 ms-2"
-          style={{ fontSize: "clamp(0.8rem, 1.2vw, 1rem)" }}
+          className="text-muted ms-2"
+          style={{ fontSize: "clamp(0.8rem, 1.2vw, 1rem)", marginBottom: '16px' }}
         >
           {t("acoes_rapidas")}
         </h6>
@@ -199,10 +207,10 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
       </div>
 
       {/* Estatísticas */}
-      <div className="row mt-2" style={{ flex: "0 0 auto" }}>
+      <div className="row" style={{ flex: "0 0 auto", marginTop: 'var(--gap-default-seccoes)' }}>
         <div className="col-4">
           <div
-            className="border border-2 rounded-4 p-3 bg-white d-flex flex-column justify-content-between h-100"
+            className="admin-card p-3 bg-white d-flex flex-column justify-content-between h-100"
             style={{ minHeight: "110px" }}
           >
             <div className="d-flex justify-content-between align-items-start">
@@ -233,7 +241,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
         </div>
         <div className="col-4">
           <div
-            className="border border-2 rounded-4 p-3 bg-white d-flex flex-column justify-content-between h-100"
+            className="admin-card p-3 bg-white d-flex flex-column justify-content-between h-100"
             style={{ minHeight: "110px" }}
           >
             <div className="d-flex justify-content-between align-items-start">
@@ -260,7 +268,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
         </div>
         <div className="col-4">
           <div
-            className="border border-2 rounded-4 p-3 bg-white d-flex flex-column justify-content-between h-100"
+            className="admin-card p-3 bg-white d-flex flex-column justify-content-between h-100"
             style={{ minHeight: "110px" }}
           >
             <div className="d-flex justify-content-between align-items-start">
@@ -292,7 +300,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
       </div>
 
       {/* Widgets Inferiores */}
-      <div className="row mt-1 flex-grow-1" style={{ maxHeight: "35vh" }}>
+      <div className="row flex-grow-1" style={{ marginTop: 'var(--gap-default-seccoes)' }}>
         <div
           className="col-4 h-100 d-flex flex-column"
           style={{ minHeight: 0 }}
@@ -301,7 +309,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
             className="flex-grow-1"
             style={{ overflow: "hidden", minHeight: 0 }}
           >
-            <AtividadeModal atividades={dados_atividade} />
+            <AtividadeModal atividades={dados_atividade} fullHeight={true} />
           </div>
         </div>
 
@@ -313,7 +321,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
             className="flex-grow-1"
             style={{ overflow: "hidden", minHeight: 0 }}
           >
-            <ClassificacaoModal classificacao={lista_classificacao} />
+            <ClassificacaoModal classificacao={lista_classificacao} fullHeight={true} />
           </div>
         </div>
 

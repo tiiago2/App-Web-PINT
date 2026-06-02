@@ -1,9 +1,28 @@
 .home-admin-container {
-    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo);
+    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo) var(--margem-inferior-conteudo);
     height: 100%;
     overflow-y: auto;
     background-color: var(--fundo);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
+
+/* Cartões de estatísticas — usa tokens em vez de border-2 rounded-4 do Bootstrap */
+.admin-card {
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: var(--border-radius-grande);
+    background: var(--fundo);
+}
+
+/* O row inferior tinha maxHeight: "35vh" em inline style que impedia o flex-grow-1
+   de preencher o espaço correto. Sobrepõe-se aqui para que o padding-bottom
+   da container crie a margem inferior correta (30px). */
+.home-admin-container .row.flex-grow-1 {
+    max-height: none !important;
+    min-height: 0;
+}
+
 
 /* Tamanhos e efeitos fixos do botão colorido */
 .botao-rapido { 

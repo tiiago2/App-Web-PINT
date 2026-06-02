@@ -298,7 +298,7 @@ const ClassificacaoGeral = ({
     if (!listaOrdenada || listaOrdenada.length === 0) return null;
 
     return (
-        <div className="border border-2 rounded-4 p-3 d-flex flex-column bg-white" style={{ height: '35vh' }}>
+        <div className="p-3 d-flex flex-column bg-white" style={{ border: 'var(--borda-principal) solid var(--contorno)', borderRadius: 'var(--border-radius-grande)', boxSizing: 'border-box', height: fullHeight ? '100%' : '35vh' }}>
             <div className="d-flex justify-content-between align-items-center mb-2">
                 <h5>{titulo || t('classificacao_geral')}</h5>
                 <i className="fi fi-br-expand me-1" style={{ cursor: 'pointer' }} onClick={() => setShowClassificacao(true)}></i>
@@ -306,21 +306,21 @@ const ClassificacaoGeral = ({
 
             <div className="d-flex flex-column gap-2 flex-grow-1 overflow-y-auto pe-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 <style>{`.overflow-y-auto::-webkit-scrollbar { display: none; }`}</style>
-                {listaOrdenada.slice(0, 5).map((item, index) => (
-                    <div key={item.id || index} className={`ranking-row ${item.classe || ''}`}>
+                {classificacao.slice(0, maxItems).map((item, index) => (
+                    <div key={index} className={`ranking-row ${item.classe || ''}`}>
                         <div className="d-flex align-items-center gap-2">
                             {item.pos <= 3 ? (
                                 <i className="fi fi-br-badge" style={{ color: item.cor, fontSize: '1.2rem', minWidth: '22px' }}></i>
                             ) : (
-                                <span className="fw-semibold" style={{ minWidth: '22px', fontSize: '0.85rem' }}>{item.pos}.</span>
+                                <span className="fw-semibold text-muted" style={{ minWidth: '22px', fontSize: '0.82rem' }}>{item.pos}.</span>
                             )}
                             <img src={user_logo} className="rounded-2" width="28" height="28" alt="user" style={{ objectFit: 'cover' }} />
                             <div>
-                                <div className="fw-medium" style={{ fontSize: '0.8rem'}}>{item.nome}</div>
-                                <div className="text-muted" style={{ fontSize: '0.7rem' }}>{item.area}</div>
+                                <div className="fw-medium" style={{ fontSize: '0.8rem'}}>{item.Nome_User || item.nome}</div>
+                                <div className="text-muted" style={{ fontSize: '0.7rem' }}>{item.Nome_Area || item.area}</div>
                             </div>
                         </div>
-                        <div className="fw-bold" style={{ fontSize: '0.8rem' }}>{item.pontos}</div>
+                        <div className="fw-bold" style={{ fontSize: '0.8rem' }}>{item.Pontos_Totais || item.pontos}</div>
                     </div>
                 ))}
             </div>

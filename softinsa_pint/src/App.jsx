@@ -14,6 +14,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 //paginas
 import HomeConsultor from "./pages/consultor/home_consultor.jsx";
+import EstatisticasConsultor from "./pages/consultor/estatisticas_consultor.jsx";
 import HomeTalent from "./pages/talent/home_talent.jsx";
 import HomeService from "./pages/service/home_service.jsx";
 import HomeAdmin from "./pages/Administrador/home_Admin.jsx";
@@ -196,9 +197,20 @@ function App() {
             element={<HomeConsultor user={user} saudacao={Saudacao()} />}
           />
 
-          <Route path="/galeria" element={<GaleriaConsultor />} />
+          <Route
+            path="/estatisticas"
+            element={<EstatisticasConsultor />}
+          />
 
-          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route
+            path="/galeria"
+            element={<GaleriaConsultor />}
+          />
+
+          <Route
+            path="/"
+            element={<Navigate to="/home" replace />}
+          />
 
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>

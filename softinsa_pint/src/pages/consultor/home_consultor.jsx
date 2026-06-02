@@ -45,15 +45,15 @@ const HomeConsultor = ({ user, saudacao }) => {
     const navigate = useNavigate();
 
     return (
-        <div className="p-3 p-md-4 d-flex flex-column gap-3">
+        <div className="home-page">
             <div className="flex-shrink-0">
-                <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)' }}>{saudacao}</h1>
+                <h1 className="texto-titulo-principal m-0">{saudacao}</h1>
             </div>
             <div className="row gy-3">
                 <div className="col-12 col-xl-8 mb-xl-0">
-                    <div className="badges-container p-3 d-flex flex-column" style={{ height: '35vh' }}>
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                            <h5 className="m-0" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>{t('badges_progresso')}</h5>
+                    <div className="badges-container d-flex flex-column" style={{ height: '35vh' }}>
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h5 className="m-0 fw-medium" style={{ fontSize: '1.25rem', fontFamily: 'var(--fonte-principal)', color: 'var(--fontes)' }}>{t('badges_progresso')}</h5>
                             <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.7}/>
                         </div>
                         <div className="badges-grid flex-grow-1 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
@@ -77,15 +77,15 @@ const HomeConsultor = ({ user, saudacao }) => {
                     <ClassificacaoGeral user={user} />
                 </div>
             </div>
-            <div className="row gy-3 align-items-start">
+            <div className="row gy-3 flex-grow-1" style={{ minHeight: 0 }}>
                 {/* Atividade Recente */}
-                <div className="col-12 col-lg-4 mb-4 mb-lg-0">
-                    <AtividadeRecente atividades={atividadeRecente} />
+                <div className="col-12 col-lg-4 mb-4 mb-lg-0 d-flex flex-column">
+                    <AtividadeRecente atividades={atividadeRecente} fullHeight={true} />
                 </div>
                 {/* Objetivos Propostos */}
-                <div className="col-12 col-lg-4">
-                    <div className="border border-2 rounded-4 bg-white p-3 d-flex flex-column" style={{ height: '35vh' }}>
-                        <h5 className="mb-1">{t('objetivos_propostos')}</h5>
+                <div className="col-12 col-lg-4 d-flex flex-column">
+                    <div className="home-card p-3 h-100">
+                        <h5 className="mb-3 fw-medium flex-shrink-0" style={{ fontSize: '1.25rem', fontFamily: 'var(--fonte-principal)', color: 'var(--fontes)' }}>{t('objetivos_propostos')}</h5>
                         <div className="d-flex flex-column gap-2 justify-content-between flex-grow-1 overflow-y-auto pe-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                             {objetivos.map((obj, i) => (
                                 <div key={i} className="objetivo-figma">
@@ -108,9 +108,9 @@ const HomeConsultor = ({ user, saudacao }) => {
                     </div>
                 </div>
                 {/* Progresso */}
-                <div className="col-12 col-lg-4">
-                    <div className="border border-2 rounded-4 bg-white p-3 d-flex flex-column" style={{ height: '35vh' }}>
-                        <h5 className="mb-1">{t('progresso')}</h5>
+                <div className="col-12 col-lg-4 d-flex flex-column">
+                    <div className="home-card p-3 h-100">
+                        <h5 className="mb-3 fw-medium flex-shrink-0" style={{ fontSize: '1.25rem', fontFamily: 'var(--fonte-principal)', color: 'var(--fontes)' }}>{t('progresso')}</h5>
                         <div className="d-flex flex-column gap-2 justify-content-between flex-grow-1 overflow-y-auto pe-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                             {progressoItems.map((prog, i) => (
                                 <div key={i} className="progresso-figma">

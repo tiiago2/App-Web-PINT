@@ -53,14 +53,14 @@ const AtividadeModalContent = ({ atividades, onClose }) => {
 };
 
 /* ── 2. COMPONENTE EXPORTADO: O WIDGET PRINCIPAL ────────── */
-const AtividadeRecente = ({ atividades }) => {
+const AtividadeRecente = ({ atividades, fullHeight }) => {
     const { t } = useTranslation();
     const [showModal, setShowModal] = useState(false);
 
     if (!atividades || atividades.length === 0) return null;
 
     return (
-        <div className="border border-2 bg-white rounded-4 p-3 d-flex flex-column" style={{ height: '35vh' }}>
+        <div className={`p-3 d-flex flex-column bg-white ${fullHeight ? 'h-100' : ''}`} style={{ border: 'var(--borda-principal) solid var(--contorno)', borderRadius: 'var(--border-radius-grande)', boxSizing: 'border-box', height: fullHeight ? '100%' : '35vh' }}>
             
             <div className="d-flex justify-content-between align-items-center mb-2">
                 <h5>{t('atividade_recente')}</h5>

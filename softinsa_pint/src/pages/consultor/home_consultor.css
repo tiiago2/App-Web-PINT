@@ -1,10 +1,24 @@
 /* Estilos fiéis ao Figma */
 
-.caixa-branca {
-    background-color: #FFFFFF;
-    border: 2px solid var(--outline);
-    border-radius: 16px;
+.home-page {
+    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo) var(--margem-inferior-conteudo);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-titulo-principal-conteudo);
+    height: 100%;
+    width: 100%;
+    flex: 1;
+    overflow: hidden;
+    box-sizing: border-box;
+}
 
+.home-card {
+    background: #fff;
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: var(--border-radius-grande);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 /* ── Badges em Progresso ─────────────────────────────────── */
@@ -33,7 +47,7 @@
 
 /* O separador original, mas mais suave */
 .badge-col-separator {
-  border-right: 1px solid rgba(202, 213, 226, 0.6);
+  border-right: var(--borda-principal) solid var(--contorno);
 }
 
 /* O Badge grande original, mas com um "glow" premium */
@@ -82,7 +96,7 @@
 /* O Botão original de borda (outline), mas super refinado */
 .btn-detalhes-figma {
   background: transparent;
-  border: 1px solid #cad5e2;
+  border: var(--borda-principal) solid var(--contorno);
   border-radius: 10px;
   color: var(--fontes);
   font-size: 0.78rem;
@@ -106,7 +120,7 @@
 
 /* ── "Ver mais" button ────────────────────────────────────── */
 .btn-ver-mais-figma {
-  border: 1px solid #cad5e2;
+  border: var(--borda-principal) solid var(--contorno);
   border-radius: 20px;
   background: transparent;
   color: var(--fontes);
@@ -126,8 +140,8 @@
 
 /* ── Objetivos Propostos ──────────────────────────────────── */
 .objetivo-figma {
-  border: 1px solid #cad5e2;
-  border-radius: 12px;
+  border: var(--borda-principal) solid var(--contorno);
+  border-radius: var(--border-radius-pequeno);
   padding: 4px 12px;
   display: flex;
   align-items: center;
@@ -136,8 +150,8 @@
 }
 
 .progresso-figma {
-  border: 1px solid #cad5e2;
-  border-radius: 12px;
+  border: var(--borda-principal) solid var(--contorno);
+  border-radius: var(--border-radius-pequeno);
   padding: 4px 12px;
   background-color: #ffffff;
   display: flex;

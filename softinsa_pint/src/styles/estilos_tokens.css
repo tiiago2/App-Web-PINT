@@ -63,8 +63,8 @@
 
     /* GALERIA DE BADGES — ESPAÇAMENTOS INTERNOS */
 
-        --espaco-circulo-nome-badge: 4px;
-        --espaco-nome-progresso-badge: 4px;
+        --espaco-circulo-nome-badge: 8px;
+        --espaco-nome-progresso-badge: 8px;
 
         --gap-titulo-linha-seccao-badge: 13px;
         --gap-cabecalho-conteudo-seccao-badge: 30px;

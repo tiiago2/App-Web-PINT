@@ -21,6 +21,16 @@
     overflow: visible;
 }
 
+.badge-item:focus {
+    outline: none;
+}
+
+.badge-item:focus-visible {
+    outline: var(--borda-principal) solid var(--barra_lateral);
+    outline-offset: 6px;
+    border-radius: var(--border-radius-pequeno);
+}
+
 .badge-item-visual {
     position: relative;
 
@@ -32,4 +42,24 @@
     justify-content: center;
 
     overflow: visible;
+}
+
+.badge-item-nome {
+    max-width: 100%;
+
+    display: block;
+
+    margin-top: var(--espaco-circulo-nome-badge);
+
+    white-space: normal;
+    overflow-wrap: break-word;
+    text-align: center;
+}
+
+.badge-item .badge-progresso {
+    margin-top: var(--espaco-nome-progresso-badge);
+}
+
+.badge-item:hover .badge-item-nome {
+    font-weight: 600;
 }

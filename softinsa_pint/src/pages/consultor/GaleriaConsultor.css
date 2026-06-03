@@ -31,13 +31,31 @@
 
 .galeria-consultor-resultados {
     width: 100%;
+    padding-bottom: var(--padding-bottom-scroll-galeria); /* Espaço para o conteúdo não ficar colado ao fundo da página */
 }
 
 .galeria-consultor-resultados.com-toolbar {
-    margin-top: var(--gap-default-seccoes);
+    margin-top: 0;
 }
 
 .galeria-consultor-seletor {
     width: 100%;
     max-width: 450px;
+}
+
+
+
+/* Esconde o scrollbar interno da galeria, mantendo a possibilidade de scroll */
+
+.galeria-consultor-page,
+.galeria-consultor-conteudo,
+.galeria-consultor-resultados {
+    scrollbar-width: none;      /* Firefox */
+    -ms-overflow-style: none;   /* Edge antigo */
+}
+
+.galeria-consultor-page::-webkit-scrollbar,
+.galeria-consultor-conteudo::-webkit-scrollbar,
+.galeria-consultor-resultados::-webkit-scrollbar {
+    display: none;              /* Chrome / Edge / Safari */
 }

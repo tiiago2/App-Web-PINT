@@ -1,0 +1,70 @@
+.filtro-estado-badges {
+    width: 100%;
+
+    gap: var(--gap-filtro-estado-badge);
+
+    margin-top: var(--gap-default-seccoes);
+}
+
+.filtro-estado-botao {
+    height: var(--altura-filtro-estado-badge);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--gap-filtro-estado-badge-interno);
+
+    flex: 0 0 auto;
+
+    padding: var(--padding-filtro-estado-badge);
+
+    background: var(--fundo);
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: var(--border-radius-filtro-estado-badge);
+
+    color: var(--fontes);
+    box-sizing: border-box;
+
+    cursor: pointer;
+    white-space: nowrap;
+
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.filtro-estado-botao:hover {
+    border-color: var(--barra_lateral);
+    color: var(--barra_lateral);
+}
+
+.filtro-estado-botao.ativo {
+    background: var(--barra_lateral);
+    border-color: var(--barra_lateral);
+    color: var(--fundo);
+}
+
+.filtro-estado-label {
+    white-space: nowrap;
+}
+
+.filtro-estado-contador {
+    min-width: 26px;
+    height: var(--altura-contador-filtro-estado-badge);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: var(--padding-contador-filtro-estado-badge);
+
+    border-radius: var(--border-radius-contador-filtro-estado-badge);
+    background: var(--fundo_submenu_hover);
+
+    color: var(--fontes);
+
+    box-sizing: border-box;
+}
+
+.filtro-estado-botao.ativo .filtro-estado-contador {
+    background: var(--fundo_contador_filtro_estado_ativo);
+    color: var(--fundo);
+}

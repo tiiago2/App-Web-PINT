@@ -1,0 +1,62 @@
+.badge-status-indicador {
+    position: absolute;
+
+    right: -4px;
+    bottom: -4px;
+
+    width: var(--tamanho-indicador-estado-badge);
+    height: var(--tamanho-indicador-estado-badge);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: var(--border-radius-badge-circular);
+    border: 2px solid var(--fundo);
+
+    color: var(--fundo);
+    background: var(--cor_badge_bloqueado3);
+
+    box-sizing: border-box;
+    z-index: 4;
+}
+
+.badge-status-indicador i {
+    width: var(--tamanho-icone-indicador-estado-badge);
+    height: var(--tamanho-icone-indicador-estado-badge);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: var(--tamanho-icone-indicador-estado-badge);
+    line-height: 1;
+
+    color: var(--fundo);
+}
+
+.badge-status-indicador i::before {
+    display: block;
+    line-height: 1;
+    color: var(--fundo);
+}
+
+.badge-status-indicador-conquistado {
+    background: var(--aceitar);
+}
+
+.badge-status-indicador-pendente {
+    background: var(--candidatura_pendente);
+}
+
+.badge-status-indicador-recusado {
+    background: var(--vermelho_eliminar);
+}
+
+.badge-status-indicador-expirado {
+    background: var(--vermelho_eliminar);
+}
+
+.badge-status-indicador-bloqueado {
+    background: var(--cor_badge_bloqueado3);
+}

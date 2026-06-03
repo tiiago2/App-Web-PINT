@@ -1,0 +1,99 @@
+.badge-seccao {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: var(--gap-cabecalho-conteudo-seccao-badge);
+}
+
+.badge-seccao + .badge-seccao {
+    margin-top: var(--gap-entre-seccoes-badge);
+}
+
+/* Cabeçalho da secção */
+
+.badge-seccao-cabecalho {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 6px;
+}
+
+.badge-seccao-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 16px;
+    line-height: 1;
+}
+
+.badge-seccao-titulo {
+    margin: 0;
+
+    white-space: nowrap;
+    text-transform: uppercase;
+}
+
+.badge-seccao-linha {
+    flex: 1;
+
+    height: 2px;
+
+    margin-left: var(--gap-titulo-linha-seccao-badge);
+
+    border-radius: var(--border-radius-badge-circular);
+}
+
+/* BADGES ESPECIAIS */
+
+.badge-seccao-gold .badge-seccao-icone,
+.badge-seccao-gold .badge-seccao-titulo {
+    color: var(--gold_badge_fonte);
+}
+
+.badge-seccao-gold .badge-seccao-linha {
+    background: var(--gold_badge_barra_seccao);
+}
+
+/*
+   Compensação visual:
+   a estrela dos badges especiais sobe 6px,
+   por isso damos 6px de padding à grelha para o espaço visual
+   entre título e estrela continuar correto.
+*/
+
+.badge-seccao-gold .badge-seccao-grid {
+    padding-top: var(--compensacao-estrela-badge-especial);
+    padding-left: var(--compensacao-estrela-badge-especial);
+    box-sizing: border-box;
+}
+
+/* A MINHA ÁREA / OUTRAS ÁREAS */
+
+.badge-seccao-azul .badge-seccao-icone,
+.badge-seccao-azul .badge-seccao-titulo {
+    color: var(--barra_azul_2);
+}
+
+.badge-seccao-azul .badge-seccao-linha {
+    background: var(--azul_badge_barra_seccao);
+}
+
+/* Grid dos badges */
+
+.badge-seccao-grid {
+    width: 100%;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+
+    column-gap: var(--gap-grid-badges-horizontal);
+    row-gap: var(--gap-grid-badges-vertical);
+
+    overflow: visible;
+}

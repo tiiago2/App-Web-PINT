@@ -1,17 +1,26 @@
 :root {
     /* BORDER RADIUS QUE USAMOS */
-    --border-radius-grande: 14px;
-    --border-radius-pequeno: 8px;
+        --border-radius-grande: 14px;
+        --border-radius-pequeno: 8px;
+
+
+        /* BORDER RADIUS GALERIA ESTADO BADGE */
+        --border-radius-filtro-estado-badge: 18px;
+        --border-radius-contador-filtro-estado-badge: 14px;
 
     /*BORDAS / STROKES (ESPESSURA)*/
-    --borda-principal: 1.6px;
+        --borda-principal: 1.6px;
 
     /*ESPAÇAMENTOS/ GAPS*/
-    --gap-titulo-principal-conteudo: 30px;
-    --gap-default-seccoes: 20px;
+        --gap-titulo-principal-conteudo: 30px;
+        --gap-default-seccoes: 20px;
+
+        /*gap específico para os filtros de estado de badge na galeria*/
+        --gap-filtro-estado-badge: 14px;
+        --gap-filtro-estado-badge-interno: 7px;
 
     /* MARGENS PRINCIPAIS DA PÁGINA */
-    --margem-lateral-conteudo: clamp(24px, 3.9vw, 80px);
+        --margem-lateral-conteudo: clamp(24px, 3.9vw, 80px);
         /* 
         As margens laterais usam clamp() para adaptar o espaço horizontal
         à largura da viewport. Assim, em ecrãs pequenos ou projetores, a margem
@@ -21,6 +30,56 @@
         As margens verticais mantêm-se fixas porque fazem parte da composição
         visual da página e não precisam de variar com a largura do ecrã.
         */
-    --margem-superior-conteudo: 30px;
-    --margem-inferior-conteudo: 30px;
-}                                                                                                            
+        --margem-superior-conteudo: 30px;
+        --margem-inferior-conteudo: 30px;
+
+    /*ALTURAS*/
+        --altura-controlos-1: 44px;
+
+        /* Alturas específicas para os estados de badges na galeria */
+        --altura-filtro-estado-badge: 35px;
+        --altura-contador-filtro-estado-badge: 22px;
+
+    /*PADDINGS*/
+        
+        /* Padding específico para os filtros de estado de badge na galeria */
+        --padding-filtro-estado-badge: 6px 11px;
+        --padding-contador-filtro-estado-badge: 0 10px;
+
+    /* GALERIA DE BADGES — DIMENSÕES */
+
+        --diametro-badge-galeria: 102px;
+        --largura-item-badge-galeria: 102px;
+
+        --tamanho-icone-badge-galeria: 36px;
+        --tamanho-estrela-badge-especial: 24px;
+
+        --tamanho-indicador-estado-badge: 27px;
+        --tamanho-icone-indicador-estado-badge: 14.4px;
+
+        --largura-barra-progresso-badge: 102px;
+        --altura-barra-progresso-badge: 6px;
+        --border-radius-barra-progresso-badge: 20px;
+
+    /* GALERIA DE BADGES — ESPAÇAMENTOS INTERNOS */
+
+        --espaco-circulo-nome-badge: 4px;
+        --espaco-nome-progresso-badge: 4px;
+
+        --gap-titulo-linha-seccao-badge: 13px;
+        --gap-cabecalho-conteudo-seccao-badge: 30px;
+        --gap-entre-seccoes-badge: 30px;
+
+        --espacamento-seccao-conteudo: 30px;
+
+    /* GALERIA DE BADGES — GRID */
+
+        --gap-grid-badges-horizontal: 48px;
+        --gap-grid-badges-vertical: 25px;
+
+    /* BORDER RADIUS ESPECÍFICO DE BADGES */
+
+        --border-radius-badge-circular: 999px;
+
+    --padding-bottom-scroll-galeria: 70px;
+}

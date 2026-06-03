@@ -1,0 +1,127 @@
+.badge-circulo {
+    position: relative;
+
+    width: var(--diametro-badge-galeria);
+    height: var(--diametro-badge-galeria);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: var(--border-radius-badge-circular);
+    box-sizing: border-box;
+}
+
+/* Conteúdo interno do círculo */
+
+.badge-circulo-conteudo {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: var(--border-radius-badge-circular);
+    overflow: hidden;
+}
+
+/* Quando há imagem do badge */
+
+.badge-circulo-com-imagem {
+    background: transparent;
+}
+
+.badge-circulo-imagem {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+    display: block;
+}
+
+/* Fallback se algum badge vier sem imagem */
+
+.badge-circulo-sem-imagem {
+    background: var(--fundo2);
+    border: var(--borda-principal) solid var(--contorno);
+}
+
+.badge-circulo-icone {
+    font-size: var(--tamanho-icone-badge-galeria);
+    line-height: 1;
+    color: var(--barra_lateral);
+}
+
+/* =========================
+   BADGES ESPECIAIS
+   ========================= */
+
+.badge-circulo-especial {
+    border-radius: var(--border-radius-badge-circular);
+}
+
+.badge-circulo-especial-gold {
+    border: 2px solid var(--gold_badge_inicio);
+    background: #BDCAF4;
+}
+
+.badge-circulo-especial-silver {
+    border: 2px solid var(--silver_badge_inicio);
+    background: #BDCAF4;
+}
+
+.badge-circulo-especial .badge-circulo-conteudo {
+    background: transparent;
+}
+
+/* Estrela dos badges especiais */
+
+.badge-circulo-estrela {
+    position: absolute;
+
+    top: -6px;
+    left: 0px;
+
+    width: var(--tamanho-estrela-badge-especial);
+    height: var(--tamanho-estrela-badge-especial);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 3;
+}
+
+.badge-circulo-estrela svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* =========================
+   BADGE BLOQUEADO
+   ========================= */
+
+.badge-circulo-bloqueado {
+    background: linear-gradient(
+        180deg,
+        var(--cor_badge_bloqueado1) 0%,
+        var(--cor_badge_bloqueado2) 100%
+    );
+
+    border: 2px solid var(--cor_badge_bloqueado3);
+}
+
+.badge-circulo-bloqueado .badge-circulo-conteudo {
+    background: transparent;
+}
+
+.badge-circulo-bloqueado .badge-circulo-imagem {
+    filter: grayscale(1);
+    opacity: 0.45;
+}
+
+.badge-circulo-bloqueado .badge-circulo-icone {
+    color: var(--cor_badge_bloqueado3);
+}

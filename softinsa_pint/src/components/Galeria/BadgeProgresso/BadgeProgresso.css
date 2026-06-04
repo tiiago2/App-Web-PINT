@@ -1,0 +1,18 @@
+.badge-progresso {
+    width: var(--largura-barra-progresso-badge);
+    height: var(--altura-barra-progresso-badge);
+
+    background: var(--fundo_barra_progresso2);
+    border-radius: var(--border-radius-barra-progresso-badge);
+
+    overflow: hidden;
+}
+
+.badge-progresso-preenchimento {
+    height: 100%;
+
+    background: var(--barra_progresso);
+    border-radius: var(--border-radius-barra-progresso-badge);
+
+    transition: width 0.25s ease;
+}

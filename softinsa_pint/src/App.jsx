@@ -36,7 +36,7 @@ function App() {
     //-------------trocar para base dados
     id: 1,
     nome: "Utilizador",
-    cargo: "admin", // pode ser "consultor", "talent", "service" ou "admin"
+    cargo: "consultor",
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10"),
   });
@@ -198,25 +198,16 @@ function App() {
             element={<HomeConsultor user={user} saudacao={Saudacao()} />}
           />
 
-          <Route
-            path="/estatisticas"
-            element={<EstatisticasConsultor />}
-          />
+          <Route path="/estatisticas" element={<EstatisticasConsultor />} />
 
-          <Route
-            path="/galeria"
-            element={<GaleriaConsultor />}
-          />
+          <Route path="/galeria" element={<GaleriaConsultor />} />
 
           <Route
             path="/objetivos"
             element={<ObjetivosConsultor user={user} />}
           />
 
-          <Route
-            path="/"
-            element={<Navigate to="/home" replace />}
-          />
+          <Route path="/" element={<Navigate to="/home" replace />} />
 
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
@@ -236,7 +227,7 @@ function App() {
         </Routes>
       );
     } else if (user.cargo === "service") {
-      return(
+      return (
         <Routes>
           <Route
             path="/home"
@@ -248,7 +239,7 @@ function App() {
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
-      )
+      );
     } else if (user.cargo === "admin") {
       return (
         <Routes>

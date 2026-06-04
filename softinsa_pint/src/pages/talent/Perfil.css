@@ -1,14 +1,20 @@
-/* Estilos Gerais da Página de Perfil */
-.container_perfil {
-  margin-left: var(--margem-lateral-conteudo);
-  margin-right: var(--margem-lateral-conteudo);
-  margin-top: var(--margem-superior-conteudo);
-  margin-bottom: var(--margem-inferior-conteudo);
-  padding: 0;
-  min-height: 100%;
-  background: var(--fundo);
-  box-sizing: border-box;
+/* Estrutura Principal */
+.perfil-container {
+  padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo);
+  background-color: var(--fundo);
+  height: 100%;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #334155;
+  background-color: #ffffff;
 }
 
 /* Cabeçalho */
@@ -17,7 +23,7 @@
 }
 
 .titulo_perfil {
-  font-family: 'Inter', 'Outfit', sans-serif;
+  font-family: "Inter", "Outfit", sans-serif;
   font-size: clamp(1.4rem, 3.5vw, 1.8rem); /* Reduzido de 2.2rem */
   font-weight: 700;
   color: var(--fontes);
@@ -27,7 +33,7 @@
 /* Botão de Terminar Sessão */
 .btn_logout {
   background-color: var(--barra_lateral) !important;
-  color: #FFFFFF !important;
+  color: #ffffff !important;
   border: none !important;
   border-radius: var(--border-radius-pequeno) !important;
   font-weight: 500;
@@ -47,12 +53,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transform: translateY(1.5px); /* Ajuste de precisão para centrar perfeitamente o ícone */
+  transform: translateY(
+    1.5px
+  ); /* Ajuste de precisão para centrar perfeitamente o ícone */
 }
 
 /* Subtítulos de Secções */
 .subtitulo_perfil {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: clamp(1.05rem, 2.2vw, 1.25rem); /* Reduzido de 1.45rem */
   font-weight: 500; /* Reduzido de 600 para menos bold */
   color: var(--fontes);
@@ -70,7 +78,7 @@
   position: relative; /* Para conter a overlay absoluta */
   width: 160px;
   height: 160px;
-  background-color: #DDE4EC;
+  background-color: #dde4ec;
   border-radius: 46px; /* Mais arredondado */
   flex-shrink: 0;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -84,7 +92,12 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(57, 99, 156, 0.7) !important; /* Azul translúcido coeso com o tom da Softinsa */
+  background: rgba(
+    57,
+    99,
+    156,
+    0.7
+  ) !important; /* Azul translúcido coeso com o tom da Softinsa */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -102,7 +115,7 @@
 
 .imagem_overlay i {
   font-size: 1.8rem;
-  color: #FFFFFF !important;
+  color: #ffffff !important;
   transition: transform 0.2s ease-in-out !important;
 }
 
@@ -112,21 +125,13 @@
 
 .avatar_icon {
   font-size: 3.6rem;
-  color: #6C8297;
+  color: #6c8297;
 }
 
 .avatar_img {
   width: 100%;
   height: 100%;
   object-fit: cover; /* Faz com que a imagem preencha perfeitamente */
-}
-
-.imagem_overlay:hover{
-  
-}
-
-.imagem_overlay{
-  
 }
 
 .info_dados {
@@ -160,14 +165,16 @@
   height: 32px; /* Mais compactos verticalmente (mais juntos) */
   padding: 4px 14px !important;
   font-size: 0.88rem !important;
-  font-family: 'Inter', sans-serif !important;
+  font-family: "Inter", sans-serif !important;
   color: var(--fontes) !important;
-  background-color: #FFFFFF !important;
+  background-color: #ffffff !important;
   border: 3px solid rgba(202, 213, 226, 0.6) !important; /* Mesma cor e espessura das outras bordas */
   border-radius: 10px !important; /* Pontas menos redondas e elegantes */
   outline: none !important;
   box-sizing: border-box !important;
-  transition: border-color 0.2s, box-shadow 0.2s !important;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s !important;
 }
 
 .edit_input:focus {
@@ -185,11 +192,15 @@
   font-size: 1.1rem; /* Reduzido de 1.25rem */
   color: var(--fontes);
   opacity: 0.8;
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transform: translateY(1.5px); /* Ajuste de precisão para centrar perfeitamente o ícone do lápis */
+  transform: translateY(
+    1.5px
+  ); /* Ajuste de precisão para centrar perfeitamente o ícone do lápis */
 }
 
 .edit_icon:hover {
@@ -198,7 +209,7 @@
 }
 
 .assinatura_card {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border: 3px solid rgba(202, 213, 226, 0.6);
   border-radius: var(--border-radius-grande);
   min-height: 140px; /* Reduzido de 180px */
@@ -210,14 +221,14 @@
 }
 
 .assinatura_nome {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 0.95rem; /* Reduzido de 1.05rem */
   font-weight: 500;
   color: var(--fontes);
 }
 
 .assinatura_contacto {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 0.82rem; /* Reduzido de 0.9rem */
   color: var(--fontes);
   opacity: 0.8;
@@ -242,7 +253,7 @@
 }
 
 .assinatura_badge span {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 0.9rem;
   color: var(--fontes);
   font-weight: 500;
@@ -251,7 +262,7 @@
 
 /* --- SECÇÃO INFERIOR: BADGES PESSOAIS --- */
 .badges_container_full {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border: 3px solid rgba(202, 213, 226, 0.6);
   border-radius: var(--border-radius-grande);
   padding: 16px 24px 0px 24px; /* Removido o padding inferior para colar a barra de scroll à borda */
@@ -286,7 +297,7 @@
 }
 
 .badge_nome {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 0.9rem;
   color: var(--fontes);
   font-weight: 500;

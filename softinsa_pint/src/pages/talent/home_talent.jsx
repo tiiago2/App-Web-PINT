@@ -176,12 +176,12 @@ const HomeTalent = ({ user, saudacao }) => {
     };
 
   return(
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div className="p-3 p-md-4 flex-shrink-0">
-            <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', marginBottom: '0' }}>{saudacao}</h1>
+    <div className="home-talent-container gap-3">
+        <div className="flex-shrink-0">
+            <h1 className="texto-titulo-principal m-0">{saudacao}</h1>
         </div>
         
-        <div style={{ flex: '1 1 auto', overflow: 'auto', paddingLeft: '1rem', paddingRight: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="d-flex flex-column gap-3" style={{ flex: '1 1 auto' }}>
             {/* Primeira linha: Candidaturas e Gráfico Estatísticas */}
             <div className="row g-2 g-md-3" style={{ flex: '0 0 auto' }}>
                 <div className="col-12 col-xl-8">

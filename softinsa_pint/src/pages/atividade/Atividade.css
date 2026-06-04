@@ -1,3 +1,12 @@
+.atividade-container {
+  padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo);
+  background-color: var(--fundo);
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
 .atividade-page {
   padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo) var(--margem-inferior-conteudo) var(--margem-lateral-conteudo);
   display: flex;

@@ -45,7 +45,7 @@ const HomeConsultor = ({ user, saudacao }) => {
     const navigate = useNavigate();
 
     return (
-        <div className="home-page">
+        <div className="home-consultor-container d-flex flex-column gap-3">
             <div className="flex-shrink-0">
                 <h1 className="texto-titulo-principal m-0">{saudacao}</h1>
             </div>

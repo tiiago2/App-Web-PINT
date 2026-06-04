@@ -31,6 +31,13 @@
 /* ── Badges em Progresso ─────────────────────────────────── */
 
 /* Container da secção sem borda exterior */
+.home-consultor-container {
+    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo);
+    background-color: var(--fundo);
+    height: 100%;
+    overflow-y: auto;
+}
+
 .badges-container {
   background-color: transparent;
 }

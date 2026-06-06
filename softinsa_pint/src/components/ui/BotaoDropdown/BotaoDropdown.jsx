@@ -2,13 +2,13 @@ import { useState } from "react";
 import "./BotaoDropdown.css";
 
 function BotaoDropdown({ titulo, valor, opcoes, onChange, icone,
-    mostrarValor = true, mostrarSeta = true,}) {
+    mostrarValor = true, mostrarSeta = true, mostrarTituloNoValor = true}) {
   const [aberto, setAberto] = useState(false);
 
   const opcaoSelecionada = opcoes.find((opcao) => opcao.valor === valor);
 
   const textoBotao = opcaoSelecionada
-    ? `${titulo}: ${opcaoSelecionada.label}`
+    ? (mostrarTituloNoValor && titulo ? `${titulo}: ${opcaoSelecionada.label}` : opcaoSelecionada.label)
     : titulo;
 
   function selecionarOpcao(novoValor) {

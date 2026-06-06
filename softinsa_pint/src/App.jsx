@@ -36,7 +36,7 @@ function App() {
     //-------------trocar para base dados
     id: 1,
     nome: "Utilizador",
-    cargo: "consultor",
+    cargo: "admin", //pode ser "consultor", "talent", "service" ou "admin"
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10"),
   });

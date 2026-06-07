@@ -1,13 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./BotaoDropdown.css";
 
 function BotaoDropdown({ titulo, valor, opcoes, onChange, icone,
     mostrarValor = true, mostrarSeta = true,}) {
   const [aberto, setAberto] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickFora = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setAberto(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickFora);
+    return () => document.removeEventListener("mousedown", handleClickFora);
+  }, []);
 
   const opcaoSelecionada = opcoes.find((opcao) => opcao.valor === valor);
 
-  const textoBotao = opcaoSelecionada
+  const textoBotao = (opcaoSelecionada && mostrarValor)
     ? `${titulo}: ${opcaoSelecionada.label}`
     : titulo;
 
@@ -17,7 +28,7 @@ function BotaoDropdown({ titulo, valor, opcoes, onChange, icone,
   }
 
   return (
-    <div className="botao-dropdown">
+    <div className="botao-dropdown" ref={dropdownRef}>
       <button
         type="button"
         className="botao-dropdown-trigger texto-botoes-1"

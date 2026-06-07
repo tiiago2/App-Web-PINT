@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+
 import { TabsAdmin } from '../../components/ui/TabsAdmin';
 import BarraPesquisa from '../../components/ui/BarraPesquisa/BarraPesquisa';
 import BotaoDropdown from '../../components/ui/BotaoDropdown/BotaoDropdown';
 import './editar_Admin.css';
 
 function EditarAdmin() {
-  const { t } = useTranslation();
+
   const [abaAtiva, setAbaAtiva] = useState('badges');
   const [viewMode, setViewMode] = useState('galeria'); // 'galeria' ou 'tabela'
   const [searchTerm, setSearchTerm] = useState('');

@@ -57,7 +57,7 @@ const COR = '#39639C';
 const TIP = { borderRadius: 'var(--border-radius-pequeno)', border: 'var(--borda-principal) solid var(--contorno)', fontSize: '11px' };
 const GAP = 'var(--gap-default-seccoes)';
 
-const EstatisticasConsultor = (user) => {
+const EstatisticasConsultor = () => {
     const [sem, setSem] = useState('1º Semestre 2026');
     const [showEvolucao, setShowEvolucao] = useState(false);
 

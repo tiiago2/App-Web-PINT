@@ -1,0 +1,277 @@
+@import "tailwindcss/theme";
+@import "tailwindcss/utilities";
+
+/* Main Page Container Layout */
+.candidaturas-page {
+  margin-left: var(--margem-lateral-conteudo);
+  margin-right: var(--margem-lateral-conteudo);
+  margin-top: var(--margem-superior-conteudo);
+  margin-bottom: var(--margem-inferior-conteudo);
+  padding: 0;
+  height: calc(100% - var(--margem-superior-conteudo) - var(--margem-inferior-conteudo));
+  background: var(--fundo);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.candidaturas-topo {
+  width: 100%;
+  margin-bottom: var(--gap-titulo-principal-conteudo);
+}
+
+.candidaturas-seletor {
+  width: 100%;
+  max-width: 450px;
+}
+
+.candidaturas-conteudo {
+  width: 100%;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Scrollbar behaviors matching the gallery */
+.candidaturas-page,
+.candidaturas-conteudo {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.candidaturas-page::-webkit-scrollbar,
+.candidaturas-conteudo::-webkit-scrollbar {
+  display: none;
+}
+
+/* Sidebar List Card */
+.candidatura-card {
+  position: relative;
+  background-color: var(--fundo);
+  border: var(--borda-principal) solid var(--contorno) !important;
+  border-radius: var(--border-radius-grande) !important;
+  color: var(--fontes);
+  transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* Pseudo-element indicator for active state */
+.candidatura-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background-color: var(--barra_lateral);
+  transition: width 0.15s ease-in-out;
+  z-index: 1;
+}
+
+.candidatura-card:hover {
+  box-shadow: 0 4px 12px rgba(57, 99, 156, 0.08);
+  border-color: var(--barra_lateral) !important;
+}
+
+.candidatura-card.active {
+  background-color: var(--fundo_submenu_selecionado) !important;
+  border-color: var(--barra_lateral) !important;
+}
+
+.candidatura-card.active::before {
+  width: 6px;
+}
+
+/* Circular Icon Wrapper */
+.candidatura-card-icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: var(--borda-principal) solid;
+}
+
+.candidatura-detalhe-icon-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Reset flag-icons conflict on all Flaticon icons on the Candidaturas page */
+.candidaturas-page i.fi {
+  width: auto !important;
+  height: auto !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-image: none !important;
+}
+
+.candidaturas-page i.fi::before {
+  display: block !important;
+}
+
+/* Status Pill Styling */
+.status-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--border-radius-filtro-estado-badge);
+  text-align: center;
+  display: inline-block;
+  line-height: 1;
+}
+
+.status-pill.pendente {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--candidatura_pendente);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.status-pill.aceite {
+  background-color: rgba(0, 153, 102, 0.1);
+  color: var(--aceitar);
+  border: 1px solid rgba(0, 153, 102, 0.25);
+}
+
+.status-pill.recusada {
+  background-color: rgba(212, 42, 42, 0.1);
+  color: var(--vermelho_eliminar);
+  border: 1px solid rgba(212, 42, 42, 0.25);
+}
+
+/* Progress Bar Wrapper */
+.candidatura-progresso-bar-wrap {
+  width: 100%;
+  background-color: var(--fundo_barra_progresso2);
+  border-radius: var(--border-radius-barra-progresso-badge);
+  height: var(--altura-barra-progresso-badge);
+  overflow: hidden;
+}
+
+.candidatura-progresso-bar-fill {
+  background-color: var(--barra_progresso);
+  height: 100%;
+  border-radius: var(--border-radius-barra-progresso-badge);
+}
+
+/* Details Panel Card Container */
+.candidatura-detalhes-panel {
+  background-color: var(--fundo);
+  border: var(--borda-principal) solid var(--contorno) !important;
+  border-radius: var(--border-radius-grande) !important;
+}
+
+/* Requirements list items */
+.requisito-card {
+  background-color: var(--fundo);
+  border: var(--borda-principal) solid var(--contorno);
+  border-radius: var(--border-radius-pequeno);
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.requisito-doc-btn {
+  background: transparent;
+  border: var(--borda-principal) solid var(--contorno);
+  border-radius: var(--border-radius-pequeno);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fontes);
+  transition: all 0.2s;
+}
+
+.requisito-doc-btn:hover {
+  background-color: var(--fundo_submenu_hover);
+  border-color: var(--barra_lateral);
+  color: var(--barra_lateral);
+}
+
+/* Custom Scrollbar for list and review pane */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--contorno);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a1b0c0;
+}
+
+/* Toggle Switch Styles */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--contorno);
+  transition: .3s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+}
+
+input:checked + .slider {
+  background-color: var(--barra_lateral);
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.slider.round {
+  border-radius: 24px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}

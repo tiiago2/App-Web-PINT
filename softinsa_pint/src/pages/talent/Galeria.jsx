@@ -8,7 +8,7 @@ function Galeria() {
   const [vistaAtiva, setVistaAtiva] = useState('tabela');
   const [termoPesquisa, setTermoPesquisa] = useState('');
   const [ordenacao, setOrdenacao] = useState('recentes');
-  const [mostrarFiltros, setMostrarFiltros] = useState(false);
+
   const [paginaAtual, setPaginaAtual] = useState(1);
   const itensPorPagina = 5;
 

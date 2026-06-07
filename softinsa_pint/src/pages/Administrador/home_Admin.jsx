@@ -139,11 +139,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const dados_esta_semana = [
-    { nome: t("aceites"), quantidade: 60, cor: "#4ade80" },
-    { nome: t("pendentes"), quantidade: 25, cor: "#60a5fa" },
-    { nome: t("rejeitadas"), quantidade: 15, cor: "#f87171" },
-  ];
+
 
   return (
     <div

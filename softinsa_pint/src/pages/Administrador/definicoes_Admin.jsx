@@ -19,18 +19,7 @@ function DefinicoesAdmin() {
 
   // Estado para o seletor de tipo de utilizador
   const [roleSelecionada, setRoleSelecionada] = useState("");
-  const [dropdownAberto, setDropdownAberto] = useState(false);
-  const dropdownRef = React.useRef(null);
 
-  React.useEffect(() => {
-    const handler = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setDropdownAberto(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   const roles = ["consultor", "talent", "service"];
 

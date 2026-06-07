@@ -107,7 +107,7 @@ const Render_Badges = () => {
   return(
     <>
     {Badges_Obtidos.map((badge, index) => (
-      <div className='badge_item d-flex flex-column align-items-center text-center'>
+      <div key={index} className='badge_item d-flex flex-column align-items-center text-center'>
         <img src={badge.Imagem} alt={badge.nome} />
         <span className='badge_nome'>{badge.nome}</span>
       </div>
@@ -119,7 +119,7 @@ const Render_Badges = () => {
 const Assinatura = () => {
   return(
     <>
-      {Assinatura_Pessoal.map((badge, index) => (
+      {Assinatura_Pessoal.map((badge) => (
         <div key={badge.id} className='assinatura_badge d-flex align-items-center flex-column justify-content-center'>
           <img src={badge.Imagem} alt={badge.nome} />
         </div>
@@ -165,8 +165,6 @@ const BotaoLogout_Concluir = ({ edicao, setEdicao }) => {
 const PerfilPessoal = () => {
 
   const {t} = useTranslation();
-
-  const navigate = useNavigate();
 
   const [edicao, setEdicao] = useState(false);
   const [profileData, setProfileData] = useState({

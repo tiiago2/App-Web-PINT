@@ -4,31 +4,6 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recha
 
 import "./components.css";
 
-export const calcularTempoRestante = (dataString) => {
-  const dataFim = new Date(dataString);
-  const agora = new Date();
-  
-  const diferencaMs = dataFim - agora;
-  const isExpirado = diferencaMs <= 0;
-  const absMs = Math.abs(diferencaMs);
-
-  const dias = Math.floor(absMs / (1000 * 60 * 60 * 24));
-  const horas = Math.floor((absMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  
-  if (isExpirado) {
-      if (dias > 0) {
-          return `Expirado há ${dias} dias, ${horas} horas`;
-      } else {
-          return `Expirado há ${horas} horas`;
-      }
-  } else {
-      if (dias > 0) {
-          return `Expira em ${dias} dias, ${horas} horas`;
-      } else {
-          return `Expira em ${horas} horas`;
-      }
-  }
-};
 
 export function BotaoVerMais({ onClick, tamanho }) {
   const { t } = useTranslation();
@@ -99,9 +74,6 @@ export function BotaoRejeitar({ onClick, tamanho }) {
   );
 }
 
-export function Rankings({ linhas }) {
-  const { t } = useTranslation();
-}
 
 
 export const GraficoCandidaturas = ({dados_grafico_candidaturas}) => {

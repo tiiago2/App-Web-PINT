@@ -177,7 +177,7 @@ const PerfilPessoal = () => {
   });
 
   return (
-    <div className='perfil-container w-100'>
+    <div className='perfil-container w-100' style={{ justifyContent: 'space-evenly' }}>
       {/* Cabeçalho Superior */}
       <div className='header_perfil d-flex justify-content-between align-items-center mb-4'>
         <div className='d-flex align-items-center'>

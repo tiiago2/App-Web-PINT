@@ -44,3 +44,54 @@
 #total_meio_palavra{
     font-size: 12px;
 }
+
+/* === Classes de Estrutura Híbrida (Portátil vs Monitor) === */
+/* Comportamento base para portátil (até 1439px) ideal para zooms de 125% */
+.primeira-linha-home {
+    flex: 0 0 auto;
+}
+
+.segunda-linha-home {
+    flex: 0 0 auto;
+}
+
+/* Força uma altura de 265px no portátil. Elimina scroll global poupando 20px vitais. */
+.grafico-estatistica-container {
+    height: 265px;
+}
+
+/* === Correções de Alinhamento (Geral) === */
+.segunda-linha-home .card,
+.segunda-linha-home > div > div > div,
+.home-talent-container .grafico-wrapper > div {
+    height: 265px !important;
+    max-height: 265px !important;
+    margin-bottom: 0 !important;
+    overflow-y: hidden; /* Oculta restritamente qualquer barra de scroll interna dos gráficos */
+}
+
+/* === Comportamento Específico para Monitor Grande === */
+@media (min-width: 1440px) and (min-height: 800px) {
+    .candidaturas-column {
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* Desce as candidaturas para eliminar o fosso vazio em baixo */
+    }
+
+    .primeira-linha-home, .segunda-linha-home {
+        flex: 1 1 50%;
+    }
+
+    .grafico-estatistica-container {
+        height: 100%;
+    }
+
+    /* Devolve o comportamento elástico 100% no monitor */
+    .segunda-linha-home .card,
+    .segunda-linha-home > div > div > div,
+    .home-talent-container .grafico-wrapper > div {
+        height: 100% !important;
+        max-height: none !important;
+        overflow-y: visible;
+    }
+}

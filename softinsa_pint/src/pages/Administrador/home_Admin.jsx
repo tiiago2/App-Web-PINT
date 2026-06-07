@@ -101,31 +101,46 @@ const lista_classificacao = [
   { pos: 5, nome: "Ana Beatriz", area: "Cloud", pontos: "35 200" },
 ];
 
-function AcaoRapida({ cor, icone, texto }) {
+function AcaoRapida({ cor, icone, texto, onClick }) {
   return (
     <div
-      className="acao-rapida-btn rounded-4 d-flex flex-column align-items-center justify-content-center text-center shadow-sm"
+      className="acao-rapida-btn d-flex flex-column align-items-center justify-content-center text-center shadow-sm"
+      onClick={onClick}
       style={{
-        backgroundColor: cor,
+        background: `linear-gradient(135deg, ${cor}dd, ${cor})`, // Gradiente muito subtil para profundidade
+        borderRadius: "var(--border-radius-grande)",
         flex: "1 1 0",
         aspectRatio: "1 / 1",
-        maxHeight: "100px",
-        maxWidth: "100px",
-        minWidth: "70px",
+        maxHeight: "110px",
+        maxWidth: "110px",
+        minWidth: "80px",
         cursor: "pointer",
-        color: "white",
-        padding: "2%",
+        color: "#ffffff",
+        padding: "10px",
+        transition: "all 0.3s ease",
+        border: "none",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-5px)";
+        e.currentTarget.style.boxShadow = `0 10px 20px ${cor}66`; // Sombra brilhante da cor do botão
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)"; // Sombra normal
       }}
     >
-      <i
-        className={`fi ${icone} mb-1`}
-        style={{ fontSize: "clamp(1.2rem, 2vw, 2rem)" }}
-      ></i>
+      <div className="d-flex align-items-center justify-content-center mb-2">
+        <i
+          className={`fi ${icone}`}
+          style={{ fontSize: "1.7rem" }}
+        ></i>
+      </div>
       <span
         style={{
-          fontSize: "clamp(0.55rem, 1vw, 0.8rem)",
-          fontWeight: "500",
+          fontSize: "clamp(0.6rem, 0.9vw, 0.8rem)",
+          fontWeight: "600",
           lineHeight: "1.2",
+          textShadow: "0 1px 2px rgba(0,0,0,0.2)" // Melhor legibilidade do texto branco
         }}
       >
         {texto}

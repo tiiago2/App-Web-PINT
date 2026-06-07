@@ -92,7 +92,7 @@ export const GraficoCandidaturas = ({dados_grafico_candidaturas}) => {
     });
 
     return (
-        <div className="border border-2 rounded-4 bg-white p-3 d-flex flex-column h-100" style={{ height: '35vh' }}>
+        <div className="p-3 d-flex flex-column bg-white h-100" style={{ border: 'var(--borda-principal) solid var(--contorno)', borderRadius: 'var(--border-radius-grande)', boxSizing: 'border-box', height: '35vh' }}>
             <h5 className="mb-2">{t('titulo_candidaturas')}</h5>
             
             <div className="flex-grow-1" style={{ width: '100%', minHeight: '200px' }}>

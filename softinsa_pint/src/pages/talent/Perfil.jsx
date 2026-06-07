@@ -177,11 +177,11 @@ const PerfilPessoal = () => {
   });
 
   return (
-    <div className='container_perfil'>
+    <div className='perfil-container w-100'>
       {/* Cabeçalho Superior */}
       <div className='header_perfil d-flex justify-content-between align-items-center mb-4'>
-        <div className='d-flex'>
-          <h1 className='titulo_perfil pe-3'>{t('perfil_pessoal')}</h1>
+        <div className='d-flex align-items-center'>
+          <h1 className='texto-titulo-principal mb-0 pe-3'>{t('perfil_pessoal')}</h1>
           <button className='btn_edit_assinatura p-1 border-0 bg-transparent d-flex align-items-center justify-content-center'>
             {edicao === false ? (
               <i className="fi fi-br-pencil edit_icon" onClick={() => setEdicao(!edicao)}></i>

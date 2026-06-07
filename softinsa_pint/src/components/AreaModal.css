@@ -1,0 +1,135 @@
+.area-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+}
+
+.area-modal-container {
+  background: white;
+  width: 90%;
+  max-width: 500px;
+  border-radius: var(--border-radius-grande);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 90vh;
+}
+
+.area-modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--contorno);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.area-modal-header h4 {
+  margin: 0;
+  color: var(--texto-principal);
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.area-modal-close-btn {
+  background: none;
+  border: none;
+  color: #6c757d;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.area-modal-close-btn:hover {
+  color: var(--barra_lateral);
+}
+
+.area-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.area-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.area-form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.area-form-input {
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.95rem;
+  color: #212529;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.area-form-input:focus {
+  outline: none;
+  border-color: var(--barra_lateral);
+  box-shadow: 0 0 0 3px rgba(35, 59, 102, 0.1);
+}
+
+.area-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--contorno);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  background-color: #f8f9fa;
+}
+
+.area-btn-cancel,
+.area-btn-save {
+  padding: 0.6rem 1.25rem;
+  border-radius: 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.area-btn-cancel {
+  background: white;
+  border: 1px solid #ced4da;
+  color: #495057;
+}
+
+.area-btn-cancel:hover {
+  background: #e9ecef;
+}
+
+.area-btn-save {
+  background: var(--barra_lateral);
+  border: none;
+  color: white;
+}
+
+.area-btn-save:hover {
+  background: #1a2a4a;
+}

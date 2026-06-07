@@ -71,6 +71,11 @@
     z-index: 50;
 }
 
+.botao-dropdown-menu.para-cima {
+    top: auto;
+    bottom: calc(100% + 8px);
+}
+
 .botao-dropdown-opcao {
     width: 100%;
     padding: 12px 16px;

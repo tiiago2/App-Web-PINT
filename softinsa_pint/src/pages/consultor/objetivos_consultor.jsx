@@ -1,7 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
+import BadgeCirculo from '../../components/Galeria/BadgeCirculo/BadgeCirculo';
 import './objetivos_consultor.css';
+
+/* ── Imagens de badges (mock — na BD vêm da API) ── */
+import badgeImg1 from '../../assets/badges/Low Code.png';
+import badgeImg2 from '../../assets/badges/Low Code 2.png';
+import badgeImg3 from '../../assets/badges/Low Code 3.png';
+import badgeImg4 from '../../assets/badges/Low Code 4.png';
+import badgeImg5 from '../../assets/badges/Low Code 5.png';
 
 /* ─────────────────────────────────────────────────────────────────────
    MOCK DATA — nomes dos campos exatamente como na base de dados
@@ -12,18 +20,18 @@ import './objetivos_consultor.css';
                      Deleted_Objetivo, Data_Conclusao
    ───────────────────────────────────────────────────────────────────── */
 const badgesMock = [
-    { ID_Badge: 1,  Nome_Badge: 'Low Code',        ID_Area: 1, Nome_Area: 'Hybrid Systems',   Pontos_Badge: 100, corFundo: '#E8EBFB', corIcone: '#7B8FD4', icone: 'fi fi-br-coffee'          },
-    { ID_Badge: 2,  Nome_Badge: 'Bases de Dados',  ID_Area: 1, Nome_Area: 'Hybrid Systems',   Pontos_Badge: 120, corFundo: '#E0F5EC', corIcone: '#2ECC71', icone: 'fi fi-br-database'        },
-    { ID_Badge: 3,  Nome_Badge: 'Cloud DevOps',    ID_Area: 2, Nome_Area: 'Cloud & DevOps',   Pontos_Badge: 150, corFundo: '#E0EEF8', corIcone: '#5BAADD', icone: 'fi fi-br-cloud'           },
-    { ID_Badge: 4,  Nome_Badge: 'Agile',           ID_Area: 1, Nome_Area: 'Hybrid Systems',   Pontos_Badge: 80,  corFundo: '#FEF5E0', corIcone: '#E6900A', icone: 'fi fi-br-target'          },
-    { ID_Badge: 5,  Nome_Badge: 'React Native',    ID_Area: 3, Nome_Area: 'Mobile Solutions', Pontos_Badge: 130, corFundo: '#E8EBFB', corIcone: '#7B8FD4', icone: 'fi fi-br-mobile'          },
-    { ID_Badge: 6,  Nome_Badge: 'Data & AI',       ID_Area: 4, Nome_Area: 'Data & AI',        Pontos_Badge: 200, corFundo: '#E0F5EC', corIcone: '#2ECC71', icone: 'fi fi-br-chart-histogram' },
-    { ID_Badge: 7,  Nome_Badge: 'Kubernetes',      ID_Area: 2, Nome_Area: 'Cloud & DevOps',   Pontos_Badge: 170, corFundo: '#E0EEF8', corIcone: '#5BAADD', icone: 'fi fi-br-server'          },
-    { ID_Badge: 8,  Nome_Badge: 'Cybersecurity',   ID_Area: 5, Nome_Area: 'Cybersecurity',    Pontos_Badge: 190, corFundo: '#F9E0E0', corIcone: '#E74C3C', icone: 'fi fi-br-shield'          },
-    { ID_Badge: 9,  Nome_Badge: 'TypeScript',      ID_Area: 1, Nome_Area: 'Hybrid Systems',   Pontos_Badge: 110, corFundo: '#E8EBFB', corIcone: '#7B8FD4', icone: 'fi fi-br-code'           },
-    { ID_Badge: 10, Nome_Badge: 'Machine Learning',ID_Area: 4, Nome_Area: 'Data & AI',        Pontos_Badge: 220, corFundo: '#E0F5EC', corIcone: '#2ECC71', icone: 'fi fi-br-brain'          },
-    { ID_Badge: 11, Nome_Badge: 'Docker',          ID_Area: 2, Nome_Area: 'Cloud & DevOps',   Pontos_Badge: 140, corFundo: '#E0EEF8', corIcone: '#5BAADD', icone: 'fi fi-br-layers'         },
-    { ID_Badge: 12, Nome_Badge: 'Ethical Hacking', ID_Area: 5, Nome_Area: 'Cybersecurity',    Pontos_Badge: 210, corFundo: '#F9E0E0', corIcone: '#E74C3C', icone: 'fi fi-br-trophy'         },
+    { ID_Badge: 1,  Nome_Badge: 'Low Code',        ID_Area: 1, Nome_Area: 'Hybrid Systems',   Pontos_Badge: 100, imagemBadge: badgeImg1, icone: 'fi fi-br-coffee'          },
+    { ID_Badge: 2,  Nome_Badge: 'Bases de Dados',  ID_Area: 1, Nome_Area: 'Hybrid Systems',   Pontos_Badge: 120, imagemBadge: badgeImg2, icone: 'fi fi-br-database'        },
+    { ID_Badge: 3,  Nome_Badge: 'Cloud DevOps',    ID_Area: 2, Nome_Area: 'Cloud & DevOps',   Pontos_Badge: 150, imagemBadge: badgeImg3, icone: 'fi fi-br-cloud'           },
+    { ID_Badge: 4,  Nome_Badge: 'Agile',           ID_Area: 1, Nome_Area: 'Hybrid Systems',   Pontos_Badge: 80,  imagemBadge: badgeImg4, icone: 'fi fi-br-target'          },
+    { ID_Badge: 5,  Nome_Badge: 'React Native',    ID_Area: 3, Nome_Area: 'Mobile Solutions', Pontos_Badge: 130, imagemBadge: badgeImg5, icone: 'fi fi-br-mobile'          },
+    { ID_Badge: 6,  Nome_Badge: 'Data & AI',       ID_Area: 4, Nome_Area: 'Data & AI',        Pontos_Badge: 200, imagemBadge: badgeImg1, icone: 'fi fi-br-chart-histogram' },
+    { ID_Badge: 7,  Nome_Badge: 'Kubernetes',      ID_Area: 2, Nome_Area: 'Cloud & DevOps',   Pontos_Badge: 170, imagemBadge: badgeImg2, icone: 'fi fi-br-server'          },
+    { ID_Badge: 8,  Nome_Badge: 'Cybersecurity',   ID_Area: 5, Nome_Area: 'Cybersecurity',    Pontos_Badge: 190, imagemBadge: badgeImg3, icone: 'fi fi-br-shield'          },
+    { ID_Badge: 9,  Nome_Badge: 'TypeScript',      ID_Area: 1, Nome_Area: 'Hybrid Systems',   Pontos_Badge: 110, imagemBadge: badgeImg4, icone: 'fi fi-br-code'           },
+    { ID_Badge: 10, Nome_Badge: 'Machine Learning',ID_Area: 4, Nome_Area: 'Data & AI',        Pontos_Badge: 220, imagemBadge: badgeImg5, icone: 'fi fi-br-brain'          },
+    { ID_Badge: 11, Nome_Badge: 'Docker',          ID_Area: 2, Nome_Area: 'Cloud & DevOps',   Pontos_Badge: 140, imagemBadge: badgeImg1, icone: 'fi fi-br-layers'         },
+    { ID_Badge: 12, Nome_Badge: 'Ethical Hacking', ID_Area: 5, Nome_Area: 'Cybersecurity',    Pontos_Badge: 210, imagemBadge: badgeImg2, icone: 'fi fi-br-trophy'         },
 ];
 
 const objetivosMock = [
@@ -32,6 +40,10 @@ const objetivosMock = [
     { ID_Objetivo: 3, ID_Badge: 3, ID_Utilizador: 1, Data_inicial: '2026-03-01T00:00:00', Data_Objetivo: '2026-07-11T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 23, badge: badgesMock[2] },
     { ID_Objetivo: 4, ID_Badge: 4, ID_Utilizador: 1, Data_inicial: '2026-03-15T00:00:00', Data_Objetivo: '2026-07-11T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 11, badge: badgesMock[3] },
     { ID_Objetivo: 5, ID_Badge: 5, ID_Utilizador: 1, Data_inicial: '2026-04-01T00:00:00', Data_Objetivo: '2026-08-05T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 65, badge: badgesMock[4] },
+    // Mock History
+    { ID_Objetivo: 6, ID_Badge: 6, ID_Utilizador: 1, Data_inicial: '2025-10-01T00:00:00', Data_Objetivo: '2026-01-15T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: '2026-01-10T14:20:00', progresso: 100, badge: badgesMock[5] },
+    { ID_Objetivo: 7, ID_Badge: 7, ID_Utilizador: 1, Data_inicial: '2025-11-01T00:00:00', Data_Objetivo: '2026-02-28T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: '2026-02-28T10:00:00', progresso: 100, badge: badgesMock[6] },
+    { ID_Objetivo: 8, ID_Badge: 8, ID_Utilizador: 1, Data_inicial: '2025-12-01T00:00:00', Data_Objetivo: '2026-03-15T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 85, badge: badgesMock[7] }, // Expirado (não a 100% e passou data)
 ];
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -46,10 +58,12 @@ const formatarData = (str) => {
     return d.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
-const corProgresso = (pct) => {
-    if (pct >= 70) return 'var(--aceitar)';
-    if (pct >= 40) return '#E6900A';
-    return 'var(--rejeitar)';
+const corObjetivo = (obj) => {
+    const isConcluido = obj.progresso === 100 || obj.Data_Conclusao !== null;
+    const isExpirado = new Date(obj.Data_Objetivo) < new Date() && !isConcluido;
+    if (isConcluido) return 'var(--aceitar)';
+    if (isExpirado) return 'var(--rejeitar)';
+    return 'var(--progresso)'; // amarelo em progresso
 };
 
 const mesmoDia = (d1, d2) =>
@@ -57,7 +71,11 @@ const mesmoDia = (d1, d2) =>
     d1.getMonth()    === d2.getMonth()    &&
     d1.getDate()     === d2.getDate();
 
-const piorProgresso = (objs) => Math.min(...objs.map(o => o.progresso));
+const corAgrupada = (objs) => {
+    if (objs.some(o => corObjetivo(o) === 'var(--rejeitar)')) return 'var(--rejeitar)';
+    if (objs.some(o => corObjetivo(o) === 'var(--progresso)')) return 'var(--progresso)';
+    return 'var(--aceitar)';
+};
 
 /* ─────────────────────────────────────────────────────────────────────
    COMPONENTE: CALENDÁRIO
@@ -85,10 +103,16 @@ const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
 
     const handleClick = (dia) => {
         if (!dia) return;
-        const objs = getObjsDia(dia);
-        if (objs.length === 0) { onDiaClick(null); return; }
         const alvo = new Date(ano, mes, dia);
-        // Clica no mesmo dia → remove filtro
+        const objs = getObjsDia(dia);
+        const hojeLimpo = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+        const isFuturo = alvo >= hojeLimpo;
+
+        if (objs.length === 0 && !isFuturo) {
+            onDiaClick(null); 
+            return; 
+        }
+
         if (diaSelecionado && mesmoDia(diaSelecionado, alvo)) {
             onDiaClick(null);
         } else {
@@ -127,7 +151,9 @@ const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
                     const isHoje  = mesmoDia(hoje, alvo);
                     const isSel   = diaSelecionado && mesmoDia(diaSelecionado, alvo);
                     const temObjs = objs.length > 0;
-                    const cor     = temObjs ? corProgresso(piorProgresso(objs)) : null;
+                    const cor     = temObjs ? corAgrupada(objs) : null;
+                    const hojeLimpo = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+                    const isFuturo = alvo >= hojeLimpo;
 
                     return (
                         <div
@@ -137,6 +163,7 @@ const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
                                 isHoje  ? 'hoje'        : '',
                                 isSel   ? 'selecionado' : '',
                                 temObjs ? 'tem-obj'     : '',
+                                (!temObjs && isFuturo) ? 'clicavel-futuro' : ''
                             ].filter(Boolean).join(' ')}
                             onClick={() => handleClick(dia)}
                             onMouseEnter={(e) => {
@@ -173,7 +200,7 @@ const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
                     <span>≥ 70%</span>
                 </div>
                 <div className="obj-cal-leg-item">
-                    <span className="obj-cal-dot" style={{ backgroundColor: '#E6900A' }} />
+                    <span className="obj-cal-dot" style={{ backgroundColor: 'var(--progresso)' }} />
                     <span>40–69%</span>
                 </div>
                 <div className="obj-cal-leg-item">
@@ -201,7 +228,7 @@ const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
                         <div key={o.ID_Objetivo} className="obj-cal-popup-item">
                             <i className={o.badge.icone} style={{ color: o.badge.corIcone, fontSize: '13px', flexShrink: 0 }} />
                             <span className="obj-cal-popup-nome">{o.badge.Nome_Badge}</span>
-                            <span className="obj-cal-popup-pct" style={{ color: corProgresso(o.progresso) }}>
+                            <span className="obj-cal-popup-pct" style={{ color: corObjetivo(o) }}>
                                 {o.progresso}%
                             </span>
                         </div>
@@ -422,8 +449,12 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
                                     className={`obj-badge-grid-card${selected?.ID_Badge === badge.ID_Badge ? ' selecionado' : ''}`}
                                     onClick={() => setSelected(badge)}
                                 >
-                                    <div className="obj-badge-grid-circle" style={{ background: badge.corFundo }}>
-                                        <i className={badge.icone} style={{ color: badge.corIcone }} />
+                                    <div className="obj-badge-grid-circle-wrap">
+                                        <BadgeCirculo
+                                            imagemBadge={badge.imagemBadge || null}
+                                            icone={badge.icone}
+                                            nomeBadge={badge.Nome_Badge}
+                                        />
                                     </div>
                                     <div className="obj-badge-grid-nome">{badge.Nome_Badge}</div>
                                     <div className="obj-badge-grid-area">{badge.Nome_Area}</div>
@@ -434,9 +465,8 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
                 </div>
 
                 <div className="obj-picker-footer">
-                    <button className="obj-btn-historico">
-                        <i className="fi fi-br-time-past" />
-                        Ver Histórico
+                    <button className="obj-btn-cancelar" onClick={onClose}>
+                        Cancelar
                     </button>
                     <button
                         className="obj-btn-confirmar"
@@ -463,11 +493,33 @@ const ObjetivosConsultor = ({ user }) => {
     const [showPicker,       setShowPicker]       = useState(false);
     const [objetivos,        setObjetivos]        = useState(objetivosMock);
     const [diaSelecionado,   setDiaSelecionado]   = useState(null);
+    const [viewMode,         setViewMode]         = useState('progresso');
+    const [historicoFiltro,  setHistoricoFiltro]  = useState('todos'); // 'todos' | 'concluidos' | 'expirados'
 
-    // Filtra lista pelo dia clicado no calendário (ou mostra todos)
-    const objetivosFiltrados = diaSelecionado
-        ? objetivos.filter(o => mesmoDia(new Date(o.Data_Objetivo), diaSelecionado))
-        : objetivos;
+    // Filtra lista pelo dia clicado no calendário e pelo separador ativo
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const objetivosFiltrados = objetivos.filter(obj => {
+        const dataLimite = new Date(obj.Data_Objetivo);
+        const isConcluido = obj.progresso === 100 || obj.Data_Conclusao !== null;
+        const isExpirado = dataLimite < hoje && !isConcluido;
+        const isHistorico = isConcluido || isExpirado;
+        if (viewMode === 'historico') {
+            if (!isHistorico) return false;
+            if (historicoFiltro === 'concluidos' && !isConcluido) return false;
+            if (historicoFiltro === 'expirados' && !isExpirado) return false;
+            if (diaSelecionado && !mesmoDia(dataLimite, diaSelecionado)) return false;
+            return true; // 'todos'
+        } else {
+            if (isHistorico) return false; // Em progresso
+
+            if (diaSelecionado) {
+                return mesmoDia(dataLimite, diaSelecionado);
+            }
+            return true;
+        }
+    });
 
     const handleSubmeter = (e) => {
         e.preventDefault();
@@ -498,6 +550,43 @@ const ObjetivosConsultor = ({ user }) => {
         setObjetivos(prev => prev.filter(o => o.ID_Objetivo !== id));
     };
 
+    // Quando clica num dia no calendário
+    const handleDiaClick = (dia) => {
+        setDiaSelecionado(dia);
+        if (!dia) return;
+
+        // Verifica se há apenas objetivos de um tipo nesse dia para auto-switch da tab
+        const objsNesteDia = objetivos.filter(o => mesmoDia(new Date(o.Data_Objetivo), dia));
+        
+        if (objsNesteDia.length === 0) {
+            const hojeLimpo = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+            if (dia >= hojeLimpo) {
+                const yyyy = dia.getFullYear();
+                const mm = String(dia.getMonth() + 1).padStart(2, '0');
+                const dd = String(dia.getDate()).padStart(2, '0');
+                setData(`${yyyy}-${mm}-${dd}`);
+            }
+            return;
+        }
+
+        let temProgresso = false;
+        let temHistorico = false;
+
+        objsNesteDia.forEach(o => {
+            const isConcluido = o.progresso === 100 || o.Data_Conclusao !== null;
+            const isExpirado = new Date(o.Data_Objetivo) < hoje && !isConcluido;
+            if (isConcluido || isExpirado) temHistorico = true;
+            else temProgresso = true;
+        });
+
+        if (viewMode === 'progresso' && !temProgresso && temHistorico) {
+            setViewMode('historico');
+            setHistoricoFiltro('todos');
+        } else if (viewMode === 'historico' && !temHistorico && temProgresso) {
+            setViewMode('progresso');
+        }
+    };
+
     return (
         <div className="obj-page">
 
@@ -518,8 +607,12 @@ const ObjetivosConsultor = ({ user }) => {
                             >
                                 {badgeSelecionado ? (
                                     <>
-                                        <div className="obj-picker-mini-circle" style={{ background: badgeSelecionado.corFundo }}>
-                                            <i className={badgeSelecionado.icone} style={{ color: badgeSelecionado.corIcone, fontSize: '0.9rem' }} />
+                                        <div className="obj-picker-mini-wrap">
+                                            <BadgeCirculo
+                                                imagemBadge={badgeSelecionado.imagemBadge || null}
+                                                icone={badgeSelecionado.icone}
+                                                nomeBadge={badgeSelecionado.Nome_Badge}
+                                            />
                                         </div>
                                         <span style={{ fontSize: '14px', color: 'var(--fontes)', flex: 1 }}>
                                             {badgeSelecionado.Nome_Badge}
@@ -569,60 +662,102 @@ const ObjetivosConsultor = ({ user }) => {
                 {/* ── Painel esquerdo: lista de objetivos ── */}
                 <div className="obj-lista-panel">
                     <div className="obj-painel-header">
-                        <h2 className="obj-painel-titulo">
-                            {diaSelecionado
-                                ? `${diaSelecionado.getDate()} ${MESES_PT[diaSelecionado.getMonth()]}`
-                                : 'Objetivos em progresso'
-                            }
-                            <span className="obj-painel-count"> ({objetivosFiltrados.length})</span>
-                        </h2>
-                        {diaSelecionado && (
+                        <div className="obj-tabs-wrapper">
+                            <button 
+                                className={`obj-tab-btn ${viewMode === 'progresso' ? 'active' : ''}`}
+                                onClick={() => { setViewMode('progresso'); setDiaSelecionado(null); }}
+                            >
+                                Em progresso
+                            </button>
+                            <button 
+                                className={`obj-tab-btn ${viewMode === 'historico' ? 'active' : ''}`}
+                                onClick={() => { setViewMode('historico'); setDiaSelecionado(null); }}
+                            >
+                                Histórico
+                            </button>
+                        </div>
+                        
+                        {viewMode === 'progresso' && diaSelecionado && (
                             <button className="obj-painel-voltar" onClick={() => setDiaSelecionado(null)}>
                                 <i className="fi fi-br-cross" style={{ fontSize: '10px' }} />
                                 Ver todos
                             </button>
                         )}
+                        {viewMode === 'progresso' && !diaSelecionado && (
+                            <span className="obj-painel-count">({objetivosFiltrados.length})</span>
+                        )}
+                        {viewMode === 'historico' && (
+                            <span className="obj-painel-count">({objetivosFiltrados.length})</span>
+                        )}
                     </div>
+
+                    {viewMode === 'historico' && (
+                        <div className="obj-historico-submenu fade-in">
+                            <button 
+                                className={`obj-sub-btn ${historicoFiltro === 'todos' ? 'active' : ''}`}
+                                onClick={() => setHistoricoFiltro('todos')}
+                            >
+                                Todos
+                            </button>
+                            <button 
+                                className={`obj-sub-btn ${historicoFiltro === 'concluidos' ? 'active' : ''}`}
+                                onClick={() => setHistoricoFiltro('concluidos')}
+                            >
+                                Concluídos
+                            </button>
+                            <button 
+                                className={`obj-sub-btn ${historicoFiltro === 'expirados' ? 'active' : ''}`}
+                                onClick={() => setHistoricoFiltro('expirados')}
+                            >
+                                Expirados
+                            </button>
+                        </div>
+                    )}
 
                     {/* Cards de objetivos */}
                     <div className="obj-lista-scroll">
                         {objetivosFiltrados.length === 0 ? (
-                            <div className="obj-painel-vazio">
-                                <i className="fi fi-br-calendar" />
+                            <div className="obj-painel-vazio fade-in">
+                                <i className={viewMode === 'historico' ? "fi fi-br-time-past" : "fi fi-br-calendar"} />
                                 <span>
-                                    {diaSelecionado
-                                        ? 'Nenhum objetivo expira neste dia.'
-                                        : 'Ainda não tens objetivos em progresso.'
+                                    {viewMode === 'historico' 
+                                        ? 'Ainda não tens histórico de objetivos.'
+                                        : diaSelecionado
+                                            ? 'Nenhum objetivo expira neste dia.'
+                                            : 'Ainda não tens objetivos em progresso.'
                                     }
                                 </span>
                             </div>
                         ) : (
                             objetivosFiltrados.map(obj => {
-                                const cor = corProgresso(obj.progresso);
+                                const cor = corObjetivo(obj);
+                                const isConcluido = obj.progresso === 100 || obj.Data_Conclusao;
+                                const isExpirado = new Date(obj.Data_Objetivo) < new Date() && !isConcluido;
+
                                 return (
-                                    <div key={obj.ID_Objetivo} className="obj-item-card">
+                                    <div key={obj.ID_Objetivo} className="obj-item-card fade-in">
+                                        
+                                        {/* Botão remover — só para progresso */}
+                                        {viewMode === 'progresso' && (
+                                            <button
+                                                className="obj-item-remover"
+                                                onClick={() => handleRemover(obj.ID_Objetivo)}
+                                                title="Remover objetivo (fase experimental)"
+                                            >
+                                                <i className="fi fi-br-cross" />
+                                            </button>
+                                        )}
 
-                                        {/* Botão remover — fase experimental, retirar quando ligar à BD */}
-                                        <button
-                                            className="obj-item-remover"
-                                            onClick={() => handleRemover(obj.ID_Objetivo)}
-                                            title="Remover objetivo (fase experimental)"
-                                        >
-                                            <i className="fi fi-br-cross" />
-                                        </button>
-
-                                        {/*
-                                         * TODO: Navegar para a página de detalhe do badge quando existir.
-                                         * Substituir navigate('/') por navigate(`/badges/${obj.ID_Badge}`)
-                                         * ou pela rota que o grupo definir para a página do badge.
-                                         */}
                                         <button
                                             className="obj-badge-icon-btn"
-                                            style={{ background: obj.badge.corFundo }}
                                             onClick={() => navigate('/')}
                                             title={`Ver badge: ${obj.badge.Nome_Badge}`}
                                         >
-                                            <i className={obj.badge.icone} style={{ color: obj.badge.corIcone }} />
+                                            <BadgeCirculo
+                                                imagemBadge={obj.badge.imagemBadge || null}
+                                                icone={obj.badge.icone}
+                                                nomeBadge={obj.badge.Nome_Badge}
+                                            />
                                         </button>
 
                                         <div className="obj-item-info">
@@ -643,7 +778,7 @@ const ObjetivosConsultor = ({ user }) => {
                                             </div>
                                             <div className="obj-estado-label" style={{ color: cor }}>
                                                 <div className="obj-estado-dot" style={{ backgroundColor: cor }} />
-                                                {obj.progresso}%
+                                                {isConcluido ? 'Concluído' : (isExpirado ? 'Expirado' : `${obj.progresso}%`)}
                                             </div>
                                         </div>
                                     </div>
@@ -658,7 +793,7 @@ const ObjetivosConsultor = ({ user }) => {
                     <Calendario
                         objetivos={objetivos}
                         diaSelecionado={diaSelecionado}
-                        onDiaClick={setDiaSelecionado}
+                        onDiaClick={handleDiaClick}
                     />
                 </div>
             </div>

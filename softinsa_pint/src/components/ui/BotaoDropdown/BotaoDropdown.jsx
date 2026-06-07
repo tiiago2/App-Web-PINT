@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import "./BotaoDropdown.css";
 
 function BotaoDropdown({ titulo, valor, opcoes, onChange, icone,
-    mostrarValor = true, mostrarSeta = true,}) {
+    mostrarValor = true, mostrarSeta = true, mostrarTituloNoValor = true, abrirParaCima = false}) {
   const [aberto, setAberto] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -18,8 +18,13 @@ function BotaoDropdown({ titulo, valor, opcoes, onChange, icone,
 
   const opcaoSelecionada = opcoes.find((opcao) => opcao.valor === valor);
 
+<<<<<<< HEAD
   const textoBotao = (opcaoSelecionada && mostrarValor)
     ? `${titulo}: ${opcaoSelecionada.label}`
+=======
+  const textoBotao = opcaoSelecionada
+    ? (mostrarTituloNoValor && titulo ? `${titulo}: ${opcaoSelecionada.label}` : opcaoSelecionada.label)
+>>>>>>> d2d37181fde97e08d660870e6fef9c7eec16d2ae
     : titulo;
 
   function selecionarOpcao(novoValor) {
@@ -44,7 +49,7 @@ function BotaoDropdown({ titulo, valor, opcoes, onChange, icone,
       </button>
 
       {aberto && (
-        <div className="botao-dropdown-menu">
+        <div className={`botao-dropdown-menu ${abrirParaCima ? "para-cima" : ""}`}>
           {opcoes.map((opcao) => (
             <button
               key={opcao.valor}

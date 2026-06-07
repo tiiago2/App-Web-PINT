@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
+import BarraPesquisa from "../../components/ui/BarraPesquisa/BarraPesquisa";
 import "./Atividade.css";
 const activityConfig = {
   received: {
@@ -142,20 +143,19 @@ export default function Atividade() {
   const sortedGroupKeys = Object.keys(groupedActivities).sort(
     (a, b) => orderOfGroups.indexOf(a) - orderOfGroups.indexOf(b)
   );  return (
-    <div className="atividade-page">
+    <div className="atividade-container w-100">
+      <h1 className="texto-titulo-principal mb-4">{t("Atividades") || "Atividades"}</h1>
+      
       {/* Barra de Pesquisa e Filtros (Top) */}
       <div className="atividade-filtros-bar d-flex flex-column flex-md-row gap-3 align-items-center justify-content-between">
-        <div className="search-wrapper position-relative flex-grow-1">
-          <i className="fi fi-br-search search-icon position-absolute"></i>
-          <input
-            type="text"
-            className="form-control search-input"
-            placeholder={t("pesquisar_utilizador_item")}
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
+        <div className="flex-grow-1 w-100">
+          <BarraPesquisa
+            valor={searchQuery}
+            onChange={(val) => {
+              setSearchQuery(val);
               setVisibleCount(10);
             }}
+            placeholder={t("pesquisar_utilizador_item")}
           />
         </div>
         <div className="filters-wrapper d-flex gap-2 overflow-x-auto pb-2 pb-md-0">

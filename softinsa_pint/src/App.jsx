@@ -37,7 +37,11 @@ function App() {
     //-------------trocar para base dados
     id: 1,
     nome: "Utilizador",
+<<<<<<< HEAD
     cargo: "service",
+=======
+    cargo: "consultor", //pode ser "consultor", "talent", "service" ou "admin"
+>>>>>>> d2d37181fde97e08d660870e6fef9c7eec16d2ae
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10"),
   });
@@ -220,15 +224,9 @@ function App() {
             element={<HomeConsultor user={user} saudacao={Saudacao()} />}
           />
 
-          <Route
-            path="/estatisticas"
-            element={<EstatisticasConsultor />}
-          />
+          <Route path="/estatisticas" element={<EstatisticasConsultor />} />
 
-          <Route
-            path="/galeria"
-            element={<GaleriaConsultor />}
-          />
+          <Route path="/galeria" element={<GaleriaConsultor />} />
 
           <Route
             path="/candidaturas"
@@ -240,10 +238,7 @@ function App() {
             element={<ObjetivosConsultor user={user} />}
           />
 
-          <Route
-            path="/"
-            element={<Navigate to="/home" replace />}
-          />
+          <Route path="/" element={<Navigate to="/home" replace />} />
 
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
@@ -258,13 +253,13 @@ function App() {
           <Route path="/galeria" element={<GaleriaConsultor />} />
           <Route path="/candidaturas" element={<Candidaturas />} />
           <Route path="/perfil/:id" element={<PerfilPessoal />} />
-          {/*<Route path="/atividade" element={<Atividade />} />*/}
+          <Route path="/atividade" element={<Atividade />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       );
     } else if (user.cargo === "service") {
-      return(
+      return (
         <Routes>
           <Route
             path="/home"
@@ -277,7 +272,7 @@ function App() {
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
-      )
+      );
     } else if (user.cargo === "admin") {
       return (
         <Routes>
@@ -289,7 +284,7 @@ function App() {
           <Route path="/galeria" element={<Galeria />} />
           <Route path="/editar" element={<EditarAdmin />} />
           <Route path="/definicoes" element={<DefinicoesAdmin />} />
-          {/*<Route path="/atividade" element={<Atividade />} />*/}
+          <Route path="/atividade" element={<Atividade />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>

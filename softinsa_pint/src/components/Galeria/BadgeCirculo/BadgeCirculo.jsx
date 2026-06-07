@@ -8,6 +8,7 @@ function BadgeCirculo({
   estado,
   especial = false,
   tipoEspecial = null,
+  corBg = null,
 }) {
   const idGradiente = useId().replace(/:/g, "");
   const bloqueado = estado === "bloqueados";
@@ -25,9 +26,15 @@ function BadgeCirculo({
     .filter(Boolean)
     .join(" ");
 
+  // Estilo simulado para recriar o visual dos badges PNG usando apenas CSS
+  const estiloAdmin = corBg && !temImagem ? { 
+    backgroundColor: corBg, 
+    border: "none",
+  } : {};
+
   return (
     <div className={classes}>
-      <div className="badge-circulo-conteudo">
+      <div className="badge-circulo-conteudo" style={estiloAdmin}>
         {temImagem ? (
           <img
             src={imagemBadge}
@@ -35,7 +42,7 @@ function BadgeCirculo({
             className="badge-circulo-imagem"
           />
         ) : (
-          <i className={`fi ${icone} badge-circulo-icone`} aria-hidden="true" />
+          <i className={`fi ${icone} badge-circulo-icone`} aria-hidden="true" style={corBg && !temImagem ? { color: 'rgba(0,0,0,0.45)' } : {}} />
         )}
       </div>
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import BadgeCirculo from '../../../components/Galeria/BadgeCirculo/BadgeCirculo';
 
 export default function GaleriaBadges({ 
   mockBadges, 
@@ -28,12 +29,14 @@ export default function GaleriaBadges({
             {/* Lista de Todos os Badges */}
             {filtrados.map(badge => (
               <div key={badge.id} className="badge-item-wrapper">
-                <div 
-                  className="badge-circle" 
-                  style={{ backgroundColor: badge.cor }}
-                  onClick={() => onEdit && onEdit(badge)}
-                >
-                  <i className={`fi ${badge.icon}`}></i>
+                <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => onEdit && onEdit(badge)}>
+                  <BadgeCirculo 
+                    icone={badge.icon}
+                    nomeBadge={badge.nome}
+                    imagemBadge={badge.imagem}
+                    corBg={badge.cor}
+                    estado="desbloqueados"
+                  />
                   <div 
                     className="badge-delete-btn" 
                     title="Eliminar Badge"
@@ -41,6 +44,7 @@ export default function GaleriaBadges({
                       e.stopPropagation(); // Impede que abra o modal de edição ao eliminar
                       if (onDelete) onDelete(badge.id);
                     }}
+                    style={{ zIndex: 10 }}
                   >
                     <i className="fi fi-br-trash"></i>
                   </div>

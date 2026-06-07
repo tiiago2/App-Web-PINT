@@ -7,7 +7,7 @@ import BotaoDropdown from './ui/BotaoDropdown/BotaoDropdown';
 const MOCK_HIERARCHY = [
   {
     id: "lp1",
-    nome: "Software Engineering",
+    nome: "Jornada Técnica",
     serviceLines: [
       {
         id: "sl1",
@@ -25,12 +25,6 @@ const MOCK_HIERARCHY = [
           { id: "a4", nome: "Spring Boot" },
         ],
       },
-    ],
-  },
-  {
-    id: "lp2",
-    nome: "Cloud & Infrastructure",
-    serviceLines: [
       {
         id: "sl3",
         nome: "Cloud Native",
@@ -78,6 +72,7 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
   // Estados de Validação Inline
   const [erroSl, setErroSl] = useState('');
   const [erroArea, setErroArea] = useState('');
+  const [formErro, setFormErro] = useState('');
 
   // Estados dos Requisitos Dinâmicos
   const [requisitos, setRequisitos] = useState([]);
@@ -122,6 +117,7 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
         setRequisitos([{ id: Date.now(), titulo: '', descricao: '', imagem: null }]); // Inicia com 1 requisito vazio
         setErroSl('');
         setErroArea('');
+        setFormErro('');
       }
     } else {
       document.body.style.overflow = "";
@@ -139,12 +135,14 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
     setServiceLineId('');
     setAreaId('');
     setErroSl(''); // Limpa o erro se o user afinal clicou no correto
+    setFormErro('');
   };
 
   const handleSlChange = (val) => {
     setServiceLineId(val);
     setAreaId('');
     setErroArea(''); // Limpa o erro
+    setFormErro('');
   };
 
   // Funções para gerir Requisitos Dinâmicos
@@ -191,10 +189,9 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
 
   const handleSave = (e) => {
     e.preventDefault();
+    setFormErro('');
     if (!nome.trim() || pontos === "" || !areaId || !nivel.trim()) {
-      alert(
-        "Por favor preenche todos os campos obrigatórios, incluindo Área e Nível.",
-      );
+      setFormErro("Por favor preencha todos os campos obrigatórios, incluindo Área e Nível.");
       return;
     }
 
@@ -241,6 +238,12 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
           className="badge-modal-body"
           onSubmit={handleSave}
         >
+          {formErro && (
+            <div className="alert alert-danger d-flex align-items-center gap-2 mb-0" style={{ fontSize: '0.85rem', padding: '0.75rem', marginBottom: '1rem' }}>
+              <i className="fi fi-br-info"></i> {formErro}
+            </div>
+          )}
+
           <div className="badge-preview-container">
             <div className="badge-preview-label">Pré-visualização</div>
             <div className="preview-circle" style={{ backgroundColor: imagemPreview ? 'transparent' : cor }}>
@@ -308,6 +311,7 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
                    opcoes={areaOpcoes} 
                    onChange={val => setAreaId(val)}
                    mostrarTituloNoValor={false}
+                   abrirParaCima={true}
                 />
               </div>
               {erroArea && <div style={{color: '#ff4d4d', fontSize: '0.8rem', marginTop: '0.2rem'}}>{erroArea}</div>}

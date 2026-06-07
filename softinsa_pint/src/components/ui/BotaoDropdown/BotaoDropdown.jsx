@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./BotaoDropdown.css";
 
 function BotaoDropdown({ titulo, valor, opcoes, onChange, icone,
-    mostrarValor = true, mostrarSeta = true, mostrarTituloNoValor = true}) {
+    mostrarValor = true, mostrarSeta = true, mostrarTituloNoValor = true, abrirParaCima = false}) {
   const [aberto, setAberto] = useState(false);
 
   const opcaoSelecionada = opcoes.find((opcao) => opcao.valor === valor);
@@ -33,7 +33,7 @@ function BotaoDropdown({ titulo, valor, opcoes, onChange, icone,
       </button>
 
       {aberto && (
-        <div className="botao-dropdown-menu">
+        <div className={`botao-dropdown-menu ${abrirParaCima ? "para-cima" : ""}`}>
           {opcoes.map((opcao) => (
             <button
               key={opcao.valor}

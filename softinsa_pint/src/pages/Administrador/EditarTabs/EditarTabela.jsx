@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import ModalConfirmacao from '../../../components/ui/ModalConfirmacao/ModalConfirmacao';
 
 export default function EditarTabela({ 
   abaNome, 
@@ -9,7 +10,16 @@ export default function EditarTabela({
   onEdit,
   onDelete
 }) {
+  const [itemToDelete, setItemToDelete] = useState(null);
+  
   const filtrados = dados.filter(item => item.nome.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  const handleDeleteConfirm = () => {
+    if (itemToDelete && onDelete) {
+      onDelete(itemToDelete.id);
+    }
+    setItemToDelete(null);
+  };
 
   return (
     <div className="d-flex flex-column flex-grow-1" style={{ minHeight: '400px' }}>
@@ -61,7 +71,7 @@ export default function EditarTabela({
                     <button 
                       className="action-btn action-btn-danger" 
                       title="Eliminar"
-                      onClick={() => onDelete && onDelete(item.id)}
+                      onClick={() => setItemToDelete(item)}
                     >
                       <i className="fi fi-br-trash"></i>
                     </button>
@@ -78,6 +88,15 @@ export default function EditarTabela({
           </table>
         </div>
       </div>
+
+      <ModalConfirmacao 
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={handleDeleteConfirm}
+        titulo={`Eliminar ${abaNome}`}
+        mensagem={`Tem a certeza que deseja eliminar "${itemToDelete?.nome}"? Esta ação não pode ser desfeita.`}
+        textoConfirmar="Eliminar"
+      />
     </div>
   );
 }

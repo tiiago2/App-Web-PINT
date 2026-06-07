@@ -221,7 +221,7 @@ function App() {
           />
           <Route path="/galeria" element={<Galeria />} />
           <Route path="/perfil/:id" element={<PerfilPessoal />} />
-          {/*<Route path="/atividade" element={<Atividade />} />*/}
+          <Route path="/atividade" element={<Atividade />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
@@ -251,7 +251,7 @@ function App() {
           <Route path="/galeria" element={<Galeria />} />
           <Route path="/editar" element={<EditarAdmin />} />
           <Route path="/definicoes" element={<DefinicoesAdmin />} />
-          {/*<Route path="/atividade" element={<Atividade />} />*/}
+          <Route path="/atividade" element={<Atividade />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>

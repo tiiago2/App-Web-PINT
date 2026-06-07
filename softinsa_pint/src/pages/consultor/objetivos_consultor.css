@@ -79,15 +79,20 @@
     border-color: var(--barra_lateral);
 }
 
-.obj-picker-mini-circle {
+/* ── Mini-circle no formulário (override BadgeCirculo para 28px) ── */
+.obj-picker-mini-wrap {
     width: 28px;
     height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
     flex-shrink: 0;
+}
+
+.obj-picker-mini-wrap .badge-circulo {
+    width: 28px;
+    height: 28px;
+}
+
+.obj-picker-mini-wrap .badge-circulo-icone {
+    font-size: 14px;
 }
 
 /* ── Input de data ── */
@@ -150,10 +155,8 @@
 
 /* ── Painel esquerdo (lista) ── */
 .obj-lista-panel {
-    width: 38%;
-    min-width: 280px;
-    max-width: 420px;
-    flex-shrink: 0;
+    flex: 1;
+    min-width: 320px;
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -176,6 +179,70 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Tabs: Em Progresso / Histórico */
+.obj-tabs-wrapper {
+    display: flex;
+    align-items: center;
+    background: var(--fundo2);
+    border-radius: var(--border-radius-pequeno);
+    padding: 3px;
+    gap: 2px;
+}
+
+.obj-tab-btn {
+    background: transparent;
+    border: none;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--fonte-principal);
+    color: #8fa3b8;
+    border-radius: var(--border-radius-pequeno);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.obj-tab-btn:hover {
+    color: var(--fontes);
+}
+
+.obj-tab-btn.active {
+    background: var(--fundo);
+    color: var(--barra_lateral);
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Submenu Histórico */
+.obj-historico-submenu {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.obj-sub-btn {
+    background: transparent;
+    border: 1px solid var(--contorno);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--fontes);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.obj-sub-btn:hover {
+    border-color: var(--barra_lateral);
+    color: var(--barra_lateral);
+}
+
+.obj-sub-btn.active {
+    background: var(--barra_lateral);
+    border-color: var(--barra_lateral);
+    color: var(--fundo);
 }
 
 .obj-painel-count {
@@ -255,6 +322,22 @@
     flex-shrink: 0;
 }
 
+/* Animações e transições */
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeInSlide 0.3s ease forwards;
+}
+
 .obj-item-card:hover {
     box-shadow: 0 4px 18px rgba(57, 99, 156, 0.1);
     border-color: var(--barra_lateral);
@@ -291,7 +374,7 @@
     color: var(--rejeitar);
 }
 
-/* Ícone do badge (clicável → página do badge) */
+/* Ícone do badge (clicável → página do badge) — agora contém BadgeCirculo */
 .obj-badge-icon-btn {
     width: 50px;
     height: 50px;
@@ -300,11 +383,21 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 1.35rem;
     cursor: pointer;
     border: none;
     padding: 0;
+    background: transparent;
     transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+}
+
+.obj-badge-icon-btn .badge-circulo {
+    width: 50px;
+    height: 50px;
+}
+
+.obj-badge-icon-btn .badge-circulo-icone {
+    font-size: 22px;
 }
 
 .obj-badge-icon-btn:hover {
@@ -389,8 +482,8 @@
    ══════════════════════════════════════════════════════════════════ */
 
 .obj-cal-panel {
-    flex: 1;
-    min-width: 0;
+    width: 420px;
+    flex-shrink: 0;
     background: var(--fundo);
     border: var(--borda-principal) solid var(--contorno);
     border-radius: var(--border-radius-grande);
@@ -486,16 +579,19 @@
     min-height: 0;
     padding: 4px 2px;
     position: relative;
+    aspect-ratio: 1 / 1;
 }
 
 .obj-cal-celula.vazio { cursor: default; }
 
-.obj-cal-celula.tem-obj {
+.obj-cal-celula.tem-obj,
+.obj-cal-celula.clicavel-futuro {
     cursor: pointer;
 }
 
-.obj-cal-celula.tem-obj:hover {
-    background: var(--fundo2);
+.obj-cal-celula.tem-obj:hover,
+.obj-cal-celula.clicavel-futuro:hover {
+    background: var(--fundo_submenu_hover);
 }
 
 /* Dia de hoje */
@@ -786,18 +882,24 @@
     box-shadow: 0 0 0 3px rgba(57, 99, 156, 0.12);
 }
 
-.obj-badge-grid-circle {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
+/* Badge circle wrapper no picker (override BadgeCirculo para 72px) */
+.obj-badge-grid-circle-wrap {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.65rem;
     transition: transform 0.2s;
 }
 
-.obj-badge-grid-card:hover .obj-badge-grid-circle { transform: scale(1.07); }
+.obj-badge-grid-circle-wrap .badge-circulo {
+    width: 72px;
+    height: 72px;
+}
+
+.obj-badge-grid-circle-wrap .badge-circulo-icone {
+    font-size: 28px;
+}
+
+.obj-badge-grid-card:hover .obj-badge-grid-circle-wrap { transform: scale(1.07); }
 
 .obj-badge-grid-nome {
     font-size: 13px;

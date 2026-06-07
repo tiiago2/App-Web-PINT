@@ -18,13 +18,8 @@ function BotaoDropdown({ titulo, valor, opcoes, onChange, icone,
 
   const opcaoSelecionada = opcoes.find((opcao) => opcao.valor === valor);
 
-<<<<<<< HEAD
-  const textoBotao = (opcaoSelecionada && mostrarValor)
-    ? `${titulo}: ${opcaoSelecionada.label}`
-=======
   const textoBotao = opcaoSelecionada
     ? (mostrarTituloNoValor && titulo ? `${titulo}: ${opcaoSelecionada.label}` : opcaoSelecionada.label)
->>>>>>> d2d37181fde97e08d660870e6fef9c7eec16d2ae
     : titulo;
 
   function selecionarOpcao(novoValor) {

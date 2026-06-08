@@ -37,7 +37,7 @@ function App() {
     //-------------trocar para base dados
     id: 1,
     nome: "Utilizador",
-    cargo: "talent",
+    cargo: "admin",
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10"),
   });
@@ -297,7 +297,6 @@ function App() {
         <div id="image_esquerda">
           <img
             id="softinsa_logo"
-            className="px-2"
             src={softinsa_logo}
             alt="Softinsa Logo"
           />
@@ -425,8 +424,8 @@ function App() {
           />
         </div>
       </header>
-      <div className="row m-0 flex-grow-1" style={{ minHeight: 0 }}>
-        <div className="col-2" id="barra_lateral">
+      <div className="d-flex m-0 flex-grow-1 w-100" style={{ minHeight: 0 }}>
+        <div id="barra_lateral">
           <div className="mt-3 justify-content-center">
             {menuItems.map((item) => {
               const isActive = location.pathname.includes(item.slug); //precisamos desta variavel para saber qual pagina esta ativa
@@ -434,7 +433,7 @@ function App() {
               return (
                 <div
                   key={item.slug}
-                  className={`d-flex align-items-center justify-content-center justify-content-xl-start my-2 ${isActive ? "pag_ativa" : ""}`}
+                  className={`d-flex align-items-center justify-content-center justify-content-xl-start my-2 ps-xl-2 ${isActive ? "pag_ativa" : ""}`}
                   onClick={() => navigate(`/${item.slug}`)}
                   id="item_lateral"
                 >
@@ -448,9 +447,9 @@ function App() {
           </div>
         </div>
         <div
-          className="col-10 h-100 d-flex flex-column"
+          className="h-100 d-flex flex-column flex-grow-1"
           id="Container"
-          style={{ overflow: "hidden" }}
+          style={{ overflow: "hidden", minWidth: 0 }}
         >
           {renderPagina()}
         </div>

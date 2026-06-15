@@ -64,8 +64,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem;
-  border: 1px solid var(--contorno);
-  border-radius: 8px;
+  border: var(--borda-principal) solid var(--contorno);
+  border-radius: var(--border-radius-pequeno);
   margin-bottom: 1rem;
 }
 
@@ -89,11 +89,11 @@
 }
 
 .btn-editar {
-  border: 1px solid var(--contorno);
+  border: var(--borda-principal) solid var(--contorno);
   background-color: var(--fundo);
   color: var(--fontes);
   padding: 0.375rem 1.5rem;
-  border-radius: 20px;
+  border-radius: var(--border-radius-filtro-estado-badge);
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.2s ease;

@@ -3,18 +3,18 @@ import EditarFiltros from './EditarFiltros';
 import EditarMetricas from './EditarMetricas';
 import GaleriaBadges from './GaleriaBadges';
 import EditarTabela from './EditarTabela';
-import BadgeModal from '../../../components/BadgeModal';
+import BadgeModal from '../../../components/Criar_Editar/BadgeModal';
 
 const MOCK_BADGES_INICIAL = [
   { id: 1, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#b0baf0', icon: 'fi-br-mug-hot' },
-  { id: 2, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#dce5f0', icon: 'fi-br-cloud' },
-  { id: 3, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#f0df81', icon: 'fi-br-target' },
+  { id: 2, nome: 'Angular Master', categoria: 'Web UI', cor: '#dce5f0', icon: 'fi-br-cloud', especial: true, tipoEspecial: 'silver' },
+  { id: 3, nome: 'AWS Architect', categoria: 'Cloud Native', cor: '#f0df81', icon: 'fi-br-target', especial: true, tipoEspecial: 'gold' },
   { id: 4, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#df7983', icon: 'fi-br-trophy' },
   { id: 5, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#aec87e', icon: 'fi-br-microchip' },
-  { id: 6, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#76a8ef', icon: 'fi-br-bolt' },
+  { id: 6, nome: 'Spring Guru', categoria: 'Backend', cor: '#76a8ef', icon: 'fi-br-bolt', especial: true, tipoEspecial: 'gold' },
   { id: 7, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#f4ce5a', icon: 'fi-br-target' },
   { id: 8, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#c2c9f5', icon: 'fi-br-mug-hot' },
-  { id: 9, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#df7983', icon: 'fi-br-trophy' },
+  { id: 9, nome: 'React Expert', categoria: 'Web UI', cor: '#df7983', icon: 'fi-br-trophy', especial: true, tipoEspecial: 'silver' },
   { id: 10, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#a0e4b8', icon: 'fi-br-database' },
   { id: 11, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#aec87e', icon: 'fi-br-microchip' },
   { id: 12, nome: 'React Native', categoria: 'Mobile', cor: '#61dafb', icon: 'fi-br-smartphone' },

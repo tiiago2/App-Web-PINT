@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import "./BadgeModal.css";
-import BotaoDropdown from './ui/BotaoDropdown/BotaoDropdown';
+import BotaoDropdown from "../ui/BotaoDropdown/BotaoDropdown";
+import BadgeCirculo from "../Galeria/BadgeCirculo/BadgeCirculo";
 
 // 1. MOCK DATA HIERÁRQUICO
 const MOCK_HIERARCHY = [
@@ -62,6 +63,8 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
   const [cor, setCor] = useState("#b0baf0");
   const [icone, setIcone] = useState("fi-br-star");
   const [imagemPreview, setImagemPreview] = useState(null);
+  const [isEspecial, setIsEspecial] = useState(false);
+  const [tipoEspecial, setTipoEspecial] = useState("gold");
 
   // Estados Hierárquicos
   const [learningPathId, setLearningPathId] = useState("");
@@ -70,23 +73,29 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
   const [nivel, setNivel] = useState(""); // Júnior, Pleno, Sénior, etc.
 
   // Estados de Validação Inline
-  const [erroSl, setErroSl] = useState('');
-  const [erroArea, setErroArea] = useState('');
-  const [formErro, setFormErro] = useState('');
+  const [erroSl, setErroSl] = useState("");
+  const [erroArea, setErroArea] = useState("");
+  const [formErro, setFormErro] = useState("");
 
   // Estados dos Requisitos Dinâmicos
   const [requisitos, setRequisitos] = useState([]);
 
   // Opções para as dropdowns baseadas nas escolhas do utilizador
-  const lpOpcoes = MOCK_HIERARCHY.map(lp => ({ valor: lp.id, label: lp.nome }));
-  
+  const lpOpcoes = MOCK_HIERARCHY.map((lp) => ({
+    valor: lp.id,
+    label: lp.nome,
+  }));
+
   const selectedLP = MOCK_HIERARCHY.find((lp) => lp.id === learningPathId);
   const serviceLinesOptions = selectedLP ? selectedLP.serviceLines : [];
-  const slOpcoes = serviceLinesOptions.map(sl => ({ valor: sl.id, label: sl.nome }));
+  const slOpcoes = serviceLinesOptions.map((sl) => ({
+    valor: sl.id,
+    label: sl.nome,
+  }));
 
   const selectedSL = serviceLinesOptions.find((sl) => sl.id === serviceLineId);
   const areasOptions = selectedSL ? selectedSL.areas : [];
-  const areaOpcoes = areasOptions.map(a => ({ valor: a.id, label: a.nome }));
+  const areaOpcoes = areasOptions.map((a) => ({ valor: a.id, label: a.nome }));
 
   useEffect(() => {
     if (isOpen) {
@@ -97,6 +106,8 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
         setCor(badgeToEdit.cor || "#b0baf0");
         setIcone(badgeToEdit.icon || "fi-br-star");
         setImagemPreview(badgeToEdit.imagem || null);
+        setIsEspecial(badgeToEdit.especial || false);
+        setTipoEspecial(badgeToEdit.tipoEspecial || "gold");
 
         // Simulação da edição da hierarquia e requisitos (se já vierem preenchidos)
         setLearningPathId(badgeToEdit.learningPathId || "");
@@ -110,14 +121,18 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
         setCor("#b0baf0");
         setIcone("fi-br-star");
         setImagemPreview(null);
+        setIsEspecial(false);
+        setTipoEspecial("gold");
         setLearningPathId("");
         setServiceLineId("");
         setAreaId("");
         setNivel("");
-        setRequisitos([{ id: Date.now(), titulo: '', descricao: '', imagem: null }]); // Inicia com 1 requisito vazio
-        setErroSl('');
-        setErroArea('');
-        setFormErro('');
+        setRequisitos([
+          { id: Date.now(), titulo: "", descricao: "", imagem: null },
+        ]); // Inicia com 1 requisito vazio
+        setErroSl("");
+        setErroArea("");
+        setFormErro("");
       }
     } else {
       document.body.style.overflow = "";
@@ -132,17 +147,17 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
   // Resets em Cascata: Se mudar LP, reseta SL e Área. Se mudar SL, reseta Área.
   const handleLpChange = (val) => {
     setLearningPathId(val);
-    setServiceLineId('');
-    setAreaId('');
-    setErroSl(''); // Limpa o erro se o user afinal clicou no correto
-    setFormErro('');
+    setServiceLineId("");
+    setAreaId("");
+    setErroSl(""); // Limpa o erro se o user afinal clicou no correto
+    setFormErro("");
   };
 
   const handleSlChange = (val) => {
     setServiceLineId(val);
-    setAreaId('');
-    setErroArea(''); // Limpa o erro
-    setFormErro('');
+    setAreaId("");
+    setErroArea(""); // Limpa o erro
+    setFormErro("");
   };
 
   // Funções para gerir Requisitos Dinâmicos
@@ -189,9 +204,11 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
 
   const handleSave = (e) => {
     e.preventDefault();
-    setFormErro('');
+    setFormErro("");
     if (!nome.trim() || pontos === "" || !areaId || !nivel.trim()) {
-      setFormErro("Por favor preencha todos os campos obrigatórios, incluindo Área e Nível.");
+      setFormErro(
+        "Por favor preencha todos os campos obrigatórios, incluindo Área e Nível.",
+      );
       return;
     }
 
@@ -211,6 +228,8 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
       cor,
       icon: icone,
       imagem: imagemPreview,
+      especial: isEspecial,
+      tipoEspecial: isEspecial ? tipoEspecial : null,
       requisitos: requisitos,
     };
 
@@ -225,9 +244,7 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="badge-modal-header">
-          <h4>
-            {badgeToEdit ? "Editar Nível & Badge" : "Criar Nível & Badge"}
-          </h4>
+          <h4>{badgeToEdit ? "Editar Badge" : "Criar Badge"}</h4>
           <button className="badge-modal-close-btn" onClick={onClose}>
             <i className="fi fi-br-cross"></i>
           </button>
@@ -239,90 +256,259 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
           onSubmit={handleSave}
         >
           {formErro && (
-            <div className="alert alert-danger d-flex align-items-center gap-2 mb-0" style={{ fontSize: '0.85rem', padding: '0.75rem', marginBottom: '1rem' }}>
+            <div
+              className="alert alert-danger d-flex align-items-center gap-2 mb-0"
+              style={{
+                fontSize: "0.85rem",
+                padding: "0.75rem",
+                marginBottom: "1rem",
+              }}
+            >
               <i className="fi fi-br-info"></i> {formErro}
             </div>
           )}
 
           <div className="badge-preview-container">
             <div className="badge-preview-label">Pré-visualização</div>
-            <div className="preview-circle" style={{ backgroundColor: imagemPreview ? 'transparent' : cor }}>
-              {imagemPreview ? <img src={imagemPreview} alt="Preview" /> : <i className={`fi ${icone}`}></i>}
+            <div
+              className="d-flex justify-content-center mb-3"
+              style={{ transform: "scale(1.2)" }}
+            >
+              <BadgeCirculo
+                imagemBadge={imagemPreview}
+                icone={icone}
+                nomeBadge={nome}
+                especial={isEspecial}
+                tipoEspecial={tipoEspecial}
+                corBg={cor}
+              />
             </div>
-            <div className="preview-name">{nome || 'Nome do Badge'}</div>
+            <div className="preview-name">{nome || "Nome do Badge"}</div>
             {nivel && <div className="preview-category">Nível: {nivel}</div>}
           </div>
 
           <div className="row">
             <div className="col-md-6 badge-form-group">
               <label className="badge-form-label">Nome do Badge</label>
-              <input type="text" className="badge-form-input" placeholder="Ex: Badge Júnior em Outsystems" value={nome} onChange={e => setNome(e.target.value)} required />
+              <input
+                type="text"
+                className="badge-form-input"
+                placeholder="Ex: Badge Júnior em Outsystems"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                required
+              />
             </div>
             <div className="col-md-6 badge-form-group">
               <label className="badge-form-label">Nível (Ex: Júnior, A1)</label>
-              <input type="text" className="badge-form-input" placeholder="Ex: Júnior" value={nivel} onChange={e => setNivel(e.target.value)} required />
+              <input
+                type="text"
+                className="badge-form-input"
+                placeholder="Ex: Júnior"
+                value={nivel}
+                onChange={(e) => setNivel(e.target.value)}
+                required
+              />
             </div>
           </div>
-          
+
           <div className="row">
             <div className="col-md-12 badge-form-group">
-              <label className="badge-form-label">
-                Learning Path
-              </label>
-              <BotaoDropdown 
-                 titulo="Selecione..." 
-                 valor={learningPathId} 
-                 opcoes={lpOpcoes} 
-                 onChange={val => handleLpChange(val)}
-                 mostrarTituloNoValor={false}
+              <label className="badge-form-label">Learning Path</label>
+              <BotaoDropdown
+                titulo="Selecione..."
+                valor={learningPathId}
+                opcoes={lpOpcoes}
+                onChange={(val) => handleLpChange(val)}
+                mostrarTituloNoValor={false}
               />
             </div>
             <div className="col-md-12 badge-form-group">
-              <label className="badge-form-label">
-                Service Line
-              </label>
-              <div onClickCapture={e => {
-                if (!learningPathId) {
-                  e.stopPropagation();
-                  setErroSl('Por favor, escolha primeiro o Learning Path.');
-                }
-              }}>
-                <BotaoDropdown 
-                   titulo="Selecione..." 
-                   valor={serviceLineId} 
-                   opcoes={slOpcoes} 
-                   onChange={val => handleSlChange(val)}
-                   mostrarTituloNoValor={false}
+              <label className="badge-form-label">Service Line</label>
+              <div
+                onClickCapture={(e) => {
+                  if (!learningPathId) {
+                    e.stopPropagation();
+                    setErroSl("Por favor, escolha primeiro o Learning Path.");
+                  }
+                }}
+              >
+                <BotaoDropdown
+                  titulo="Selecione..."
+                  valor={serviceLineId}
+                  opcoes={slOpcoes}
+                  onChange={(val) => handleSlChange(val)}
+                  mostrarTituloNoValor={false}
                 />
               </div>
-              {erroSl && <div style={{color: '#ff4d4d', fontSize: '0.8rem', marginTop: '0.2rem'}}>{erroSl}</div>}
+              {erroSl && (
+                <div
+                  style={{
+                    color: "#ff4d4d",
+                    fontSize: "0.8rem",
+                    marginTop: "0.2rem",
+                  }}
+                >
+                  {erroSl}
+                </div>
+              )}
             </div>
             <div className="col-md-12 badge-form-group">
               <label className="badge-form-label">Área</label>
-              <div onClickCapture={e => {
-                if (!serviceLineId) {
-                  e.stopPropagation();
-                  setErroArea('Por favor, escolha primeiro a Service Line.');
-                }
-              }}>
-                <BotaoDropdown 
-                   titulo="Selecione..." 
-                   valor={areaId} 
-                   opcoes={areaOpcoes} 
-                   onChange={val => setAreaId(val)}
-                   mostrarTituloNoValor={false}
-                   abrirParaCima={true}
+              <div
+                onClickCapture={(e) => {
+                  if (!serviceLineId) {
+                    e.stopPropagation();
+                    setErroArea("Por favor, escolha primeiro a Service Line.");
+                  }
+                }}
+              >
+                <BotaoDropdown
+                  titulo="Selecione..."
+                  valor={areaId}
+                  opcoes={areaOpcoes}
+                  onChange={(val) => setAreaId(val)}
+                  mostrarTituloNoValor={false}
+                  abrirParaCima={true}
                 />
               </div>
-              {erroArea && <div style={{color: '#ff4d4d', fontSize: '0.8rem', marginTop: '0.2rem'}}>{erroArea}</div>}
+              {erroArea && (
+                <div
+                  style={{
+                    color: "#ff4d4d",
+                    fontSize: "0.8rem",
+                    marginTop: "0.2rem",
+                  }}
+                >
+                  {erroArea}
+                </div>
+              )}
             </div>
           </div>
 
           <div className="badge-section-title mt-2">Identidade Visual</div>
 
+          <div className="badge-form-group">
+            <label className="badge-form-label mb-3">Tipo de Badge</label>
+            <div className="d-flex gap-3">
+              <div
+                onClick={() => setIsEspecial(false)}
+                style={{
+                  flex: 1,
+                  padding: "1.2rem",
+                  border: "2px solid",
+                  borderColor: !isEspecial
+                    ? "var(--barra_lateral)"
+                    : "var(--contorno)",
+                  borderRadius: "12px",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  backgroundColor: !isEspecial ? "#f0f4ff" : "white",
+                  transition: "all 0.2s",
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                    color: !isEspecial
+                      ? "var(--barra_lateral)"
+                      : "var(--fontes)",
+                  }}
+                >
+                  Normal
+                </div>
+              </div>
+
+              <div
+                onClick={() => {
+                  setIsEspecial(true);
+                  setTipoEspecial("silver");
+                }}
+                style={{
+                  flex: 1,
+                  padding: "1.2rem",
+                  border: "2px solid",
+                  borderColor:
+                    isEspecial && tipoEspecial === "silver"
+                      ? "#8f9bb3"
+                      : "var(--contorno)",
+                  borderRadius: "12px",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  background:
+                    isEspecial && tipoEspecial === "silver"
+                      ? "linear-gradient(135deg, #f8f9fa, #e4e9f2)"
+                      : "white",
+                  boxShadow:
+                    isEspecial && tipoEspecial === "silver"
+                      ? "0 4px 12px rgba(143, 155, 179, 0.25)"
+                      : "none",
+                  transition: "all 0.2s",
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                    color:
+                      isEspecial && tipoEspecial === "silver"
+                        ? "#57606f"
+                        : "var(--fontes)",
+                  }}
+                >
+                  Especial Prata
+                </div>
+              </div>
+
+              <div
+                onClick={() => {
+                  setIsEspecial(true);
+                  setTipoEspecial("gold");
+                }}
+                style={{
+                  flex: 1,
+                  padding: "1.2rem",
+                  border: "2px solid",
+                  borderColor:
+                    isEspecial && tipoEspecial === "gold"
+                      ? "#d4af37"
+                      : "var(--contorno)",
+                  borderRadius: "12px",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  background:
+                    isEspecial && tipoEspecial === "gold"
+                      ? "linear-gradient(135deg, #fffdf0, #fcf4c7)"
+                      : "white",
+                  boxShadow:
+                    isEspecial && tipoEspecial === "gold"
+                      ? "0 4px 12px rgba(212, 175, 55, 0.2)"
+                      : "none",
+                  transition: "all 0.2s",
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                    color:
+                      isEspecial && tipoEspecial === "gold"
+                        ? "#b5952f"
+                        : "var(--fontes)",
+                  }}
+                >
+                  Especial Ouro
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="row">
             <div className="col-md-6 badge-form-group">
-              <label className="badge-form-label">Cor Primária (Opcional)</label>
+              <label className="badge-form-label">
+                Cor Primária (Opcional)
+              </label>
               <div className="badge-color-picker-wrap">
                 <input
                   type="color"
@@ -349,7 +535,9 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
           </div>
 
           <div className="badge-form-group">
-            <label className="badge-form-label">Imagem do Badge (Opcional)</label>
+            <label className="badge-form-label">
+              Imagem do Badge (Opcional)
+            </label>
             <label className="badge-upload-zone">
               <input
                 type="file"

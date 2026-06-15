@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import EditarFiltros from './EditarFiltros';
 import EditarMetricas from './EditarMetricas';
 import EditarTabela from './EditarTabela';
-import ServiceLineModal from '../../../components/ServiceLineModal';
+import ServiceLineModal from '../../../components/Criar_Editar/ServiceLineModal';
 
 export default function TabServiceLine() {
   const [searchTerm, setSearchTerm] = useState('');

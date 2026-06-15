@@ -24,7 +24,7 @@ function DefinicoesAdmin() {
 
   return (
     <div className="definicoes-container w-100">
-      <h1 className="texto-titulo-principal mb-4">{t("definicoes")}</h1>
+      <h1 className="texto-titulo-principal" style={{ marginBottom: 'var(--gap-titulo-principal-conteudo)' }}>{t("definicoes")}</h1>
 
       {/* Navegação de Abas */}
       <TabsAdmin 

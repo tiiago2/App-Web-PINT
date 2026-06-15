@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import "./AreaModal.css"; // Reuse the same CSS since layout is identical
-import BotaoDropdown from "./ui/BotaoDropdown/BotaoDropdown";
+import BotaoDropdown from "../ui/BotaoDropdown/BotaoDropdown";
 
 // 1. MOCK DATA HIERÁRQUICO
 const MOCK_HIERARCHY = [

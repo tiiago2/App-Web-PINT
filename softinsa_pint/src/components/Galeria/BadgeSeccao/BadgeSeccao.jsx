@@ -7,8 +7,9 @@ function BadgeSeccao({
   icone = null,
   badges = [],
   onBadgeClick,
+  children
 }) {
-  if (!badges.length) {
+  if (!badges.length && !children) {
     return null;
   }
 
@@ -32,11 +33,12 @@ function BadgeSeccao({
       <div className="badge-seccao-grid">
         {badges.map((badge) => (
           <BadgeItem
-            key={badge.idBadge}
+            key={badge.idBadge || badge.id}
             badge={badge}
             onBadgeClick={onBadgeClick}
           />
         ))}
+        {children}
       </div>
     </section>
   );

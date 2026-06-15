@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import EditarFiltros from './EditarFiltros';
 import EditarMetricas from './EditarMetricas';
 import EditarTabela from './EditarTabela';
-import AreaModal from '../../../components/AreaModal';
+import AreaModal from '../../../components/Criar_Editar/AreaModal';
 
 export default function TabAreas() {
   const [searchTerm, setSearchTerm] = useState('');

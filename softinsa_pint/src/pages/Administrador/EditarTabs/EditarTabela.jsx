@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ModalConfirmacao from '../../../components/ui/ModalConfirmacao/ModalConfirmacao';
+import BadgeCirculo from '../../../components/Galeria/BadgeCirculo/BadgeCirculo';
 
 export default function EditarTabela({ 
   abaNome, 
@@ -49,7 +50,26 @@ export default function EditarTabela({
             <tbody>
               {filtrados.length > 0 ? filtrados.map((item) => (
                 <tr key={item.id}>
-                  <td className="text-start ps-4 fw-medium text-dark">{item.nome}</td>
+                  <td className="text-start ps-4 fw-medium text-dark">
+                    {abaNome === "Badge" ? (
+                      <div className="d-flex align-items-center gap-3">
+                        <div style={{ transform: "scale(0.5)", transformOrigin: "left center", width: "40px", height: "40px", display: "flex", alignItems: "center" }}>
+                          <BadgeCirculo 
+                            icone={item.icon || "fi-br-badge"}
+                            nomeBadge={item.nome}
+                            imagemBadge={item.imagem}
+                            corBg={item.cor}
+                            especial={item.especial}
+                            tipoEspecial={item.tipoEspecial}
+                            estado="desbloqueados"
+                          />
+                        </div>
+                        <span style={{ marginLeft: "-5px" }}>{item.nome}</span>
+                      </div>
+                    ) : (
+                      item.nome
+                    )}
+                  </td>
                   
                   {/* Para a aba de Badges que passa a coluna "Categoria" */}
                   {colunas.includes("Categoria") && <td>{item.categoria}</td>}

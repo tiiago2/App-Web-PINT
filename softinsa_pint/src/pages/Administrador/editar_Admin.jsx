@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
 import { TabsAdmin } from '../../components/ui/TabsAdmin';
 import './editar_Admin.css';
 
@@ -11,8 +12,15 @@ import TabLearningPaths from './EditarTabs/TabLearningPaths';
 
 function EditarAdmin() {
   const { t } = useTranslation();
-  const [abaAtiva, setAbaAtiva] = useState('badges');
+  const location = useLocation();
+  const [abaAtiva, setAbaAtiva] = useState(location.state?.abaAtiva || 'badges');
   const [viewMode, setViewMode] = useState('galeria'); // 'galeria' ou 'tabela' (usado apenas na aba Badges)
+
+  useEffect(() => {
+    if (location.state?.abaAtiva) {
+      setAbaAtiva(location.state.abaAtiva);
+    }
+  }, [location.state]);
 
   const abasEditar = [
     { id: 'badges', label: 'Badges' },
@@ -48,7 +56,7 @@ function EditarAdmin() {
 
   return (
     <div className="editar-container w-100">
-      <h1 className="texto-titulo-principal d-flex align-items-center mb-4">
+      <h1 className="texto-titulo-principal d-flex align-items-center" style={{ marginBottom: 'var(--gap-titulo-principal-conteudo)' }}>
         Editar {getNomeAba()}{abaAtiva !== 'areas' ? 's' : ''}
         
         {abaAtiva === 'badges' && (

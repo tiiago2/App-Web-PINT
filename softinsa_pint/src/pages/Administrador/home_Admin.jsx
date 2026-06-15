@@ -175,7 +175,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
       <div className="flex-shrink-0" style={{ marginTop: 'var(--gap-titulo-principal-conteudo)' }}>
         <h6
           className="text-muted ms-2"
-          style={{ fontSize: "clamp(0.8rem, 1.2vw, 1rem)", marginBottom: '16px' }}
+          style={{ fontSize: "clamp(0.8rem, 1.2vw, 1rem)", marginBottom: 'var(--gap-default-seccoes)' }}
         >
           {t("acoes_rapidas")}
         </h6>
@@ -187,37 +187,43 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
             cor="#00b4d8"
             icone="fi-br-user-add"
             texto={t("add_utilizador")}
+            onClick={() => {}}
           />
 
           <AcaoRapida
             cor="#ffb703"
             icone="fi-br-badge"
             texto={t("add_badge")}
+            onClick={() => navigate('/galeria', { state: { openCreateModal: true } })}
           />
 
           <AcaoRapida
             cor="#3a5a92"
-            icone="fi-br-users"
-            texto={t("consultar_equipa")}
+            icone="fi-br-settings"
+            texto="Definições"
+            onClick={() => navigate('/definicoes')}
           />
 
           <AcaoRapida
             cor="#2dc653"
             icone="fi-br-apps"
             texto={t("editar_service_lines")}
+            onClick={() => navigate('/editar', { state: { abaAtiva: 'service_line' } })}
           />
 
           <AcaoRapida
             cor="#f48c06"
             icone="fi-br-road"
             texto={t("editar_learning_paths")}
+            onClick={() => navigate('/editar', { state: { abaAtiva: 'learning_paths' } })}
           />
 
           <AcaoRapida
             cor="#dc2f02"
             icone="fi-br-target"
             texto={t("editar_areas")}
-          ></AcaoRapida>
+            onClick={() => navigate('/editar', { state: { abaAtiva: 'areas' } })}
+          />
         </div>
       </div>
 

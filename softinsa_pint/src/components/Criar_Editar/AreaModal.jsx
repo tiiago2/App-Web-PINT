@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import "./AreaModal.css";
-import BotaoDropdown from "./ui/BotaoDropdown/BotaoDropdown";
+import BotaoDropdown from "../ui/BotaoDropdown/BotaoDropdown";
 
 // 1. MOCK DATA HIERÁRQUICO
 const MOCK_HIERARCHY = [

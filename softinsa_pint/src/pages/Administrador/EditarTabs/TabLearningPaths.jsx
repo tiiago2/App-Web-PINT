@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import EditarFiltros from './EditarFiltros';
 import EditarMetricas from './EditarMetricas';
 import EditarTabela from './EditarTabela';
-import LearningPathModal from '../../../components/LearningPathModal';
+import LearningPathModal from '../../../components/Criar_Editar/LearningPathModal';
 
 export default function TabLearningPaths() {
   const [searchTerm, setSearchTerm] = useState('');

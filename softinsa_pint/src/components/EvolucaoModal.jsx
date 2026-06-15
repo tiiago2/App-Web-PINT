@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
-import { useTranslation } from 'react-i18next';
+
 
 // Estilos de tooltip partilhados
 const TIP = {
@@ -151,7 +151,7 @@ const dadosMock = {
 };
 
 const EvolucaoModal = ({ onClose }) => {
-    const { t } = useTranslation();
+
     const [filtro, setFiltro] = useState('Semestre');
 
     // Bloquear scroll do body quando modal está aberto

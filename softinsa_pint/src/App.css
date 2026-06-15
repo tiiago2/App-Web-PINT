@@ -16,6 +16,7 @@
     --contorno: #CAD5E2;
     --rejeitar: #C40003;
     --aceitar: #009966;
+    --progresso: #E6900A;
     --outline: #CAD5E2;
     --ouro: ;
     --ouro_fundo: ;
@@ -64,9 +65,20 @@
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
 }
 
+#image_esquerda {
+    width: 16.66667%; /* Exatamente a mesma lógica da barra_lateral */
+    max-width: 260px;
+    flex-shrink: 0;
+    transition: width 0.3s ease;
+    display: flex;
+    justify-content: flex-start; /* Puxa a imagem completamente para a esquerda */
+    align-items: center;
+}
+
 #softinsa_logo{
-    max-width: 310px;
+    max-width: 85%;
     height: auto;
+    margin-left: 1rem; /* Margem aumentada para puxar a imagem um pouco mais para a direita */
 }
 
 #bell_icon, #flag_icon, #user_image{
@@ -85,6 +97,17 @@
     background-color: var(--barra_lateral);
     box-shadow: 4px 0px 4px 0px rgba(0, 0, 0, 0.20);
     font-size: 24px;
+    width: 16.66667%; /* Imita a largura original da col-2 */
+    max-width: 260px; /* Lock da largura máxima (tamanho do portátil). Impede que fique "muito grande" no Monitor. */
+    flex-shrink: 0;
+    transition: width 0.3s ease; /* Transição suave opcional */
+}
+
+/* Mal as letras desaparecem (< 1200px devido ao d-xl-block), força a barra para a largura mínima dos ícones */
+@media (max-width: 1199px) {
+    #barra_lateral, #image_esquerda {
+        width: 80px;
+    }
 }
 
 .pag_ativa {

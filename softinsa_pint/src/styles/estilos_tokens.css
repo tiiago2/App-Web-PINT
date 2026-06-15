@@ -61,6 +61,15 @@
         --altura-barra-progresso-badge: 6px;
         --border-radius-barra-progresso-badge: 20px;
 
+        /* Dimensões específicas dos cards da aba Sugeridos */
+        --largura-minima-card-sugerido: 420px;
+        --altura-card-sugerido: 172px;
+        --diametro-badge-card-sugerido: 88px;
+        --tamanho-icone-badge-card-sugerido: 30px;
+        --tamanho-estrela-badge-card-sugerido: 22px;
+        --tamanho-indicador-card-sugerido: 26px;
+        --tamanho-icone-indicador-card-sugerido: 13px;
+
     /* GALERIA DE BADGES — ESPAÇAMENTOS INTERNOS */
 
         --espaco-circulo-nome-badge: 8px;
@@ -76,6 +85,17 @@
 
         --gap-grid-badges-horizontal: 48px;
         --gap-grid-badges-vertical: 25px;
+
+        --gap-grid-card-sugerido-horizontal: 24px;
+        --gap-grid-card-sugerido-vertical: 20px;
+
+    /* GALERIA DE BADGES — CARDS SUGERIDOS */
+
+        --padding-card-sugerido: 18px 20px;
+        --gap-card-sugerido: 16px;
+        --padding-pill-card-sugerido: 4px 10px;
+        --altura-botao-card-sugerido: 36px;
+        --duracao-transicao-card-sugerido: 320ms;
 
     /* BORDER RADIUS ESPECÍFICO DE BADGES */
 

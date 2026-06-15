@@ -1,0 +1,27 @@
+.galeria-sugeridos {
+    width: 100%;
+
+    margin-top: var(--espacamento-seccao-conteudo);
+}
+
+.galeria-sugeridos-grid {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(min(100%, var(--largura-minima-card-sugerido)), 1fr)
+    );
+    align-items: start;
+
+    column-gap: var(--gap-grid-card-sugerido-horizontal);
+    row-gap: var(--gap-grid-card-sugerido-vertical);
+}
+
+.galeria-sugeridos-vazio {
+    margin: 0;
+    padding: 12px 0;
+
+    color: var(--fontes);
+    opacity: 0.7;
+}

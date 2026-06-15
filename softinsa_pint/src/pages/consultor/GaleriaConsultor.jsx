@@ -140,7 +140,9 @@ function GaleriaConsultor() {
             abaAtiva === "todos" ? "com-toolbar" : ""
           }`}
         >
-          {abaAtiva === "sugeridos" && <GaleriaSugeridos />}
+          {abaAtiva === "sugeridos" && (
+            <GaleriaSugeridos onBadgeClick={handleBadgeClick} />
+          )}
 
           {abaAtiva === "todos" && (
             <GaleriaTodosBadges

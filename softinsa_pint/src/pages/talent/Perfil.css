@@ -247,8 +247,8 @@
 }
 
 .assinatura_badge img {
-  width: 96px;
-  height: 96px;
+  width: clamp(96px, 10vh, 150px);
+  height: clamp(96px, 10vh, 150px);
   object-fit: contain;
 }
 
@@ -290,8 +290,8 @@
 }
 
 .badge_item img {
-  width: 120px;
-  height: 120px;
+  width: clamp(120px, 12vh, 180px);
+  height: clamp(120px, 12vh, 180px);
   object-fit: contain;
   margin-bottom: 6px;
 }

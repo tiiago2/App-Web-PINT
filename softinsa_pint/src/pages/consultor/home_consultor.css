@@ -86,7 +86,6 @@
   margin-bottom: 12px;
 }
 
-/* A estrutura original da barra: vermelho restante e verde atual */
 .badge-progress-wrap {
   width: 100%;
   max-width: 150px;
@@ -210,7 +209,6 @@
   font-weight: bold;
 }
 
-/* ── Progresso ────────────────────────────────────────────── */
 .progresso-barra-wrap {
   height: 8px;
   border-radius: 10px;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Routes,
@@ -25,6 +25,7 @@ import Galeria from "./pages/talent/Galeria.jsx";
 import GaleriaConsultor from "./pages/consultor/GaleriaConsultor.jsx";
 import PerfilPessoal from "./pages/talent/Perfil.jsx";
 import Atividade from "./pages/atividade/Atividade.jsx";
+import Candidaturas from "./pages/candidaturas/Candidaturas.jsx";
 //imagens
 import softinsa_logo from "./assets/logotipo_softinsa.png";
 import user_logo from "./assets/utilizador.png";
@@ -32,11 +33,11 @@ import user_logo from "./assets/utilizador.png";
 function App() {
   const { t, i18n } = useTranslation();
 
-  const [user, setUser] = useState({
+  const [user] = useState({
     //-------------trocar para base dados
     id: 1,
     nome: "Utilizador",
-    cargo: "admin", //pode ser "consultor", "talent", "service" ou "admin"
+    cargo: "admin",
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10"),
   });
@@ -44,11 +45,34 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [menuItems, setMenuItems] = useState([]);
+  const bellRef = useRef(null);
+  const flagRef = useRef(null);
+  const notifPopupRef = useRef(null);
+  const linguaPopupRef = useRef(null);
 
   const [menuLinguaAberto, setMenuLinguaAberto] = useState(false);
-
   const [menuNotificacoesAberto, setMenuNotificacoesAberto] = useState(false);
+
+  useEffect(() => {
+    const handleCliqFora = (e) => {
+      if (
+        menuNotificacoesAberto &&
+        bellRef.current && !bellRef.current.contains(e.target) &&
+        notifPopupRef.current && !notifPopupRef.current.contains(e.target)
+      ) {
+        setMenuNotificacoesAberto(false);
+      }
+      if (
+        menuLinguaAberto &&
+        flagRef.current && !flagRef.current.contains(e.target) &&
+        linguaPopupRef.current && !linguaPopupRef.current.contains(e.target)
+      ) {
+        setMenuLinguaAberto(false);
+      }
+    };
+    document.addEventListener("mousedown", handleCliqFora);
+    return () => document.removeEventListener("mousedown", handleCliqFora);
+  }, [menuNotificacoesAberto, menuLinguaAberto]);
 
   const [notificacoes, setNotificacoes] = useState([
     //-----------------------------------trocar para base dados
@@ -157,12 +181,10 @@ function App() {
     }
   };
 
-  useEffect(() => {
-    const itensFiltrados = menu_lateral.filter((item) => {
+  const menuItems = useMemo(() => {
+    return menu_lateral.filter((item) => {
       return item.permissao.includes(user.cargo);
     });
-
-    setMenuItems(itensFiltrados);
   }, [user.cargo]);
 
   const Saudacao = () => {
@@ -203,6 +225,11 @@ function App() {
           <Route path="/galeria" element={<GaleriaConsultor />} />
 
           <Route
+            path="/candidaturas"
+            element={<Candidaturas />}
+          />
+
+          <Route
             path="/objetivos"
             element={<ObjetivosConsultor user={user} />}
           />
@@ -219,7 +246,8 @@ function App() {
             path="/home"
             element={<HomeTalent user={user} saudacao={Saudacao()} />}
           />
-          <Route path="/galeria" element={<Galeria />} />
+          <Route path="/galeria" element={<GaleriaConsultor />} />
+          <Route path="/candidaturas" element={<Candidaturas />} />
           <Route path="/perfil/:id" element={<PerfilPessoal />} />
           <Route path="/atividade" element={<Atividade />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
@@ -233,7 +261,8 @@ function App() {
             path="/home"
             element={<HomeService user={user} saudacao={Saudacao()} />}
           />
-          <Route path="/galeria" element={<Galeria />} />
+          <Route path="/galeria" element={<GaleriaConsultor />} />
+          <Route path="/candidaturas" element={<Candidaturas />} />
           <Route path="/perfil/:id" element={<PerfilPessoal />} />
           <Route path="/atividade" element={<Atividade />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
@@ -247,7 +276,7 @@ function App() {
             path="/home"
             element={<HomeAdmin user={user} saudacao={Saudacao()} />}
           />
-          {/*<Route path="/candidaturas" element={} />*/}
+          <Route path="/candidaturas" element={<Candidaturas />} />
           <Route path="/galeria" element={<Galeria />} />
           <Route path="/editar" element={<EditarAdmin />} />
           <Route path="/definicoes" element={<DefinicoesAdmin />} />
@@ -268,7 +297,6 @@ function App() {
         <div id="image_esquerda">
           <img
             id="softinsa_logo"
-            className="px-2"
             src={softinsa_logo}
             alt="Softinsa Logo"
           />
@@ -276,6 +304,7 @@ function App() {
         <div className="d-flex align-items-center pe-2" id="info_direita">
           <div className="position-relative">
             <i
+              ref={bellRef}
               id="bell_icon"
               className="fi fi-br-bell mx-2 "
               onClick={CliqueSino}
@@ -291,6 +320,7 @@ function App() {
           </div>
           {menuNotificacoesAberto && (
             <div
+              ref={notifPopupRef}
               className="position-absolute bg-white shadow-sm p-2 rounded-4"
               id="pop_up_notification"
             >
@@ -335,12 +365,14 @@ function App() {
             </div>
           )}
           <span
+            ref={flagRef}
             id="flag_icon"
             className={`flag-icon flag-icon-${linguaAtual} flag-icon-squared rounded-circle fs-5 mx-2 `}
             onClick={() => setMenuLinguaAberto(!menuLinguaAberto)}
+            style={{ cursor: 'pointer' }}
           ></span>
           {menuLinguaAberto && (
-            <div className="position-absolute p-2 rounded-4" id="pop_up_lingua">
+            <div ref={linguaPopupRef} className="position-absolute p-2 rounded-4" id="pop_up_lingua">
               <h5 className="mb-2 ms-2 user-select-none">{t("lingua")}</h5>
               <hr className="mt-0 mb-2" style={{ opacity: 0.15 }} />
 
@@ -392,8 +424,8 @@ function App() {
           />
         </div>
       </header>
-      <div className="row m-0 flex-grow-1" style={{ minHeight: 0 }}>
-        <div className="col-2" id="barra_lateral">
+      <div className="d-flex m-0 flex-grow-1 w-100" style={{ minHeight: 0 }}>
+        <div id="barra_lateral">
           <div className="mt-3 justify-content-center">
             {menuItems.map((item) => {
               const isActive = location.pathname.includes(item.slug); //precisamos desta variavel para saber qual pagina esta ativa
@@ -401,7 +433,7 @@ function App() {
               return (
                 <div
                   key={item.slug}
-                  className={`d-flex align-items-center justify-content-center justify-content-xl-start my-2 ${isActive ? "pag_ativa" : ""}`}
+                  className={`d-flex align-items-center justify-content-center justify-content-xl-start my-2 ps-xl-2 ${isActive ? "pag_ativa" : ""}`}
                   onClick={() => navigate(`/${item.slug}`)}
                   id="item_lateral"
                 >
@@ -415,9 +447,9 @@ function App() {
           </div>
         </div>
         <div
-          className="col-10 h-100 d-flex flex-column"
+          className="h-100 d-flex flex-column flex-grow-1"
           id="Container"
-          style={{ overflow: "hidden" }}
+          style={{ overflow: "hidden", minWidth: 0 }}
         >
           {renderPagina()}
         </div>

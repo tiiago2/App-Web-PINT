@@ -183,8 +183,8 @@ const HomeTalent = ({ user, saudacao }) => {
         
         <div className="d-flex flex-column gap-3" style={{ flex: '1 1 auto' }}>
             {/* Primeira linha: Candidaturas e Gráfico Estatísticas */}
-            <div className="row g-2 g-md-3" style={{ flex: '0 0 auto' }}>
-                <div className="col-12 col-xl-8">
+            <div className="row g-2 g-md-3 primeira-linha-home">
+                <div className="col-12 col-xl-8 candidaturas-column">
                     <div>
                         <div className="d-flex justify-content-between align-items-center mb-2">
                             <h5 className="m-0" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>{t('candidaturas_recentes')}</h5>
@@ -196,14 +196,14 @@ const HomeTalent = ({ user, saudacao }) => {
                     </div>
                 </div>
                 <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
-                    <div style={{ height: '250px', overflow: 'hidden' }}>
+                    <div className="grafico-estatistica-container" style={{ overflow: 'hidden' }}>
                         <GraficoEstatistica/>
                     </div>
                 </div>
             </div>
 
             {/* Segunda linha: Atividade, Classificação e Gráfico Candidaturas */}
-            <div className="row g-2 g-md-3" style={{ flex: '1 1 auto', minHeight: 0 }}>
+            <div className="row g-2 g-md-3 segunda-linha-home">
                 <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
                     <div style={{ height: '100%', overflow: 'hidden' }}>
                         <AtividadeRecente atividades={atividadeRecente} />
@@ -215,7 +215,7 @@ const HomeTalent = ({ user, saudacao }) => {
                     </div>
                 </div>
                 <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
-                    <div style={{ height: '100%', overflow: 'hidden' }}>
+                    <div className="grafico-wrapper" style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                         <GraficoCandidaturas dados_grafico_candidaturas={dados_grafico_candidaturas}/>
                     </div>
                 </div>

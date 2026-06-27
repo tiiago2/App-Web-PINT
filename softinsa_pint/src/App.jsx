@@ -37,7 +37,7 @@ function App() {
     //-------------trocar para base dados
     id: 1,
     nome: "Utilizador",
-    cargo: "talent",
+    cargo: "admin", // "consultor", "talent", "service", "admin"
     foto: user_logo, // a imagem que importaste no topo
     ultimoLogin: new Date("2026-04-10"),
   });
@@ -57,15 +57,19 @@ function App() {
     const handleCliqFora = (e) => {
       if (
         menuNotificacoesAberto &&
-        bellRef.current && !bellRef.current.contains(e.target) &&
-        notifPopupRef.current && !notifPopupRef.current.contains(e.target)
+        bellRef.current &&
+        !bellRef.current.contains(e.target) &&
+        notifPopupRef.current &&
+        !notifPopupRef.current.contains(e.target)
       ) {
         setMenuNotificacoesAberto(false);
       }
       if (
         menuLinguaAberto &&
-        flagRef.current && !flagRef.current.contains(e.target) &&
-        linguaPopupRef.current && !linguaPopupRef.current.contains(e.target)
+        flagRef.current &&
+        !flagRef.current.contains(e.target) &&
+        linguaPopupRef.current &&
+        !linguaPopupRef.current.contains(e.target)
       ) {
         setMenuLinguaAberto(false);
       }
@@ -224,10 +228,7 @@ function App() {
 
           <Route path="/galeria" element={<GaleriaConsultor />} />
 
-          <Route
-            path="/candidaturas"
-            element={<Candidaturas />}
-          />
+          <Route path="/candidaturas" element={<Candidaturas />} />
 
           <Route
             path="/objetivos"
@@ -295,11 +296,7 @@ function App() {
         id="barra_horizontal"
       >
         <div id="image_esquerda">
-          <img
-            id="softinsa_logo"
-            src={softinsa_logo}
-            alt="Softinsa Logo"
-          />
+          <img id="softinsa_logo" src={softinsa_logo} alt="Softinsa Logo" />
         </div>
         <div className="d-flex align-items-center pe-2" id="info_direita">
           <div className="position-relative">
@@ -369,10 +366,14 @@ function App() {
             id="flag_icon"
             className={`flag-icon flag-icon-${linguaAtual} flag-icon-squared rounded-circle fs-5 mx-2 `}
             onClick={() => setMenuLinguaAberto(!menuLinguaAberto)}
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: "pointer" }}
           ></span>
           {menuLinguaAberto && (
-            <div ref={linguaPopupRef} className="position-absolute p-2 rounded-4" id="pop_up_lingua">
+            <div
+              ref={linguaPopupRef}
+              className="position-absolute p-2 rounded-4"
+              id="pop_up_lingua"
+            >
               <h5 className="mb-2 ms-2 user-select-none">{t("lingua")}</h5>
               <hr className="mt-0 mb-2" style={{ opacity: 0.15 }} />
 

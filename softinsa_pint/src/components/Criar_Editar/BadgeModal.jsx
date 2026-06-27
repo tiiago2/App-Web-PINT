@@ -62,6 +62,7 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
   const [pontos, setPontos] = useState("");
   const [cor, setCor] = useState("#b0baf0");
   const [icone, setIcone] = useState("fi-br-star");
+  const [validade, setValidade] = useState("");
   const [imagemPreview, setImagemPreview] = useState(null);
   const [isEspecial, setIsEspecial] = useState(false);
   const [tipoEspecial, setTipoEspecial] = useState("gold");
@@ -105,6 +106,7 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
         setPontos(badgeToEdit.pontos !== undefined ? badgeToEdit.pontos : "");
         setCor(badgeToEdit.cor || "#b0baf0");
         setIcone(badgeToEdit.icon || "fi-br-star");
+        setValidade(badgeToEdit.validade || "");
         setImagemPreview(badgeToEdit.imagem || null);
         setIsEspecial(badgeToEdit.especial || false);
         setTipoEspecial(badgeToEdit.tipoEspecial || "gold");
@@ -120,6 +122,7 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
         setPontos("");
         setCor("#b0baf0");
         setIcone("fi-br-star");
+        setValidade("");
         setImagemPreview(null);
         setIsEspecial(false);
         setTipoEspecial("gold");
@@ -225,6 +228,7 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
       areaId,
       nivel,
       pontos: parseInt(pontos) || 0,
+      validade: validade ? parseInt(validade) : null,
       cor,
       icon: icone,
       imagem: imagemPreview,
@@ -505,10 +509,8 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
           </div>
 
           <div className="row">
-            <div className="col-md-6 badge-form-group">
-              <label className="badge-form-label">
-                Cor Primária (Opcional)
-              </label>
+            <div className="col-md-4 badge-form-group">
+              <label className="badge-form-label">Cor (Opcional)</label>
               <div className="badge-color-picker-wrap">
                 <input
                   type="color"
@@ -521,7 +523,7 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
                 </span>
               </div>
             </div>
-            <div className="col-md-6 badge-form-group">
+            <div className="col-md-4 badge-form-group">
               <label className="badge-form-label">Pontos</label>
               <input
                 type="number"
@@ -530,6 +532,16 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
                 value={pontos}
                 onChange={(e) => setPontos(e.target.value)}
                 required
+              />
+            </div>
+            <div className="col-md-4 badge-form-group">
+              <label className="badge-form-label">Validade</label>
+              <input
+                type="number"
+                className="badge-form-input"
+                placeholder="Vitalício se vazio"
+                value={validade}
+                onChange={(e) => setValidade(e.target.value)}
               />
             </div>
           </div>

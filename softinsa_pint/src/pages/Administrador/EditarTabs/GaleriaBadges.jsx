@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import BadgeCirculo from '../../../components/Galeria/BadgeCirculo/BadgeCirculo';
 import BadgeSeccao from '../../../components/Galeria/BadgeSeccao/BadgeSeccao';
+import ModalConfirmacao from '../../../components/ui/ModalConfirmacao/ModalConfirmacao';
 
 export default function GaleriaBadges({ 
   mockBadges, 
@@ -9,6 +10,15 @@ export default function GaleriaBadges({
   onEdit,
   onDelete
 }) {
+  const [itemToDelete, setItemToDelete] = useState(null);
+
+  const handleDeleteConfirm = () => {
+    if (itemToDelete && onDelete) {
+      onDelete(itemToDelete.id);
+    }
+    setItemToDelete(null);
+  };
+
   const filtrados = mockBadges.filter(b => b.nome.toLowerCase().includes(searchTerm.toLowerCase()));
   const badgesEspeciais = filtrados.filter(b => b.especial);
   const badgesNormais = filtrados.filter(b => !b.especial);
@@ -30,7 +40,7 @@ export default function GaleriaBadges({
           title="Eliminar Badge"
           onClick={(e) => {
             e.stopPropagation();
-            if (onDelete) onDelete(badge.id);
+            setItemToDelete(badge);
           }}
           style={{ zIndex: 10 }}
         >
@@ -68,6 +78,15 @@ export default function GaleriaBadges({
         </BadgeSeccao>
 
       </div>
+
+      <ModalConfirmacao 
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={handleDeleteConfirm}
+        titulo="Eliminar Badge"
+        mensagem={`Tem a certeza que deseja eliminar "${itemToDelete?.nome}"? Esta ação não pode ser desfeita.`}
+        textoConfirmar="Eliminar"
+      />
     </div>
   );
 }

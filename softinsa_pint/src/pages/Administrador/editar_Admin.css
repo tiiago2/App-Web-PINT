@@ -225,7 +225,7 @@
     line-height: 1;
 }
 
-.badge-circle:hover .badge-delete-btn {
+.badge-item-wrapper:hover .badge-delete-btn {
     opacity: 1;
 }
 

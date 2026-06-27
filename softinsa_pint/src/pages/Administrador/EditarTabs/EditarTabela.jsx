@@ -53,7 +53,7 @@ export default function EditarTabela({
                   <td className="text-start ps-4 fw-medium text-dark">
                     {abaNome === "Badge" ? (
                       <div className="d-flex align-items-center gap-3">
-                        <div style={{ transform: "scale(0.5)", transformOrigin: "left center", width: "40px", height: "40px", display: "flex", alignItems: "center" }}>
+                        <div style={{ transform: "scale(0.55)", transformOrigin: "left center", minWidth: "55px", height: "45px", display: "flex", alignItems: "center" }}>
                           <BadgeCirculo 
                             icone={item.icon || "fi-br-badge"}
                             nomeBadge={item.nome}

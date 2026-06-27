@@ -5,7 +5,7 @@ import GaleriaBadges from './GaleriaBadges';
 import EditarTabela from './EditarTabela';
 import BadgeModal from '../../../components/Criar_Editar/BadgeModal';
 
-const MOCK_BADGES_INICIAL = [
+export const MOCK_BADGES_INICIAL = [
   { id: 1, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#b0baf0', icon: 'fi-br-mug-hot' },
   { id: 2, nome: 'Angular Master', categoria: 'Web UI', cor: '#dce5f0', icon: 'fi-br-cloud', especial: true, tipoEspecial: 'silver' },
   { id: 3, nome: 'AWS Architect', categoria: 'Cloud Native', cor: '#f0df81', icon: 'fi-br-target', especial: true, tipoEspecial: 'gold' },

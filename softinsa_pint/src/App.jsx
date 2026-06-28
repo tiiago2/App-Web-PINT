@@ -26,6 +26,7 @@ import GaleriaConsultor from "./pages/consultor/GaleriaConsultor.jsx";
 import PerfilPessoal from "./pages/talent/Perfil.jsx";
 import Atividade from "./pages/atividade/Atividade.jsx";
 import Candidaturas from "./pages/candidaturas/Candidaturas.jsx";
+import LoginPage from "./pages/auth/LoginPage.jsx";
 //imagens
 import softinsa_logo from "./assets/logotipo_softinsa.png";
 import user_logo from "./assets/utilizador.png";
@@ -33,8 +34,7 @@ import user_logo from "./assets/utilizador.png";
 function App() {
   const { t, i18n } = useTranslation();
 
-  const [user] = useState({
-    //-------------trocar para base dados
+  const [user, setUser] = useState({
     id: 1,
     nome: "Utilizador",
     cargo: "talent", 
@@ -288,6 +288,21 @@ function App() {
       );
     }
   };
+
+  if (location.pathname === "/login") {
+    return (
+      <LoginPage
+        onLoginSuccess={({ nome, role }) => {
+          setUser((userAtual) => ({
+            ...userAtual,
+            nome: nome || userAtual.nome,
+            cargo: role,
+            ultimoLogin: new Date(),
+          }));
+        }}
+      />
+    );
+  }
 
   return (
     <div className="vh-100 d-flex flex-column" id="layout">

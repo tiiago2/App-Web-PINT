@@ -59,18 +59,6 @@
     background: var(--gold_badge_barra_seccao);
 }
 
-/*
-   Compensação visual:
-   a estrela dos badges especiais sobe 6px,
-   por isso damos 6px de padding à grelha para o espaço visual
-   entre título e estrela continuar correto.
-*/
-
-.badge-seccao-gold .badge-seccao-grid {
-    padding-top: var(--compensacao-estrela-badge-especial);
-    padding-left: var(--compensacao-estrela-badge-especial);
-    box-sizing: border-box;
-}
 
 /* A MINHA ÁREA / OUTRAS ÁREAS */
 

@@ -93,3 +93,39 @@ por exemplo "Em progresso", "Concluído", etc. */
     letter-spacing: 0em;
     color: var(--fontes);
 }
+
+/* TEXTO - AUTH/PÁGINA LOGIN */
+.texto-auth-etiqueta {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.texto-auth-subtitulo {
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.texto-auth-label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.texto-auth-link {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.texto-auth-feedback {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.texto-auth-role-titulo {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.texto-auth-role-descricao {
+    font-size: 14px;
+    line-height: 1.4;
+}

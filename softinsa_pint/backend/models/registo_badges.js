@@ -1,12 +1,11 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/db.config");
+const { DataTypes } = require('sequelize');
 
-const RegistoBadges = sequelize.define(
-  "RegistoBadges",
-  {
+module.exports = (sequelize) => {
+  return sequelize.define('RegistoBadges', {
     id_registo: {
       type: DataTypes.INTEGER,
       primaryKey: true,
+      autoIncrement: true,
       allowNull: false
     },
     id_badge: {
@@ -21,11 +20,8 @@ const RegistoBadges = sequelize.define(
       type: DataTypes.DATE,
       allowNull: false
     }
-  },
-  {
-    tableName: "registo_badges",
+  }, {
+    tableName: 'registo_badges',
     timestamps: false
-  }
-);
-
-module.exports = RegistoBadges;
+  });
+};

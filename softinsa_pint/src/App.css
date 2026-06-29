@@ -58,6 +58,8 @@
     --fundo_login_destaque_radial: rgba(167, 239, 255, 0.35);
     --sombra_card_login: 0px 12px 35px rgba(55, 73, 87, 0.12);
     --sombra_card_role_login_hover: 0px 8px 24px rgba(55, 73, 87, 0.10);
+    --fundo_login_art_gradiente_fim: #EEF4FB;
+    --fundo_login_art_suave: rgba(57, 99, 156, 0.12);
 }
 
 #layout{
@@ -86,7 +88,7 @@
     margin-left: 1rem; /* Margem aumentada para puxar a imagem um pouco mais para a direita */
 }
 
-#bell_icon, #flag_icon, #user_image{
+#bell_icon, #user_image{
     cursor: pointer;
 }
 
@@ -121,25 +123,6 @@
 }
 
 #item_lateral{
-    cursor: pointer;
-}
-
-#pop_up_lingua{
-    background-color: var(--fundo);
-    box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.12);
-    top: 63%;
-    right:5%;
-    width: 170px; 
-    border: 1px solid var(--contorno);
-}
-
-#pop_up_option{
-    border: 1px solid var(--contorno);
-    border-radius: 14px;
-}
-
-#pop_up_option:hover{
-    background-color: var(--selecao);
     cursor: pointer;
 }
 

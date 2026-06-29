@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import AuthTopBar from "../../components/Auth/AuthTopBar/AuthTopBar.jsx";
+import AuthArtPanel from "../../components/Auth/AuthArtPanel/AuthArtPanel.jsx";
 import "./LoginPage.css";
 
 const utilizadoresMock = {
@@ -18,22 +19,18 @@ const utilizadoresMock = {
 const rolesConfig = {
   consultor: {
     tituloKey: "auth_role_consultor",
-    descricaoKey: "auth_role_consultor_desc",
     icone: "fi-br-user",
   },
   talent: {
     tituloKey: "auth_role_talent",
-    descricaoKey: "auth_role_talent_desc",
     icone: "fi-br-users",
   },
   service: {
     tituloKey: "auth_role_service",
-    descricaoKey: "auth_role_service_desc",
     icone: "fi-br-diagram-project",
   },
   admin: {
     tituloKey: "auth_role_admin",
-    descricaoKey: "auth_role_admin_desc",
     icone: "fi-br-settings",
   },
 };
@@ -113,6 +110,7 @@ function LoginPage({ onLoginSuccess }) {
   return (
     <div className="login-page">
       <AuthTopBar />
+      <AuthArtPanel />
 
       <main className="login-page-conteudo">
         {etapa === "login" && (
@@ -248,10 +246,6 @@ function LoginPage({ onLoginSuccess }) {
                     <span className="login-role-texto">
                       <span className="texto-auth-role-titulo login-role-titulo">
                         {t(roleConfig.tituloKey)}
-                      </span>
-
-                      <span className="texto-auth-role-descricao login-role-descricao">
-                        {t(roleConfig.descricaoKey)}
                       </span>
                     </span>
 

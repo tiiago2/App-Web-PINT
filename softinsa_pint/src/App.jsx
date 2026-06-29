@@ -32,12 +32,13 @@ import Atividade from "./pages/atividade/Atividade.jsx";
 import Candidaturas from "./pages/candidaturas/Candidaturas.jsx";
 import ModalConfirmacao from "./components/ui/ModalConfirmacao/ModalConfirmacao";
 import LoginPage from "./pages/auth/LoginPage.jsx";
+import LanguageSelector from "./components/ui/LanguageSelector/LanguageSelector.jsx";
 //imagens
 import softinsa_logo from "./assets/logotipo_softinsa.png";
 import user_logo from "./assets/utilizador.png";
 
 function App() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const [user, setUser] = useState({
     id: 1,
@@ -51,13 +52,10 @@ function App() {
   const location = useLocation();
 
   const bellRef = useRef(null);
-  const flagRef = useRef(null);
   const notifPopupRef = useRef(null);
-  const linguaPopupRef = useRef(null);
   const megaphoneRef = useRef(null);
   const avisosPopupRef = useRef(null);
 
-  const [menuLinguaAberto, setMenuLinguaAberto] = useState(false);
   const [menuNotificacoesAberto, setMenuNotificacoesAberto] = useState(false);
   const [menuAvisosAberto, setMenuAvisosAberto] = useState(false);
 
@@ -134,19 +132,10 @@ function App() {
       ) {
         setMenuAvisosAberto(false);
       }
-      if (
-        menuLinguaAberto &&
-        flagRef.current &&
-        !flagRef.current.contains(e.target) &&
-        linguaPopupRef.current &&
-        !linguaPopupRef.current.contains(e.target)
-      ) {
-        setMenuLinguaAberto(false);
-      }
     };
     document.addEventListener("mousedown", handleCliqFora);
     return () => document.removeEventListener("mousedown", handleCliqFora);
-  }, [menuNotificacoesAberto, menuAvisosAberto, menuLinguaAberto]);
+  }, [menuNotificacoesAberto, menuAvisosAberto]);
 
   const [notificacoes, setNotificacoes] = useState([
     //-----------------------------------trocar para base dados
@@ -235,13 +224,6 @@ function App() {
   const notificacoesNaoLidas = notificacoes.filter((n) => !n.lida).length;
 
   const notificacoesRecentes = notificacoes.slice(0, 30);
-
-  const escolherLingua = (novaLingua) => {
-    i18n.changeLanguage(novaLingua);
-    setMenuLinguaAberto(false);
-  };
-
-  const linguaAtual = i18n.resolvedLanguage;
 
   const CliqueSino = () => {
     setMenuNotificacoesAberto(!menuNotificacoesAberto);
@@ -680,52 +662,9 @@ function App() {
               </div>
             </div>
           )}
-          <div className="position-relative d-flex align-items-center">
-            <span
-              ref={flagRef}
-              id="flag_icon"
-              className={`flag-icon flag-icon-${linguaAtual} flag-icon-squared rounded-circle fs-5 mx-2`}
-              onClick={() => setMenuLinguaAberto(!menuLinguaAberto)}
-              style={{ cursor: "pointer" }}
-            ></span>
+          <div className="mx-2">
+            <LanguageSelector />
           </div>
-          {menuLinguaAberto && (
-            <div
-              ref={linguaPopupRef}
-              className="position-absolute p-2 rounded-4"
-              id="pop_up_lingua"
-            >
-              <h5 className="mb-2 ms-2 user-select-none">{t("lingua")}</h5>
-              <hr className="mt-0 mb-2" style={{ opacity: 0.15 }} />
-
-              <div
-                className="position-relative d-flex justify-content-center align-items-center mb-1 p-2 user-select-none"
-                onClick={() => escolherLingua("pt")}
-                id="pop_up_option"
-              >
-                <span className="position-absolute start-0 ms-2 flag-icon flag-icon-pt flag-icon-squared rounded-circle fs-4"></span>
-                <span>{t("portugues")}</span>
-              </div>
-
-              <div
-                className="position-relative d-flex justify-content-center align-items-center mb-1 p-2 user-select-none"
-                onClick={() => escolherLingua("es")}
-                id="pop_up_option"
-              >
-                <span className="position-absolute start-0 ms-2 flag-icon flag-icon-es flag-icon-squared rounded-circle fs-4"></span>
-                <span>{t("espanhol")}</span>
-              </div>
-
-              <div
-                className="position-relative d-flex justify-content-center align-items-center p-2 user-select-none"
-                onClick={() => escolherLingua("gb")}
-                id="pop_up_option"
-              >
-                <span className="position-absolute start-0 ms-2 flag-icon flag-icon-gb flag-icon-squared rounded-circle fs-4"></span>
-                <span>{t("ingles")}</span>
-              </div>
-            </div>
-          )}
           <div
             id="name_cargo"
             className="d-flex flex-column align-items-center mx-2 d-none d-md-flex text-dark"

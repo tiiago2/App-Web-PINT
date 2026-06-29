@@ -381,9 +381,9 @@ function App() {
             element={<ObjetivosConsultor user={user} />}
           />
 
-          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
 
-          <Route path="*" element={<Navigate to="/home" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       );
     } else if (user.cargo === "talent") {
@@ -398,8 +398,8 @@ function App() {
           <Route path="/candidaturas" element={<Candidaturas />} />
           <Route path="/perfil/:id" element={<PerfilPessoal />} />
           <Route path="/atividade" element={<Atividade />} />
-          <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="*" element={<Navigate to="/home" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       );
     } else if (user.cargo === "service") {
@@ -414,8 +414,8 @@ function App() {
           <Route path="/candidaturas" element={<Candidaturas />} />
           <Route path="/perfil/:id" element={<PerfilPessoal />} />
           <Route path="/atividade" element={<Atividade />} />
-          <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="*" element={<Navigate to="/home" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       );
     } else if (user.cargo === "admin") {
@@ -440,8 +440,8 @@ function App() {
           <Route path="/editar" element={<EditarAdmin />} />
           <Route path="/definicoes" element={<DefinicoesAdmin />} />
           <Route path="/atividade" element={<Atividade />} />
-          <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="*" element={<Navigate to="/home" replace />} />
+          {/*<Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />*/}
         </Routes>
       );
     }

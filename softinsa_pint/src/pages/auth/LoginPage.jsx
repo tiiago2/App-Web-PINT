@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import axios from 'axios';
 import AuthTopBar from "../../components/Auth/AuthTopBar/AuthTopBar.jsx";
 import AuthArtPanel from "../../components/Auth/AuthArtPanel/AuthArtPanel.jsx";
 import "./LoginPage.css";
@@ -45,48 +46,44 @@ function LoginPage({ onLoginSuccess }) {
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [estadoLogin, setEstadoLogin] = useState("normal");
   const [utilizadorValidado, setUtilizadorValidado] = useState(null);
+  const [roles, setRoles] = useState(null);
   const [roleSelecionada, setRoleSelecionada] = useState(null);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = async (event) => {
+      event.preventDefault();
+      setEstadoLogin("loading");
 
-    setEstadoLogin("loading");
+      try {
+          const resposta = await axios.post('http://localhost:5000/api/login', {
+              email: email,      
+              password: password
+          });
 
-    setTimeout(() => {
-      const utilizadorEncontrado = utilizadoresMock[email.trim().toLowerCase()];
+          const dados = resposta.data; 
 
-      if (!utilizadorEncontrado || password.trim() === "") {
-        setEstadoLogin("error");
-        return;
+          localStorage.setItem('token_softinsa', dados.token);
+
+          const rolesRecebidas = dados.utilizador.roles;
+          setUtilizadorValidado(dados.utilizador);
+
+          if (rolesRecebidas.length === 1) {
+              navigate("/home");
+          } else {
+              setRoleSelecionada(rolesRecebidas[0]);
+              setEtapa("roles");
+              setEstadoLogin("normal");
+          }
+
+      } catch (erro) {
+          console.error("Erro no login:", erro);
+          setEstadoLogin("error");
       }
-
-      setUtilizadorValidado(utilizadorEncontrado);
-
-      if (utilizadorEncontrado.roles.length === 1) {
-      onLoginSuccess({
-          nome: utilizadorEncontrado.nome,
-          role: utilizadorEncontrado.roles[0],
-      });
-
-      navigate("/home");
-      return;
-      }
-
-      setRoleSelecionada(utilizadorEncontrado.roles[0]);
-      setEtapa("roles");
-      setEstadoLogin("normal");
-    }, 700);
   };
 
   const handleContinuarComRole = () => {
     if (!roleSelecionada || !utilizadorValidado) {
       return;
     }
-
-    onLoginSuccess({
-      nome: utilizadorValidado.nome,
-      role: roleSelecionada,
-    });
 
     navigate("/home");
   };
@@ -98,7 +95,7 @@ function LoginPage({ onLoginSuccess }) {
     setEstadoLogin("normal");
   };
 
-  const handleTerminarSessao = () => {
+  const handleTerminarSessao = () => { 
     setEtapa("login");
     setEmail("");
     setPassword("");
@@ -133,9 +130,7 @@ function LoginPage({ onLoginSuccess }) {
                 </label>
 
                 <input
-                  className={`login-form-input ${
-                    estadoLogin === "error" ? "login-form-input-erro" : ""
-                  }`}
+                  className={`login-form-input ${estadoLogin === "error" ? "login-form-input-erro" : ""}`}
                   type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
@@ -226,7 +221,7 @@ function LoginPage({ onLoginSuccess }) {
             </div>
 
             <div className="login-roles-grid">
-              {utilizadorValidado.roles.map((role) => {
+              {roles.map((role) => {
                 const roleConfig = rolesConfig[role];
                 const estaSelecionada = roleSelecionada === role;
 
@@ -240,7 +235,7 @@ function LoginPage({ onLoginSuccess }) {
                     onClick={() => setRoleSelecionada(role)}
                   >
                     <span className="login-role-icone">
-                      <i className={`fi ${roleConfig.icone}`}></i>
+                      <i className={`fi ${role.icone_role}`}></i>
                     </span>
 
                     <span className="login-role-texto">

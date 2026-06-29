@@ -136,7 +136,6 @@
     "telefone_dots": "Phone: ",
     "assinatura_pessoal": "Personal signature",
     "badges_pessoais": "Personal badges",
-<<<<<<< Updated upstream
     "criar_aviso": "Create Announcement",
     "editar_aviso": "Edit Announcement",
     "eliminar_aviso": "Delete Announcement",
@@ -176,8 +175,7 @@
     "auth_role_service": "Service Line Leader",
     "auth_role_service_desc": "Track teams, areas and service line progress.",
     "auth_role_admin": "Administrator",
-    "auth_role_admin_desc": "Configure permissions, base data and platform settings."
-=======
+    "auth_role_admin_desc": "Configure permissions, base data and platform settings.",
     "historico_atribuidos": "Assigned history",
     "total_badges": "Total badges",
     "badges": "Badges",
@@ -207,5 +205,4 @@
     "outubro": "October",
     "novembro": "November",
     "dezembro": "December"
->>>>>>> Stashed changes
 }

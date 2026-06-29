@@ -137,7 +137,6 @@
     "telefone_dots": "telefone: ",
     "assinatura_pessoal": "Assinatura pessoal",
     "badges_pessoais": "Badges pessoais",
-<<<<<<< Updated upstream
     "criar_aviso": "Criar Aviso",
     "editar_aviso": "Editar Aviso",
     "eliminar_aviso": "Eliminar Aviso",
@@ -177,8 +176,7 @@
     "auth_role_service": "Service Line Leader",
     "auth_role_service_desc": "Acompanha equipas, áreas e progresso por service line.",
     "auth_role_admin": "Administrador",
-    "auth_role_admin_desc": "Configura permissões, dados base e definições da plataforma."
-=======
+    "auth_role_admin_desc": "Configura permissões, dados base e definições da plataforma.",
     "historico_atribuidos": "Histórico atribuídos",
     "total_badges": "Total de badges",
     "badges": "Badges",
@@ -208,5 +206,4 @@
     "outubro": "outubro",
     "novembro": "novembro",
     "dezembro": "dezembro"
->>>>>>> Stashed changes
 }

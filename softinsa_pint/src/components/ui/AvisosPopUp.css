@@ -1,0 +1,148 @@
+#pop_up_avisos {
+  background-color: var(--fundo);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+  top: 48px;
+  width: 380px; 
+  border: 1px solid var(--contorno);
+  right: 50px;
+  font-size: 13px;
+  max-height: 450px;
+  overflow-y: auto;
+  z-index: 1050;
+  border-radius: 12px;
+}
+
+#bolinha_megafone {
+  background-color: #e63946;
+  color: white;
+  top: 5px;
+  left: 90%;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  padding: 0 !important;
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: bold;
+}
+
+.aviso-item {
+  border-bottom: 1px solid var(--contorno);
+  transition: background-color 0.2s;
+}
+
+.aviso-item:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.aviso-tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+.aviso-tag-todos {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.aviso-tag-consultores {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.aviso-tag-talents {
+  background-color: #fef9c3;
+  color: #a16207;
+}
+
+.aviso-tag-services {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+}
+
+.aviso-tag-individual {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Modal form style */
+.aviso-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.aviso-modal-content {
+  background-color: var(--fundo);
+  border: 1px solid var(--contorno);
+  border-radius: 12px;
+  width: 95%;
+  max-width: 500px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  color: var(--fontes);
+}
+
+.aviso-modal-content .form-check-input:checked {
+  background-color: #3a5a92 !important;
+  border-color: #3a5a92 !important;
+}
+
+.aviso-modal-content input.form-control,
+.aviso-modal-content textarea.form-control,
+.aviso-modal-content select.form-select {
+  border: var(--borda-principal) solid var(--contorno) !important;
+  border-radius: var(--border-radius-grande) !important;
+  transition: border-color 0.2s ease-in-out !important;
+}
+
+.aviso-modal-content input.form-control:hover,
+.aviso-modal-content textarea.form-control:hover,
+.aviso-modal-content select.form-select:hover,
+.aviso-modal-content input.form-control:focus,
+.aviso-modal-content textarea.form-control:focus,
+.aviso-modal-content select.form-select:focus {
+  border-color: var(--barra_lateral) !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+/* Tabs no Popup de Avisos */
+.aviso-popup-tab {
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: #999;
+  padding-bottom: 6px;
+  position: relative;
+  transition: color 0.2s ease-in-out;
+}
+
+.aviso-popup-tab:hover {
+  color: #3a5a92;
+}
+
+.aviso-popup-tab.active {
+  color: #3a5a92;
+  font-weight: 600;
+}
+
+.aviso-popup-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background-color: #3a5a92;
+  border-radius: 2px;
+}

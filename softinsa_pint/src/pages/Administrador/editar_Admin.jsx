@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 import { useLocation } from "react-router-dom";
-import { TabsAdmin } from "../../components/ui/TabsAdmin";
+import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
 import "./editar_Admin.css";
 
 // Importação das Abas
@@ -24,10 +24,10 @@ function EditarAdmin() {
   }, [location.state]);
 
   const abasEditar = [
-    { id: "badges", label: "Badges" },
-    { id: "areas", label: "Áreas" },
-    { id: "service_line", label: "Service Line" },
-    { id: "learning_paths", label: "Learning Paths" },
+    { valor: "badges", label: "Badges" },
+    { valor: "areas", label: "Áreas" },
+    { valor: "service_line", label: "Service Line" },
+    { valor: "learning_paths", label: "Learning Paths" },
   ];
 
   const getNomeAba = () => {
@@ -86,12 +86,13 @@ function EditarAdmin() {
         )}
       </h1>
 
-      {/* Navegação de Abas */}
-      <TabsAdmin
-        abas={abasEditar}
-        abaAtiva={abaAtiva}
-        setAbaAtiva={setAbaAtiva}
-      />
+      <div style={{ marginBottom: "2rem", width: "50%" }}>
+        <SeletorAbas
+          opcoes={abasEditar}
+          valorAtivo={abaAtiva}
+          onChange={setAbaAtiva}
+        />
+      </div>
 
       {/* Conteúdo dinâmico da Aba */}
       <div className="d-flex flex-column flex-grow-1 pb-2">

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ToggleSwitch from "../../../components/ui/ToggleSwitch/ToggleSwitch";
 
 export default function TabNotificacoes() {
   const [notifConfig, setNotifConfig] = useState({
@@ -52,13 +53,10 @@ export default function TabNotificacoes() {
                 seu registo na plataforma.
               </p>
             </div>
-            <div className="form-check form-switch fs-4 mb-0">
-              <input
-                className="form-check-input"
-                type="checkbox"
+            <div className="mb-0">
+              <ToggleSwitch
                 checked={notifConfig.email_registo}
                 onChange={() => toggleNotif("email_registo")}
-                style={{ cursor: "pointer" }}
               />
             </div>
           </div>
@@ -76,13 +74,10 @@ export default function TabNotificacoes() {
                 a badge.
               </p>
             </div>
-            <div className="form-check form-switch fs-4 mb-0">
-              <input
-                className="form-check-input"
-                type="checkbox"
+            <div className="mb-0">
+              <ToggleSwitch
                 checked={notifConfig.email_candidatura}
                 onChange={() => toggleNotif("email_candidatura")}
-                style={{ cursor: "pointer" }}
               />
             </div>
           </div>
@@ -100,13 +95,10 @@ export default function TabNotificacoes() {
                 ou Send Back) do seu processo de avaliação.
               </p>
             </div>
-            <div className="form-check form-switch fs-4 mb-0">
-              <input
-                className="form-check-input"
-                type="checkbox"
+            <div className="mb-0">
+              <ToggleSwitch
                 checked={notifConfig.email_veredito}
                 onChange={() => toggleNotif("email_veredito")}
-                style={{ cursor: "pointer" }}
               />
             </div>
           </div>
@@ -129,13 +121,10 @@ export default function TabNotificacoes() {
                 novas candidaturas a aguardar análise.
               </p>
             </div>
-            <div className="form-check form-switch fs-4 mb-0">
-              <input
-                className="form-check-input"
-                type="checkbox"
+            <div className="mb-0">
+              <ToggleSwitch
                 checked={notifConfig.alerta_talent}
                 onChange={() => toggleNotif("alerta_talent")}
-                style={{ cursor: "pointer" }}
               />
             </div>
           </div>
@@ -153,13 +142,10 @@ export default function TabNotificacoes() {
                 a validação final técnica e comportamental.
               </p>
             </div>
-            <div className="form-check form-switch fs-4 mb-0">
-              <input
-                className="form-check-input"
-                type="checkbox"
+            <div className="mb-0">
+              <ToggleSwitch
                 checked={notifConfig.alerta_service}
                 onChange={() => toggleNotif("alerta_service")}
-                style={{ cursor: "pointer" }}
               />
             </div>
           </div>
@@ -189,13 +175,10 @@ export default function TabNotificacoes() {
                 termo de validade das suas certificações ativas.
               </p>
             </div>
-            <div className="form-check form-switch fs-4 mb-0">
-              <input
-                className="form-check-input"
-                type="checkbox"
+            <div className="mb-0">
+              <ToggleSwitch
                 checked={notifConfig.alerta_expiracao}
                 onChange={() => toggleNotif("alerta_expiracao")}
-                style={{ cursor: "pointer" }}
               />
             </div>
           </div>
@@ -265,13 +248,10 @@ export default function TabNotificacoes() {
                 Ativa a partilha automática de atualizações via canal
                 Microsoft Teams.
               </p>
-              <div className="form-check form-switch fs-5 mb-0">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
+              <div className="mb-0">
+                <ToggleSwitch
                   checked={notifConfig.teams_ativo}
                   onChange={() => toggleNotif("teams_ativo")}
-                  style={{ cursor: "pointer" }}
                 />
               </div>
             </div>
@@ -289,13 +269,10 @@ export default function TabNotificacoes() {
                 Estabelece a ligação para envio de relatórios e
                 notificações no Slack.
               </p>
-              <div className="form-check form-switch fs-5 mb-0">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
+              <div className="mb-0">
+                <ToggleSwitch
                   checked={notifConfig.slack_ativo}
                   onChange={() => toggleNotif("slack_ativo")}
-                  style={{ cursor: "pointer" }}
                 />
               </div>
             </div>

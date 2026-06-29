@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { TabsAdmin } from "../../components/ui/TabsAdmin";
+import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
 import "./definicoes_Admin.css";
 
 // Import das Abas Separadas
@@ -16,22 +16,23 @@ function DefinicoesAdmin() {
   const [abaAtiva, setAbaAtiva] = useState("utilizadores");
 
   const abasDefinicoes = [
-    { id: "utilizadores", label: t("utilizadores") },
-    { id: "notificacoes", label: t("notificacoes") },
-    { id: "rgpd", label: t("politicas_rgpd") },
-    { id: "sla", label: "SLA" },
+    { valor: "utilizadores", label: t("utilizadores") },
+    { valor: "notificacoes", label: t("notificacoes") },
+    { valor: "rgpd", label: t("politicas_rgpd") },
+    { valor: "sla", label: "SLA" },
   ];
 
   return (
     <div className="definicoes-container w-100">
       <h1 className="texto-titulo-principal" style={{ marginBottom: 'var(--gap-titulo-principal-conteudo)' }}>{t("definicoes")}</h1>
 
-      {/* Navegação de Abas */}
-      <TabsAdmin 
-        abas={abasDefinicoes} 
-        abaAtiva={abaAtiva} 
-        setAbaAtiva={setAbaAtiva} 
-      />
+      <div style={{ marginBottom: "2rem", width: "50%" }}>
+        <SeletorAbas 
+          opcoes={abasDefinicoes} 
+          valorAtivo={abaAtiva} 
+          onChange={setAbaAtiva} 
+        />
+      </div>
 
       {/* Conteúdo da aba ativa */}
       <div className="content-card mt-4">

@@ -177,9 +177,8 @@ const EvolucaoModal = ({ onClose }) => {
                         <h4 className="fw-bold m-0 mb-1" style={{ color: 'var(--fontes)' }}>Evolução de Pontos</h4>
                         <p className="text-muted m-0" style={{ fontSize: '14px' }}>Histórico detalhado do teu progresso</p>
                     </div>
-                    <button className="btn btn-light rounded-circle p-2 d-flex align-items-center justify-content-center" 
-                            onClick={onClose} style={{ width: '36px', height: '36px' }}>
-                        <i className="fi fi-br-cross" style={{ fontSize: '12px' }}></i>
+                    <button className="evolucao-modal-close-btn" onClick={onClose}>
+                        <i className="fi fi-br-cross"></i>
                     </button>
                 </div>
 

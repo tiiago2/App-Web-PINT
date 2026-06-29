@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import BotaoDropdown from "../../../components/ui/BotaoDropdown/BotaoDropdown";
+import ToggleSwitch from "../../../components/ui/ToggleSwitch/ToggleSwitch";
 
 export default function TabUtilizadores() {
   const { t } = useTranslation();
@@ -109,14 +110,10 @@ export default function TabUtilizadores() {
                     {permissao.desc}
                   </p>
                 </div>
-                <div className="form-check form-switch fs-4 mb-0">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id={permissao.id}
+                <div className="mb-0">
+                  <ToggleSwitch
                     checked={permissoesAtivas[permissao.id] || false}
                     onChange={() => togglePermissao(permissao.id)}
-                    style={{ cursor: "pointer" }}
                   />
                 </div>
               </div>

@@ -150,7 +150,7 @@ function AcaoRapida({ cor, icone, texto, onClick }) {
 }
 
 // --- 2. PÁGINA PRINCIPAL ---
-const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
+const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -194,10 +194,10 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
           />
 
           <AcaoRapida
-            cor="#3a5a92"
-            icone="fi-br-settings"
-            texto="Definições"
-            onClick={() => navigate('/definicoes')}
+            cor="#e63946"
+            icone="fi-br-megaphone"
+            texto={t("criar_aviso")}
+            onClick={onCriarAviso}
           />
 
           <AcaoRapida
@@ -215,7 +215,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!" }) => {
           />
 
           <AcaoRapida
-            cor="#dc2f02"
+            cor="#3a5a92"
             icone="fi-br-target"
             texto={t("editar_areas")}
             onClick={() => navigate('/editar', { state: { abaAtiva: 'areas' } })}

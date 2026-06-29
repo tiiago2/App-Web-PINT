@@ -121,5 +121,21 @@
     "email_dots": "Email: ",
     "telefone_dots": "Phone: ",
     "assinatura_pessoal": "Personal signature",
-    "badges_pessoais": "Personal badges"
+    "badges_pessoais": "Personal badges",
+    "criar_aviso": "Create Announcement",
+    "editar_aviso": "Edit Announcement",
+    "eliminar_aviso": "Delete Announcement",
+    "confirmar_eliminar_aviso": "Are you sure you want to delete this announcement?",
+    "aviso_vazio": "There are no announcements.",
+    "avisos_titulo": "Announcements",
+    "destinatario": "Recipient",
+    "consultores": "All Consultants",
+    "talent_managers": "All Talent Managers",
+    "service_line_leaders": "All Service Line Leaders",
+    "individual": "Individual",
+    "titulo": "Title",
+    "mensagem": "Message",
+    "enviar": "Send",
+    "cancelar": "Cancel",
+    "grupo": "Group"
 }

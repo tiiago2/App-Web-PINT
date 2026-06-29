@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
 import BarraPesquisa from "../../components/ui/BarraPesquisa/BarraPesquisa";
 import BotaoDropdown from "../../components/ui/BotaoDropdown/BotaoDropdown";
+import ToggleSwitch from "../../components/ui/ToggleSwitch/ToggleSwitch";
 import "./candidaturas.css";
 
 // MOCK DATABASE & DATA SCHEMA
@@ -462,17 +463,13 @@ export default function Candidaturas() {
         {/* Filters Panel right */}
         <div className="d-flex align-items-center gap-3 flex-wrap">
           <div className="d-flex align-items-center gap-2 bg-white px-3 py-1.5 rounded-3 border border-light-subtle" style={{ height: "44px" }}>
-            <label className="switch m-0">
-              <input 
-                type="checkbox" 
-                checked={toggleServiceLine}
-                onChange={(e) => {
-                  setToggleServiceLine(e.target.checked);
-                  setSelectedCandidaturaId(null);
-                }}
-              />
-              <span className="slider round"></span>
-            </label>
+            <ToggleSwitch 
+              checked={toggleServiceLine}
+              onChange={(e) => {
+                setToggleServiceLine(e.target.checked);
+                setSelectedCandidaturaId(null);
+              }}
+            />
             <span className="fw-medium text-secondary" style={{ fontSize: "0.85rem" }}>Minha Service Line</span>
           </div>
 

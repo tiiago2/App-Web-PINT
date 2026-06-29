@@ -12,6 +12,7 @@ import { iconesNotificacao } from "./defs/dicionario.jsx";
 import "./i18n";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
+import "./components/ui/AvisosPopUp.css";
 //paginas
 import HomeConsultor from "./pages/consultor/home_consultor.jsx";
 import EstatisticasConsultor from "./pages/consultor/estatisticas_consultor.jsx";
@@ -26,6 +27,7 @@ import GaleriaConsultor from "./pages/consultor/GaleriaConsultor.jsx";
 import PerfilPessoal from "./pages/talent/Perfil.jsx";
 import Atividade from "./pages/atividade/Atividade.jsx";
 import Candidaturas from "./pages/candidaturas/Candidaturas.jsx";
+import ModalConfirmacao from "./components/ui/ModalConfirmacao/ModalConfirmacao";
 //imagens
 import softinsa_logo from "./assets/logotipo_softinsa.png";
 import user_logo from "./assets/utilizador.png";
@@ -49,9 +51,65 @@ function App() {
   const flagRef = useRef(null);
   const notifPopupRef = useRef(null);
   const linguaPopupRef = useRef(null);
+  const megaphoneRef = useRef(null);
+  const avisosPopupRef = useRef(null);
 
   const [menuLinguaAberto, setMenuLinguaAberto] = useState(false);
   const [menuNotificacoesAberto, setMenuNotificacoesAberto] = useState(false);
+  const [menuAvisosAberto, setMenuAvisosAberto] = useState(false);
+
+  const [isAvisoModalOpen, setIsAvisoModalOpen] = useState(false);
+  const [avisoParaEditar, setAvisoParaEditar] = useState(null);
+  const [avisoParaVisualizar, setAvisoParaVisualizar] = useState(null);
+  const [avisoToDelete, setAvisoToDelete] = useState(null);
+  const [abaAvisos, setAbaAvisos] = useState("recebidos");
+
+  const [avisos, setAvisos] = useState(() => {
+    const saved = localStorage.getItem("softinsa_avisos");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return [];
+      }
+    }
+    return [
+      {
+        id: 1,
+        titulo: "Manutenção do Portal",
+        mensagem:
+          "O portal de badges estará em manutenção no próximo sábado das 22h às 02h para atualização de servidores. Pedimos desculpa pelo incómodo.",
+        tipoDestino: "grupo",
+        destino: "Todos",
+        data: "25/06/2026 10:00",
+        autor: "Admin",
+      },
+      {
+        id: 2,
+        titulo: "Nova Learning Path de DevOps",
+        mensagem:
+          "Lançámos a nova trilha de aprendizagem focada em DevOps! Todos os consultores já podem candidatar-se aos novos badges associados.",
+        tipoDestino: "grupo",
+        destino: "Todos os Consultores",
+        data: "26/06/2026 14:30",
+        autor: "Admin",
+      },
+      {
+        id: 3,
+        titulo: "Reunião de Alinhamento",
+        mensagem:
+          "Carlos, por favor comparece na sala de reuniões às 14h de hoje para alinhamento sobre as avaliações de badges.",
+        tipoDestino: "individual",
+        destino: "Carlos",
+        data: "27/06/2026 09:15",
+        autor: "Gonçalo",
+      },
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("softinsa_avisos", JSON.stringify(avisos));
+  }, [avisos]);
 
   useEffect(() => {
     const handleCliqFora = (e) => {
@@ -65,6 +123,15 @@ function App() {
         setMenuNotificacoesAberto(false);
       }
       if (
+        menuAvisosAberto &&
+        megaphoneRef.current &&
+        !megaphoneRef.current.contains(e.target) &&
+        avisosPopupRef.current &&
+        !avisosPopupRef.current.contains(e.target)
+      ) {
+        setMenuAvisosAberto(false);
+      }
+      if (
         menuLinguaAberto &&
         flagRef.current &&
         !flagRef.current.contains(e.target) &&
@@ -76,7 +143,7 @@ function App() {
     };
     document.addEventListener("mousedown", handleCliqFora);
     return () => document.removeEventListener("mousedown", handleCliqFora);
-  }, [menuNotificacoesAberto, menuLinguaAberto]);
+  }, [menuNotificacoesAberto, menuAvisosAberto, menuLinguaAberto]);
 
   const [notificacoes, setNotificacoes] = useState([
     //-----------------------------------trocar para base dados
@@ -185,6 +252,100 @@ function App() {
     }
   };
 
+  const avisosFiltrados = useMemo(() => {
+    return avisos.filter((aviso) => {
+      if (aviso.tipoDestino === "grupo") {
+        if (aviso.destino === "Todos") return true;
+        if (
+          aviso.destino === "Todos os Consultores" &&
+          user.cargo === "consultor"
+        )
+          return true;
+        if (
+          aviso.destino === "Todos os Talent Managers" &&
+          user.cargo === "talent"
+        )
+          return true;
+        if (
+          aviso.destino === "Todos os Service Line Leaders" &&
+          user.cargo === "service"
+        )
+          return true;
+      } else if (aviso.tipoDestino === "individual") {
+        const target = aviso.destino ? aviso.destino.toLowerCase().trim() : "";
+        const userName = user.nome ? user.nome.toLowerCase().trim() : "";
+        return target === userName;
+      }
+      return false;
+    });
+  }, [avisos, user]);
+
+  const avisosExibidos = useMemo(() => {
+    if (abaAvisos === "recebidos") {
+      // Mostrar apenas avisos que não foram escritos pelo próprio utilizador
+      return avisosFiltrados.filter((a) => a.autor !== user.nome);
+    } else {
+      // Mostrar avisos escritos pelo próprio utilizador
+      return avisos.filter((a) => a.autor === user.nome);
+    }
+  }, [abaAvisos, avisosFiltrados, avisos, user.nome]);
+
+  const [avisosNaoLidosCount, setAvisosNaoLidosCount] = useState(0);
+
+  useEffect(() => {
+    if (user.ultimoLogin) {
+      const loginTime = new Date(user.ultimoLogin).getTime();
+      const unread = avisosFiltrados.filter((aviso) => {
+        const parts = aviso.data.split(" ");
+        if (parts.length === 2) {
+          const dateParts = parts[0].split("/");
+          const timeParts = parts[1].split(":");
+          if (dateParts.length === 3 && timeParts.length === 2) {
+            const avisoDate = new Date(
+              parseInt(dateParts[2]),
+              parseInt(dateParts[1]) - 1,
+              parseInt(dateParts[0]),
+              parseInt(timeParts[0]),
+              parseInt(timeParts[1]),
+            );
+            return avisoDate.getTime() > loginTime;
+          }
+        }
+        return false;
+      }).length;
+      setAvisosNaoLidosCount(unread);
+    }
+  }, [avisosFiltrados, user.ultimoLogin]);
+
+  const CliqueMegafone = () => {
+    setMenuAvisosAberto(!menuAvisosAberto);
+    if (!menuAvisosAberto) {
+      setAvisosNaoLidosCount(0);
+    }
+  };
+
+  const getTradDestino = (aviso) => {
+    if (aviso.tipoDestino === "individual") {
+      return `${t("individual")}: ${aviso.destino}`;
+    }
+    if (aviso.destino === "Todos") return t("todos");
+    if (aviso.destino === "Todos os Consultores") return t("consultores");
+    if (aviso.destino === "Todos os Talent Managers")
+      return t("talent_managers");
+    if (aviso.destino === "Todos os Service Line Leaders")
+      return t("service_line_leaders");
+    return aviso.destino;
+  };
+
+  const getStyleClass = (aviso) => {
+    if (aviso.tipoDestino === "individual") return "individual";
+    if (aviso.destino === "Todos") return "todos";
+    if (aviso.destino === "Todos os Consultores") return "consultores";
+    if (aviso.destino === "Todos os Talent Managers") return "talents";
+    if (aviso.destino === "Todos os Service Line Leaders") return "services";
+    return "todos";
+  };
+
   const menuItems = useMemo(() => {
     return menu_lateral.filter((item) => {
       return item.permissao.includes(user.cargo);
@@ -275,7 +436,16 @@ function App() {
         <Routes>
           <Route
             path="/home"
-            element={<HomeAdmin user={user} saudacao={Saudacao()} />}
+            element={
+              <HomeAdmin
+                user={user}
+                saudacao={Saudacao()}
+                onCriarAviso={() => {
+                  setAvisoParaEditar(null);
+                  setIsAvisoModalOpen(true);
+                }}
+              />
+            }
           />
           <Route path="/candidaturas" element={<Candidaturas />} />
           <Route path="/galeria" element={<Galeria />} />
@@ -299,12 +469,36 @@ function App() {
           <img id="softinsa_logo" src={softinsa_logo} alt="Softinsa Logo" />
         </div>
         <div className="d-flex align-items-center pe-2" id="info_direita">
-          <div className="position-relative">
+          {/* Megafone de Avisos */}
+          <div className="position-relative d-flex align-items-center">
+            <i
+              ref={megaphoneRef}
+              id="megaphone_icon"
+              className="fi fi-br-megaphone mx-2"
+              onClick={CliqueMegafone}
+              style={{
+                cursor: "pointer",
+                fontSize: "1.2rem",
+                color: "var(--fontes)",
+              }}
+            ></i>
+            {avisosNaoLidosCount > 0 && (
+              <span
+                className="d-flex position-absolute translate-middle badge rounded-pill align-items-center justify-content-center"
+                id="bolinha_megafone"
+              >
+                {avisosNaoLidosCount}
+              </span>
+            )}
+          </div>
+
+          <div className="position-relative d-flex align-items-center">
             <i
               ref={bellRef}
               id="bell_icon"
-              className="fi fi-br-bell mx-2 "
+              className="fi fi-br-bell mx-2"
               onClick={CliqueSino}
+              style={{ cursor: "pointer", fontSize: "1.2rem", color: "var(--fontes)" }}
             ></i>
             {!menuNotificacoesAberto && notificacoesNaoLidas > 0 && (
               <span
@@ -361,13 +555,119 @@ function App() {
               </div>
             </div>
           )}
-          <span
-            ref={flagRef}
-            id="flag_icon"
-            className={`flag-icon flag-icon-${linguaAtual} flag-icon-squared rounded-circle fs-5 mx-2 `}
-            onClick={() => setMenuLinguaAberto(!menuLinguaAberto)}
-            style={{ cursor: "pointer" }}
-          ></span>
+          {menuAvisosAberto && (
+            <div
+              ref={avisosPopupRef}
+              className="position-absolute bg-white shadow-sm p-3 rounded-4"
+              id="pop_up_avisos"
+            >
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <h5 className="ms-1 mt-1 mb-0 user-select-none text-dark">
+                  {t("avisos_titulo")}
+                </h5>
+                <button
+                  className="rounded-circle d-flex align-items-center justify-content-center border-0 text-white"
+                  style={{ width: "24px", height: "24px", padding: 0, backgroundColor: "#3a5a92" }}
+                  onClick={() => {
+                    setAvisoParaEditar(null);
+                    setIsAvisoModalOpen(true);
+                    setMenuAvisosAberto(false);
+                  }}
+                >
+                  <i className="fi fi-br-plus" style={{ fontSize: "10px", lineHeight: "0" }}></i>
+                </button>
+              </div>
+
+              {/* Seletor de Abas */}
+              <div className="d-flex border-bottom mb-3 justify-content-around" style={{ borderColor: "var(--contorno)" }}>
+                <span
+                  className={`aviso-popup-tab pb-2 px-3 fw-semibold ${abaAvisos === "recebidos" ? "active" : ""}`}
+                  onClick={() => setAbaAvisos("recebidos")}
+                >
+                  {t("recebidos")}
+                </span>
+                <span
+                  className={`aviso-popup-tab pb-2 px-3 fw-semibold ${abaAvisos === "enviados" ? "active" : ""}`}
+                  onClick={() => setAbaAvisos("enviados")}
+                >
+                  {t("enviados")}
+                </span>
+              </div>
+
+              <div className="d-flex flex-column gap-2" id="avisos_list" style={{ maxHeight: "250px", overflowY: "auto" }}>
+                {avisosExibidos.length === 0 ? (
+                  <p className="text-center my-3 text-muted">{t("aviso_vazio")}</p>
+                ) : (
+                  [...avisosExibidos].reverse().map((aviso) => (
+                    <div
+                      key={aviso.id}
+                      className="aviso-item p-2 rounded-3 position-relative"
+                    >
+                      <div className="d-flex justify-content-between align-items-start gap-2">
+                        <span 
+                          className="fw-bold text-truncate text-dark" 
+                          style={{ cursor: "pointer", maxWidth: "160px" }}
+                          onClick={() => {
+                            setAvisoParaVisualizar(aviso);
+                            setMenuAvisosAberto(false);
+                          }}
+                        >
+                          {aviso.titulo}
+                        </span>
+                        <div className="d-flex gap-1 align-items-center flex-shrink-0">
+                          <span className={`aviso-tag aviso-tag-${getStyleClass(aviso)}`}>
+                            {getTradDestino(aviso)}
+                          </span>
+                          
+                          {aviso.autor === user.nome && (
+                            <div className="d-flex gap-1 ms-2">
+                              <i 
+                                className="fi fi-br-pencil text-muted" 
+                                style={{ cursor: "pointer", fontSize: "11px" }}
+                                onClick={() => {
+                                  setAvisoParaEditar(aviso);
+                                  setIsAvisoModalOpen(true);
+                                  setMenuAvisosAberto(false);
+                                }}
+                              ></i>
+                              <i 
+                                className="fi fi-br-trash text-danger" 
+                                style={{ cursor: "pointer", fontSize: "11px" }}
+                                onClick={() => setAvisoToDelete(aviso)}
+                              ></i>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <p 
+                        className="text-muted mb-1 text-truncate" 
+                        style={{ fontSize: "0.8rem", cursor: "pointer" }}
+                        onClick={() => {
+                          setAvisoParaVisualizar(aviso);
+                          setMenuAvisosAberto(false);
+                        }}
+                      >
+                        {aviso.mensagem}
+                      </p>
+                      <div className="d-flex justify-content-between text-muted" style={{ fontSize: "0.7rem" }}>
+                        <span>Por: {aviso.autor}</span>
+                        <span>{aviso.data}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+          <div className="position-relative d-flex align-items-center">
+            <span
+              ref={flagRef}
+              id="flag_icon"
+              className={`flag-icon flag-icon-${linguaAtual} flag-icon-squared rounded-circle fs-5 mx-2`}
+              onClick={() => setMenuLinguaAberto(!menuLinguaAberto)}
+              style={{ cursor: "pointer" }}
+            ></span>
+          </div>
           {menuLinguaAberto && (
             <div
               ref={linguaPopupRef}
@@ -453,6 +753,253 @@ function App() {
           style={{ overflow: "hidden", minWidth: 0 }}
         >
           {renderPagina()}
+        </div>
+        {/* Modal Formulário (Criar/Editar) */}
+        {isAvisoModalOpen && (
+          <AvisoFormModal
+            aviso={avisoParaEditar}
+            onClose={() => setIsAvisoModalOpen(false)}
+            onSave={(dados) => {
+              if (avisoParaEditar) {
+                // Editar
+                setAvisos((prev) =>
+                  prev.map((a) =>
+                    a.id === avisoParaEditar.id ? { ...a, ...dados } : a,
+                  ),
+                );
+              } else {
+                // Criar
+                const novo = {
+                  id:
+                    avisos.length > 0
+                      ? Math.max(...avisos.map((a) => a.id)) + 1
+                      : 1,
+                  ...dados,
+                  data:
+                    new Date().toLocaleDateString("pt-PT") +
+                    " " +
+                    new Date().toLocaleTimeString("pt-PT", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }),
+                  autor: user.nome || "Admin",
+                };
+                setAvisos((prev) => [...prev, novo]);
+              }
+              setIsAvisoModalOpen(false);
+            }}
+            t={t}
+          />
+        )}
+
+        {/* Modal Detalhes (Visualizar) */}
+        {avisoParaVisualizar && (
+          <AvisoDetailModal
+            aviso={avisoParaVisualizar}
+            onClose={() => setAvisoParaVisualizar(null)}
+            t={t}
+            getTradDestino={getTradDestino}
+            getStyleClass={getStyleClass}
+          />
+        )}
+
+        {/* Modal Confirmação de Eliminar Aviso */}
+        <ModalConfirmacao
+          isOpen={!!avisoToDelete}
+          onClose={() => setAvisoToDelete(null)}
+          onConfirm={() => {
+            setAvisos((prev) => prev.filter((a) => a.id !== avisoToDelete.id));
+            setAvisoToDelete(null);
+          }}
+          titulo={t("eliminar_aviso")}
+          mensagem={`${t("confirmar_eliminar_aviso")} (${avisoToDelete?.titulo})`}
+          textoConfirmar="Eliminar"
+        />
+      </div>
+    </div>
+  );
+}
+
+// --- COMPONENTS AUXILIARES PARA AVISOS ---
+function AvisoFormModal({ aviso, onClose, onSave, t }) {
+  const [titulo, setTitulo] = useState(aviso ? aviso.titulo : "");
+  const [mensagem, setMensagem] = useState(aviso ? aviso.mensagem : "");
+  const [tipoDestino, setTipoDestino] = useState(
+    aviso ? aviso.tipoDestino : "grupo",
+  );
+  const [destino, setDestino] = useState(aviso ? aviso.destino : "Todos");
+
+  const handleTipoChange = (e) => {
+    const val = e.target.value;
+    setTipoDestino(val);
+    setDestino(val === "grupo" ? "Todos" : "");
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (
+      !titulo.trim() ||
+      !mensagem.trim() ||
+      (tipoDestino === "individual" && !destino.trim())
+    ) {
+      alert("Por favor preencha todos os campos obrigatórios.");
+      return;
+    }
+    onSave({ titulo, mensagem, tipoDestino, destino });
+  };
+
+  return (
+    <div className="aviso-modal-overlay">
+      <div className="aviso-modal-content">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h4 className="m-0">{aviso ? t("editar_aviso") : t("criar_aviso")}</h4>
+          <button className="aviso-modal-close-btn" type="button" onClick={onClose}>
+            <i className="fi fi-br-cross"></i>
+          </button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label className="form-label fw-semibold">{t("titulo")} *</label>
+            <input
+              type="text"
+              className="form-control"
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+              placeholder="Ex: Atualização dos Termos de Uso"
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label fw-semibold">
+              {t("destinatario")} *
+            </label>
+            <div className="d-flex gap-3 mb-2">
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  name="tipoDestino"
+                  id="destGrupo"
+                  value="grupo"
+                  checked={tipoDestino === "grupo"}
+                  onChange={handleTipoChange}
+                />
+                <label className="form-check-label" htmlFor="destGrupo">
+                  {t("grupo")}
+                </label>
+              </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  name="tipoDestino"
+                  id="destIndiv"
+                  value="individual"
+                  checked={tipoDestino === "individual"}
+                  onChange={handleTipoChange}
+                />
+                <label className="form-check-label" htmlFor="destIndiv">
+                  {t("individual")}
+                </label>
+              </div>
+            </div>
+
+            {tipoDestino === "grupo" ? (
+              <select
+                className="form-select"
+                value={destino}
+                onChange={(e) => setDestino(e.target.value)}
+              >
+                <option value="Todos">{t("todos")}</option>
+                <option value="Todos os Consultores">{t("consultores")}</option>
+                <option value="Todos os Talent Managers">
+                  {t("talent_managers")}
+                </option>
+                <option value="Todos os Service Line Leaders">
+                  {t("service_line_leaders")}
+                </option>
+              </select>
+            ) : (
+              <input
+                type="text"
+                className="form-control"
+                value={destino}
+                onChange={(e) => setDestino(e.target.value)}
+                placeholder="Nome ou e-mail exato do colaborador"
+                required
+              />
+            )}
+          </div>
+
+          <div className="mb-4">
+            <label className="form-label fw-semibold">{t("mensagem")} *</label>
+            <textarea
+              className="form-control"
+              rows="5"
+              value={mensagem}
+              onChange={(e) => setMensagem(e.target.value)}
+              placeholder="Escreva a mensagem aqui..."
+              required
+            ></textarea>
+          </div>
+
+          <div className="d-flex justify-content-end gap-2">
+            <button
+              type="button"
+              className="btn btn-light rounded-pill px-4"
+              onClick={onClose}
+            >
+              {t("cancelar")}
+            </button>
+             <button
+              type="submit"
+              className="btn text-white border-0 rounded-pill px-4"
+              style={{ backgroundColor: "#3a5a92" }}
+            >
+              {t("enviar")}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AvisoDetailModal({
+  aviso,
+  onClose,
+  t,
+  getTradDestino,
+  getStyleClass,
+}) {
+  return (
+    <div className="aviso-modal-overlay" onClick={onClose}>
+      <div className="aviso-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="d-flex justify-content-between align-items-start mb-3">
+          <span className={`aviso-tag aviso-tag-${getStyleClass(aviso)}`}>
+            {getTradDestino(aviso)}
+          </span>
+          <button className="aviso-modal-close-btn" type="button" onClick={onClose}>
+            <i className="fi fi-br-cross" style={{ fontSize: "0.9rem" }}></i>
+          </button>
+        </div>
+        <h4 className="mb-3">{aviso.titulo}</h4>
+        <p
+          className="mb-4 text-muted"
+          style={{ whiteSpace: "pre-line", fontSize: "0.95rem" }}
+        >
+          {aviso.mensagem}
+        </p>
+        <hr className="mb-3" style={{ opacity: 0.15 }} />
+        <div
+          className="d-flex justify-content-between text-muted"
+          style={{ fontSize: "0.8rem" }}
+        >
+          <span>
+            Enviado por: <strong>{aviso.autor}</strong>
+          </span>
+          <span>{aviso.data}</span>
         </div>
       </div>
     </div>

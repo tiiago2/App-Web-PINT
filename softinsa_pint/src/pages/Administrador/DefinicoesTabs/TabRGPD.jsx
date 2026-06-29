@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ToggleSwitch from "../../../components/ui/ToggleSwitch/ToggleSwitch";
 import { useTranslation } from "react-i18next";
 
 export default function TabRGPD() {
@@ -150,13 +151,10 @@ export default function TabRGPD() {
               este declare explicitamente ter lido e aceite os termos.
             </p>
           </div>
-          <div className="form-check form-switch fs-4 mb-0">
-            <input
-              className="form-check-input"
-              type="checkbox"
+          <div className="mb-0">
+            <ToggleSwitch
               checked={rgpdConfig.forcar_aceitacao}
               onChange={() => toggleRgpd("forcar_aceitacao")}
-              style={{ cursor: "pointer" }}
             />
           </div>
         </div>
@@ -185,13 +183,10 @@ export default function TabRGPD() {
                 mostra badges de consultores que aceitaram o RGPD).
               </p>
             </div>
-            <div className="form-check form-switch fs-4 mb-0">
-              <input
-                className="form-check-input"
-                type="checkbox"
+            <div className="mb-0">
+              <ToggleSwitch
                 checked={rgpdConfig.galeria_publica}
                 onChange={() => toggleRgpd("galeria_publica")}
-                style={{ cursor: "pointer" }}
               />
             </div>
           </div>
@@ -209,13 +204,10 @@ export default function TabRGPD() {
                 API/botão de partilha no perfil do consultor).
               </p>
             </div>
-            <div className="form-check form-switch fs-4 mb-0">
-              <input
-                className="form-check-input"
-                type="checkbox"
+            <div className="mb-0">
+              <ToggleSwitch
                 checked={rgpdConfig.partilha_linkedin}
                 onChange={() => toggleRgpd("partilha_linkedin")}
-                style={{ cursor: "pointer" }}
               />
             </div>
           </div>
@@ -234,13 +226,10 @@ export default function TabRGPD() {
                 utilizadores externos/anónimos).
               </p>
             </div>
-            <div className="form-check form-switch fs-4 mb-0">
-              <input
-                className="form-check-input"
-                type="checkbox"
+            <div className="mb-0">
+              <ToggleSwitch
                 checked={rgpdConfig.paginas_publicas}
                 onChange={() => toggleRgpd("paginas_publicas")}
-                style={{ cursor: "pointer" }}
               />
             </div>
           </div>

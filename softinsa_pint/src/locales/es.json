@@ -121,5 +121,21 @@
     "email_dots": "Email: ",
     "telefone_dots": "Teléfono: ",
     "assinatura_pessoal": "Firma personal",
-    "badges_pessoais": "Insignias personales"
+    "badges_pessoais": "Insignias personales",
+    "criar_aviso": "Crear Aviso",
+    "editar_aviso": "Editar Aviso",
+    "eliminar_aviso": "Eliminar Aviso",
+    "confirmar_eliminar_aviso": "¿Está seguro de que desea eliminar este aviso?",
+    "aviso_vazio": "No hay avisos.",
+    "avisos_titulo": "Avisos",
+    "destinatario": "Destinatario",
+    "consultores": "Todos los Consultores",
+    "talent_managers": "Todos los Talent Managers",
+    "service_line_leaders": "Todos los Service Line Leaders",
+    "individual": "Individual",
+    "titulo": "Título",
+    "mensagem": "Mensaje",
+    "enviar": "Enviar",
+    "cancelar": "Cancelar",
+    "grupo": "Grupo"
 }

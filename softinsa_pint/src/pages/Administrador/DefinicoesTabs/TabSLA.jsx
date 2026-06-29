@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ToggleSwitch from "../../../components/ui/ToggleSwitch/ToggleSwitch";
 import { useTranslation } from "react-i18next";
 
 export default function TabSLA() {
@@ -311,13 +312,10 @@ export default function TabSLA() {
                 Mobile sempre que um prazo de SLA é ultrapassado.
               </p>
             </div>
-            <div className="form-check form-switch fs-4 mb-0">
-              <input
-                className="form-check-input"
-                type="checkbox"
+            <div className="mb-0">
+              <ToggleSwitch
                 checked={slaConfig.push_interna}
                 onChange={() => toggleSla("push_interna")}
-                style={{ cursor: "pointer" }}
               />
             </div>
           </div>
@@ -335,13 +333,10 @@ export default function TabSLA() {
                 equipa (Talent Manager ou Service Line) em incumprimento.
               </p>
             </div>
-            <div className="form-check form-switch fs-4 mb-0">
-              <input
-                className="form-check-input"
-                type="checkbox"
+            <div className="mb-0">
+              <ToggleSwitch
                 checked={slaConfig.aviso_email}
                 onChange={() => toggleSla("aviso_email")}
-                style={{ cursor: "pointer" }}
               />
             </div>
           </div>

@@ -12,6 +12,12 @@ const sequelize = new Sequelize(
     logging: false, // Evita spam de logs de SQL do Sequelize na consola
     define: {
       timestamps: false // Impede o Sequelize de procurar colunas createdAt/updatedAt
+    },
+    dialectOptions: {
+      ssl: {
+        require: true, 
+        rejectUnauthorized: false // Necessário no Render para aceitar o certificado auto-assinado
+      }
     }
   }
 );

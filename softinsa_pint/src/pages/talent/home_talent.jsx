@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import './home_talent.css';
@@ -8,21 +9,6 @@ import badge_logo from '../../assets/teste_badge.png';
 import {BotaoVerMais, BotaoAceitar, BotaoRejeitar, GraficoCandidaturas} from '../../components/components.jsx'
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, Label, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 
-const users = [
-    { id: 1, nome: "João Silva", area: "Hybrid Systems" },
-    { id: 2, nome: "Maria Ana", area: "Mobile Solutions" }
-];
-
-const badges = [
-    { id: 1, titulo: "Low Code", imagem: badge_logo, pontos: 100, descricao:"blablablablablablablabla"},
-    { id: 2, titulo: "React Native", imagem: badge_logo, pontos: 85, descricao:"blablablablablablablabla"}
-];
-
-const candidaturas = [
-    { id: 1, user_id: 1, badge_id: 1, data: "2026-04-10T09:15:00" },
-    { id: 2, user_id: 2, badge_id: 2, data: "2026-04-09T14:30:00" },
-    { id: 3, user_id: 1, badge_id: 2, data: "2026-04-08T10:00:00" }
-];
 
 const dados_grafico_candidaturas = [
     { nome: 'aceites', quantidade: 405, cor: '#3bb413' },    
@@ -130,38 +116,48 @@ const HomeTalent = ({ user, saudacao }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
 
+    const [infoCandidaturas, setInfoCandidaturas] = useState();
+
+    useEffect(() => {
+    const buscarCandidaturas = async () => {
+        try {
+        const res = await axios.get('http://localhost:5000/api/hometalent/candidaturas');
+        setInfoCandidaturas(res.data);
+        console.log("Dados recebidos com sucesso:", res.data);
+        } catch (erro) {
+        console.error("Erro ao buscar candidaturas:", erro);
+        }
+    };
+
+    buscarCandidaturas();
+    }, []);
+
     const RenderCandidaturas = () => {
-        return candidaturas.map((candidatura) => {
-            
-            const badge_escolhido = badges.find((search_badge) => search_badge.id === candidatura.badge_id);
-            
-            const user_escolhido = users.find((search_user) => search_user.id === candidatura.user_id);
+        if (!Array.isArray(infoCandidaturas)) {
+            return <div>Sem candidaturas</div>;
+        }
 
-            if (!badge_escolhido || !user_escolhido) {
-                console.warn(`Erro na BD: Dados em falta na candidatura ID ${candidatura.id}`);
-                return null; 
-            }
-
+        return infoCandidaturas.map((candidatura) => {
             return(
                 <div className="col-12 col-sm-6 col-xl-4">
                     <div className="card text-center border-0 p-1" style={{ height: '100%' }}>
                         <div className="mx-auto mt-2 rounded-circle d-flex align-items-center justify-content-center">
-                            <img className="rounded-circle badge_logo_candidaturas" src={badge_escolhido.imagem}/>
+                            <img className="rounded-circle badge_logo_candidaturas" src={badge_logo}/>{/*candidatura.Badge.imagem*/}
                         </div>
                                         
-                        <h6 className="mt-2 mb-0">{badge_escolhido.titulo}</h6>
+                        <h6 className="mt-2 mb-0">{candidatura.Badge.nome_badge}</h6>
                                         
                         <div className="d-flex align-items-center justify-content-center my-1">
                             <div>
-                                <img className="mx-3 rounded-1 user_image_candidaturas" src={user.foto}/>
+                                <img className="mx-3 rounded-1 user_image_candidaturas" src={candidatura.Utilizador.imagem_perfil}/>
                             </div>
                             <div className="text-start">
-                                <div className="fw-medium nome_candidatura" style={{ fontSize: '0.8rem', lineHeight: '0.8' }}>{user_escolhido.nome}</div>
-                                <div className="text-muted" style={{ fontSize: '0.7rem' }}>{user_escolhido.area}</div>
+                                <div className="fw-medium nome_candidatura" style={{ fontSize: '0.8rem', lineHeight: '0.8' }}>{candidatura.Utilizador.nome_user}</div>
+                                <div className="text-muted" style={{ fontSize: '0.7rem' }}>{candidatura.Badge.Area.nome_area}</div>
                             </div>
                         </div>
                                         
-                        <div className="text-muted mb-2" style={{ fontSize: '0.7rem' }}>{candidatura.data}</div>
+                        <div className="text-muted mb-2" style={{ fontSize: '0.7rem' }}>{candidatura.data_submissao}</div>
                                         
                                         
                         <div className="d-flex justify-content-center gap-1">
@@ -188,7 +184,9 @@ const HomeTalent = ({ user, saudacao }) => {
                     <div>
                         <div className="d-flex justify-content-between align-items-center mb-2">
                             <h5 className="m-0" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>{t('candidaturas_recentes')}</h5>
-                            <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.6} />
+                            {infoCandidaturas !== null && infoCandidaturas !== undefined && (
+                                <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.6} />
+                            )}
                         </div>
                         <div className="row g-2 g-md-3">
                             {RenderCandidaturas()}       

@@ -102,4 +102,36 @@
         --border-radius-badge-circular: 999px;
 
     --padding-bottom-scroll-galeria: 70px;
+
+    /* AUTENTICAÇÃO — LOGIN */
+
+    --altura-barra-superior-auth: 58px;
+    --padding-horizontal-barra-auth: 8px;
+    --largura-area-logo-auth: 16.66667%;
+    --largura-maxima-area-logo-auth: 260px;
+    --largura-logo-auth: 85%;
+    --margem-esquerda-logo-auth: 1rem;
+
+    --largura-popup-lingua-auth: 170px;
+    --top-popup-lingua-auth: 52px;
+    --right-popup-lingua-auth: 16px;
+
+    --padding-pagina-login: 32px;
+    --largura-maxima-card-login: 440px;
+    --padding-card-login: 32px;
+    --gap-card-login: 22px;
+
+    --altura-input-login: 44px;
+    --padding-horizontal-input-login: 14px;
+    --gap-form-login: 14px;
+    --gap-input-label-login: 6px;
+    --gap-acoes-login: 12px;
+
+    --padding-feedback-login: 12px 14px;
+    --gap-feedback-login: 8px;
+
+    --gap-grid-roles-login: 14px;
+    --padding-card-role-login: 16px;
+    --gap-card-role-login: 8px;
+    --tamanho-icone-role-login: 34px;
 }

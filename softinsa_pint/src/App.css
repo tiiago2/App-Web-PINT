@@ -53,6 +53,11 @@
         --cor_badge_bloqueado1: #ECECEC;
         --cor_badge_bloqueado2: #D3D3D3;
         --cor_badge_bloqueado3: #ADADAD;
+
+    /* CORES - AUTENTICAÇÃO */
+    --fundo_login_destaque_radial: rgba(167, 239, 255, 0.35);
+    --sombra_card_login: 0px 12px 35px rgba(55, 73, 87, 0.12);
+    --sombra_card_role_login_hover: 0px 8px 24px rgba(55, 73, 87, 0.10);
 }
 
 #layout{

@@ -267,7 +267,9 @@ const DatePickerPopup = ({ value, onChange, min }) => {
 
     const handleOpen = () => {
         const rect = inputRef.current.getBoundingClientRect();
-        setPopupPos({ top: rect.bottom + 6, left: rect.left, width: rect.width });
+        const popupWidth = 260;
+        const maxLeft = window.innerWidth - popupWidth - 12;
+        setPopupPos({ top: rect.bottom + 6, left: Math.min(rect.left, maxLeft), width: rect.width });
         if (value) setMesVista(new Date(value + 'T00:00:00'));
         setOpen(true);
     };
@@ -332,7 +334,7 @@ const DatePickerPopup = ({ value, onChange, min }) => {
             {open && ReactDOM.createPortal(
                 <div
                     className="obj-dp-popup"
-                    style={{ top: popupPos.top, left: popupPos.left, minWidth: Math.max(popupPos.width, 290) }}
+                    style={{ top: popupPos.top, left: popupPos.left, minWidth: popupPos.width }}
                 >
                     {/* Cabeçalho de navegação */}
                     <div className="obj-dp-header">

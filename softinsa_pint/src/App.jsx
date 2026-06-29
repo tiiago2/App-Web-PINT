@@ -18,8 +18,11 @@ import HomeConsultor from "./pages/consultor/home_consultor.jsx";
 import EstatisticasConsultor from "./pages/consultor/estatisticas_consultor.jsx";
 import ObjetivosConsultor from "./pages/consultor/objetivos_consultor.jsx";
 import HomeTalent from "./pages/talent/home_talent.jsx";
+import EstatisticasTalent from "./pages/talent/estatisticas_talent.jsx";
 import HomeService from "./pages/service/home_service.jsx";
+import EstatisticasService from "./pages/service/estatisticas_service.jsx";
 import HomeAdmin from "./pages/Administrador/home_Admin.jsx";
+import EstatisticasAdmin from "./pages/Administrador/estatisticas_Admin.jsx";
 import DefinicoesAdmin from "./pages/Administrador/definicoes_Admin.jsx";
 import EditarAdmin from "./pages/Administrador/editar_Admin.jsx";
 import Galeria from "./pages/talent/Galeria.jsx";
@@ -408,6 +411,7 @@ function App() {
             path="/home"
             element={<HomeTalent user={user} saudacao={Saudacao()} />}
           />
+          <Route path="/estatisticas" element={<EstatisticasTalent />} />
           <Route path="/galeria" element={<GaleriaConsultor />} />
           <Route path="/candidaturas" element={<Candidaturas />} />
           <Route path="/perfil/:id" element={<PerfilPessoal />} />
@@ -423,6 +427,7 @@ function App() {
             path="/home"
             element={<HomeService user={user} saudacao={Saudacao()} />}
           />
+          <Route path="/estatisticas" element={<EstatisticasService user={user} />} />
           <Route path="/galeria" element={<GaleriaConsultor />} />
           <Route path="/candidaturas" element={<Candidaturas />} />
           <Route path="/perfil/:id" element={<PerfilPessoal />} />
@@ -447,6 +452,7 @@ function App() {
               />
             }
           />
+          <Route path="/estatisticas" element={<EstatisticasAdmin />} />
           <Route path="/candidaturas" element={<Candidaturas />} />
           <Route path="/galeria" element={<Galeria />} />
           <Route path="/editar" element={<EditarAdmin />} />

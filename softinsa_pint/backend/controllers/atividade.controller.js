@@ -4,7 +4,7 @@ const {
   RegistoBadges,
   Submissoes,
   Logs,
-  PoliticasRGPD
+  PoliticasRgpd
 } = require("../models");
 const { Op } = require("sequelize");
 
@@ -41,14 +41,11 @@ exports.getAtividade = async (req, res) => {
           tabela: "BADGES",
           tipo: 2
         },
-        include: [
-          { model: Badges, as: "badge", attributes: ["nome_badge"] }
-        ],
-        attributes: ["id_log", "data_log"]
+        attributes: ["id_log", "id_alvo", "data_log"]
       }),
 
       // 4. Atualizações de políticas RGPD
-      PoliticasRGPD.findAll({
+      PoliticasRgpd.findAll({
         include: [
           { model: Utilizador, attributes: ["nome_user"] }
         ],
@@ -81,17 +78,6 @@ exports.getAtividade = async (req, res) => {
       });
     });
 
-    // 3. Mapear Atualizados
-    updatedData.forEach((item) => {
-      activitiesList.push({
-        type: "updated",
-        id: `l-${item.id_log}`,
-        user: "Sistema",
-        item: item.badge ? item.badge.nome_badge : "Badge",
-        timestamp: item.data_log
-      });
-    });
-
     // 4. Mapear Políticas
     policyData.forEach((item) => {
       activitiesList.push({
@@ -100,6 +86,27 @@ exports.getAtividade = async (req, res) => {
         user: item.Utilizador ? item.Utilizador.nome_user : "Utilizador",
         item: "Políticas RGPD",
         timestamp: item.data_alteracao
+      });
+    });
+
+    // Buscar nomes dos badges atualizados via Logs
+    const idsBadgesAtualizados = updatedData.map((item) => item.id_alvo).filter(Boolean);
+    const badgesAtualizados = idsBadgesAtualizados.length > 0
+      ? await Badges.findAll({
+          where: { id_badge: { [Op.in]: idsBadgesAtualizados } },
+          attributes: ["id_badge", "nome_badge"]
+        })
+      : [];
+    const mapaBadges = new Map(badgesAtualizados.map((b) => [b.id_badge, b.nome_badge]));
+
+    // 3. Mapear Atualizados
+    updatedData.forEach((item) => {
+      activitiesList.push({
+        type: "updated",
+        id: `l-${item.id_log}`,
+        user: "Sistema",
+        item: mapaBadges.get(item.id_alvo) || "Badge",
+        timestamp: item.data_log
       });
     });
 

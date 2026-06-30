@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
-const rotas_home_talent = require('./hometalent_routes');
+const AtividadeController = require('../controllers/atividade.controller');
 
-router.get("/atividade", AtividadeController.getAtividade);
+// Definição da rota para obter atividades
+router.get("/", AtividadeController.getAtividade);
 
 module.exports = router;

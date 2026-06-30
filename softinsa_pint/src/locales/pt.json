@@ -84,7 +84,6 @@
     "total_utilizadores": "Total de Utilizadores",
     "badges_por_utilizador": "Badges por Utilizador",
     "badges_atribuidos": "Badges Atribuídos",
-    "badges_atribuidos": "Badges atribuídos",
     "esta_semana": "Esta semana",
     "pendentes": "Pendentes",
     "pesquisar_utilizador_item": "Pesquisar por utilizador ou item...",
@@ -197,5 +196,9 @@
     "setembro": "setembro",
     "outubro": "outubro",
     "novembro": "novembro",
-    "dezembro": "dezembro"
+    "dezembro": "dezembro",
+    "a_carregar": "A carregar...",
+    "sem_badges_progresso": "Sem badges em progresso.",
+    "sem_objetivos": "Sem objetivos propostos.",
+    "sem_progresso": "Sem dados de progresso."
 }

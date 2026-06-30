@@ -38,6 +38,10 @@
     overflow-y: auto;
 }
 
+.home-consultor-container::-webkit-scrollbar {
+    display: none;
+}
+
 .badges-container {
   background-color: transparent;
 }
@@ -47,12 +51,14 @@
   display: flex;
   justify-content: space-between;
   align-items: stretch;
+  gap: 12px;
 }
 
 /* Coluna individual com o layout original mas mais polida */
 .badge-col {
   flex: 1;
-  padding: 8px 12px;
+  min-width: 0;
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -64,46 +70,120 @@
   border-right: var(--borda-principal) solid var(--contorno);
 }
 
-/* O Badge grande original, mas com um "glow" premium */
-.badge_logo_candidaturas {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease;
+/* Estado vazio da secção de badges */
+.badges-estado-vazio {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #aab7c4;
+    font-size: 0.9rem;
+    text-align: center;
 }
 
-.badge-col:hover .badge_logo_candidaturas {
-  transform: scale(1.03);
+.badges-estado-vazio i {
+    font-size: 2rem;
+    opacity: 0.5;
 }
 
-.circulo-badge {
-  width: 130px;
-  height: 130px;
-  border-radius: 50%;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3.4rem;
-  margin-bottom: 12px;
+/* Card premium para cada badge em progresso */
+.badge-card-premium {
+    width: 100%;
+    max-width: 170px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    padding: 10px 6px;
+    border-radius: var(--border-radius-grande);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.badge-progress-wrap {
-  width: 100%;
-  max-width: 150px;
-  height: 10px;
-  min-height: 10px;
-  border-radius: 10px;
-  background-color: #f8d7da; /* Vermelho claro original */
-  overflow: hidden;
-  margin: 6px 0 10px 0;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+.badge-card-premium:hover {
+    transform: translateY(-3px);
 }
 
-.badge-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #28a745, #34d058); /* Verde original mas mais vibrante */
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.4);
-  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+/* Wrapper da imagem com anel de progresso */
+.badge-card-imagem-wrap {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: conic-gradient(
+        var(--badge-cor, var(--barra_lateral)) var(--badge-progress, 0%),
+        #eef1f6 0
+    );
+    padding: 5px;
+    transition: background 0.6s ease;
+}
+
+.badge-card-imagem {
+    width: 96px;
+    height: 96px;
+    min-width: 96px;
+    min-height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.badge-card-progress-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.85);
+    pointer-events: none;
+}
+
+.badge-card-titulo {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--fontes);
+    line-height: 1.2;
+    min-height: 2.4em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.badge-card-progresso {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.badge-card-barra-wrap {
+    flex: 1;
+    height: 8px;
+    border-radius: 10px;
+    background-color: #eef1f6;
+    overflow: hidden;
+}
+
+.badge-card-barra-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.badge-card-pct {
+    font-size: 0.75rem;
+    font-weight: 700;
+    min-width: 34px;
+    text-align: right;
 }
 
 /* O Botão original de borda (outline), mas super refinado */
@@ -151,74 +231,331 @@
   background-color: #f0f4f8;
 }
 
-/* ── Objetivos Propostos ──────────────────────────────────── */
-.objetivo-figma {
-  border: var(--borda-principal) solid var(--contorno);
-  border-radius: var(--border-radius-pequeno);
-  padding: 4px 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 62px;
+/* ── Objetivos Propostos (v3) ─────────────────────────────── */
+.objetivos-lista-v3 {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex-grow: 1;
+    gap: 0;
+    padding: 4px 0;
 }
 
-.progresso-figma {
-  border: var(--borda-principal) solid var(--contorno);
-  border-radius: var(--border-radius-pequeno);
-  padding: 4px 12px;
-  background-color: #ffffff;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 62px;
+.objetivos-estado-vazio {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #aab7c4;
+    font-size: 0.9rem;
+    text-align: center;
 }
 
-.mini-raio {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  background-color: var(--barra_lateral);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
+.objetivos-estado-vazio i {
+    font-size: 2rem;
+    opacity: 0.5;
 }
 
-.objetivo-progress-wrap {
-  height: 12px;
-  border-radius: 10px;
-  background-color: #e9ecef;
-  overflow: hidden;
-  margin: 4px 0;
-  position: relative;
+/* Item de objetivo sem borda individual */
+.objetivo-item-v3 {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 4px;
+    border-bottom: 1px solid #f0f4f8;
+    cursor: pointer;
+    transition: background-color 0.15s ease, padding-left 0.15s ease;
 }
 
-.objetivo-progress-fill {
-  height: 100%;
-  background-color: var(--aceitar);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 4px;
-  font-size: 0.60rem;
-  line-height: 10px;
-  color: white;
-  font-weight: bold;
+.objetivo-item-v3:last-child {
+    border-bottom: none;
+}
+
+.objetivo-item-v3:hover {
+    background-color: rgba(57, 99, 156, 0.04);
+    padding-left: 8px;
+}
+
+.objetivo-item-v3:focus-visible {
+    outline: var(--borda-principal) solid var(--barra_lateral);
+    outline-offset: 2px;
+    border-radius: var(--border-radius-pequeno);
+}
+
+.objetivo-icone-v3 {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: transform 0.2s ease;
+}
+
+.objetivo-item-v3:hover .objetivo-icone-v3 {
+    transform: scale(1.08);
+}
+
+.objetivo-corpo-v3 {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.objetivo-topo-v3 {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.objetivo-titulo-v3 {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--fontes);
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.objetivo-pct-v3 {
+    font-size: 0.85rem;
+    font-weight: 800;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.objetivo-barra-wrap-v3 {
+    height: 6px;
+    border-radius: 10px;
+    background-color: #eef1f6;
+    overflow: hidden;
+}
+
+.objetivo-barra-fill-v3 {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.objetivo-rodape-v3 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.objetivo-data-v3 {
+    font-size: 0.72rem;
+    color: #8fa3b8;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.objetivo-prazo-v3 {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* ── Progresso ───────────────────────────────────────────── */
+.progresso-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: flex-start;
+    flex-grow: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.progresso-lista::-webkit-scrollbar {
+    display: none;
+}
+
+.progresso-estado-vazio {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #aab7c4;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.progresso-estado-vazio i {
+    font-size: 2rem;
+    opacity: 0.5;
+}
+
+.progresso-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: var(--border-radius-pequeno);
+    padding: 10px 12px;
+    background-color: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.progresso-card:hover {
+    border-color: var(--barra_lateral);
+    box-shadow: 0 4px 14px rgba(57, 99, 156, 0.1);
+    transform: translateY(-1px);
+}
+
+.progresso-icone-wrap {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.progresso-card:hover .progresso-icone-wrap {
+    transform: scale(1.08);
+}
+
+.progresso-conteudo {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.progresso-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.progresso-titulo {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fontes);
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.progresso-contagem {
+    font-size: 0.72rem;
+    color: #8fa3b8;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.progresso-contagem strong {
+    color: var(--barra_lateral);
+    font-weight: 700;
 }
 
 .progresso-barra-wrap {
-  height: 8px;
-  border-radius: 10px;
-  background-color: #e9ecef;
-  overflow: hidden;
-  margin: 5px 0 2px;
+    height: 8px;
+    border-radius: 10px;
+    background-color: #eef1f6;
+    overflow: hidden;
 }
 
 .progresso-barra-fill {
-  height: 100%;
-  background-color: var(--barra_lateral);
-  border-radius: 10px;
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Animações globais ───────────────────────────────────── */
+@keyframes hc-fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes hc-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.hc-spinner {
+    display: inline-block;
+    animation: hc-spin 1s linear infinite;
+}
+
+.badge-card-premium,
+.objetivo-card,
+.progresso-card {
+    animation: hc-fade-in-up 0.35s ease forwards;
+}
+
+/* ── Responsividade ──────────────────────────────────────── */
+@media (max-width: 1199px) {
+    .badges-grid {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .badge-col {
+        flex: 0 0 50%;
+        max-width: 220px;
+        border-right: none !important;
+    }
+
+    .badge-col-separator {
+        border-right: none;
+    }
+}
+
+@media (max-width: 575px) {
+    .badge-col {
+        flex: 1 1 100%;
+        max-width: 260px;
+    }
+
+    .objetivo-topo-v3 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+
+    .objetivo-rodape-v3 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+
+    .progresso-cabecalho {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
 }

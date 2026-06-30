@@ -67,20 +67,18 @@ const AtividadeRecente = ({ atividades, fullHeight }) => {
                 <i className="fi fi-br-expand text-muted me-1" style={{ cursor: 'pointer' }} onClick={() => setShowModal(true)}></i>
             </div>
 
-            {/* 2. MAGIA DO SCROLL: flex-grow-1 e overflow-y-auto com a barra escondida */}
-            <div className="d-flex flex-column justify-content-between flex-grow-1 overflow-y-auto pe-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                <style>{`.overflow-y-auto::-webkit-scrollbar { display: none; }`}</style>
-                
+            {/* Lista de atividades alinhada ao topo */}
+            <div className="ativ-widget-lista flex-grow-1 overflow-y-auto pe-1">
                 {atividades.slice(0, 6).map((item, i) => (
-                    <div key={i} className={`atividade-item${item.expirado ? ' expirado' : ''}`}>
-                        <span className="d-flex align-items-center gap-2">
+                    <div key={i} className={`ativ-widget-item${item.expirado ? ' expirado' : ''}`}>
+                        <span className="d-flex align-items-center gap-2 ativ-widget-texto">
                             <i className={`fi ${item.icone} ${item.cor}`}></i>
                             <span className="texto">
                                 {item.textoNegrito && <strong>{item.textoNegrito} </strong>}
                                 {item.texto}
                             </span>
                         </span>
-                        <span className="text-muted" style={{ fontSize: '0.7rem', whiteSpace: 'nowrap', marginLeft: '8px' }}>
+                        <span className="ativ-widget-tempo">
                             {item.tempo}
                         </span>
                     </div>

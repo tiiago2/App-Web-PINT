@@ -207,7 +207,7 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
   };
 
   return (
-    <div className="d-flex flex-column flex-grow-1 overflow-hidden" style={{ minHeight: 0 }}>
+    <div className="d-flex flex-column h-100" style={{ minHeight: 0 }}>
       <div className="p-3 border-bottom d-flex justify-content-between align-items-center flex-shrink-0" style={{ borderColor: "var(--contorno) !important" }}>
         <h5 className="fw-bold m-0" style={{ fontSize: "1.15rem", color: "var(--fontes)" }}>{t("ficha_candidatura")}</h5>
         <button 
@@ -220,7 +220,7 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
         </button>
       </div>
 
-      <div className="flex-grow-1 overflow-auto p-4 custom-scrollbar bg-gray-50/20">
+      <div className="overflow-auto p-4 custom-scrollbar bg-gray-50/20" style={{ height: "calc(100% - 60px)" }}>
         <div className="d-flex flex-column gap-4">
           
           <div className="d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-4">
@@ -323,31 +323,8 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
           
         </div>
       </div>
-<<<<<<< HEAD
-=======
 
-      {candidatura.status === "Pendente" && (
-        <div className="p-3 border-top d-flex gap-3 justify-content-end flex-shrink-0" style={{ borderColor: "var(--contorno) !important" }}>
-          <button 
-            onClick={() => onReject(candidatura.id)}
-            className="btn rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 rejeitar_btn font-medium transition-all"
-            style={{ fontSize: "0.9rem", height: "44px" }}
-          >
-            <i className="fi fi-br-cross"></i>
-            <span>{t("rejeitar")}</span>
-          </button>
-          
-          <button 
-            onClick={() => onAccept(candidatura.id)}
-            className="btn rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 aceitar_btn font-medium transition-all"
-            style={{ fontSize: "0.9rem", height: "44px" }}
-          >
-            <i className="fi fi-br-check"></i>
-            <span>{t("aceitar")}</span>
-          </button>
-        </div>
-      )}
->>>>>>> 833a933310d7ecf28effd7e5c95ff774bdb680ab
+
     </div>
   );
 }
@@ -528,11 +505,11 @@ export default function Candidaturas() {
       </div>
 
       {/* Main Split Grid */}
-      <div className="candidaturas-conteudo row flex-grow-1 overflow-hidden g-4" style={{ minHeight: 0 }}>
+      <div className="candidaturas-conteudo row flex-grow-1 overflow-hidden" style={{ minHeight: 0 }}>
         
         {/* Left column: List view */}
         <div className="col-12 col-md-5 d-flex flex-column overflow-hidden candidaturas-col-lista" style={{ minHeight: 0 }}>
-          <div className="bg-white rounded-4 border border-light-subtle p-3 flex-grow-1 d-flex flex-column overflow-hidden shadow-xs" style={{ minHeight: 0 }}>
+          <div className="rounded-4 p-3 flex-grow-1 d-flex flex-column overflow-hidden shadow-xs" style={{ minHeight: 0, backgroundColor: "var(--fundo)", border: "var(--borda-principal) solid var(--contorno)" }}>
             
             {/* Search and Filters */}
             <div className="d-flex flex-column gap-3 mb-4">
@@ -542,8 +519,8 @@ export default function Candidaturas() {
                 placeholder={t("pesquisar_candidato_badge_placeholder")}
               />
 
-              <div className="d-flex gap-3">
-                <div className="flex-grow-1">
+              <div className="d-flex flex-wrap gap-2">
+                <div style={{ flex: "1 1 160px" }}>
                   <BotaoDropdown
                     titulo={t("area_label")}
                     valor={filtroArea}
@@ -561,7 +538,7 @@ export default function Candidaturas() {
                   />
                 </div>
 
-                <div className="flex-grow-1">
+                <div style={{ flex: "1 1 160px" }}>
                   <BotaoDropdown
                     titulo={t("ordenar_por")}
                     valor={ordenacao}
@@ -600,7 +577,7 @@ export default function Candidaturas() {
 
         {/* Right column: Review Panel */}
         <div className="col-12 col-md-7 d-flex flex-column overflow-hidden candidaturas-col-detalhes" style={{ minHeight: 0 }}>
-          <div className="candidatura-detalhes-panel flex-grow-1 d-flex flex-column overflow-hidden shadow-xs" style={{ minHeight: 0 }}>
+          <div className="candidatura-detalhes-panel d-flex flex-column overflow-hidden shadow-xs" style={{ minHeight: 0 }}>
             {candidaturaSelecionada ? (
               <CandidaturaDetalhes 
                 candidatura={candidaturaSelecionada}

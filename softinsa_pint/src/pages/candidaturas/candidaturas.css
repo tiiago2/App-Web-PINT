@@ -23,11 +23,14 @@
   max-width: 450px;
 }
 
+/* --- CORREÇÃO DO LAYOUT PRINCIPAL --- */
 .candidaturas-conteudo {
   width: 100%;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  /* Garante que a row nunca cresce além do espaço disponível na página */
+  height: 0; 
   min-height: 0;
 }
 
@@ -170,6 +173,9 @@
   background-color: var(--fundo);
   border: var(--borda-principal) solid var(--contorno) !important;
   border-radius: var(--border-radius-grande) !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important; /* Tranca as bordas para nada sair do cartão */
 }
 
 /* Requirements list items */
@@ -226,15 +232,55 @@
   .candidaturas-conteudo {
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    align-items: flex-start !important;
-  }
-  
-  .candidaturas-col-lista,
-  .candidaturas-col-detalhes {
+    align-items: stretch !important;
+    height: 100% !important;
     max-height: 100% !important;
-    overflow: hidden;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 24px !important;
+  }
+
+  .candidaturas-col-lista {
+    flex: 0 0 40% !important;
+    max-width: 40% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  .candidaturas-col-detalhes {
+    flex: 1 1 0% !important;
+    max-width: none !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
   }
 }
 
+/* Force the inner white card of the left column to fill its parent */
+.candidaturas-col-lista > div {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  box-sizing: border-box;
+}
 
+/* Scroll container inside the left list */
+.candidaturas-col-lista .overflow-auto {
+  flex-grow: 1;
+  min-height: 0;
+}
+
+/* Scroll container inside the details panel */
+.candidatura-detalhes-panel .overflow-auto {
+  flex-grow: 1;
+  min-height: 0;
+}
 

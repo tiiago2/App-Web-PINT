@@ -12,6 +12,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+    overflow: hidden;
 
     padding: 0 18px;
 
@@ -33,6 +34,8 @@
 
 .botao-dropdown-texto {
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .botao-dropdown-icone,

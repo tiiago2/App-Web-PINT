@@ -101,3 +101,64 @@
     color: #9aacbc;
     white-space: nowrap;
 }
+
+/* ── Widget da homepage ─────────────────────────────────── */
+.ativ-widget-lista {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 8px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.ativ-widget-lista::-webkit-scrollbar {
+    display: none;
+}
+
+.ativ-widget-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 8px;
+    border-radius: var(--border-radius-pequeno);
+    transition: background-color 0.15s ease;
+}
+
+.ativ-widget-item:hover {
+    background-color: rgba(57, 99, 156, 0.04);
+}
+
+.ativ-widget-item.expirado .texto {
+    text-decoration: line-through;
+    color: #aab7c4;
+}
+
+.ativ-widget-texto {
+    font-size: 0.82rem;
+    color: var(--fontes);
+    line-height: 1.35;
+    min-width: 0;
+}
+
+.ativ-widget-texto i {
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.ativ-widget-texto .texto {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.ativ-widget-tempo {
+    font-size: 0.7rem;
+    color: #9aacbc;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: 8px;
+}

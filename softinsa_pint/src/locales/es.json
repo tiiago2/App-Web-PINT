@@ -343,5 +343,9 @@
     "setembro": "septiembre",
     "outubro": "octubre",
     "novembro": "noviembre",
-    "dezembro": "diciembre"
+    "dezembro": "diciembre",
+    "a_carregar": "Cargando...",
+    "sem_badges_progresso": "Sin badges en progreso.",
+    "sem_objetivos": "Sin objetivos propuestos.",
+    "sem_progresso": "Sin datos de progreso."
 }

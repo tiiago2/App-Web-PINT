@@ -126,7 +126,7 @@ function App() {
   const [avisos, setAvisos] = useState(() => {
     const saved = localStorage.getItem("softinsa_avisos");
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) { return []; }
+      try { return JSON.parse(saved); } catch { return []; }
     }
     return [
       { id: 1, titulo: "Manutenção do Portal", mensagem: "O portal de badges estará em manutenção no próximo sábado.", tipoDestino: "grupo", destino: "Todos", data: "25/06/2026 10:00", autor: "Admin" },

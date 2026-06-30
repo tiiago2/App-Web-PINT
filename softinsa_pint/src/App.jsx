@@ -1,19 +1,15 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Routes,
-  Route,
-  useNavigate,
-  useLocation,
-  Navigate,
-} from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
+import axios from "axios";
 import { menu_lateral } from "./defs/barra_lateral.jsx";
 import { iconesNotificacao } from "./defs/dicionario.jsx";
 import "./i18n";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import "./components/ui/AvisosPopUp.css";
-//paginas
+
+// Paginas
 import HomeConsultor from "./pages/consultor/home_consultor.jsx";
 import EstatisticasConsultor from "./pages/consultor/estatisticas_consultor.jsx";
 import ObjetivosConsultor from "./pages/consultor/objetivos_consultor.jsx";
@@ -33,24 +29,27 @@ import Candidaturas from "./pages/candidaturas/Candidaturas.jsx";
 import ModalConfirmacao from "./components/ui/ModalConfirmacao/ModalConfirmacao";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import LanguageSelector from "./components/ui/LanguageSelector/LanguageSelector.jsx";
-//imagens
+
+// Imagens
 import softinsa_logo from "./assets/logotipo_softinsa.png";
 import user_logo from "./assets/utilizador.png";
 
 function App() {
   const { t } = useTranslation();
-
-  const [user, setUser] = useState({
-    id: 1,
-    nome: "Utilizador",
-    cargo: "talent", 
-    foto: user_logo, // a imagem que importaste no topo
-    ultimoLogin: new Date("2026-04-10"),
-  });
-
   const navigate = useNavigate();
   const location = useLocation();
 
+  // === ESTADOS GLOBAIS DA APP ===
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState({
+    id: null,
+    nome: null,
+    cargo: null,
+    foto: null,
+    ultimoLogin: null,
+  });
+
+  // === REFS E ESTADOS PARA MENUS, NOTIFICAÇÕES E AVISOS ===
   const bellRef = useRef(null);
   const notifPopupRef = useRef(null);
   const megaphoneRef = useRef(null);
@@ -58,78 +57,57 @@ function App() {
 
   const [menuNotificacoesAberto, setMenuNotificacoesAberto] = useState(false);
   const [menuAvisosAberto, setMenuAvisosAberto] = useState(false);
-
   const [isAvisoModalOpen, setIsAvisoModalOpen] = useState(false);
   const [avisoParaEditar, setAvisoParaEditar] = useState(null);
   const [avisoParaVisualizar, setAvisoParaVisualizar] = useState(null);
   const [avisoToDelete, setAvisoToDelete] = useState(null);
   const [abaAvisos, setAbaAvisos] = useState("recebidos");
 
-  const [avisos, setAvisos] = useState(() => {
-    const saved = localStorage.getItem("softinsa_avisos");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        return [];
-      }
-    }
-    return [
-      {
-        id: 1,
-        titulo: "Manutenção do Portal",
-        mensagem:
-          "O portal de badges estará em manutenção no próximo sábado das 22h às 02h para atualização de servidores. Pedimos desculpa pelo incómodo.",
-        tipoDestino: "grupo",
-        destino: "Todos",
-        data: "25/06/2026 10:00",
-        autor: "Admin",
-      },
-      {
-        id: 2,
-        titulo: "Nova Learning Path de DevOps",
-        mensagem:
-          "Lançámos a nova trilha de aprendizagem focada em DevOps! Todos os consultores já podem candidatar-se aos novos badges associados.",
-        tipoDestino: "grupo",
-        destino: "Todos os Consultores",
-        data: "26/06/2026 14:30",
-        autor: "Admin",
-      },
-      {
-        id: 3,
-        titulo: "Reunião de Alinhamento",
-        mensagem:
-          "Carlos, por favor comparece na sala de reuniões às 14h de hoje para alinhamento sobre as avaliações de badges.",
-        tipoDestino: "individual",
-        destino: "Carlos",
-        data: "27/06/2026 09:15",
-        autor: "Gonçalo",
-      },
-    ];
-  });
-
+  // === INICIALIZAÇÃO DO UTILIZADOR ===
   useEffect(() => {
-    localStorage.setItem("softinsa_avisos", JSON.stringify(avisos));
-  }, [avisos]);
+    const buscarUserAPI = async () => {
+      try {
+        const idGuardado = localStorage.getItem("utilizador_id");
+        const roleGuardada = localStorage.getItem("role_softinsa");
 
+        if (!idGuardado || !roleGuardada) {
+          setLoading(false);
+          return;
+        }
+
+        const roleParseada = JSON.parse(roleGuardada);
+        const cargoFinal = typeof roleParseada === "string" 
+          ? roleParseada.toLowerCase() 
+          : (roleParseada.nome ? roleParseada.nome.toLowerCase() : null);
+
+        const res = await axios.get("http://localhost:5000/api/getuser", { params: { id: idGuardado } });
+        
+        if (res.data) {
+          setUser({
+            id: idGuardado,
+            nome: res.data.nome_user || res.data.nome,
+            cargo: cargoFinal,
+            foto: res.data.imagem_perfil || res.data.foto || null,
+            ultimoLogin: res.data.last_login || new Date()
+          });
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados do user no arranque:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    buscarUserAPI();
+  }, []);
+
+  // === CLICK OUTSIDE (Para fechar menus de Notificações/Avisos) ===
   useEffect(() => {
     const handleCliqFora = (e) => {
-      if (
-        menuNotificacoesAberto &&
-        bellRef.current &&
-        !bellRef.current.contains(e.target) &&
-        notifPopupRef.current &&
-        !notifPopupRef.current.contains(e.target)
-      ) {
+      if (menuNotificacoesAberto && bellRef.current && !bellRef.current.contains(e.target) && notifPopupRef.current && !notifPopupRef.current.contains(e.target)) {
         setMenuNotificacoesAberto(false);
       }
-      if (
-        menuAvisosAberto &&
-        megaphoneRef.current &&
-        !megaphoneRef.current.contains(e.target) &&
-        avisosPopupRef.current &&
-        !avisosPopupRef.current.contains(e.target)
-      ) {
+      if (menuAvisosAberto && megaphoneRef.current && !megaphoneRef.current.contains(e.target) && avisosPopupRef.current && !avisosPopupRef.current.contains(e.target)) {
         setMenuAvisosAberto(false);
       }
     };
@@ -137,103 +115,33 @@ function App() {
     return () => document.removeEventListener("mousedown", handleCliqFora);
   }, [menuNotificacoesAberto, menuAvisosAberto]);
 
+  // === DADOS DE TESTE E LÓGICA (Avisos e Notificações) ===
+  const [avisos, setAvisos] = useState(() => {
+    const saved = localStorage.getItem("softinsa_avisos");
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return []; }
+    }
+    return [
+      { id: 1, titulo: "Manutenção do Portal", mensagem: "O portal de badges estará em manutenção no próximo sábado.", tipoDestino: "grupo", destino: "Todos", data: "25/06/2026 10:00", autor: "Admin" },
+      { id: 2, titulo: "Nova Learning Path de DevOps", mensagem: "Lançámos a nova trilha focada em DevOps!", tipoDestino: "grupo", destino: "Todos os Consultores", data: "26/06/2026 14:30", autor: "Admin" },
+      { id: 3, titulo: "Reunião de Alinhamento", mensagem: "Carlos, por favor comparece na sala 1.", tipoDestino: "individual", destino: "Carlos", data: "27/06/2026 09:15", autor: "Gonçalo" },
+    ];
+  });
+
+  useEffect(() => localStorage.setItem("softinsa_avisos", JSON.stringify(avisos)), [avisos]);
+
   const [notificacoes, setNotificacoes] = useState([
-    //-----------------------------------trocar para base dados
-    {
-      id: 1,
-      texto: "Submeteu uma nova candidatura para React Developer.",
-      tipo: "Badge",
-      data: "21/08/2025 19:40",
-      remetente: "Ana Silva",
-      lida: false,
-    },
-    {
-      id: 2,
-      texto: "A reunião de planeamento foi alterada para a sala 3.",
-      tipo: "Aceite",
-      data: "21/08/2025 19:40",
-      remetente: "Carlos Santos",
-      lida: false,
-    },
-    {
-      id: 3,
-      texto: "O relatório de horas de março foi aprovado.",
-      tipo: "Rejeitada",
-      data: "21/08/2025 19:40",
-      remetente: "Recursos Humanos",
-      lida: false,
-    },
-    {
-      id: 4,
-      texto: "Novo comentário no teu post de atividade.",
-      tipo: "Sistema",
-      data: "21/08/2025 19:40",
-      remetente: "Rui Costa",
-      lida: false,
-    },
-    {
-      id: 5,
-      texto: "Bem-vindo à nova plataforma da Softinsa!",
-      tipo: "Candidatura",
-      data: "21/08/2025 19:40",
-      remetente: "João Silva",
-      lida: false,
-    },
-    {
-      id: 6,
-      texto: "Bem-vindo à nova plataforma da Softinsa!",
-      tipo: "Candidatura",
-      data: "21/08/2025 19:40",
-      remetente: "João Silva",
-      lida: false,
-    },
-    {
-      id: 7,
-      texto: "Bem-vindo à nova plataforma da Softinsa!",
-      tipo: "Candidatura",
-      data: "21/08/2025 19:40",
-      remetente: "João Silva",
-      lida: false,
-    },
-    {
-      id: 8,
-      texto: "Bem-vindo à nova plataforma da Softinsa!",
-      tipo: "Candidatura",
-      data: "21/08/2025 19:40",
-      remetente: "João Silva",
-      lida: false,
-    },
-    {
-      id: 9,
-      texto: "Bem-vindo à nova plataforma da Softinsa!",
-      tipo: "Candidatura",
-      data: "21/08/2025 19:40",
-      remetente: "João Silva",
-      lida: false,
-    },
-    {
-      id: 10,
-      texto: "Bem-vindo à nova plataforma da Softinsa!",
-      tipo: "Candidatura",
-      data: "21/08/2025 19:40",
-      remetente: "João Silva",
-      lida: false,
-    },
+    { id: 1, texto: "Submeteu uma nova candidatura para React.", tipo: "Badge", data: "21/08/2025 19:40", remetente: "Ana Silva", lida: false },
+    { id: 2, texto: "A reunião foi alterada para a sala 3.", tipo: "Aceite", data: "21/08/2025 19:40", remetente: "Carlos", lida: false },
   ]);
 
   const notificacoesNaoLidas = notificacoes.filter((n) => !n.lida).length;
-
   const notificacoesRecentes = notificacoes.slice(0, 30);
 
   const CliqueSino = () => {
     setMenuNotificacoesAberto(!menuNotificacoesAberto);
-
     if (!menuNotificacoesAberto && notificacoesNaoLidas > 0) {
-      const notificacoesAtualizadas = notificacoes.map((notif) => {
-        return { ...notif, lida: true };
-      });
-
-      setNotificacoes(notificacoesAtualizadas);
+      setNotificacoes(notificacoes.map((n) => ({ ...n, lida: true })));
     }
   };
 
@@ -241,21 +149,9 @@ function App() {
     return avisos.filter((aviso) => {
       if (aviso.tipoDestino === "grupo") {
         if (aviso.destino === "Todos") return true;
-        if (
-          aviso.destino === "Todos os Consultores" &&
-          user.cargo === "consultor"
-        )
-          return true;
-        if (
-          aviso.destino === "Todos os Talent Managers" &&
-          user.cargo === "talent"
-        )
-          return true;
-        if (
-          aviso.destino === "Todos os Service Line Leaders" &&
-          user.cargo === "service"
-        )
-          return true;
+        if (aviso.destino === "Todos os Consultores" && user.cargo === "consultor") return true;
+        if (aviso.destino === "Todos os Talent Managers" && user.cargo === "talent manager") return true;
+        if (aviso.destino === "Todos os Service Line Leaders" && user.cargo === "service line leader") return true;
       } else if (aviso.tipoDestino === "individual") {
         const target = aviso.destino ? aviso.destino.toLowerCase().trim() : "";
         const userName = user.nome ? user.nome.toLowerCase().trim() : "";
@@ -266,13 +162,8 @@ function App() {
   }, [avisos, user]);
 
   const avisosExibidos = useMemo(() => {
-    if (abaAvisos === "recebidos") {
-      // Mostrar apenas avisos que não foram escritos pelo próprio utilizador
-      return avisosFiltrados.filter((a) => a.autor !== user.nome);
-    } else {
-      // Mostrar avisos escritos pelo próprio utilizador
-      return avisos.filter((a) => a.autor === user.nome);
-    }
+    if (abaAvisos === "recebidos") return avisosFiltrados.filter((a) => a.autor !== user.nome);
+    return avisos.filter((a) => a.autor === user.nome);
   }, [abaAvisos, avisosFiltrados, avisos, user.nome]);
 
   const [avisosNaoLidosCount, setAvisosNaoLidosCount] = useState(0);
@@ -286,13 +177,7 @@ function App() {
           const dateParts = parts[0].split("/");
           const timeParts = parts[1].split(":");
           if (dateParts.length === 3 && timeParts.length === 2) {
-            const avisoDate = new Date(
-              parseInt(dateParts[2]),
-              parseInt(dateParts[1]) - 1,
-              parseInt(dateParts[0]),
-              parseInt(timeParts[0]),
-              parseInt(timeParts[1]),
-            );
+            const avisoDate = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]), parseInt(timeParts[0]), parseInt(timeParts[1]));
             return avisoDate.getTime() > loginTime;
           }
         }
@@ -304,21 +189,15 @@ function App() {
 
   const CliqueMegafone = () => {
     setMenuAvisosAberto(!menuAvisosAberto);
-    if (!menuAvisosAberto) {
-      setAvisosNaoLidosCount(0);
-    }
+    if (!menuAvisosAberto) setAvisosNaoLidosCount(0);
   };
 
   const getTradDestino = (aviso) => {
-    if (aviso.tipoDestino === "individual") {
-      return `${t("individual")}: ${aviso.destino}`;
-    }
+    if (aviso.tipoDestino === "individual") return `${t("individual")}: ${aviso.destino}`;
     if (aviso.destino === "Todos") return t("todos");
     if (aviso.destino === "Todos os Consultores") return t("consultores");
-    if (aviso.destino === "Todos os Talent Managers")
-      return t("talent_managers");
-    if (aviso.destino === "Todos os Service Line Leaders")
-      return t("service_line_leaders");
+    if (aviso.destino === "Todos os Talent Managers") return t("talent_managers");
+    if (aviso.destino === "Todos os Service Line Leaders") return t("service_line_leaders");
     return aviso.destino;
   };
 
@@ -331,226 +210,100 @@ function App() {
     return "todos";
   };
 
+  // === MENUS E ROTAS ===
   const menuItems = useMemo(() => {
-    return menu_lateral.filter((item) => {
-      return item.permissao.includes(user.cargo);
-    });
+    if (!user.cargo) return [];
+    return menu_lateral.filter((item) => item.permissao.includes(user.cargo));
   }, [user.cargo]);
 
-  const Saudacao = () => {
-    if (!user.ultimoLogin) {
-      return t("saudacao_1");
-    } else {
-      const data_atual = new Date();
-      const hora_atual = data_atual.getHours();
-
-      const diferencaEmMilissegundos = Math.abs(data_atual - user.ultimoLogin);
-      const milissegundosNumDia = 1000 * 60 * 60 * 24;
-
-      const diasPassados = diferencaEmMilissegundos / milissegundosNumDia;
-
-      if (diasPassados >= 15) {
-        return t("saudacao_15");
-      } else if (hora_atual < 6 || hora_atual > 19) {
-        return t("saudacao_noite");
-      } else if (hora_atual < 12) {
-        return t("saudacao_dia");
-      } else {
-        return t("saudacao_tarde");
-      }
-    }
-  };
-
   const renderPagina = () => {
-    if (user.cargo === "consultor") {
-      return (
-        <Routes>
-          <Route
-            path="/home"
-            element={<HomeConsultor user={user} saudacao={Saudacao()} />}
-          />
+    if (!user.cargo) return <Routes><Route path="*" element={<Navigate to="/login" replace />} /></Routes>;
 
-          <Route path="/estatisticas" element={<EstatisticasConsultor />} />
+    return (
+      <Routes>
+        <Route path="/home" element={
+          user.cargo === "administrador" 
+            ? <HomeAdmin user={user} saudacao={t("saudacao_dia")} onCriarAviso={() => setIsAvisoModalOpen(true)} />
+            : user.cargo === "service line leader" ? <HomeService user={user} saudacao={t("saudacao_dia")} />
+            : user.cargo === "talent manager" ? <HomeTalent user={user} saudacao={t("saudacao_dia")} />
+            : <HomeConsultor user={user} saudacao={t("saudacao_dia")} />
+        } />
+        
+        {/* Rotas partilhadas */}
+        <Route path="/candidaturas" element={<Candidaturas />} />
+        <Route path="/atividade" element={<Atividade />} />
+        <Route path="/perfil/:id" element={<PerfilPessoal />} />
 
-          <Route path="/galeria" element={<GaleriaConsultor />} />
+        {/* Estatisticas Especificas */}
+        {user.cargo === "administrador" && <Route path="/estatisticas" element={<EstatisticasAdmin />} />}
+        {user.cargo === "service line leader" && <Route path="/estatisticas" element={<EstatisticasService user={user} />} />}
+        {user.cargo === "talent manager" && <Route path="/estatisticas" element={<EstatisticasTalent />} />}
+        {user.cargo === "consultor" && <Route path="/estatisticas" element={<EstatisticasConsultor />} />}
 
-          <Route path="/candidaturas" element={<Candidaturas />} />
+        {/* Galeria Especifica */}
+        {(user.cargo === "administrador" || user.cargo === "talent manager") ? <Route path="/galeria" element={<Galeria />} /> : <Route path="/galeria" element={<GaleriaConsultor />} />}
 
-          <Route
-            path="/objetivos"
-            element={<ObjetivosConsultor user={user} />}
-          />
+        {/* Rotas Exclusivas */}
+        {user.cargo === "consultor" && <Route path="/objetivos" element={<ObjetivosConsultor user={user} />} />}
+        {user.cargo === "administrador" && <Route path="/editar" element={<EditarAdmin />} />}
+        {user.cargo === "administrador" && <Route path="/definicoes" element={<DefinicoesAdmin />} />}
 
-          <Route path="/" element={<Navigate to="/login" replace />} />
-
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      );
-    } else if (user.cargo === "talent") {
-      return (
-        <Routes>
-          <Route
-            path="/home"
-            element={<HomeTalent user={user} saudacao={Saudacao()} />}
-          />
-          <Route path="/estatisticas" element={<EstatisticasTalent />} />
-          <Route path="/galeria" element={<GaleriaConsultor />} />
-          <Route path="/candidaturas" element={<Candidaturas />} />
-          <Route path="/perfil/:id" element={<PerfilPessoal />} />
-          <Route path="/atividade" element={<Atividade />} />
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      );
-    } else if (user.cargo === "service") {
-      return (
-        <Routes>
-          <Route
-            path="/home"
-            element={<HomeService user={user} saudacao={Saudacao()} />}
-          />
-          <Route path="/estatisticas" element={<EstatisticasService user={user} />} />
-          <Route path="/galeria" element={<GaleriaConsultor />} />
-          <Route path="/candidaturas" element={<Candidaturas />} />
-          <Route path="/perfil/:id" element={<PerfilPessoal />} />
-          <Route path="/atividade" element={<Atividade />} />
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      );
-    } else if (user.cargo === "admin") {
-      return (
-        <Routes>
-          <Route
-            path="/home"
-            element={
-              <HomeAdmin
-                user={user}
-                saudacao={Saudacao()}
-                onCriarAviso={() => {
-                  setAvisoParaEditar(null);
-                  setIsAvisoModalOpen(true);
-                }}
-              />
-            }
-          />
-          <Route path="/estatisticas" element={<EstatisticasAdmin />} />
-          <Route path="/candidaturas" element={<Candidaturas />} />
-          <Route path="/galeria" element={<Galeria />} />
-          <Route path="/editar" element={<EditarAdmin />} />
-          <Route path="/definicoes" element={<DefinicoesAdmin />} />
-          <Route path="/atividade" element={<Atividade />} />
-          {/*<Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />*/}
-        </Routes>
-      );
-    }
+        {/* Fallbacks */}
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="*" element={<Navigate to="/home" replace />} />
+      </Routes>
+    );
   };
+
+  // === RENDERIZAÇÃO CONDICIONAL ===
+  if (loading) return <div className="vh-100 d-flex justify-content-center align-items-center text-secondary">A carregar...</div>;
 
   if (location.pathname === "/login") {
-    return (
-      <LoginPage
-        onLoginSuccess={({ nome, role }) => {
-          setUser((userAtual) => ({
-            ...userAtual,
-            nome: nome || userAtual.nome,
-            cargo: role,
-            ultimoLogin: new Date(),
-          }));
-        }}
-      />
-    );
+    if (user.cargo) return <Navigate to="/home" replace />;
+    
+    return <LoginPage onLoginSuccess={({ id, nome, role, foto }) => {
+      setUser({ id, nome, cargo: role.toLowerCase(), foto, ultimoLogin: new Date() });
+    }} />;
   }
 
+  // === ESTRUTURA PRINCIPAL (LAYOUT) ===
   return (
     <div className="vh-100 d-flex flex-column" id="layout">
-      <header
-        className="d-flex justify-content-between align-items-center px-2 py-1 position-relative z-3"
-        id="barra_horizontal"
-      >
-        <div id="image_esquerda">
-          <img id="softinsa_logo" src={softinsa_logo} alt="Softinsa Logo" />
-        </div>
+      {/* CABEÇALHO */}
+      <header className="d-flex justify-content-between align-items-center px-2 py-1 position-relative z-3" id="barra_horizontal">
+        <div id="image_esquerda"><img id="softinsa_logo" src={softinsa_logo} alt="Softinsa Logo" /></div>
         <div className="d-flex align-items-center pe-2" id="info_direita">
-          {/* Megafone de Avisos */}
+          
+          {/* MEGAFONE DE AVISOS */}
           <div className="position-relative d-flex align-items-center">
-            <i
-              ref={megaphoneRef}
-              id="megaphone_icon"
-              className="fi fi-br-megaphone mx-2"
-              onClick={CliqueMegafone}
-              style={{
-                cursor: "pointer",
-                fontSize: "1.2rem",
-                color: "var(--fontes)",
-              }}
-            ></i>
-            {avisosNaoLidosCount > 0 && (
-              <span
-                className="d-flex position-absolute translate-middle badge rounded-pill align-items-center justify-content-center"
-                id="bolinha_megafone"
-              >
-                {avisosNaoLidosCount}
-              </span>
-            )}
+            <i ref={megaphoneRef} id="megaphone_icon" className="fi fi-br-megaphone mx-2" onClick={CliqueMegafone} style={{ cursor: "pointer", fontSize: "1.2rem", color: "var(--fontes)" }}></i>
+            {avisosNaoLidosCount > 0 && <span className="d-flex position-absolute translate-middle badge rounded-pill align-items-center justify-content-center" id="bolinha_megafone">{avisosNaoLidosCount}</span>}
           </div>
 
+          {/* SINO DE NOTIFICAÇÕES */}
           <div className="position-relative d-flex align-items-center">
-            <i
-              ref={bellRef}
-              id="bell_icon"
-              className="fi fi-br-bell mx-2"
-              onClick={CliqueSino}
-              style={{ cursor: "pointer", fontSize: "1.2rem", color: "var(--fontes)" }}
-            ></i>
-            {!menuNotificacoesAberto && notificacoesNaoLidas > 0 && (
-              <span
-                className="d-flex position-absolute translate-middle badge rounded-pill align-items-center justify-content-center"
-                id="bolinha_sino"
-              >
-                {notificacoesNaoLidas > 9 ? "9+" : notificacoesNaoLidas}
-              </span>
-            )}
+            <i ref={bellRef} id="bell_icon" className="fi fi-br-bell mx-2" onClick={CliqueSino} style={{ cursor: "pointer", fontSize: "1.2rem", color: "var(--fontes)" }}></i>
+            {!menuNotificacoesAberto && notificacoesNaoLidas > 0 && <span className="d-flex position-absolute translate-middle badge rounded-pill align-items-center justify-content-center" id="bolinha_sino">{notificacoesNaoLidas > 9 ? "9+" : notificacoesNaoLidas}</span>}
           </div>
+
+          {/* POPUP NOTIFICAÇÕES */}
           {menuNotificacoesAberto && (
-            <div
-              ref={notifPopupRef}
-              className="position-absolute bg-white shadow-sm p-2 rounded-4"
-              id="pop_up_notification"
-            >
-              <h5 className="ms-2 mt-1 mb-2 user-select-none">
-                {t("notificacao_titulo")}
-              </h5>
+            <div ref={notifPopupRef} className="position-absolute bg-white shadow-sm p-2 rounded-4" id="pop_up_notification">
+              <h5 className="ms-2 mt-1 mb-2 user-select-none">{t("notificacao_titulo")}</h5>
               <hr className="mt-0 mb-3" style={{ opacity: 0.15 }} />
-
               <div className="d-flex flex-column gap-1" id="notification_list">
                 {notificacoesRecentes.length === 0 ? (
                   <p className="text-center my-3">{t("notificacao_vazia")}</p>
                 ) : (
                   notificacoesRecentes.map((notif) => (
-                    <div
-                      key={notif.id}
-                      className="d-flex justify-content-between align-items-center p-2 bg-white"
-                      id="notification_option"
-                    >
+                    <div key={notif.id} className="d-flex justify-content-between align-items-center p-2 bg-white" id="notification_option">
                       <div className="m-0 pe-2" id="notification_esquerda">
-                        <span id="nome_notificacao">
-                          <b>{notif.remetente}</b>
-                        </span>
-                        {/*teremos de colocar links para perfil--------------- */}
+                        <span id="nome_notificacao"><b>{notif.remetente}</b></span>
                         <span id="nome_notificacao">{notif.texto}</span>
                       </div>
-
-                      <div
-                        className="d-flex flex-column align-items-center justify-content-center"
-                        id="notification_direita"
-                      >
-                        <i
-                          className={`${iconesNotificacao[notif.tipo].desenho}`}
-                          style={{ color: iconesNotificacao[notif.tipo].cor }}
-                        ></i>
+                      <div className="d-flex flex-column align-items-center justify-content-center" id="notification_direita">
+                        <i className={`${iconesNotificacao[notif.tipo].desenho}`} style={{ color: iconesNotificacao[notif.tipo].cor }}></i>
                         <span>{notif.data}</span>
-                        {/*resolver o prooblema da data----------------------*/}
                       </div>
                     </div>
                   ))
@@ -558,103 +311,41 @@ function App() {
               </div>
             </div>
           )}
+
+          {/* POPUP AVISOS */}
           {menuAvisosAberto && (
-            <div
-              ref={avisosPopupRef}
-              className="position-absolute bg-white shadow-sm p-3 rounded-4"
-              id="pop_up_avisos"
-            >
+            <div ref={avisosPopupRef} className="position-absolute bg-white shadow-sm p-3 rounded-4" id="pop_up_avisos">
               <div className="d-flex justify-content-between align-items-center mb-2">
-                <h5 className="ms-1 mt-1 mb-0 user-select-none text-dark">
-                  {t("avisos_titulo")}
-                </h5>
-                <button
-                  className="rounded-circle d-flex align-items-center justify-content-center border-0 text-white"
-                  style={{ width: "24px", height: "24px", padding: 0, backgroundColor: "#3a5a92" }}
-                  onClick={() => {
-                    setAvisoParaEditar(null);
-                    setIsAvisoModalOpen(true);
-                    setMenuAvisosAberto(false);
-                  }}
-                >
+                <h5 className="ms-1 mt-1 mb-0 user-select-none text-dark">{t("avisos_titulo")}</h5>
+                <button className="rounded-circle d-flex align-items-center justify-content-center border-0 text-white" style={{ width: "24px", height: "24px", padding: 0, backgroundColor: "#3a5a92" }} onClick={() => { setAvisoParaEditar(null); setIsAvisoModalOpen(true); setMenuAvisosAberto(false); }}>
                   <i className="fi fi-br-plus" style={{ fontSize: "10px", lineHeight: "0" }}></i>
                 </button>
               </div>
-
-              {/* Seletor de Abas */}
               <div className="d-flex border-bottom mb-3 justify-content-around" style={{ borderColor: "var(--contorno)" }}>
-                <span
-                  className={`aviso-popup-tab pb-2 px-3 fw-semibold ${abaAvisos === "recebidos" ? "active" : ""}`}
-                  onClick={() => setAbaAvisos("recebidos")}
-                >
-                  {t("recebidos")}
-                </span>
-                <span
-                  className={`aviso-popup-tab pb-2 px-3 fw-semibold ${abaAvisos === "enviados" ? "active" : ""}`}
-                  onClick={() => setAbaAvisos("enviados")}
-                >
-                  {t("enviados")}
-                </span>
+                <span className={`aviso-popup-tab pb-2 px-3 fw-semibold ${abaAvisos === "recebidos" ? "active" : ""}`} onClick={() => setAbaAvisos("recebidos")}>{t("recebidos")}</span>
+                <span className={`aviso-popup-tab pb-2 px-3 fw-semibold ${abaAvisos === "enviados" ? "active" : ""}`} onClick={() => setAbaAvisos("enviados")}>{t("enviados")}</span>
               </div>
-
               <div className="d-flex flex-column gap-2" id="avisos_list" style={{ maxHeight: "250px", overflowY: "auto" }}>
                 {avisosExibidos.length === 0 ? (
                   <p className="text-center my-3 text-muted">{t("aviso_vazio")}</p>
                 ) : (
                   [...avisosExibidos].reverse().map((aviso) => (
-                    <div
-                      key={aviso.id}
-                      className="aviso-item p-2 rounded-3 position-relative"
-                    >
+                    <div key={aviso.id} className="aviso-item p-2 rounded-3 position-relative">
                       <div className="d-flex justify-content-between align-items-start gap-2">
-                        <span 
-                          className="fw-bold text-truncate text-dark" 
-                          style={{ cursor: "pointer", maxWidth: "160px" }}
-                          onClick={() => {
-                            setAvisoParaVisualizar(aviso);
-                            setMenuAvisosAberto(false);
-                          }}
-                        >
-                          {aviso.titulo}
-                        </span>
+                        <span className="fw-bold text-truncate text-dark" style={{ cursor: "pointer", maxWidth: "160px" }} onClick={() => { setAvisoParaVisualizar(aviso); setMenuAvisosAberto(false); }}>{aviso.titulo}</span>
                         <div className="d-flex gap-1 align-items-center flex-shrink-0">
-                          <span className={`aviso-tag aviso-tag-${getStyleClass(aviso)}`}>
-                            {getTradDestino(aviso)}
-                          </span>
-                          
+                          <span className={`aviso-tag aviso-tag-${getStyleClass(aviso)}`}>{getTradDestino(aviso)}</span>
                           {aviso.autor === user.nome && (
                             <div className="d-flex gap-1 ms-2">
-                              <i 
-                                className="fi fi-br-pencil text-muted" 
-                                style={{ cursor: "pointer", fontSize: "11px" }}
-                                onClick={() => {
-                                  setAvisoParaEditar(aviso);
-                                  setIsAvisoModalOpen(true);
-                                  setMenuAvisosAberto(false);
-                                }}
-                              ></i>
-                              <i 
-                                className="fi fi-br-trash text-danger" 
-                                style={{ cursor: "pointer", fontSize: "11px" }}
-                                onClick={() => setAvisoToDelete(aviso)}
-                              ></i>
+                              <i className="fi fi-br-pencil text-muted" style={{ cursor: "pointer", fontSize: "11px" }} onClick={() => { setAvisoParaEditar(aviso); setIsAvisoModalOpen(true); setMenuAvisosAberto(false); }}></i>
+                              <i className="fi fi-br-trash text-danger" style={{ cursor: "pointer", fontSize: "11px" }} onClick={() => setAvisoToDelete(aviso)}></i>
                             </div>
                           )}
                         </div>
                       </div>
-                      <p 
-                        className="text-muted mb-1 text-truncate" 
-                        style={{ fontSize: "0.8rem", cursor: "pointer" }}
-                        onClick={() => {
-                          setAvisoParaVisualizar(aviso);
-                          setMenuAvisosAberto(false);
-                        }}
-                      >
-                        {aviso.mensagem}
-                      </p>
+                      <p className="text-muted mb-1 text-truncate" style={{ fontSize: "0.8rem", cursor: "pointer" }} onClick={() => { setAvisoParaVisualizar(aviso); setMenuAvisosAberto(false); }}>{aviso.mensagem}</p>
                       <div className="d-flex justify-content-between text-muted" style={{ fontSize: "0.7rem" }}>
-                        <span>Por: {aviso.autor}</span>
-                        <span>{aviso.data}</span>
+                        <span>Por: {aviso.autor}</span><span>{aviso.data}</span>
                       </div>
                     </div>
                   ))
@@ -662,149 +353,79 @@ function App() {
               </div>
             </div>
           )}
-          <div className="mx-2">
-            <LanguageSelector />
+
+          <div className="mx-2"><LanguageSelector /></div>
+          
+          <div id="name_cargo" className="d-flex flex-column align-items-center mx-2 d-none d-md-flex text-dark">
+            <span><b>{user.nome}</b></span>
+            <span style={{ fontSize: "0.8rem" }}>{user.cargo ? t(user.cargo) : ""}</span>
           </div>
-          <div
-            id="name_cargo"
-            className="d-flex flex-column align-items-center mx-2 d-none d-md-flex text-dark"
-          >
-            <span>
-              <b>{user.nome}</b>
-            </span>
-            <span style={{ fontSize: "0.8rem" }}>{t(user.cargo)}</span>
-          </div>
+
           <img
             id="user_image"
             className="mx-3 rounded-2"
-            src={user_logo} //alterar imagem de perfil----------------------------------------------------
+            src={user.foto || user_logo} 
             width="30"
             height="30"
             alt="Utilizador"
+            style={{ cursor: "pointer", objectFit: "cover" }}
             onClick={() => navigate(`perfil/${user.id}`)}
           />
         </div>
       </header>
+
+      {/* CORPO PRINCIPAL */}
       <div className="d-flex m-0 flex-grow-1 w-100" style={{ minHeight: 0 }}>
         <div id="barra_lateral">
           <div className="mt-3 justify-content-center">
-            {menuItems.map((item) => {
-              const isActive = location.pathname.includes(item.slug); //precisamos desta variavel para saber qual pagina esta ativa
-
-              return (
-                <div
-                  key={item.slug}
-                  className={`d-flex align-items-center justify-content-center justify-content-xl-start my-2 ps-xl-2 ${isActive ? "pag_ativa" : ""}`}
-                  onClick={() => navigate(`/${item.slug}`)}
-                  id="item_lateral"
-                >
-                  <i className={`fi ${item.icon} mx-2 fs-5`}></i>
-                  <span className="ms-2 d-none d-xl-block fs-5">
-                    {t(item.label)}
-                  </span>
-                </div>
-              );
-            })}
+            {menuItems.map((item) => (
+              <div key={item.slug} className={`d-flex align-items-center justify-content-center justify-content-xl-start my-2 ps-xl-2 ${location.pathname.includes(item.slug) ? "pag_ativa" : ""}`} onClick={() => navigate(`/${item.slug}`)} id="item_lateral">
+                <i className={`fi ${item.icon} mx-2 fs-5`}></i>
+                <span className="ms-2 d-none d-xl-block fs-5">{t(item.label)}</span>
+              </div>
+            ))}
           </div>
         </div>
-        <div
-          className="h-100 d-flex flex-column flex-grow-1"
-          id="Container"
-          style={{ overflow: "hidden", minWidth: 0 }}
-        >
+        
+        <div className="h-100 d-flex flex-column flex-grow-1" id="Container" style={{ overflow: "hidden", minWidth: 0 }}>
           {renderPagina()}
         </div>
-        {/* Modal Formulário (Criar/Editar) */}
+
+        {/* MODAIS DE AVISOS */}
         {isAvisoModalOpen && (
-          <AvisoFormModal
-            aviso={avisoParaEditar}
-            onClose={() => setIsAvisoModalOpen(false)}
-            onSave={(dados) => {
-              if (avisoParaEditar) {
-                // Editar
-                setAvisos((prev) =>
-                  prev.map((a) =>
-                    a.id === avisoParaEditar.id ? { ...a, ...dados } : a,
-                  ),
-                );
-              } else {
-                // Criar
-                const novo = {
-                  id:
-                    avisos.length > 0
-                      ? Math.max(...avisos.map((a) => a.id)) + 1
-                      : 1,
-                  ...dados,
-                  data:
-                    new Date().toLocaleDateString("pt-PT") +
-                    " " +
-                    new Date().toLocaleTimeString("pt-PT", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }),
-                  autor: user.nome || "Admin",
-                };
-                setAvisos((prev) => [...prev, novo]);
-              }
-              setIsAvisoModalOpen(false);
-            }}
-            t={t}
-          />
+          <AvisoFormModal aviso={avisoParaEditar} onClose={() => setIsAvisoModalOpen(false)} onSave={(dados) => {
+            if (avisoParaEditar) {
+              setAvisos((prev) => prev.map((a) => a.id === avisoParaEditar.id ? { ...a, ...dados } : a));
+            } else {
+              const novo = { id: avisos.length > 0 ? Math.max(...avisos.map((a) => a.id)) + 1 : 1, ...dados, data: new Date().toLocaleDateString("pt-PT") + " " + new Date().toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" }), autor: user.nome || "Admin" };
+              setAvisos((prev) => [...prev, novo]);
+            }
+            setIsAvisoModalOpen(false);
+          }} t={t} />
         )}
 
-        {/* Modal Detalhes (Visualizar) */}
         {avisoParaVisualizar && (
-          <AvisoDetailModal
-            aviso={avisoParaVisualizar}
-            onClose={() => setAvisoParaVisualizar(null)}
-            t={t}
-            getTradDestino={getTradDestino}
-            getStyleClass={getStyleClass}
-          />
+          <AvisoDetailModal aviso={avisoParaVisualizar} onClose={() => setAvisoParaVisualizar(null)} t={t} getTradDestino={getTradDestino} getStyleClass={getStyleClass} />
         )}
 
-        {/* Modal Confirmação de Eliminar Aviso */}
-        <ModalConfirmacao
-          isOpen={!!avisoToDelete}
-          onClose={() => setAvisoToDelete(null)}
-          onConfirm={() => {
-            setAvisos((prev) => prev.filter((a) => a.id !== avisoToDelete.id));
-            setAvisoToDelete(null);
-          }}
-          titulo={t("eliminar_aviso")}
-          mensagem={`${t("confirmar_eliminar_aviso")} (${avisoToDelete?.titulo})`}
-          textoConfirmar="Eliminar"
-        />
+        <ModalConfirmacao isOpen={!!avisoToDelete} onClose={() => setAvisoToDelete(null)} onConfirm={() => { setAvisos((prev) => prev.filter((a) => a.id !== avisoToDelete.id)); setAvisoToDelete(null); }} titulo={t("eliminar_aviso")} mensagem={`${t("confirmar_eliminar_aviso")} (${avisoToDelete?.titulo})`} textoConfirmar="Eliminar" />
       </div>
     </div>
   );
 }
 
-// --- COMPONENTS AUXILIARES PARA AVISOS ---
+// === COMPONENTS AUXILIARES PARA AVISOS ===
 function AvisoFormModal({ aviso, onClose, onSave, t }) {
   const [titulo, setTitulo] = useState(aviso ? aviso.titulo : "");
   const [mensagem, setMensagem] = useState(aviso ? aviso.mensagem : "");
-  const [tipoDestino, setTipoDestino] = useState(
-    aviso ? aviso.tipoDestino : "grupo",
-  );
+  const [tipoDestino, setTipoDestino] = useState(aviso ? aviso.tipoDestino : "grupo");
   const [destino, setDestino] = useState(aviso ? aviso.destino : "Todos");
 
-  const handleTipoChange = (e) => {
-    const val = e.target.value;
-    setTipoDestino(val);
-    setDestino(val === "grupo" ? "Todos" : "");
-  };
+  const handleTipoChange = (e) => { const val = e.target.value; setTipoDestino(val); setDestino(val === "grupo" ? "Todos" : ""); };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (
-      !titulo.trim() ||
-      !mensagem.trim() ||
-      (tipoDestino === "individual" && !destino.trim())
-    ) {
-      alert("Por favor preencha todos os campos obrigatórios.");
-      return;
-    }
+    if (!titulo.trim() || !mensagem.trim() || (tipoDestino === "individual" && !destino.trim())) { alert("Por favor preencha todos os campos obrigatórios."); return; }
     onSave({ titulo, mensagem, tipoDestino, destino });
   };
 
@@ -813,112 +434,32 @@ function AvisoFormModal({ aviso, onClose, onSave, t }) {
       <div className="aviso-modal-content">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h4 className="m-0">{aviso ? t("editar_aviso") : t("criar_aviso")}</h4>
-          <button className="aviso-modal-close-btn" type="button" onClick={onClose}>
-            <i className="fi fi-br-cross"></i>
-          </button>
+          <button className="aviso-modal-close-btn" type="button" onClick={onClose}><i className="fi fi-br-cross"></i></button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label className="form-label fw-semibold">{t("titulo")} *</label>
-            <input
-              type="text"
-              className="form-control"
-              value={titulo}
-              onChange={(e) => setTitulo(e.target.value)}
-              placeholder="Ex: Atualização dos Termos de Uso"
-              required
-            />
+            <input type="text" className="form-control" value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Ex: Atualização dos Termos de Uso" required />
           </div>
-
           <div className="mb-3">
-            <label className="form-label fw-semibold">
-              {t("destinatario")} *
-            </label>
+            <label className="form-label fw-semibold">{t("destinatario")} *</label>
             <div className="d-flex gap-3 mb-2">
-              <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="tipoDestino"
-                  id="destGrupo"
-                  value="grupo"
-                  checked={tipoDestino === "grupo"}
-                  onChange={handleTipoChange}
-                />
-                <label className="form-check-label" htmlFor="destGrupo">
-                  {t("grupo")}
-                </label>
-              </div>
-              <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="tipoDestino"
-                  id="destIndiv"
-                  value="individual"
-                  checked={tipoDestino === "individual"}
-                  onChange={handleTipoChange}
-                />
-                <label className="form-check-label" htmlFor="destIndiv">
-                  {t("individual")}
-                </label>
-              </div>
+              <div className="form-check"><input className="form-check-input" type="radio" name="tipoDestino" id="destGrupo" value="grupo" checked={tipoDestino === "grupo"} onChange={handleTipoChange} /><label className="form-check-label" htmlFor="destGrupo">{t("grupo")}</label></div>
+              <div className="form-check"><input className="form-check-input" type="radio" name="tipoDestino" id="destIndiv" value="individual" checked={tipoDestino === "individual"} onChange={handleTipoChange} /><label className="form-check-label" htmlFor="destIndiv">{t("individual")}</label></div>
             </div>
-
             {tipoDestino === "grupo" ? (
-              <select
-                className="form-select"
-                value={destino}
-                onChange={(e) => setDestino(e.target.value)}
-              >
-                <option value="Todos">{t("todos")}</option>
-                <option value="Todos os Consultores">{t("consultores")}</option>
-                <option value="Todos os Talent Managers">
-                  {t("talent_managers")}
-                </option>
-                <option value="Todos os Service Line Leaders">
-                  {t("service_line_leaders")}
-                </option>
+              <select className="form-select" value={destino} onChange={(e) => setDestino(e.target.value)}>
+                <option value="Todos">{t("todos")}</option><option value="Todos os Consultores">{t("consultores")}</option><option value="Todos os Talent Managers">{t("talent_managers")}</option><option value="Todos os Service Line Leaders">{t("service_line_leaders")}</option>
               </select>
-            ) : (
-              <input
-                type="text"
-                className="form-control"
-                value={destino}
-                onChange={(e) => setDestino(e.target.value)}
-                placeholder="Nome ou e-mail exato do colaborador"
-                required
-              />
-            )}
+            ) : (<input type="text" className="form-control" value={destino} onChange={(e) => setDestino(e.target.value)} placeholder="Nome ou e-mail exato do colaborador" required />)}
           </div>
-
           <div className="mb-4">
             <label className="form-label fw-semibold">{t("mensagem")} *</label>
-            <textarea
-              className="form-control"
-              rows="5"
-              value={mensagem}
-              onChange={(e) => setMensagem(e.target.value)}
-              placeholder="Escreva a mensagem aqui..."
-              required
-            ></textarea>
+            <textarea className="form-control" rows="5" value={mensagem} onChange={(e) => setMensagem(e.target.value)} placeholder="Escreva a mensagem aqui..." required></textarea>
           </div>
-
           <div className="d-flex justify-content-end gap-2">
-            <button
-              type="button"
-              className="btn btn-light rounded-pill px-4"
-              onClick={onClose}
-            >
-              {t("cancelar")}
-            </button>
-             <button
-              type="submit"
-              className="btn text-white border-0 rounded-pill px-4"
-              style={{ backgroundColor: "#3a5a92" }}
-            >
-              {t("enviar")}
-            </button>
+            <button type="button" className="btn btn-light rounded-pill px-4" onClick={onClose}>{t("cancelar")}</button>
+            <button type="submit" className="btn text-white border-0 rounded-pill px-4" style={{ backgroundColor: "#3a5a92" }}>{t("enviar")}</button>
           </div>
         </form>
       </div>
@@ -926,40 +467,19 @@ function AvisoFormModal({ aviso, onClose, onSave, t }) {
   );
 }
 
-function AvisoDetailModal({
-  aviso,
-  onClose,
-  t,
-  getTradDestino,
-  getStyleClass,
-}) {
+function AvisoDetailModal({ aviso, onClose, getTradDestino, getStyleClass }) {
   return (
     <div className="aviso-modal-overlay" onClick={onClose}>
       <div className="aviso-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="d-flex justify-content-between align-items-start mb-3">
-          <span className={`aviso-tag aviso-tag-${getStyleClass(aviso)}`}>
-            {getTradDestino(aviso)}
-          </span>
-          <button className="aviso-modal-close-btn" type="button" onClick={onClose}>
-            <i className="fi fi-br-cross" style={{ fontSize: "0.9rem" }}></i>
-          </button>
+          <span className={`aviso-tag aviso-tag-${getStyleClass(aviso)}`}>{getTradDestino(aviso)}</span>
+          <button className="aviso-modal-close-btn" type="button" onClick={onClose}><i className="fi fi-br-cross" style={{ fontSize: "0.9rem" }}></i></button>
         </div>
         <h4 className="mb-3">{aviso.titulo}</h4>
-        <p
-          className="mb-4 text-muted"
-          style={{ whiteSpace: "pre-line", fontSize: "0.95rem" }}
-        >
-          {aviso.mensagem}
-        </p>
+        <p className="mb-4 text-muted" style={{ whiteSpace: "pre-line", fontSize: "0.95rem" }}>{aviso.mensagem}</p>
         <hr className="mb-3" style={{ opacity: 0.15 }} />
-        <div
-          className="d-flex justify-content-between text-muted"
-          style={{ fontSize: "0.8rem" }}
-        >
-          <span>
-            Enviado por: <strong>{aviso.autor}</strong>
-          </span>
-          <span>{aviso.data}</span>
+        <div className="d-flex justify-content-between text-muted" style={{ fontSize: "0.8rem" }}>
+          <span>Enviado por: <strong>{aviso.autor}</strong></span><span>{aviso.data}</span>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import './home_talent.css';
@@ -113,53 +113,70 @@ const GraficoEstatistica = () => {
 
 const HomeTalent = ({ user, saudacao }) => {
 
+    const idGuardado = localStorage.getItem("utilizador_id");
+    const roleGuardada = localStorage.getItem("role_softinsa");
+
     const { t } = useTranslation();
     const navigate = useNavigate();
 
     const [infoCandidaturas, setInfoCandidaturas] = useState();
 
     useEffect(() => {
-    const buscarCandidaturas = async () => {
-        try {
-        const res = await axios.get('http://localhost:5000/api/hometalent/candidaturas');
-        setInfoCandidaturas(res.data);
-        console.log("Dados recebidos com sucesso:", res.data);
-        } catch (erro) {
-        console.error("Erro ao buscar candidaturas:", erro);
-        }
-    };
+        const buscarCandidaturas = async () => {
+            if (!localStorage.getItem('token_softinsa')) {
+                setInfoCandidaturas([]);
+                return;
+            }
 
-    buscarCandidaturas();
+            try {
+                const res = await api.get('/hometalent/candidaturas');
+
+                setInfoCandidaturas(Array.isArray(res.data) ? res.data : []);
+                console.log('Dados recebidos com sucesso:', res.data);
+            } catch (erro) {
+                console.error('Erro ao buscar candidaturas:', erro);
+                setInfoCandidaturas([]);
+            }
+        };
+
+        buscarCandidaturas();
     }, []);
 
     const RenderCandidaturas = () => {
-        if (!Array.isArray(infoCandidaturas)) {
-            return <div>Sem candidaturas</div>;
+        if (!Array.isArray(infoCandidaturas) || infoCandidaturas.length === 0) {
+            return <div className="col-12 text-muted">Sem candidaturas</div>;
         }
 
-        return infoCandidaturas.map((candidatura) => {
-            return(
-                <div className="col-12 col-sm-6 col-xl-4">
+        return infoCandidaturas.map((candidatura, index) => {
+            const badge = candidatura?.Badges || candidatura?.Badge || null;
+            const utilizador = candidatura?.Utilizador || null;
+            const area = badge?.Area?.nome_area || badge?.nome_area || '—';
+            const nomeBadge = badge?.nome_badge || 'Badge';
+            const nomeUser = utilizador?.nome_user || 'Utilizador';
+            const imagemUser = utilizador?.imagem_perfil || '';
+            const imagemBadge = badge?.imagem || badge_logo;
+
+            return (
+                <div key={candidatura?.id_submissao || index} className="col-12 col-sm-6 col-xl-4">
                     <div className="card text-center border-0 p-1" style={{ height: '100%' }}>
                         <div className="mx-auto mt-2 rounded-circle d-flex align-items-center justify-content-center">
-                            <img className="rounded-circle badge_logo_candidaturas" src={badge_logo}/>{/*candidatura.Badge.imagem*/}
+                            <img className="rounded-circle badge_logo_candidaturas" src={imagemBadge} alt={nomeBadge} />
                         </div>
-                                        
-                        <h6 className="mt-2 mb-0">{candidatura.Badge.nome_badge}</h6>
-                                        
+
+                        <h6 className="mt-2 mb-0">{nomeBadge}</h6>
+
                         <div className="d-flex align-items-center justify-content-center my-1">
                             <div>
-                                <img className="mx-3 rounded-1 user_image_candidaturas" src={candidatura.Utilizador.imagem_perfil}/>
+                                <img className="mx-3 rounded-1 user_image_candidaturas" src={imagemUser} alt={nomeUser} />
                             </div>
                             <div className="text-start">
-                                <div className="fw-medium nome_candidatura" style={{ fontSize: '0.8rem', lineHeight: '0.8' }}>{candidatura.Utilizador.nome_user}</div>
-                                <div className="text-muted" style={{ fontSize: '0.7rem' }}>{candidatura.Badge.Area.nome_area}</div>
+                                <div className="fw-medium nome_candidatura" style={{ fontSize: '0.8rem', lineHeight: '0.8' }}>{nomeUser}</div>
+                                <div className="text-muted" style={{ fontSize: '0.7rem' }}>{area}</div>
                             </div>
                         </div>
-                                        
-                        <div className="text-muted mb-2" style={{ fontSize: '0.7rem' }}>{candidatura.data_submissao}</div>
-                                        
-                                        
+
+                        <div className="text-muted mb-2" style={{ fontSize: '0.7rem' }}>{candidatura?.data_submissao || '—'}</div>
+
                         <div className="d-flex justify-content-center gap-1">
                             <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.7}/>
                             <BotaoAceitar onClick={() => navigate('/candidaturas')} tamanho={0.7}/>
@@ -167,7 +184,7 @@ const HomeTalent = ({ user, saudacao }) => {
                         </div>
                     </div>
                 </div>
-            )
+            );
         });
     };
 

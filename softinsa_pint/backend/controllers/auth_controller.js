@@ -21,19 +21,38 @@ module.exports = {
             // 3. Fabrica o Token
             const token = jwt.sign({ id_utilizador: user.id_utilizador }, process.env.JWT_SECRET, { expiresIn: '8h' });
 
-            // 4. Formata as roles para enviar
             const listaRoles = user.Roles.map(role => role.nome_role.toLowerCase());
 
-            // 5. Envia TUDO para o React
             return res.status(200).json({
                 token: token,
                 utilizador: {
                     nome: user.nome_user,
-                    roles: listaRoles // <-- O React precisa disto!
+                    id: user.id_utilizador,
+                    roles: listaRoles
                 }
             });
         } catch (error) {
             return res.status(500).json({ error: "Erro no servidor." });
+        }
+    },
+    async getUser(req, res) {
+        try {
+            const { id } = req.body;
+
+            const user = await Utilizador.findOne({ 
+                where: { id_utilizador: id },
+                atributes: ['nome_user', 'imagem_perfil', 'last_login']
+            });
+            if(!user){
+                return res.status(404).json({ error: "utilizador não encontrado." });
+            }
+            return res.status(200).json({
+                nome: user.nome_user, 
+                foto: user.imagem_perfil,
+                ultimoLogin: user.last_login,
+            });
+        } catch (error) {
+            return res.status(500).json({ error: "Erro no servidor, get_user." });
         }
     }
 }

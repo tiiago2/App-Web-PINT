@@ -227,24 +227,24 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
       <div className="row" style={{ flex: "0 0 auto", marginTop: 'var(--gap-default-seccoes)' }}>
         <div className="col-4">
           <div
-            className="admin-card p-3 bg-white d-flex flex-column justify-content-between h-100"
-            style={{ minHeight: "110px" }}
+            className="admin-card py-2 px-3 bg-white d-flex flex-column justify-content-between h-100"
+            style={{ minHeight: "90px" }}
           >
             <div className="d-flex justify-content-between align-items-start">
               <span
                 className="text-muted"
-                style={{ fontSize: "clamp(0.75rem, 1vw, 1rem)" }}
+                style={{ fontSize: "clamp(0.75rem, 0.9vw, 0.85rem)" }}
               >
                 {t("total_utilizadores")}
               </span>
               <i
                 className="fi fi-br-user text-dark"
-                style={{ fontSize: "clamp(1rem, 1.5vw, 1.5rem)" }}
+                style={{ fontSize: "clamp(1rem, 1.2vw, 1.25rem)" }}
               ></i>
             </div>
             <h3
               className="fw-bold m-0"
-              style={{ fontSize: "clamp(1.2rem, 2.5vw, 2rem)" }}
+              style={{ fontSize: "clamp(1.2rem, 2vw, 1.6rem)" }}
             >
               345
             </h3>
@@ -258,20 +258,20 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
         </div>
         <div className="col-4">
           <div
-            className="admin-card p-3 bg-white d-flex flex-column justify-content-between h-100"
-            style={{ minHeight: "110px" }}
+            className="admin-card py-2 px-3 bg-white d-flex flex-column justify-content-between h-100"
+            style={{ minHeight: "90px" }}
           >
             <div className="d-flex justify-content-between align-items-start">
               <span
                 className="text-muted"
-                style={{ fontSize: "clamp(0.75rem, 1vw, 1rem)" }}
+                style={{ fontSize: "clamp(0.75rem, 0.9vw, 0.85rem)" }}
               >
                 {t("badges_por_utilizador")}
               </span>
             </div>
             <h3
               className="fw-bold m-0"
-              style={{ fontSize: "clamp(1.2rem, 2.5vw, 2rem)" }}
+              style={{ fontSize: "clamp(1.2rem, 2vw, 1.6rem)" }}
             >
               4.8
             </h3>
@@ -285,24 +285,24 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
         </div>
         <div className="col-4">
           <div
-            className="admin-card p-3 bg-white d-flex flex-column justify-content-between h-100"
-            style={{ minHeight: "110px" }}
+            className="admin-card py-2 px-3 bg-white d-flex flex-column justify-content-between h-100"
+            style={{ minHeight: "90px" }}
           >
             <div className="d-flex justify-content-between align-items-start">
               <span
                 className="text-muted"
-                style={{ fontSize: "clamp(0.75rem, 1vw, 1rem)" }}
+                style={{ fontSize: "clamp(0.75rem, 0.9vw, 0.85rem)" }}
               >
                 {t("badges_atribuidos")}
               </span>
               <i
                 className="fi fi-br-settings text-dark"
-                style={{ fontSize: "clamp(1rem, 1.5vw, 1.5rem)" }}
+                style={{ fontSize: "clamp(1rem, 1.2vw, 1.25rem)" }}
               ></i>
             </div>
             <h3
               className="fw-bold m-0"
-              style={{ fontSize: "clamp(1.2rem, 2.5vw, 2rem)" }}
+              style={{ fontSize: "clamp(1.2rem, 2vw, 1.6rem)" }}
             >
               3.456
             </h3>

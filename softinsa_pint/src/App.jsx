@@ -35,7 +35,7 @@ import softinsa_logo from "./assets/logotipo_softinsa.png";
 import user_logo from "./assets/utilizador.png";
 
 function App() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -48,6 +48,13 @@ function App() {
     foto: null,
     ultimoLogin: null,
   });
+
+  // Redirecionar para /login se não autenticado (após terminar o carregamento)
+  useEffect(() => {
+    if (!loading && !user.cargo && location.pathname !== "/login") {
+      navigate("/login", { replace: true });
+    }
+  }, [loading, user.cargo, location.pathname, navigate]);
 
   // === REFS E ESTADOS PARA MENUS, NOTIFICAÇÕES E AVISOS ===
   const bellRef = useRef(null);
@@ -119,7 +126,7 @@ function App() {
   const [avisos, setAvisos] = useState(() => {
     const saved = localStorage.getItem("softinsa_avisos");
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) { return []; }
+      try { return JSON.parse(saved); } catch { return []; }
     }
     return [
       { id: 1, titulo: "Manutenção do Portal", mensagem: "O portal de badges estará em manutenção no próximo sábado.", tipoDestino: "grupo", destino: "Todos", data: "25/06/2026 10:00", autor: "Admin" },
@@ -371,6 +378,15 @@ function App() {
             style={{ cursor: "pointer", objectFit: "cover" }}
             onClick={() => navigate(`perfil/${user.id}`)}
           />
+          <i
+            className="fi fi-br-sign-out-alt me-2 text-secondary"
+            style={{ cursor: "pointer", fontSize: "1.1rem" }}
+            title={t("auth_roles_terminar")}
+            onClick={() => {
+              setUser((prev) => ({ ...prev, cargo: null }));
+              navigate("/login");
+            }}
+          ></i>
         </div>
       </header>
 

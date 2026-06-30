@@ -50,8 +50,7 @@ export default function TabSLA() {
       <div>
         <h3 className="section-title">{t("sla")}</h3>
         <p className="section-subtitle">
-          Configura as métricas e tempos de resposta acordados para o
-          fluxo de badges.
+          {t("sla_subtitulo")}
         </p>
       </div>
 
@@ -80,7 +79,7 @@ export default function TabSLA() {
                   letterSpacing: "0.5px",
                 }}
               >
-                Pedidos em Risco
+                {t("pedidos_em_risco")}
               </h6>
               <div className="d-flex align-items-end gap-2 mt-1">
                 <span
@@ -98,7 +97,7 @@ export default function TabSLA() {
                 className="text-muted mt-2 fw-medium"
                 style={{ fontSize: "0.75rem" }}
               >
-                A menos de 24h de estoirar o SLA
+                {t("menos_24h_sla")}
               </div>
             </div>
           </div>
@@ -127,7 +126,7 @@ export default function TabSLA() {
                   letterSpacing: "0.5px",
                 }}
               >
-                Fora do Prazo
+                {t("fora_do_prazo")}
               </h6>
               <div className="d-flex align-items-end gap-2 mt-1">
                 <span
@@ -145,7 +144,7 @@ export default function TabSLA() {
                 className="text-muted mt-2 fw-medium"
                 style={{ fontSize: "0.75rem" }}
               >
-                Candidaturas atualmente atrasadas
+                {t("candidaturas_atrasadas_desc")}
               </div>
             </div>
           </div>
@@ -174,7 +173,7 @@ export default function TabSLA() {
                   letterSpacing: "0.5px",
                 }}
               >
-                Média de Resposta
+                {t("media_resposta")}
               </h6>
               <div className="d-flex align-items-end gap-1 mt-1">
                 <span
@@ -191,14 +190,14 @@ export default function TabSLA() {
                   className="text-muted pb-1 fw-bold"
                   style={{ fontSize: "0.9rem" }}
                 >
-                  dias
+                  {t("dias_lowercase")}
                 </span>
               </div>
               <div
                 className="text-muted mt-2 fw-medium"
                 style={{ fontSize: "0.75rem" }}
               >
-                Tempo médio p/ fechar processo
+                {t("tempo_medio_fechar_desc")}
               </div>
             </div>
           </div>
@@ -211,22 +210,20 @@ export default function TabSLA() {
           className="mb-4 fw-semibold"
           style={{ color: "var(--fontes)" }}
         >
-          Configuração de Prazos Limite
+          {t("configuracao_prazos_limite")}
         </h5>
 
         <div className="d-flex flex-column gap-3">
           <div className="d-flex align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3 flex-grow-1">
               <label className="form-check-label fw-semibold mb-1">
-                SLA - Fase 1 (Talent Manager)
+                {t("sla_fase_1")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Tempo máximo para o Talent Manager avaliar as evidências
-                submetidas e prosseguir com o processo ou solicitar
-                retificações.
+                {t("sla_fase_1_desc")}
               </p>
             </div>
             <div style={{ width: "130px" }}>
@@ -245,7 +242,7 @@ export default function TabSLA() {
                   max="99"
                 />
                 <span className="input-group-text bg-light text-muted px-2">
-                  dias
+                  {t("dias_lowercase")}
                 </span>
               </div>
             </div>
@@ -254,15 +251,13 @@ export default function TabSLA() {
           <div className="d-flex align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3 flex-grow-1">
               <label className="form-check-label fw-semibold mb-1">
-                SLA - Fase 2 (Service Line Leader)
+                {t("sla_fase_2")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Tempo máximo para o Líder de Área emitir o parecer técnico
-                final (Aprovar, Rejeitar ou Send Back) após validação
-                inicial.
+                {t("sla_fase_2_desc")}
               </p>
             </div>
             <div style={{ width: "130px" }}>
@@ -281,7 +276,7 @@ export default function TabSLA() {
                   max="99"
                 />
                 <span className="input-group-text bg-light text-muted px-2">
-                  dias
+                  {t("dias_lowercase")}
                 </span>
               </div>
             </div>
@@ -295,21 +290,20 @@ export default function TabSLA() {
           className="mb-4 fw-semibold"
           style={{ color: "var(--fontes)" }}
         >
-          Gatilhos para SLAs Ultrapassados (Automações)
+          {t("gatilhos_slas_ultrapassados")}
         </h5>
 
         <div className="d-flex flex-column gap-3">
           <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3">
               <label className="form-check-label fw-semibold mb-1">
-                Notificação PUSH Interna
+                {t("notificacao_push_interna")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Dispara um alerta visual e sonoro na plataforma Web e
-                Mobile sempre que um prazo de SLA é ultrapassado.
+                {t("notificacao_push_interna_desc")}
               </p>
             </div>
             <div className="mb-0">
@@ -323,14 +317,13 @@ export default function TabSLA() {
           <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3">
               <label className="form-check-label fw-semibold mb-1">
-                Aviso por E-mail Automático
+                {t("aviso_email_automatico")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Envia um e-mail de cobrança automatizado diretamente à
-                equipa (Talent Manager ou Service Line) em incumprimento.
+                {t("aviso_email_automatico_desc")}
               </p>
             </div>
             <div className="mb-0">
@@ -344,15 +337,13 @@ export default function TabSLA() {
           <div className="d-flex align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3 flex-grow-1">
               <label className="form-check-label fw-semibold mb-1">
-                Escalada de Alerta (Administrador)
+                {t("escalada_alerta")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Define após quantas horas de atraso crítico o sistema
-                escala a notificação para intervenção do Administrador
-                Geral.
+                {t("escalada_alerta_desc")}
               </p>
             </div>
             <div style={{ width: "130px" }}>
@@ -371,7 +362,7 @@ export default function TabSLA() {
                   max="72"
                 />
                 <span className="input-group-text bg-light text-muted px-2">
-                  horas
+                  {t("horas_lowercase")}
                 </span>
               </div>
             </div>
@@ -387,7 +378,7 @@ export default function TabSLA() {
             border: "none",
           }}
         >
-          <i className="fi fi-br-disk me-2"></i> Guardar Prazos SLA
+          <i className="fi fi-br-disk me-2"></i> {t("guardar_prazos_sla")}
         </button>
       </div>
     </div>

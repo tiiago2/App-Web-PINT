@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import EditarFiltros from '../Administrador/EditarTabs/EditarFiltros';
 import EditarMetricas from '../Administrador/EditarTabs/EditarMetricas';
@@ -8,16 +8,189 @@ import BadgeModal from '../../components/Criar_Editar/BadgeModal';
 import { MOCK_BADGES_INICIAL } from '../Administrador/EditarTabs/TabBadges';
 import "./Galeria.css";
 
+const mapaCategoriaParaFiltro = {
+  "Hybrid Systems": {
+    learningPath: "Backend Dev",
+    serviceLine: "Software Engineering",
+    area: "Java Core",
+  },
+  "Web UI": {
+    learningPath: "Frontend Dev",
+    serviceLine: "Software Engineering",
+    area: "React & Web UI",
+  },
+  "Cloud Native": {
+    learningPath: "Cloud & DevOps",
+    serviceLine: "Cloud Services",
+    area: "AWS Architecture",
+  },
+  "Backend": {
+    learningPath: "Backend Dev",
+    serviceLine: "Software Engineering",
+    area: "Java Core",
+  },
+  "Mobile": {
+    learningPath: "Frontend Dev",
+    serviceLine: "Software Engineering",
+    area: "React & Web UI",
+  },
+  "Security": {
+    learningPath: "Cloud & DevOps",
+    serviceLine: "Cloud Services",
+    area: "AWS Architecture",
+  },
+  "Infrastructure": {
+    learningPath: "Cloud & DevOps",
+    serviceLine: "Cloud Services",
+    area: "AWS Architecture",
+  },
+  "Design": {
+    learningPath: "Frontend Dev",
+    serviceLine: "Software Engineering",
+    area: "React & Web UI",
+  },
+  "Data Science": {
+    learningPath: "Data & Analytics",
+    serviceLine: "Data Insights",
+    area: "Python Data Science",
+  },
+};
+
+function normalizarTexto(texto = "") {
+  return String(texto)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function prepararBadgeAdminParaFiltro(badge) {
+  const categoria = badge.categoria || "";
+  const dadosMapeados = mapaCategoriaParaFiltro[categoria] || {};
+
+  return {
+    ...badge,
+    learningPath: badge.learningPath || dadosMapeados.learningPath || categoria || "Sem Learning Path",
+    serviceLine: badge.serviceLine || dadosMapeados.serviceLine || categoria || "Sem Service Line",
+    area: badge.area || badge.nomeArea || dadosMapeados.area || categoria || "Sem Área",
+  };
+}
+
+function criarOpcoesUnicas(lista, campo) {
+  const mapa = new Map();
+
+  lista.forEach((item) => {
+    const valor = item[campo];
+
+    if (valor && !mapa.has(valor)) {
+      mapa.set(valor, {
+        valor,
+        label: valor,
+      });
+    }
+  });
+
+  return Array.from(mapa.values()).sort((a, b) =>
+    a.label.localeCompare(b.label, "pt")
+  );
+}
+
+function badgeCumpreFiltroAdmin(badge, filtro) {
+  if (!filtro || filtro.tipo === "todos") {
+    return true;
+  }
+
+  if (filtro.tipo === "learningPath") {
+    return badge.learningPath === filtro.valor;
+  }
+
+  if (filtro.tipo === "serviceLine") {
+    return badge.serviceLine === filtro.valor;
+  }
+
+  if (filtro.tipo === "area") {
+    return badge.area === filtro.valor;
+  }
+
+  return true;
+}
+
+function ordenarBadgesAdmin(lista, ordenacao) {
+  const listaOrdenada = [...lista];
+
+  switch (ordenacao) {
+    case "az":
+      listaOrdenada.sort((a, b) => a.nome.localeCompare(b.nome, "pt"));
+      break;
+
+    case "za":
+      listaOrdenada.sort((a, b) => b.nome.localeCompare(a.nome, "pt"));
+      break;
+
+    case "antigos":
+      listaOrdenada.sort((a, b) => a.id - b.id);
+      break;
+
+    case "recentes":
+    default:
+      listaOrdenada.sort((a, b) => b.id - a.id);
+      break;
+  }
+
+  return listaOrdenada;
+}
+
 function Galeria() {
   const location = useLocation();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [ordenacao, setOrdenacao] = useState('recentes');
-  const [filtro, setFiltro] = useState('');
+  const [filtro, setFiltro] = useState({
+    tipo: "todos",
+    valor: "",
+    label: "Todos",
+  });
   const [viewMode, setViewMode] = useState('galeria'); 
   const [badges, setBadges] = useState(MOCK_BADGES_INICIAL);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [badgeToEdit, setBadgeToEdit] = useState(null);
+
+  const badgesComCamposFiltro = useMemo(() => {
+    return badges.map(prepararBadgeAdminParaFiltro);
+  }, [badges]);
+
+  const opcoesFiltroAvancado = useMemo(() => {
+    return {
+      learningPath: criarOpcoesUnicas(badgesComCamposFiltro, "learningPath"),
+      serviceLine: criarOpcoesUnicas(badgesComCamposFiltro, "serviceLine"),
+      area: criarOpcoesUnicas(badgesComCamposFiltro, "area"),
+    };
+  }, [badgesComCamposFiltro]);
+
+  const badgesVisiveis = useMemo(() => {
+    let lista = [...badgesComCamposFiltro];
+
+    const pesquisaNormalizada = normalizarTexto(searchTerm).trim();
+
+    if (pesquisaNormalizada) {
+      lista = lista.filter((badge) => {
+        const camposPesquisaveis = [
+          badge.nome,
+          badge.categoria,
+          badge.learningPath,
+          badge.serviceLine,
+          badge.area,
+        ];
+
+        return camposPesquisaveis.some((campo) =>
+          normalizarTexto(campo).includes(pesquisaNormalizada)
+        );
+      });
+    }
+
+    lista = lista.filter((badge) => badgeCumpreFiltroAdmin(badge, filtro));
+
+    return ordenarBadgesAdmin(lista, ordenacao);
+  }, [badgesComCamposFiltro, searchTerm, filtro, ordenacao]);
 
   // Estados para o Pop-Up de Exportação do Colega
   const [mostrarExportar, setMostrarExportar] = useState(false); 
@@ -287,6 +460,8 @@ function Galeria() {
         searchTerm={searchTerm} setSearchTerm={setSearchTerm}
         ordenacao={ordenacao} setOrdenacao={setOrdenacao}
         filtro={filtro} setFiltro={setFiltro}
+        usarFiltroAvancado={true}
+        opcoesFiltroAvancado={opcoesFiltroAvancado}
       />
       
       <EditarMetricas metricas={metricas} />
@@ -294,8 +469,8 @@ function Galeria() {
       <div className="d-flex flex-column flex-grow-1 pb-2">
         {viewMode === 'galeria' ? (
           <GaleriaBadges 
-            mockBadges={badges}
-            searchTerm={searchTerm}
+            mockBadges={badgesVisiveis}
+            searchTerm=""
             onAdd={handleOpenCreateModal}
             onEdit={handleOpenEditModal}
             onDelete={handleDeleteBadge}
@@ -303,8 +478,8 @@ function Galeria() {
         ) : (
           <EditarTabela 
             abaNome="Badge"
-            dados={badges}
-            searchTerm={searchTerm}
+            dados={badgesVisiveis}
+            searchTerm=""
             colunas={colunasTabela}
             onAdd={handleOpenCreateModal}
             onEdit={handleOpenEditModal}

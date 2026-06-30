@@ -2,12 +2,19 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import BarraPesquisa from '../../../components/ui/BarraPesquisa/BarraPesquisa';
 import BotaoDropdown from '../../../components/ui/BotaoDropdown/BotaoDropdown';
+import GaleriaFiltroDropdown from '../../../components/Galeria/GaleriaFiltroDropdown/GaleriaFiltroDropdown';
 
 export default function EditarFiltros({
   abaNome,
   searchTerm, setSearchTerm,
   ordenacao, setOrdenacao,
-  filtro, setFiltro
+  filtro, setFiltro,
+  usarFiltroAvancado = false,
+  opcoesFiltroAvancado = {
+    learningPath: [],
+    serviceLine: [],
+    area: [],
+  },
 }) {
   const { t } = useTranslation();
 
@@ -48,16 +55,24 @@ export default function EditarFiltros({
         />
       </div>
 
-      <div>
-        <BotaoDropdown
-          titulo={t("filtrar")}
-          valor={filtro}
-          opcoes={opcoesFiltro}
-          onChange={setFiltro}
-          icone="fi fi-br-filter"
-          mostrarValor={false}
-          mostrarSeta={false}
-        />
+      <div style={{ minWidth: usarFiltroAvancado ? '260px' : '180px' }}>
+        {usarFiltroAvancado ? (
+          <GaleriaFiltroDropdown
+            valor={filtro}
+            opcoes={opcoesFiltroAvancado}
+            onChange={setFiltro}
+          />
+        ) : (
+          <BotaoDropdown
+            titulo="Filtrar"
+            valor={filtro}
+            opcoes={opcoesFiltro}
+            onChange={setFiltro}
+            icone="fi fi-br-filter"
+            mostrarValor={false}
+            mostrarSeta={false}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,0 +1,56 @@
+.galeria-badges-page {
+    margin-left: var(--margem-lateral-conteudo);
+    margin-right: var(--margem-lateral-conteudo);
+    margin-top: var(--margem-superior-conteudo);
+    margin-bottom: var(--margem-inferior-conteudo);
+    padding: 0;
+    min-height: 100%;
+    background: var(--fundo);
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.galeria-badges-topo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-titulo-principal-conteudo);
+}
+
+.galeria-badges-titulo {
+    margin: 0;
+}
+
+.galeria-badges-conteudo {
+    width: 100%;
+    padding-top: var(--gap-default-seccoes);
+
+    display: flex;
+    flex-direction: column;
+}
+
+.galeria-badges-resultados {
+    width: 100%;
+    padding-bottom: var(--padding-bottom-scroll-galeria);
+}
+
+.galeria-badges-resultados.com-toolbar {
+    margin-top: 0;
+}
+
+.galeria-badges-seletor {
+    width: 100%;
+    max-width: 450px;
+}
+
+.galeria-badges-page,
+.galeria-badges-conteudo,
+.galeria-badges-resultados {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.galeria-badges-page::-webkit-scrollbar,
+.galeria-badges-conteudo::-webkit-scrollbar,
+.galeria-badges-resultados::-webkit-scrollbar {
+    display: none;
+}

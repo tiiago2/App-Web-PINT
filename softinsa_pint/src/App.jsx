@@ -23,6 +23,7 @@ import DefinicoesAdmin from "./pages/Administrador/definicoes_Admin.jsx";
 import EditarAdmin from "./pages/Administrador/editar_Admin.jsx";
 import Galeria from "./pages/talent/Galeria.jsx";
 import GaleriaConsultor from "./pages/consultor/GaleriaConsultor.jsx";
+import Galeria_Talent_ServiceLine from "./pages/talent_service_line/Galeria_Talent_ServiceLine.jsx";
 import PerfilPessoal from "./pages/talent/Perfil.jsx";
 import Atividade from "./pages/atividade/Atividade.jsx";
 import Candidaturas from "./pages/candidaturas/Candidaturas.jsx";
@@ -247,8 +248,19 @@ function App() {
         {user.cargo === "talent manager" && <Route path="/estatisticas" element={<EstatisticasTalent />} />}
         {user.cargo === "consultor" && <Route path="/estatisticas" element={<EstatisticasConsultor />} />}
 
-        {/* Galeria Especifica */}
-        {(user.cargo === "administrador" || user.cargo === "talent manager") ? <Route path="/galeria" element={<Galeria />} /> : <Route path="/galeria" element={<GaleriaConsultor />} />}
+        {/* Galerias */}
+        {user.cargo === "administrador" && (
+          <Route path="/galeria" element={<Galeria />} />
+        )}
+
+        {user.cargo === "consultor" && (
+          <Route path="/galeria" element={<GaleriaConsultor />} />
+        )}
+
+        {(user.cargo === "talent manager" ||
+          user.cargo === "service line leader") && (
+          <Route path="/galeria" element={<Galeria_Talent_ServiceLine />} />
+        )}
 
         {/* Rotas Exclusivas */}
         {user.cargo === "consultor" && <Route path="/objetivos" element={<ObjetivosConsultor user={user} />} />}

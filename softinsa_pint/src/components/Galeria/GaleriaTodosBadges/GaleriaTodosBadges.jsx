@@ -10,13 +10,41 @@ function normalizarTexto(texto = "") {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+function isBadgeEspecial(badge) {
+  return badge.especial === true || badge.grupo === "badgesEspeciais";
+}
+
+function badgeCumpreFiltro(badge, filtro) {
+  if (!filtro || filtro.tipo === "todos") {
+    return true;
+  }
+
+  if (filtro.tipo === "learningPath") {
+    return badge.learningPath === filtro.valor;
+  }
+
+  if (filtro.tipo === "serviceLine") {
+    return badge.serviceLine === filtro.valor;
+  }
+
+  if (filtro.tipo === "area") {
+    return badge.nomeArea === filtro.valor;
+  }
+
+  return true;
+}
+
 function GaleriaTodosBadges({
+  modo = "consultor",
   pesquisa = "",
   ordenacao = "recentes",
   filtro = "",
   estadoAtivo = "todos",
+  mostrarEstado = true,
   onBadgeClick,
 }) {
+  const isConsultor = modo === "consultor";
+
   const badgesFiltrados = useMemo(() => {
     let lista = [...badgesConsultorMock];
 
@@ -42,19 +70,7 @@ function GaleriaTodosBadges({
       });
     }
 
-    /*
-      O dropdown "Filtrar" neste momento seleciona apenas o tipo de filtro:
-      learningPath, serviceLine ou area.
-
-      Ainda não escolhe um valor concreto, por exemplo:
-      "Jornada Técnica" ou "Hybrid Systems".
-
-      Por isso, para já, não filtramos a lista por este campo.
-      Quando vier a API ou um dropdown de valores concretos, ligamos aqui.
-    */
-    if (filtro) {
-      // Preparado para futura filtragem real.
-    }
+    lista = lista.filter((badge) => badgeCumpreFiltro(badge, filtro));
 
     switch (ordenacao) {
       case "az":
@@ -82,8 +98,12 @@ function GaleriaTodosBadges({
     return lista;
   }, [pesquisa, ordenacao, filtro, estadoAtivo]);
 
-  const badgesEspeciais = badgesFiltrados.filter(
-    (badge) => badge.grupo === "badgesEspeciais"
+  const badgesEspeciais = badgesFiltrados.filter((badge) =>
+    isBadgeEspecial(badge)
+  );
+
+  const badgesNormais = badgesFiltrados.filter(
+    (badge) => !isBadgeEspecial(badge)
   );
 
   const badgesMinhaArea = badgesFiltrados.filter(
@@ -94,10 +114,11 @@ function GaleriaTodosBadges({
     (badge) => badge.grupo === "outrasAreas"
   );
 
-  const semResultados =
-    badgesEspeciais.length === 0 &&
-    badgesMinhaArea.length === 0 &&
-    badgesOutrasAreas.length === 0;
+  const semResultados = isConsultor
+    ? badgesEspeciais.length === 0 &&
+      badgesMinhaArea.length === 0 &&
+      badgesOutrasAreas.length === 0
+    : badgesEspeciais.length === 0 && badgesNormais.length === 0;
 
   return (
     <section className="galeria-todos-badges">
@@ -107,27 +128,53 @@ function GaleriaTodosBadges({
         </p>
       )}
 
-      <BadgeSeccao
-        titulo="BADGES ESPECIAIS"
-        tipo="gold"
-        icone="fi-br-badge"
-        badges={badgesEspeciais}
-        onBadgeClick={onBadgeClick}
-      />
+      {isConsultor ? (
+        <>
+          <BadgeSeccao
+            titulo="BADGES ESPECIAIS"
+            tipo="gold"
+            icone="fi-br-badge"
+            badges={badgesEspeciais}
+            mostrarEstado={mostrarEstado}
+            onBadgeClick={onBadgeClick}
+          />
 
-      <BadgeSeccao
-        titulo="A MINHA ÁREA"
-        tipo="azul"
-        badges={badgesMinhaArea}
-        onBadgeClick={onBadgeClick}
-      />
+          <BadgeSeccao
+            titulo="A MINHA ÁREA"
+            tipo="azul"
+            badges={badgesMinhaArea}
+            mostrarEstado={mostrarEstado}
+            onBadgeClick={onBadgeClick}
+          />
 
-      <BadgeSeccao
-        titulo="OUTRAS ÁREAS"
-        tipo="azul"
-        badges={badgesOutrasAreas}
-        onBadgeClick={onBadgeClick}
-      />
+          <BadgeSeccao
+            titulo="OUTRAS ÁREAS"
+            tipo="azul"
+            badges={badgesOutrasAreas}
+            mostrarEstado={mostrarEstado}
+            onBadgeClick={onBadgeClick}
+          />
+        </>
+      ) : (
+        <>
+          <BadgeSeccao
+            titulo="BADGES ESPECIAIS"
+            tipo="gold"
+            icone="fi-br-badge"
+            badges={badgesEspeciais}
+            mostrarEstado={false}
+            onBadgeClick={onBadgeClick}
+          />
+
+          <BadgeSeccao
+            titulo="BADGES NORMAIS"
+            tipo="azul"
+            badges={badgesNormais}
+            mostrarEstado={false}
+            onBadgeClick={onBadgeClick}
+          />
+        </>
+      )}
     </section>
   );
 }

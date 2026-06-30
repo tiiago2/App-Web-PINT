@@ -6,8 +6,9 @@ function BadgeSeccao({
   tipo = "azul",
   icone = null,
   badges = [],
+  mostrarEstado = true,
   onBadgeClick,
-  children
+  children,
 }) {
   if (!badges.length && !children) {
     return null;
@@ -35,9 +36,11 @@ function BadgeSeccao({
           <BadgeItem
             key={badge.idBadge || badge.id}
             badge={badge}
+            mostrarEstado={mostrarEstado}
             onBadgeClick={onBadgeClick}
           />
         ))}
+
         {children}
       </div>
     </section>

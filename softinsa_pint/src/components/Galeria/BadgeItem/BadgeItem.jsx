@@ -3,7 +3,7 @@ import BadgeStatusIndicador from "../BadgeStatusIndicador/BadgeStatusIndicador";
 import BadgeProgresso from "../BadgeProgresso/BadgeProgresso";
 import "./BadgeItem.css";
 
-function BadgeItem({ badge, onBadgeClick }) {
+function BadgeItem({ badge, mostrarEstado = true, onBadgeClick }) {
   if (!badge) {
     return null;
   }
@@ -18,8 +18,8 @@ function BadgeItem({ badge, onBadgeClick }) {
     progresso,
   } = badge;
 
-  const mostrarIndicadorEstado = estado !== "emProgresso";
-  const mostrarProgresso = estado === "emProgresso";
+  const mostrarIndicadorEstado = mostrarEstado && estado !== "emProgresso";
+  const mostrarProgresso = mostrarEstado && estado === "emProgresso";
 
   function handleClick() {
     if (onBadgeClick) {
@@ -39,7 +39,7 @@ function BadgeItem({ badge, onBadgeClick }) {
           imagemBadge={imagemBadge}
           icone={icone}
           nomeBadge={nomeBadge}
-          estado={estado}
+          estado={mostrarEstado ? estado : undefined}
           especial={especial}
           tipoEspecial={tipoEspecial}
         />

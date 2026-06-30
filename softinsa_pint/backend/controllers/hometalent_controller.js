@@ -44,16 +44,4 @@ module.exports = {
             });
         }
     },
-    async getCandidaturasSemana(req, res){
-        try{
-            const dados_grafico = await Historico.findAll({
-                
-            })
-        } catch(error) {
-            console.error("Erro ao buscar candidaturas:", error);
-            return res.status(500).json({ 
-                error: "Ocorreu um erro ao procurar as candidaturas realizadas esta semana." 
-            });
-        }
-    }
 };

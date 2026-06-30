@@ -9,13 +9,6 @@ import badge_logo from '../../assets/teste_badge.png';
 import {BotaoVerMais, BotaoAceitar, BotaoRejeitar, GraficoCandidaturas} from '../../components/components.jsx'
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, Label, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 
-
-const dados_grafico_candidaturas = [
-    { nome: 'aceites', quantidade: 405, cor: '#3bb413' },    
-    { nome: 'rejeitadas', quantidade: 15, cor: '#de2121' }, 
-    { nome: 'em_analise', quantidade: 25, cor: '#1c8cae' }  
-];
-
 const dados_linhas = [
     { periodo: 'jan', media_badges: 1.5, pontos: 120, atribuicoes: 15 },
     { periodo: 'fev', media_badges: 2.1, pontos: 180, atribuicoes: 20 },
@@ -120,6 +113,10 @@ const HomeTalent = ({ user, saudacao }) => {
     const navigate = useNavigate();
 
     const [infoCandidaturas, setInfoCandidaturas] = useState();
+    const [dados_grafico_candidaturas, setDados_grafico_candidaturas] = useState([
+        { nome: 'aceites', quantidade: null, cor: '#3bb413' },    
+        { nome: 'rejeitadas', quantidade: null, cor: '#de2121' }
+    ]);
 
     useEffect(() => {
         const buscarCandidaturas = async () => {
@@ -139,7 +136,35 @@ const HomeTalent = ({ user, saudacao }) => {
             }
         };
 
+        const getGrafCandidaturas = async() => {
+            if (!localStorage.getItem('token_softinsa')) {
+                setDados_grafico_candidaturas(prev => prev.map(item => ({ ...item, quantidade: 0 })));
+                return;
+            }
+            
+            try {
+                const res = await api.get(`/commun/candidaturasweek/${idGuardado}`);
+                
+                setDados_grafico_candidaturas(prevDados => 
+                    prevDados.map(item => {
+                        if (item.nome === 'aceites') {
+                            return { ...item, quantidade: res.data.aceites };
+                        }
+                        if (item.nome === 'rejeitadas') {
+                            return { ...item, quantidade: res.data.rejeitadas };
+                        }
+                        return item;
+                    })
+                );
+                
+            } catch(erro) {
+                console.error('Erro ao buscar dados do gráfico:', erro);
+                setDados_grafico_candidaturas(prev => prev.map(item => ({ ...item, quantidade: null })));
+            }
+        }
+
         buscarCandidaturas();
+        getGrafCandidaturas();
     }, []);
 
     const RenderCandidaturas = () => {

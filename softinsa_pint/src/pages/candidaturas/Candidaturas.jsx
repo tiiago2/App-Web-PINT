@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
 import BarraPesquisa from "../../components/ui/BarraPesquisa/BarraPesquisa";
 import BotaoDropdown from "../../components/ui/BotaoDropdown/BotaoDropdown";
@@ -123,16 +124,19 @@ const initialList = initialCandidaturas.map((cand) => {
 
 // REUSABLE SUB-COMPONENT: CANDIDATURA CARD
 function CandidaturaCard({ candidatura, isSelected, onClick }) {
+  const { t } = useTranslation();
   const { user, badge } = candidatura;
   
   const formatSubmetido = (dateStr) => {
     const diffMs = new Date() - new Date(dateStr);
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     if (diffHours < 24) {
-      return `Submetido há ${diffHours === 0 ? "menos de 1" : diffHours}h`;
+      return diffHours === 0 
+        ? t("submetido_ha_menos_uma_hora") 
+        : t("submetido_ha_horas", { hours: diffHours });
     }
     const diffDays = Math.floor(diffHours / 24);
-    return `Submetido há ${diffDays}d`;
+    return t("submetido_ha_dias", { days: diffDays });
   };
 
   const statusClass = candidatura.status === "Pendente" 
@@ -163,7 +167,7 @@ function CandidaturaCard({ candidatura, isSelected, onClick }) {
         <div className="d-flex justify-content-between align-items-start mb-1 gap-2">
           <h6 className="fw-bold m-0 truncate" style={{ fontSize: "0.95rem" }}>{badge.titulo}</h6>
           <span className={`status-pill ${statusClass}`}>
-            {candidatura.status}
+            {t(candidatura.status.toLowerCase())}
           </span>
         </div>
 
@@ -180,7 +184,9 @@ function CandidaturaCard({ candidatura, isSelected, onClick }) {
         
         <div className="d-flex justify-content-between align-items-center text-gray-400" style={{ fontSize: "0.7rem" }}>
           <span>{formatSubmetido(candidatura.submetido)}</span>
-          <span className="fw-semibold text-gray-600 bg-gray-100 px-1.5 py-0.25 rounded">{badge.pontos} pts</span>
+          <span className="fw-semibold text-gray-600 bg-gray-100 px-1.5 py-0.25 rounded">
+            {t("pontos_curto", { pontos: badge.pontos })}
+          </span>
         </div>
       </div>
     </button>
@@ -189,17 +195,19 @@ function CandidaturaCard({ candidatura, isSelected, onClick }) {
 
 // REUSABLE SUB-COMPONENT: CANDIDATURA DETALHES
 function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
+  const { t, i18n } = useTranslation();
   const { user, badge } = candidatura;
   
   const formatSubmetidoCompleto = (dateStr) => {
     const options = { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
-    return new Date(dateStr).toLocaleDateString("pt-PT", options);
+    const localeCode = i18n.language === "gb" ? "en-GB" : i18n.language === "es" ? "es-ES" : "pt-PT";
+    return new Date(dateStr).toLocaleDateString(localeCode, options);
   };
 
   return (
     <div className="d-flex flex-column flex-grow-1 overflow-hidden" style={{ minHeight: 0 }}>
       <div className="p-3 border-bottom d-flex justify-content-between align-items-center flex-shrink-0" style={{ borderColor: "var(--contorno) !important" }}>
-        <h5 className="fw-bold m-0" style={{ fontSize: "1.15rem", color: "var(--fontes)" }}>Ficha de Candidatura</h5>
+        <h5 className="fw-bold m-0" style={{ fontSize: "1.15rem", color: "var(--fontes)" }}>{t("ficha_candidatura")}</h5>
         <button 
           onClick={onClose}
           className="btn btn-link text-gray-400 hover:text-gray-600 p-1 border-0"
@@ -233,13 +241,13 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
                   <span className="fw-bold fs-6">{user.nome}</span>
                 </div>
                 <div className="opacity-75">
-                  <strong>Área:</strong> {user.area}
+                  <strong>{t("area_label")}:</strong> {user.area}
                 </div>
                 <div className="opacity-75">
-                  <strong>Submetido:</strong> {formatSubmetidoCompleto(candidatura.submetido)}
+                  <strong>{t("submetido_label")}:</strong> {formatSubmetidoCompleto(candidatura.submetido)}
                 </div>
                 <div className="opacity-75">
-                  <strong>Pontuação:</strong> <span className="badge bg-gray-200 text-gray-700 font-bold px-2 py-0.5">{badge.pontos} pontos</span>
+                  <strong>{t("pontuacao_label")}:</strong> <span className="badge bg-gray-200 text-gray-700 font-bold px-2 py-0.5">{t("pontos_count", { count: badge.pontos })}</span>
                 </div>
               </div>
 
@@ -257,7 +265,7 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
           <div>
             <h6 className="fw-bold mb-2 d-flex align-items-center gap-2" style={{ fontSize: "0.95rem", color: "var(--fontes)" }}>
               <i className="fi fi-br-align-justify" style={{ color: "var(--barra_lateral)" }}></i>
-              <span>Descrição do Badge</span>
+              <span>{t("descricao_badge")}</span>
             </h6>
             <p className="lh-relaxed p-3 rounded-3 m-0 shadow-xs" style={{ fontSize: "0.85rem", backgroundColor: "var(--fundo)", border: "var(--borda-principal) solid var(--contorno)" }}>
               {badge.descricao}
@@ -267,7 +275,7 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
           <div>
             <h6 className="fw-bold mb-2 d-flex align-items-center gap-2" style={{ fontSize: "0.95rem", color: "var(--fontes)" }}>
               <i className="fi fi-br-list" style={{ color: "var(--barra_lateral)" }}></i>
-              <span>Requisitos Comprovados</span>
+              <span>{t("requisitos_comprovados")}</span>
             </h6>
             
             <div className="d-flex flex-column gap-2">
@@ -278,9 +286,9 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
                     <span className="truncate" style={{ fontSize: "0.85rem", color: "var(--fontes)" }}>{req}</span>
                   </div>
                   <button 
-                    onClick={() => alert(`A transferir documentação para: ${req}`)}
+                    onClick={() => alert(t("transferindo_documentacao", { req }))}
                     className="requisito-doc-btn"
-                    title="Download PDF comprovativo"
+                    title={t("download_comprovativo")}
                   >
                     <i className="fi fi-br-document" style={{ fontSize: "0.85rem" }}></i>
                   </button>
@@ -300,7 +308,7 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
             style={{ fontSize: "0.9rem", height: "44px" }}
           >
             <i className="fi fi-br-cross"></i>
-            <span>Rejeitar</span>
+            <span>{t("rejeitar")}</span>
           </button>
           
           <button 
@@ -309,7 +317,7 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
             style={{ fontSize: "0.9rem", height: "44px" }}
           >
             <i className="fi fi-br-check"></i>
-            <span>Aceitar</span>
+            <span>{t("aceitar")}</span>
           </button>
         </div>
       )}
@@ -319,6 +327,7 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
 
 // MAIN PAGE COMPONENT
 export default function Candidaturas() {
+  const { t } = useTranslation();
   const [candidaturas, setCandidaturas] = useState(initialList);
   const [selectedCandidaturaId, setSelectedCandidaturaId] = useState(null);
   const [filtroStatus, setFiltroStatus] = useState("Pendente");
@@ -394,7 +403,7 @@ export default function Candidaturas() {
       prev.map((c) => (c.id === id ? { ...c, status: "Aceite" } : c))
     );
     setSelectedCandidaturaId(null);
-    setToastMessage(`Candidatura de ${item.user.nome} para ${item.badge.titulo} aprovada com sucesso!`);
+    setToastMessage(t("candidatura_aprovada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
   };
 
   const handleReject = (id) => {
@@ -405,11 +414,11 @@ export default function Candidaturas() {
       prev.map((c) => (c.id === id ? { ...c, status: "Recusada" } : c))
     );
     setSelectedCandidaturaId(null);
-    setToastMessage(`Candidatura de ${item.user.nome} para ${item.badge.titulo} rejeitada com sucesso.`);
+    setToastMessage(t("candidatura_rejeitada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
   };
 
   const handleExport = () => {
-    alert("Exportação das candidaturas iniciada (ficheiro CSV/Excel)...");
+    alert(t("exportacao_iniciada"));
   };
 
   return (
@@ -442,7 +451,7 @@ export default function Candidaturas() {
       {/* Responsive Header Section */}
       <div className="candidaturas-topo d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3">
         <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-4 flex-grow-1">
-          <h1 className="texto-titulo-principal m-0">Candidaturas</h1>
+          <h1 className="texto-titulo-principal m-0">{t("candidaturas")}</h1>
           
           <div className="candidaturas-seletor">
             <SeletorAbas
@@ -452,9 +461,9 @@ export default function Candidaturas() {
                 setSelectedCandidaturaId(null);
               }}
               opcoes={[
-                { valor: "Pendente", label: "Pendentes" },
-                { valor: "Aceite", label: "Aceites" },
-                { valor: "Recusada", label: "Recusadas" }
+                { valor: "Pendente", label: t("pendentes") },
+                { valor: "Aceite", label: t("aceites") },
+                { valor: "Recusada", label: t("recusadas") }
               ]}
             />
           </div>
@@ -470,7 +479,7 @@ export default function Candidaturas() {
                 setSelectedCandidaturaId(null);
               }}
             />
-            <span className="fw-medium text-secondary" style={{ fontSize: "0.85rem" }}>Minha Service Line</span>
+            <span className="fw-medium text-secondary" style={{ fontSize: "0.85rem" }}>{t("minha_service_line")}</span>
           </div>
 
           <button 
@@ -486,7 +495,7 @@ export default function Candidaturas() {
             }}
           >
             <i className="fi fi-br-download"></i>
-            <span>Exportar</span>
+            <span>{t("exportar")}</span>
           </button>
         </div>
       </div>
@@ -503,16 +512,16 @@ export default function Candidaturas() {
               <BarraPesquisa
                 valor={pesquisa}
                 onChange={setPesquisa}
-                placeholder="Pesquisar candidato ou badge..."
+                placeholder={t("pesquisar_candidato_badge_placeholder")}
               />
 
               <div className="d-flex gap-3">
                 <div className="flex-grow-1">
                   <BotaoDropdown
-                    titulo="Área"
+                    titulo={t("area_label")}
                     valor={filtroArea}
                     opcoes={[
-                      { valor: "Todas", label: "Todas as áreas" },
+                      { valor: "Todas", label: t("todas_areas") },
                       { valor: "Hybrid Systems", label: "Hybrid Systems" },
                       { valor: "Mobile Solutions", label: "Mobile Solutions" },
                       { valor: "Cloud & DevOps", label: "Cloud & DevOps" },
@@ -527,13 +536,13 @@ export default function Candidaturas() {
 
                 <div className="flex-grow-1">
                   <BotaoDropdown
-                    titulo="Ordenar por"
+                    titulo={t("ordenar_por")}
                     valor={ordenacao}
                     opcoes={[
-                      { valor: "Mais Recentes", label: "Mais recentes" },
-                      { valor: "Mais Antigas", label: "Mais antigos" },
-                      { valor: "Pontos (Decrescente)", label: "Mais pontos" },
-                      { valor: "Pontos (Crescente)", label: "Menos pontos" }
+                      { valor: "Mais Recentes", label: t("ordenar_recentes") },
+                      { valor: "Mais Antigas", label: t("ordenar_antigos") },
+                      { valor: "Pontos (Decrescente)", label: t("mais_pontos") },
+                      { valor: "Pontos (Crescente)", label: t("menos_pontos") }
                     ]}
                     onChange={setOrdenacao}
                   />
@@ -546,7 +555,7 @@ export default function Candidaturas() {
               {candidaturasFiltradas.length === 0 ? (
                 <div className="text-center py-5 text-secondary d-flex flex-column align-items-center justify-content-center h-100 bg-gray-50/20 rounded-3">
                   <i className="fi fi-br-document mb-3 text-gray-300" style={{ fontSize: "2.5rem" }}></i>
-                  <p className="m-0 fs-6 fw-medium text-gray-400">Nenhuma candidatura encontrada.</p>
+                  <p className="m-0 fs-6 fw-medium text-gray-400">{t("nenhum_pedido_encontrado")}</p>
                 </div>
               ) : (
                 candidaturasFiltradas.map((cand) => (
@@ -585,9 +594,9 @@ export default function Candidaturas() {
                 >
                   <i className="fi fi-br-eye" style={{ fontSize: "2rem", color: "var(--barra_lateral)" }}></i>
                 </div>
-                <h5 className="fw-bold mb-1" style={{ fontSize: "1.1rem", color: "var(--fontes)" }}>Análise de Requisitos</h5>
+                <h5 className="fw-bold mb-1" style={{ fontSize: "1.1rem", color: "var(--fontes)" }}>{t("analise_requisitos")}</h5>
                 <p className="m-0 text-muted" style={{ maxWidth: "320px", fontSize: "0.85rem", color: "var(--fontes)", opacity: 0.8 }}>
-                  Selecione uma candidatura à esquerda para inspecionar os comprovativos de submissão.
+                  {t("selecione_candidatura_instrucao")}
                 </p>
               </div>
             )}

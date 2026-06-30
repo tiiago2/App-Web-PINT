@@ -92,10 +92,10 @@ export const GraficoCandidaturas = ({dados_grafico_candidaturas}) => {
     });
 
     return (
-        <div className="p-3 d-flex flex-column bg-white h-100" style={{ border: 'var(--borda-principal) solid var(--contorno)', borderRadius: 'var(--border-radius-grande)', boxSizing: 'border-box', height: '35vh' }}>
+        <div className="p-3 d-flex flex-column bg-white h-100" style={{ border: 'var(--borda-principal) solid var(--contorno)', borderRadius: 'var(--border-radius-grande)', boxSizing: 'border-box' }}>
             <h5 className="mb-2">{t('titulo_candidaturas')}</h5>
             
-            <div className="flex-grow-1" style={{ width: '100%', minHeight: '200px' }}>
+            <div className="flex-grow-1" style={{ width: '100%', minHeight: '140px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie

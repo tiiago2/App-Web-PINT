@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import BarraPesquisa from '../../../components/ui/BarraPesquisa/BarraPesquisa';
 import BotaoDropdown from '../../../components/ui/BotaoDropdown/BotaoDropdown';
 
@@ -8,18 +9,24 @@ export default function EditarFiltros({
   ordenacao, setOrdenacao,
   filtro, setFiltro
 }) {
+  const { t } = useTranslation();
+
+  const getAbaNomeKey = (nome) => {
+    return (nome || "").toLowerCase().replace(" ", "_");
+  };
+
   const opcoesOrdenacao = [
-    { valor: "recentes", label: "Mais recentes" },
-    { valor: "antigos", label: "Mais antigos" },
-    { valor: "az", label: "A-Z" },
-    { valor: "za", label: "Z-A" },
+    { valor: "recentes", label: t("ordenar_recentes") },
+    { valor: "antigos", label: t("ordenar_antigos") },
+    { valor: "az", label: t("ordenar_az") },
+    { valor: "za", label: t("ordenar_za") },
   ];
 
   const opcoesFiltro = [
-    { valor: "", label: "Todos" },
-    { valor: "learningPath", label: "Learning Path" },
-    { valor: "serviceLine", label: "Service Line" },
-    { valor: "area", label: "Área" },
+    { valor: "", label: t("todos") },
+    { valor: "learningPath", label: t("learning_path") },
+    { valor: "serviceLine", label: t("service_line") },
+    { valor: "area", label: t("area") },
   ];
 
   return (
@@ -28,13 +35,13 @@ export default function EditarFiltros({
         <BarraPesquisa
           valor={searchTerm}
           onChange={setSearchTerm}
-          placeholder={`Pesquisar ${abaNome}...`}
+          placeholder={t("pesquisar_item_placeholder", { nome: t(getAbaNomeKey(abaNome)) })}
         />
       </div>
 
       <div style={{ minWidth: '180px' }}>
         <BotaoDropdown
-          titulo="Ordenar por"
+          titulo={t("ordenar_por")}
           valor={ordenacao}
           opcoes={opcoesOrdenacao}
           onChange={setOrdenacao}
@@ -43,7 +50,7 @@ export default function EditarFiltros({
 
       <div>
         <BotaoDropdown
-          titulo="Filtrar"
+          titulo={t("filtrar")}
           valor={filtro}
           opcoes={opcoesFiltro}
           onChange={setFiltro}

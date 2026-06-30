@@ -69,14 +69,15 @@ export default function TabUtilizadores() {
 
       <div className="mt-4">
         <label className="form-label fw-medium mb-2">
-          Selecionar Tipo de Utilizador
+          {t("selecionar_tipo_utilizador")}
         </label>
         <div style={{ maxWidth: "300px" }}>
           <BotaoDropdown
-            titulo="Selecione uma opção"
+            titulo={t("selecione_opcao")}
             valor={roleSelecionada}
             opcoes={roles.map((op) => ({ valor: op, label: t(op) }))}
             onChange={setRoleSelecionada}
+            mostrarTituloNoValor={false}
           />
         </div>
       </div>
@@ -87,7 +88,7 @@ export default function TabUtilizadores() {
             className="mb-4 fw-semibold"
             style={{ color: "var(--fontes)" }}
           >
-            Permissões para {t(roleSelecionada)}
+            {t("permissoes_para", { role: t(roleSelecionada) })}
           </h5>
 
           <div className="d-flex flex-column gap-3">
@@ -101,13 +102,13 @@ export default function TabUtilizadores() {
                     className="form-check-label fw-semibold mb-1"
                     htmlFor={permissao.id}
                   >
-                    {permissao.label}
+                    {t(permissao.id + "_label")}
                   </label>
                   <p
                     className="text-muted mb-0"
                     style={{ fontSize: "0.85rem" }}
                   >
-                    {permissao.desc}
+                    {t(permissao.id + "_desc")}
                   </p>
                 </div>
                 <div className="mb-0">
@@ -128,7 +129,7 @@ export default function TabUtilizadores() {
                 border: "none",
               }}
             >
-              <i className="fi fi-br-disk me-2"></i> Guardar Alterações
+              <i className="fi fi-br-disk me-2"></i> {t("guardar_alteracoes")}
             </button>
           </div>
         </div>

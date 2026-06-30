@@ -21,8 +21,7 @@ export default function TabRGPD() {
       <div>
         <h3 className="section-title">{t("politicas_rgpd")}</h3>
         <p className="section-subtitle">
-          Gere os textos legais e de consentimento apresentados aos
-          utilizadores.
+          {t("rgpd_subtitulo")}
         </p>
       </div>
 
@@ -38,7 +37,7 @@ export default function TabRGPD() {
                 letterSpacing: "0.5px",
               }}
             >
-              Taxa de Adesão Aos Termos
+              {t("taxa_adesao_termos")}
             </h6>
             <div className="d-flex align-items-end gap-2 mt-1">
               <span
@@ -49,34 +48,28 @@ export default function TabRGPD() {
                   lineHeight: "1",
                 }}
               >
-                67%
+                94%
               </span>
               <span
-                className="text-muted pb-1 fw-medium"
-                style={{ fontSize: "0.9rem" }}
+                className="text-muted pb-1 fw-bold"
+                style={{ fontSize: "0.95rem" }}
               >
-                dos consultores ativos
+                {t("dos_consultores_ativos")}
               </span>
             </div>
-            <div
-              className="d-flex justify-content-between text-muted mt-3 mb-1"
-              style={{ fontSize: "0.75rem" }}
-            >
-              <span>412 Aceites</span>
-              <span>136 Pendentes</span>
-            </div>
-            <div className="progress" style={{ height: "6px" }}>
-              <div
-                className="progress-bar"
-                role="progressbar"
-                style={{
-                  width: "67%",
-                  backgroundColor: "var(--barra_lateral)",
-                }}
-                aria-valuenow="67"
-                aria-valuemin="0"
-                aria-valuemax="100"
-              ></div>
+            <div className="d-flex align-items-center gap-3 mt-3 pt-2 border-top">
+              <div style={{ fontSize: "0.85rem" }}>
+                <span className="badge bg-success-subtle text-success border border-success-subtle me-1">
+                  <i className="fi fi-br-check me-1"></i>
+                  {t("aceites_count", { count: 412 })}
+                </span>
+              </div>
+              <div style={{ fontSize: "0.85rem" }}>
+                <span className="badge bg-warning-subtle text-warning border border-warning-subtle me-1">
+                  <i className="fi fi-br-time-past me-1"></i>
+                  {t("pendentes_count", { count: 136 })}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -90,7 +83,7 @@ export default function TabRGPD() {
                 letterSpacing: "0.5px",
               }}
             >
-              Última Revisão Legal
+              {t("ultima_revisao_legal")}
             </h6>
             <div className="d-flex align-items-center gap-3 mt-2">
               <div
@@ -108,19 +101,13 @@ export default function TabRGPD() {
                   className="fw-bold fs-5"
                   style={{ color: "var(--fontes)" }}
                 >
-                  24 de Maio, 2026
+                  {t("data_ultima_revisao")}
                 </div>
                 <div
                   className="text-muted mt-1"
                   style={{ fontSize: "0.85rem" }}
                 >
-                  às 14h30 por{" "}
-                  <span
-                    className="fw-semibold"
-                    style={{ color: "var(--barra_lateral)" }}
-                  >
-                    Gonçalo
-                  </span>
+                  {t("revisao_por", { hora: "14h30", autor: "Gonçalo" })}
                 </div>
               </div>
             </div>
@@ -134,21 +121,19 @@ export default function TabRGPD() {
           className="mb-4 fw-semibold"
           style={{ color: "var(--fontes)" }}
         >
-          Controlo de Acesso e Consentimento
+          {t("controlo_acesso_consentimento")}
         </h5>
 
         <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
           <div className="pe-3">
             <label className="form-check-label fw-semibold mb-1">
-              Forçar aceitação do RGPD no primeiro login
+              {t("forcar_aceitacao_rgpd")}
             </label>
             <p
               className="text-muted mb-0"
               style={{ fontSize: "0.85rem" }}
             >
-              Bloqueia o acesso do Consultor ao Dashboard pessoal no
-              primeiro acesso (ou após uma atualização do texto) até que
-              este declare explicitamente ter lido e aceite os termos.
+              {t("forcar_aceitacao_rgpd_desc")}
             </p>
           </div>
           <div className="mb-0">
@@ -166,21 +151,20 @@ export default function TabRGPD() {
           className="mb-4 fw-semibold"
           style={{ color: "var(--fontes)" }}
         >
-          Travas de Consentimento Vinculadas (Regras de Negócio)
+          {t("travas_consentimento_vinculadas")}
         </h5>
 
         <div className="d-flex flex-column gap-3 mb-2">
           <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3">
               <label className="form-check-label fw-semibold mb-1">
-                Controlo da Galeria Pública
+                {t("controlo_galeria_publica")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Permitir visualização na Galeria Pública (Se ativo, só
-                mostra badges de consultores que aceitaram o RGPD).
+                {t("controlo_galeria_publica_desc")}
               </p>
             </div>
             <div className="mb-0">
@@ -194,14 +178,13 @@ export default function TabRGPD() {
           <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3">
               <label className="form-check-label fw-semibold mb-1">
-                Controlo de Partilha Externa
+                {t("controlo_partilha_externa")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Ativar botão "Partilhar no LinkedIn" (Se ativo, liberta a
-                API/botão de partilha no perfil do consultor).
+                {t("controlo_partilha_externa_desc")}
               </p>
             </div>
             <div className="mb-0">
@@ -215,15 +198,13 @@ export default function TabRGPD() {
           <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3">
               <label className="form-check-label fw-semibold mb-1">
-                Controlo de Indexação Pública
+                {t("controlo_indexacao_publica")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Permitir Páginas de Badges Públicas (Gere se o link único
-                e público do badge do consultor pode ser acedido por
-                utilizadores externos/anónimos).
+                {t("controlo_indexacao_publica_desc")}
               </p>
             </div>
             <div className="mb-0">
@@ -242,19 +223,17 @@ export default function TabRGPD() {
           className="mb-4 fw-semibold"
           style={{ color: "var(--fontes)" }}
         >
-          Editor do Texto de Consentimento
+          {t("editor_texto_consentimento")}
         </h5>
         <p className="text-muted mb-3" style={{ fontSize: "0.85rem" }}>
-          O texto gravado abaixo será o documento oficial que o Consultor
-          terá de ler e aceitar (Termos e Condições e Política de
-          Privacidade).
+          {t("editor_texto_consentimento_desc")}
         </p>
 
         <div className="mb-4">
           <textarea
             className="form-control"
             rows="15"
-            placeholder="Escreva ou cole aqui os termos e condições e a política de privacidade..."
+            placeholder={t("escreva_aqui_termos_placeholder")}
             style={{
               resize: "vertical",
               border: "1px solid #CAD5E2",
@@ -272,8 +251,7 @@ export default function TabRGPD() {
               border: "none",
             }}
           >
-            <i className="fi fi-br-disk me-2"></i> Guardar Texto de
-            Consentimento
+            <i className="fi fi-br-disk me-2"></i> {t("guardar_configuracoes")}
           </button>
         </div>
       </div>

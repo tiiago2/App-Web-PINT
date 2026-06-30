@@ -39,13 +39,20 @@ function App() {
   const [user, setUser] = useState({
     id: 1,
     nome: "Utilizador",
-    cargo: "talent", 
+    cargo: null, 
     foto: user_logo, // a imagem que importaste no topo
-    ultimoLogin: new Date("2026-04-10"),
+    ultimoLogin: null,
   });
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Redirecionar para /login se não autenticado
+  useEffect(() => {
+    if (!user.cargo && location.pathname !== "/login") {
+      navigate("/login", { replace: true });
+    }
+  }, [user.cargo, location.pathname, navigate]);
 
   const bellRef = useRef(null);
   const flagRef = useRef(null);
@@ -736,8 +743,18 @@ function App() {
             width="30"
             height="30"
             alt="Utilizador"
+            style={{ cursor: "pointer" }}
             onClick={() => navigate(`perfil/${user.id}`)}
           />
+          <i
+            className="fi fi-br-sign-out-alt me-2 text-secondary"
+            style={{ cursor: "pointer", fontSize: "1.1rem" }}
+            title={t("auth_roles_terminar")}
+            onClick={() => {
+              setUser((prev) => ({ ...prev, cargo: null }));
+              navigate("/login");
+            }}
+          ></i>
         </div>
       </header>
       <div className="d-flex m-0 flex-grow-1 w-100" style={{ minHeight: 0 }}>

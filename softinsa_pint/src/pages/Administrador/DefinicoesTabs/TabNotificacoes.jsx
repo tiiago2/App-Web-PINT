@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import ToggleSwitch from "../../../components/ui/ToggleSwitch/ToggleSwitch";
 
 export default function TabNotificacoes() {
+  const { t } = useTranslation();
   const [notifConfig, setNotifConfig] = useState({
     email_registo: true,
     email_candidatura: true,
@@ -21,9 +23,9 @@ export default function TabNotificacoes() {
   return (
     <div className="d-flex flex-column gap-4 pb-4">
       <div>
-        <h3 className="section-title fw-bold">Notificações e Alertas</h3>
+        <h3 className="section-title fw-bold">{t("notificacoes_alertas")}</h3>
         <p className="section-subtitle">
-          Gere os gatilhos de comunicação e alertas do sistema.
+          {t("notificacoes_alertas_desc")}
         </p>
       </div>
 
@@ -33,24 +35,23 @@ export default function TabNotificacoes() {
           className="mb-4 fw-semibold"
           style={{ color: "var(--fontes)" }}
         >
-          Notificações de Processo (E-mails)
+          {t("notif_processo_emails")}
         </h5>
 
         <h6 className="fw-bold mb-3 text-secondary">
-          Eventos do Consultor
+          {t("eventos_consultor")}
         </h6>
         <div className="d-flex flex-column gap-3 mb-4">
           <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3">
               <label className="form-check-label fw-semibold mb-1">
-                E-mail de Confirmação de Registo
+                {t("email_registo_label")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Notifica automaticamente o utilizador após a conclusão do
-                seu registo na plataforma.
+                {t("email_registo_desc")}
               </p>
             </div>
             <div className="mb-0">
@@ -64,14 +65,13 @@ export default function TabNotificacoes() {
           <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3">
               <label className="form-check-label fw-semibold mb-1">
-                Confirmação de Candidatura
+                {t("email_candidatura_label")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Confirma a submissão bem-sucedida de uma nova candidatura
-                a badge.
+                {t("email_candidatura_desc")}
               </p>
             </div>
             <div className="mb-0">
@@ -85,14 +85,13 @@ export default function TabNotificacoes() {
           <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3">
               <label className="form-check-label fw-semibold mb-1">
-                Veredito de Validação
+                {t("email_veredito_label")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Informa o consultor sobre a decisão (Aprovação, Rejeição
-                ou Send Back) do seu processo de avaliação.
+                {t("email_veredito_desc")}
               </p>
             </div>
             <div className="mb-0">
@@ -105,20 +104,19 @@ export default function TabNotificacoes() {
         </div>
 
         <h6 className="fw-bold mb-3 text-secondary">
-          Eventos dos Validadores
+          {t("eventos_validadores")}
         </h6>
         <div className="d-flex flex-column gap-3">
           <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3">
               <label className="form-check-label fw-semibold mb-1">
-                Alerta de Nova Candidatura
+                {t("alerta_talent_label")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Alerta a equipa de Talent Management sobre a submissão de
-                novas candidaturas a aguardar análise.
+                {t("alerta_talent_desc")}
               </p>
             </div>
             <div className="mb-0">
@@ -132,14 +130,13 @@ export default function TabNotificacoes() {
           <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3">
               <label className="form-check-label fw-semibold mb-1">
-                Alerta de Validação Final
+                {t("alerta_service_label")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Informa os Service Line Leaders da necessidade de efetuar
-                a validação final técnica e comportamental.
+                {t("alerta_service_desc")}
               </p>
             </div>
             <div className="mb-0">
@@ -158,21 +155,20 @@ export default function TabNotificacoes() {
           className="mb-4 fw-semibold"
           style={{ color: "var(--fontes)" }}
         >
-          Alertas de Expiração de Badges
+          {t("alertas_expiracao_badges")}
         </h5>
 
         <div className="d-flex flex-column gap-3">
           <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3">
               <label className="form-check-label fw-semibold mb-1">
-                Lembrete de Re-certificação
+                {t("lembrete_recertificacao_label")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Alerta proativamente o consultor sobre a aproximação do
-                termo de validade das suas certificações ativas.
+                {t("lembrete_recertificacao_desc")}
               </p>
             </div>
             <div className="mb-0">
@@ -186,14 +182,13 @@ export default function TabNotificacoes() {
           <div className="d-flex align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3 flex-grow-1">
               <label className="form-check-label fw-semibold mb-1">
-                Dias de Antecedência do Alerta
+                {t("dias_antecedencia_alerta_label")}
               </label>
               <p
                 className="text-muted mb-0"
                 style={{ fontSize: "0.85rem" }}
               >
-                Define a margem temporal de antecedência com que os
-                lembretes de expiração são despoletados pelo sistema.
+                {t("dias_antecedencia_alerta_desc")}
               </p>
             </div>
             <div style={{ width: "130px" }}>
@@ -212,7 +207,7 @@ export default function TabNotificacoes() {
                   max="365"
                 />
                 <span className="input-group-text bg-light text-muted px-2">
-                  dias
+                  {t("dias_lowercase")}
                 </span>
               </div>
             </div>
@@ -226,12 +221,10 @@ export default function TabNotificacoes() {
           className="mb-4 fw-semibold"
           style={{ color: "var(--fontes)" }}
         >
-          Integrações Corporativas
+          {t("integracoes_corporativas")}
         </h5>
         <p className="text-muted mb-4" style={{ fontSize: "0.85rem" }}>
-          Ative webhooks para enviar notificações sobre rankings e novos
-          badges diretamente para as ferramentas de comunicação da
-          empresa.
+          {t("integracoes_corporativas_desc")}
         </p>
 
         <div className="row g-3">
@@ -240,13 +233,11 @@ export default function TabNotificacoes() {
               className={`p-3 rounded-3 border d-flex flex-column align-items-center text-center transition-all ${notifConfig.teams_ativo ? "border-primary bg-white shadow-sm" : "bg-white"}`}
             >
               <div className="fs-1 text-primary mb-2">
-                {/* Simulação de icone teams */}
                 <i className="fi fi-brands-microsoft"></i>
               </div>
               <h6 className="fw-bold mb-1">Microsoft Teams</h6>
               <p className="text-muted small mb-3">
-                Ativa a partilha automática de atualizações via canal
-                Microsoft Teams.
+                {t("partilha_teams_desc")}
               </p>
               <div className="mb-0">
                 <ToggleSwitch
@@ -266,8 +257,7 @@ export default function TabNotificacoes() {
               </div>
               <h6 className="fw-bold mb-1">Slack</h6>
               <p className="text-muted small mb-3">
-                Estabelece a ligação para envio de relatórios e
-                notificações no Slack.
+                {t("partilha_slack_desc")}
               </p>
               <div className="mb-0">
                 <ToggleSwitch
@@ -288,8 +278,7 @@ export default function TabNotificacoes() {
             border: "none",
           }}
         >
-          <i className="fi fi-br-disk me-2"></i> Guardar Definições de
-          Notificação
+          <i className="fi fi-br-disk me-2"></i> {t("guardar_configuracoes")}
         </button>
       </div>
     </div>

@@ -4,6 +4,9 @@
     display: flex;
     flex-direction: column;
 
+    position: relative;
+    overflow: hidden;
+
     color: var(--fontes);
     background:
         radial-gradient(circle at top right, var(--fundo_login_destaque_radial), transparent 32%),
@@ -16,6 +19,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
+    position: relative;
+    z-index: 1;
 
     padding: var(--padding-pagina-login);
 }
@@ -41,8 +47,7 @@
 }
 
 .login-page-etiqueta,
-.login-page-titulo,
-.login-page-descricao {
+.login-page-titulo {
     margin: 0;
 }
 
@@ -54,10 +59,6 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-}
-
-.login-page-descricao {
-    color: var(--fontes);
 }
 
 .login-form {
@@ -220,6 +221,10 @@
     gap: var(--gap-grid-roles-login);
 }
 
+.login-role-titulo {
+    display: block;
+}
+
 .login-role-card {
     width: 100%;
 
@@ -268,15 +273,6 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-}
-
-.login-role-titulo,
-.login-role-descricao {
-    display: block;
-}
-
-.login-role-descricao {
-    color: var(--fontes);
 }
 
 .login-role-check {

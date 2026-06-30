@@ -1,0 +1,471 @@
+/* ══════════════════════════════════════════════════════
+   ESTATÍSTICAS SERVICE LINE LEADER — Layout Responsivo
+   ══════════════════════════════════════════════════════ */
+
+/* ── WRAPPER PRINCIPAL ───────────────────────────────── */
+.estat-service-page {
+    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo) var(--margem-inferior-conteudo);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-titulo-principal-conteudo);
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: none;
+    box-sizing: border-box;
+}
+.estat-service-page::-webkit-scrollbar { display: none; }
+
+/* ── CABEÇALHO ───────────────────────────────────────── */
+.estat-service-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.estat-service-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ── BOTÕES ──────────────────────────────────────────── */
+.estat-service-btn-primary,
+.estat-service-btn-outline {
+    height: var(--altura-controlos-1);
+    padding: 0 22px;
+    border-radius: var(--border-radius-pequeno);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, background-color 0.2s, transform 0.1s;
+    white-space: nowrap;
+}
+
+.estat-service-btn-primary {
+    background-color: var(--barra_lateral);
+    color: #fff;
+    border: none;
+}
+
+.estat-service-btn-outline {
+    background-color: #fff;
+    color: var(--barra_lateral);
+    border: var(--borda-principal) solid var(--barra_lateral);
+}
+
+.estat-service-btn-primary:hover,
+.estat-service-btn-outline:hover { opacity: 0.88; }
+
+.estat-service-btn-primary:active,
+.estat-service-btn-outline:active { transform: translateY(1px); }
+
+/* Dropdown de exportação */
+.estat-service-export-wrap {
+    position: relative;
+}
+
+.estat-service-export-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: #fff;
+    border: 1px solid var(--contorno);
+    border-radius: var(--border-radius-pequeno);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    min-width: 240px;
+    z-index: 10;
+    overflow: hidden;
+    animation: fadeIn 0.14s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.estat-service-export-header {
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--fontes);
+    background-color: var(--fundo2);
+    border-bottom: 1px solid var(--contorno);
+}
+
+.estat-service-export-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.estat-service-export-item:last-child {
+    border-bottom: none;
+}
+
+.estat-service-export-item:hover {
+    background-color: var(--fundo2);
+}
+
+.estat-service-export-label {
+    color: var(--fontes);
+    font-weight: 500;
+}
+
+.estat-service-export-formats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.estat-service-export-formats span {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--barra_lateral);
+    background-color: #eef4ff;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+/* ── FILTROS RÁPIDOS (pills modernas) ─────────────────── */
+.estat-service-filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px 24px;
+    flex-shrink: 0;
+    margin-top: -6px;
+}
+
+.estat-service-filtro-grupo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.estat-service-filtro-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fontes);
+    white-space: nowrap;
+}
+
+.estat-service-filtro-label i {
+    font-size: 13px;
+    color: var(--barra_lateral);
+}
+
+.estat-service-pills {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    background-color: var(--fundo2);
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: 999px;
+}
+
+.estat-service-pill {
+    border: none;
+    background: transparent;
+    color: var(--fontes);
+    font-family: var(--fonte-principal);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.18s, color 0.18s, box-shadow 0.18s;
+    white-space: nowrap;
+}
+
+.estat-service-pill:hover:not(.active) {
+    background-color: rgba(57, 99, 156, 0.08);
+    color: var(--barra_lateral);
+}
+
+.estat-service-pill.active {
+    background-color: var(--barra_lateral);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(57, 99, 156, 0.25);
+}
+
+/* ══════════════════════════════════════════════════════
+   CORPO — 2 colunas: esquerda (gráficos) + direita (classificação)
+   ══════════════════════════════════════════════════════ */
+.estat-service-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    gap: var(--gap-default-seccoes);
+    align-items: stretch;
+}
+
+/* Coluna esquerda */
+.estat-service-col-esq {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-default-seccoes);
+}
+
+/* Coluna direita — classificação */
+.estat-service-col-dir {
+    width: 26%;
+    min-width: 240px;
+    max-width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── ROW genérica ────────────────────────────────────── */
+.estat-service-row {
+    display: flex;
+    gap: var(--gap-default-seccoes);
+    flex: 1;
+    min-height: 0;
+}
+
+/* ── CARD GENÉRICO ───────────────────────────────────── */
+.estat-service-card {
+    background: #fff;
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: var(--border-radius-grande);
+    padding: 16px 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    transition: box-shadow 0.2s;
+}
+
+.estat-service-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Header genérico de cada card ────────────────────── */
+.estat-service-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.estat-service-chart-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--fontes);
+    line-height: 1.2;
+}
+
+/* ══════════════════════════════════════════════════════
+   ROW 1 — KPI + Badges por Nível
+   ══════════════════════════════════════════════════════ */
+
+/* KPI — ocupa ~42% da row */
+.estat-service-kpi-wrap {
+    flex: 4.2;
+    min-width: 220px;
+}
+
+/* Badges por nível — ocupa ~58% */
+.estat-service-niveis-wrap {
+    flex: 5.8;
+    min-width: 280px;
+}
+
+/* ── KPI GRID (2×2) ──────────────────────────────────── */
+.estat-service-kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gap-default-seccoes);
+    height: 100%;
+}
+
+.estat-service-kpi-card {
+    background: #fff;
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: var(--border-radius-grande);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.estat-service-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+}
+
+.estat-service-kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8fa3b8;
+    letter-spacing: 0.02em;
+    text-align: left;
+}
+
+.estat-service-kpi-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 10px;
+}
+
+.estat-service-kpi-icon {
+    font-size: 1.35rem;
+    color: var(--barra_lateral);
+    transform: translateY(2px);
+    opacity: 0.8;
+}
+
+.estat-service-kpi-valor {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--fontes);
+    line-height: 1;
+}
+
+/* ══════════════════════════════════════════════════════
+   ROW 2 — Badges por período + Melhores contribuidores
+   ══════════════════════════════════════════════════════ */
+
+/* Badges por período — ocupa ~58% */
+.estat-service-bar-wrap {
+    flex: 5.8;
+    min-width: 280px;
+}
+
+/* Status das candidaturas — ocupa ~42% */
+.estat-service-status-wrap {
+    flex: 4.2;
+    min-width: 220px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVIDADE
+   ══════════════════════════════════════════════════════ */
+
+@media (max-width: 1200px) {
+    .estat-service-col-dir {
+        width: 30%;
+        min-width: 220px;
+    }
+}
+
+@media (max-width: 1100px) {
+    .estat-service-page {
+        overflow-y: auto;
+        height: auto;
+        min-height: 100%;
+    }
+
+    .estat-service-body {
+        flex-direction: column;
+        flex: none;
+    }
+
+    .estat-service-col-dir {
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+    }
+
+    .estat-service-row {
+        flex-wrap: wrap;
+        flex: none;
+    }
+
+    .estat-service-kpi-wrap,
+    .estat-service-niveis-wrap,
+    .estat-service-bar-wrap,
+    .estat-service-status-wrap {
+        min-width: 0;
+        flex-basis: 100%;
+    }
+
+    .estat-service-niveis-wrap,
+    .estat-service-bar-wrap {
+        min-height: 300px;
+    }
+
+    .estat-service-status-wrap {
+        min-height: 260px;
+    }
+}
+
+@media (max-width: 700px) {
+    .estat-service-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .estat-service-actions {
+        width: 100%;
+    }
+
+    .estat-service-btn-primary,
+    .estat-service-btn-outline {
+        flex: 1;
+    }
+
+    .estat-service-export-menu {
+        right: auto;
+        left: 0;
+        min-width: 200px;
+    }
+
+    .estat-service-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .estat-service-kpi-valor {
+        font-size: 22px;
+    }
+
+    .estat-service-filters {
+        gap: 12px;
+    }
+
+    .estat-service-filtro-grupo {
+        width: 100%;
+    }
+
+    .estat-service-pills {
+        overflow-x: auto;
+        scrollbar-width: none;
+        max-width: 100%;
+    }
+
+    .estat-service-pills::-webkit-scrollbar {
+        display: none;
+    }
+
+    .estat-service-pill {
+        padding: 5px 12px;
+        font-size: 11px;
+    }
+}

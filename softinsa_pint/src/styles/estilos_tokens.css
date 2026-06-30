@@ -105,16 +105,12 @@
 
     /* AUTENTICAÇÃO — LOGIN */
 
-    --altura-barra-superior-auth: 58px;
     --padding-horizontal-barra-auth: 8px;
     --largura-area-logo-auth: 16.66667%;
     --largura-maxima-area-logo-auth: 260px;
     --largura-logo-auth: 85%;
     --margem-esquerda-logo-auth: 1rem;
-
-    --largura-popup-lingua-auth: 170px;
-    --top-popup-lingua-auth: 52px;
-    --right-popup-lingua-auth: 16px;
+    --padding-vertical-barra-auth: 0.25rem;
 
     --padding-pagina-login: 32px;
     --largura-maxima-card-login: 440px;
@@ -134,4 +130,15 @@
     --padding-card-role-login: 16px;
     --gap-card-role-login: 8px;
     --tamanho-icone-role-login: 34px;
+
+        /*Tokens do Desenho Abstrato Login*/
+        --opacidade-auth-art-panel: 0.6;
+        --opacidade-auth-art-destaque: 0.85;
+        --opacidade-auth-art-tracejado: 0.6;
+        --opacidade-auth-art-estrela: 0.7;
+        --opacidade-auth-art-circulo-media: 0.5;
+        --opacidade-auth-art-circulo-baixa: 0.4;
+
+        --espessura-linha-auth-art-panel: 1.6px;
+        --espessura-linha-destaque-auth-art-panel: 3px;
 }

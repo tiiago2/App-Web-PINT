@@ -1,12 +1,12 @@
 const {
   Utilizador,
+  Consultor,
   Badges,
   Area,
   Submissoes,
   RegistoBadges,
   Historico
 } = require("../models");
-const { Op } = require("sequelize");
 
 module.exports = {
     async getCandidaturas(req, res) {
@@ -19,7 +19,10 @@ module.exports = {
                 include: [
                     {
                         model: Utilizador,
-                        attributes: ['id_utilizador', 'nome_user', 'imagem_perfil'] 
+                        attributes: ['id_utilizador', 'nome_user', 'imagem_perfil'] ,
+                        where:{
+                            ativo: true
+                        }
                     },
                     {
                         model: Badges,

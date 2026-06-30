@@ -1,0 +1,513 @@
+/* ══════════════════════════════════════════════════════
+   ESTATÍSTICAS TALENT MANAGER — Layout Responsivo
+   ══════════════════════════════════════════════════════ */
+
+/* ── WRAPPER PRINCIPAL ───────────────────────────────── */
+.estat-talent-page {
+    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo) var(--margem-inferior-conteudo);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-titulo-principal-conteudo);
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: none;
+    box-sizing: border-box;
+}
+.estat-talent-page::-webkit-scrollbar { display: none; }
+
+/* ── CABEÇALHO ───────────────────────────────────────── */
+.estat-talent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.estat-talent-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ── BOTÕES ──────────────────────────────────────────── */
+.estat-talent-btn-primary,
+.estat-talent-btn-outline {
+    height: 44px;
+    padding: 0 22px;
+    border-radius: var(--border-radius-pequeno);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, background-color 0.2s;
+    white-space: nowrap;
+}
+
+.estat-talent-btn-primary {
+    background-color: var(--barra_lateral);
+    color: #fff;
+    border: none;
+}
+
+.estat-talent-btn-outline {
+    background-color: #fff;
+    color: var(--barra_lateral);
+    border: var(--borda-principal) solid var(--barra_lateral);
+}
+
+.estat-talent-btn-primary:hover,
+.estat-talent-btn-outline:hover { opacity: 0.85; }
+
+/* Dropdown de exportação */
+.estat-talent-export-wrap {
+    position: relative;
+}
+
+.estat-talent-export-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: #fff;
+    border: 1px solid var(--contorno);
+    border-radius: var(--border-radius-pequeno);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+    min-width: 120px;
+    z-index: 10;
+    overflow: hidden;
+}
+
+.estat-talent-export-item {
+    padding: 10px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.estat-talent-export-item:hover {
+    background-color: var(--fundo_submenu_hover);
+}
+
+/* ══════════════════════════════════════════════════════
+   CORPO — 2 colunas: esquerda (gráficos) + direita (classificação)
+   ══════════════════════════════════════════════════════ */
+.estat-talent-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    gap: var(--gap-default-seccoes);
+    align-items: stretch;
+}
+
+/* Coluna esquerda */
+.estat-talent-col-esq {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-default-seccoes);
+}
+
+/* Coluna direita — classificação */
+.estat-talent-col-dir {
+    width: 26%;
+    min-width: 240px;
+    max-width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── ROW genérica ────────────────────────────────────── */
+.estat-talent-row {
+    display: flex;
+    gap: var(--gap-default-seccoes);
+    flex: 1;
+    min-height: 0;
+}
+
+/* ── CARD GENÉRICO ───────────────────────────────────── */
+.estat-talent-card {
+    background: #fff;
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: var(--border-radius-grande);
+    padding: 16px 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    transition: box-shadow 0.2s ease;
+}
+
+.estat-talent-card:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Header genérico de cada card ────────────────────── */
+.estat-talent-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.estat-talent-chart-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--fontes);
+    line-height: 1.2;
+}
+
+.estat-talent-total {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--fontes);
+}
+
+/* ══════════════════════════════════════════════════════
+   ROW 1 — KPI + Badges por Nível
+   ══════════════════════════════════════════════════════ */
+
+/* KPI — ocupa ~42% da row */
+.estat-talent-kpi-wrap {
+    flex: 4.2;
+    min-width: 220px;
+}
+
+/* Badges por nível — ocupa ~58% */
+.estat-talent-niveis-wrap {
+    flex: 5.8;
+    min-width: 280px;
+}
+
+/* ── KPI GRID (2×2) ──────────────────────────────────── */
+.estat-talent-kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gap-default-seccoes);
+    height: 100%;
+}
+
+.estat-talent-kpi-card {
+    background: #fff;
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: var(--border-radius-grande);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.estat-talent-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+}
+
+.estat-talent-kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8fa3b8;
+    letter-spacing: 0.02em;
+    text-align: left;
+}
+
+.estat-talent-kpi-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 10px;
+}
+
+.estat-talent-kpi-icon {
+    font-size: 1.35rem;
+    color: var(--barra_lateral);
+    transform: translateY(2px);
+    opacity: 0.8;
+}
+
+.estat-talent-kpi-valor {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--fontes);
+    line-height: 1;
+}
+
+/* ══════════════════════════════════════════════════════
+   ROW 2 — Pie (Atribuídos este mês) + Learning Paths
+   ══════════════════════════════════════════════════════ */
+
+/* Pie — ocupa ~50% */
+.estat-talent-pie-wrap {
+    flex: 1;
+    min-width: 260px;
+}
+
+/* Learning Paths — ocupa ~50% */
+.estat-talent-learning-wrap {
+    flex: 1;
+    min-width: 260px;
+}
+
+/* ── PIE — interior ──────────────────────────────────── */
+.estat-talent-pie-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    min-height: 0;
+}
+
+.estat-talent-donut-container {
+    position: relative;
+    flex-shrink: 0;
+    width: 160px;
+    height: 160px;
+}
+
+.estat-talent-donut-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+}
+
+.estat-talent-donut-total {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--fontes);
+    line-height: 1;
+}
+
+.estat-talent-donut-label {
+    font-size: 9px;
+    color: #8fa3b8;
+    margin-top: 2px;
+    font-weight: 500;
+}
+
+/* ── LEGENDA ─────────────────────────────────────────── */
+.estat-talent-legenda {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--fontes);
+    flex: 1;
+    min-width: 0;
+}
+
+.estat-talent-legenda-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.estat-talent-legenda-esq {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.estat-talent-legenda-esq span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.estat-talent-legenda-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.estat-talent-legenda-valor {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fontes);
+    flex-shrink: 0;
+}
+
+/* ── LEARNING PATHS ──────────────────────────────────── */
+.estat-talent-learning-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    flex: 1;
+    min-height: 0;
+    padding: 4px 0;
+}
+
+.estat-talent-learning-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: #fff;
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: var(--border-radius-grande);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    min-width: 0;
+}
+
+.estat-talent-learning-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    border-color: var(--lp-cor, var(--barra_lateral));
+}
+
+.estat-talent-learning-icone {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background-color: var(--lp-fundo, #f0f2f6);
+    color: var(--lp-cor, var(--barra_lateral));
+    font-size: 1.3rem;
+    transition: transform 0.2s ease;
+}
+
+.estat-talent-learning-card:hover .estat-talent-learning-icone {
+    transform: scale(1.08);
+}
+
+.estat-talent-learning-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.estat-talent-learning-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--fontes);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.estat-talent-learning-meta {
+    font-size: 11px;
+    font-weight: 500;
+    color: #8fa3b8;
+}
+
+.estat-talent-learning-count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--lp-cor, var(--fontes));
+    flex-shrink: 0;
+}
+
+.estat-talent-learning-count i {
+    font-size: 1rem;
+}
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVIDADE
+   ══════════════════════════════════════════════════════ */
+
+@media (max-width: 1200px) {
+    .estat-talent-col-dir {
+        width: 30%;
+        min-width: 220px;
+    }
+}
+
+@media (max-width: 1100px) {
+    .estat-talent-page {
+        overflow-y: auto;
+        height: auto;
+        min-height: 100%;
+    }
+
+    .estat-talent-body {
+        flex-direction: column;
+        flex: none;
+    }
+
+    .estat-talent-col-dir {
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+    }
+
+    .estat-talent-row {
+        flex-wrap: wrap;
+        flex: none;
+    }
+
+    .estat-talent-kpi-wrap,
+    .estat-talent-niveis-wrap,
+    .estat-talent-pie-wrap,
+    .estat-talent-learning-wrap {
+        min-width: 0;
+        flex-basis: 100%;
+    }
+
+    .estat-talent-niveis-wrap,
+    .estat-talent-learning-wrap {
+        min-height: 260px;
+    }
+
+    .estat-talent-pie-wrap {
+        min-height: 220px;
+    }
+}
+
+@media (max-width: 700px) {
+    .estat-talent-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .estat-talent-actions {
+        width: 100%;
+    }
+
+    .estat-talent-btn-primary,
+    .estat-talent-btn-outline {
+        flex: 1;
+    }
+
+    .estat-talent-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .estat-talent-kpi-valor {
+        font-size: 22px;
+    }
+
+    .estat-talent-learning-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .estat-talent-learning-card {
+        padding: 12px;
+    }
+
+    .estat-talent-learning-icone {
+        width: 40px;
+        height: 40px;
+        font-size: 1.15rem;
+    }
+}

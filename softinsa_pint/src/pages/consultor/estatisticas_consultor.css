@@ -1,29 +1,6 @@
 /* ══════════════════════════════════════════════════════
-   ESTATÍSTICAS CONSULTOR
-   Tokens usados (de estilos_tokens.css e App.css):
-     --margem-lateral-conteudo   → padding lateral
-     --margem-superior-conteudo  → padding topo
-     --margem-inferior-conteudo  → padding baixo
-     --gap-titulo-principal-conteudo → espaço título→conteúdo
-     --gap-default-seccoes       → espaço entre cards
-     --border-radius-grande      → cantos dos cards
-     --border-radius-pequeno     → cantos do botão/select
-     --borda-principal           → espessura da borda
-     --fontes                    → cor de texto principal
-     --barra_lateral             → azul principal
-     --contorno                  → cor da borda
+   ESTATÍSTICAS CONSULTOR — Layout Responsivo
    ══════════════════════════════════════════════════════ */
-
-/* ── ALTURAS DAS ROWS (ajustáveis num só sítio) ──────
-   Baseado nas dimensões Figma escaladas:
-   - Row1 (KPI+Mensal): 305px numa tela de ~900px útil → ~34%
-   - Row2 (Pie+Radar):  361px numa tela de ~900px útil → ~40%
-   Usamos vh para escalar entre monitor e portátil.
-   ─────────────────────────────────────────────────── */
-:root {
-    --estat-row1-h: 35vh;
-    --estat-row2-h: 35vh;
-}
 
 /* ── WRAPPER PRINCIPAL ───────────────────────────────── */
 .estat-page {
@@ -32,23 +9,21 @@
     flex-direction: column;
     gap: var(--gap-titulo-principal-conteudo);
     height: 100%;
-    overflow: hidden;
+    overflow-y: auto;
     scrollbar-width: none;
     box-sizing: border-box;
 }
 .estat-page::-webkit-scrollbar { display: none; }
 
-/* ── CORPO (row Bootstrap exterior) ─────────────────── */
-/* align-items: stretch é o que faz a col da Classificação
-   esticar até à altura total da col esquerda (as 2 rows) */
-.estat-body {
-    flex: 1;
-    min-height: 0;
-    align-items: stretch !important;
+/* ── CABEÇALHO ───────────────────────────────────────── */
+.estat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
 }
 
 /* ── BOTÃO EXPORTAR ──────────────────────────────────── */
-/* Figma: 114×44px */
 .estat-btn-exportar {
     background-color: var(--barra_lateral);
     color: #fff;
@@ -62,6 +37,83 @@
     transition: opacity 0.2s;
 }
 .estat-btn-exportar:hover { opacity: 0.85; }
+
+/* ══════════════════════════════════════════════════════
+   CORPO — 2 colunas: esquerda (gráficos) + direita (classificação)
+   ══════════════════════════════════════════════════════ */
+.estat-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    gap: var(--gap-default-seccoes);
+    align-items: stretch;
+}
+
+/* Coluna esquerda — cresce para preencher */
+.estat-col-esq {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-default-seccoes);
+}
+
+/* Coluna direita — classificação, largura proporcional mas com limites */
+.estat-col-dir {
+    width: 26%;
+    min-width: 240px;
+    max-width: 320px;
+    flex-shrink: 0;
+}
+
+/* ── ROW genérica (cada fila de 2 cards) ─────────────── */
+.estat-row {
+    display: flex;
+    gap: var(--gap-default-seccoes);
+    flex: 1;
+    min-height: 0;
+}
+
+/* ── Header genérico de cada card ────────────────────── */
+.estat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════
+   ROW 1 — KPI + Evolução
+   ══════════════════════════════════════════════════════ */
+
+/* KPI — ocupa ~40% da row */
+.estat-kpi-wrap {
+    flex: 4;
+    min-width: 200px;
+}
+
+/* Evolução — ocupa ~60% da row */
+.estat-evolucao-wrap {
+    flex: 6;
+    min-width: 280px;
+}
+
+/* ══════════════════════════════════════════════════════
+   ROW 2 — Pie (Atribuídos) + Níveis
+   ══════════════════════════════════════════════════════ */
+
+/* Pie — ocupa ~50% */
+.estat-pie-wrap {
+    flex: 1;
+    min-width: 260px;
+}
+
+/* Níveis — ocupa ~50% */
+.estat-niveis-wrap {
+    flex: 1;
+    min-width: 260px;
+}
 
 /* ── CARD GENÉRICO ───────────────────────────────────── */
 .estat-card {
@@ -111,7 +163,6 @@
 .estat-kpi-icon {
     font-size: 1.6rem;
     color: var(--barra_lateral);
-    /* Um pequeno ajuste para baixo para alinhar o centro do ícone com o centro dos números */
     transform: translateY(2px);
 }
 
@@ -157,6 +208,24 @@
     min-height: 0;
 }
 
+/* Donut container — tamanho fixo para não deformar */
+.estat-donut-container {
+    position: relative;
+    flex-shrink: 0;
+    width: 160px;
+    height: 160px;
+}
+
+/* Número total centrado no donut */
+.estat-donut-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+}
+
 /* ── LEGENDA ─────────────────────────────────────────── */
 .estat-legenda {
     display: flex;
@@ -177,4 +246,67 @@
     height: 10px;
     border-radius: 50%;
     flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVIDADE — ecrãs mais pequenos
+   ══════════════════════════════════════════════════════ */
+
+/* Portáteis pequenos / janelas estreitas */
+@media (max-width: 1100px) {
+    .estat-page {
+        overflow-y: auto;
+        height: auto;
+        min-height: 100%;
+    }
+
+    .estat-body {
+        flex-direction: column;
+        flex: none;
+    }
+
+    .estat-col-dir {
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+    }
+
+    .estat-row {
+        flex-wrap: wrap;
+        flex: none;
+    }
+
+    .estat-kpi-wrap {
+        min-width: 0;
+        flex-basis: 100%;
+    }
+
+    .estat-evolucao-wrap {
+        min-width: 0;
+        flex-basis: 100%;
+        min-height: 280px;
+    }
+
+    .estat-pie-wrap {
+        min-width: 0;
+        flex-basis: 100%;
+        min-height: 220px;
+    }
+
+    .estat-niveis-wrap {
+        min-width: 0;
+        flex-basis: 100%;
+        min-height: 260px;
+    }
+}
+
+/* Ecrãs muito pequenos (tipo telemóvel) */
+@media (max-width: 700px) {
+    .estat-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .estat-kpi-valor {
+        font-size: 22px;
+    }
 }

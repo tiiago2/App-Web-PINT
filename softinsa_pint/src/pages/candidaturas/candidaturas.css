@@ -221,3 +221,20 @@
   background: #a1b0c0;
 }
 
+/* Desktop layout constraints for columns to prevent overflow/cutoff */
+@media (min-width: 768px) {
+  .candidaturas-conteudo {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: flex-start !important;
+  }
+  
+  .candidaturas-col-lista,
+  .candidaturas-col-detalhes {
+    max-height: 100% !important;
+    overflow: hidden;
+  }
+}
+
+
+

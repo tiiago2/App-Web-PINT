@@ -62,7 +62,9 @@ const initialCandidaturas = [
     progresso: 100, 
     requisitos: [
       "Demonstrar proficiência em ferramentas drag-and-drop", 
-      "Completar o tutorial interativo de criação de fluxos"
+      "Completar o tutorial interativo de criação de fluxos",
+      "dsadsadsadsa", 
+      " o tutorial interativo de criação de fluxos"
     ] 
   },
   { 
@@ -288,31 +290,31 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
               ))}
             </div>
           </div>
+
+          {candidatura.status === "Pendente" && (
+            <div className="d-flex gap-3 justify-content-end mt-2">
+              <button 
+                onClick={() => onReject(candidatura.id)}
+                className="btn rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 rejeitar_btn font-medium transition-all"
+                style={{ fontSize: "0.9rem", height: "44px" }}
+              >
+                <i className="fi fi-br-cross"></i>
+                <span>Rejeitar</span>
+              </button>
+              
+              <button 
+                onClick={() => onAccept(candidatura.id)}
+                className="btn rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 aceitar_btn font-medium transition-all"
+                style={{ fontSize: "0.9rem", height: "44px" }}
+              >
+                <i className="fi fi-br-check"></i>
+                <span>Aceitar</span>
+              </button>
+            </div>
+          )}
           
         </div>
       </div>
-
-      {candidatura.status === "Pendente" && (
-        <div className="p-3 border-top d-flex gap-3 justify-content-end flex-shrink-0" style={{ borderColor: "var(--contorno) !important" }}>
-          <button 
-            onClick={() => onReject(candidatura.id)}
-            className="btn rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 rejeitar_btn font-medium transition-all"
-            style={{ fontSize: "0.9rem", height: "44px" }}
-          >
-            <i className="fi fi-br-cross"></i>
-            <span>Rejeitar</span>
-          </button>
-          
-          <button 
-            onClick={() => onAccept(candidatura.id)}
-            className="btn rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 aceitar_btn font-medium transition-all"
-            style={{ fontSize: "0.9rem", height: "44px" }}
-          >
-            <i className="fi fi-br-check"></i>
-            <span>Aceitar</span>
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -495,7 +497,7 @@ export default function Candidaturas() {
       <div className="candidaturas-conteudo row flex-grow-1 overflow-hidden g-4" style={{ minHeight: 0 }}>
         
         {/* Left column: List view */}
-        <div className="col-12 col-md-5 d-flex flex-column overflow-hidden" style={{ minHeight: 0 }}>
+        <div className="col-12 col-md-5 d-flex flex-column overflow-hidden candidaturas-col-lista" style={{ minHeight: 0 }}>
           <div className="bg-white rounded-4 border border-light-subtle p-3 flex-grow-1 d-flex flex-column overflow-hidden shadow-xs" style={{ minHeight: 0 }}>
             
             {/* Search and Filters */}
@@ -563,7 +565,7 @@ export default function Candidaturas() {
         </div>
 
         {/* Right column: Review Panel */}
-        <div className="col-12 col-md-7 d-flex flex-column overflow-hidden" style={{ minHeight: 0 }}>
+        <div className="col-12 col-md-7 d-flex flex-column overflow-hidden candidaturas-col-detalhes" style={{ minHeight: 0 }}>
           <div className="candidatura-detalhes-panel flex-grow-1 d-flex flex-column overflow-hidden shadow-xs" style={{ minHeight: 0 }}>
             {candidaturaSelecionada ? (
               <CandidaturaDetalhes 

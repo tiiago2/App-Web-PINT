@@ -8,7 +8,7 @@ module.exports = {
             const { email, password } = req.body;
 
             // 1. Procura o user, junta as Roles (para o ecrã do React)
-            const user = await Utilizador.findOne({ 
+            const user = await Utilizador.findOne({
                 where: { email: email },
                 include: [{ model: Role, attributes: ['nome_role', 'icone_role'], through: { attributes: [] } }]
             });
@@ -21,7 +21,10 @@ module.exports = {
             // 3. Fabrica o Token
             const token = jwt.sign({ id_utilizador: user.id_utilizador }, process.env.JWT_SECRET, { expiresIn: '8h' });
 
-            const listaRoles = user.Roles.map(role => role.nome_role.toLowerCase());
+            const listaRoles = user.Roles.map(role => ({
+                nome: role.nome_role,
+                icone_role: role.icone_role || 'fi-br-user'
+            }));
 
             return res.status(200).json({
                 token: token,
@@ -37,21 +40,26 @@ module.exports = {
     },
     async getUser(req, res) {
         try {
-            const { id } = req.body;
+            const { id } = req.query;
 
-            const user = await Utilizador.findOne({ 
+            if (!id) {
+                return res.status(400).json({ error: "ID não fornecido no pedido." });
+            }
+
+            const user = await Utilizador.findOne({
                 where: { id_utilizador: id },
-                atributes: ['nome_user', 'imagem_perfil', 'last_login']
+                attributes: ['nome_user', 'imagem_perfil', 'last_login']
             });
-            if(!user){
+            if (!user) {
                 return res.status(404).json({ error: "utilizador não encontrado." });
             }
             return res.status(200).json({
-                nome: user.nome_user, 
+                nome: user.nome_user,
                 foto: user.imagem_perfil,
                 ultimoLogin: user.last_login,
             });
         } catch (error) {
+            console.error("Erro no get_user:", error);
             return res.status(500).json({ error: "Erro no servidor, get_user." });
         }
     }

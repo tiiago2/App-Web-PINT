@@ -9,15 +9,6 @@ import badge_logo from '../../assets/teste_badge.png';
 import {BotaoVerMais, BotaoAceitar, BotaoRejeitar, GraficoCandidaturas} from '../../components/components.jsx'
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, Label, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 
-const dados_linhas = [
-    { periodo: 'jan', media_badges: 1.5, pontos: 120, atribuicoes: 15 },
-    { periodo: 'fev', media_badges: 2.1, pontos: 180, atribuicoes: 20 },
-    { periodo: 'mar', media_badges: 2.8, pontos: 250, atribuicoes: 28 },
-    { periodo: 'abr', media_badges: 3.5, pontos: 310, atribuicoes: 35 },
-];
-
-
-
 const atividadeRecente = [
     { icone: "fi-br-check", cor: "text-success", texto: "Low code concluído", tempo: "Há 2 horas", expirado: false },
     { icone: "fi-br-badge", cor: "text-warning", textoNegrito: "Administrador1", texto: "atualizou Low Code", tempo: "Há 2 horas", expirado: false },
@@ -30,8 +21,6 @@ const atividadeRecente = [
     { icone: "fi-br-badge", cor: "text-warning", textoNegrito: "Administrador1", texto: "atualizou Low Code", tempo: "Há 2 horas", expirado: false }
 ];
 //---------------------------------------------------------------------------------------------------------------------------------
-
-
 
 const GraficoEstatistica = () => {
 
@@ -117,6 +106,12 @@ const HomeTalent = ({ user, saudacao }) => {
         { nome: 'aceites', quantidade: null, cor: '#3bb413' },    
         { nome: 'rejeitadas', quantidade: null, cor: '#de2121' }
     ]);
+    const [dados_linhas, setDados_linhas] = useState([
+        { periodo: null, media_badges: null, pontos: null, atribuicoes: null },
+        { periodo: null, media_badges: null, pontos: null, atribuicoes: null },
+        { periodo: null, media_badges: null, pontos: null, atribuicoes: null },
+        { periodo: null, media_badges: null, pontos: null, atribuicoes: null }
+    ]);
 
     useEffect(() => {
         const buscarCandidaturas = async () => {
@@ -163,16 +158,109 @@ const HomeTalent = ({ user, saudacao }) => {
             }
         }
 
+        const getDados_Linhas = async () => {
+            // 1. Verificação de segurança (Token)
+            if (!localStorage.getItem('token_softinsa')) {
+                // Se não houver token, esvaziamos o gráfico
+                setDados_linhas([]);
+                return;
+            }
+            
+            try {
+                const res = await api.get('/hometalent/dados4month'); 
+
+                setDados_linhas(res.data);
+                console.log('DADOS LINHAS:', dados_linhas);
+                
+            } catch(erro) {
+                console.error('Erro ao buscar dados do gráfico de linhas:', erro);
+
+                setDados_linhas([]); 
+            }
+        }
+
         buscarCandidaturas();
         getGrafCandidaturas();
+        getDados_Linhas();
     }, []);
+
+    const GraficoEstatistica = () => {
+
+    const {t} = useTranslation();
+
+    const dados_traduzidos = dados_linhas.map((dado) => {
+        return {
+            ...dado,
+            nome: t(dado.periodo)
+        };
+    });
+
+    return (
+        <div className="border border-2 rounded-4 p-2 d-flex flex-column h-100">
+            <h5 className="ms-1 mb-2">{t('evo_users')}</h5>
+            
+            <div className="flex-grow-1" style={{ width: '100%', minHeight: '200px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={dados_traduzidos} margin={{ top: 12, right: 25, left: -20, bottom: 0 }}>
+    
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ccc" />
+                    
+                    <XAxis dataKey="nome" tick={{ fontSize: 11 }} tickMargin={10} />
+                    
+                    <YAxis tick={{ fontSize: 11 }} />
+                    
+                    <Tooltip isAnimationActive={false}/>
+                    <Legend 
+                        verticalAlign="bottom"
+                        iconType="circle"
+                        formatter={(value) => <span style={{ fontSize: '12px'}}>{value}</span>}
+                        wrapperStyle={{
+                            paddingLeft: '7vh',
+                            paddingBottom: '1vh',
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'center'}}/>
+
+                    <Line 
+                        type="monotone" 
+                        dataKey="media_badges"
+                        name={t('media_badges')}
+                        stroke="#009966" 
+                        strokeWidth={3} 
+                        dot={false} 
+                        activeDot={false}
+                    />
+                    <Line 
+                        type="monotone" 
+                        dataKey="pontos" 
+                        name={t('pontos')} 
+                        stroke="#39639C" 
+                        strokeWidth={3} 
+                        dot={false} 
+                        activeDot={false}
+                    />
+                    <Line 
+                        type="monotone" 
+                        dataKey="atribuicoes" 
+                        name={t('atribuicoes')} 
+                        stroke="#C40003" 
+                        strokeWidth={3} 
+                        dot={false} 
+                        activeDot={false}
+                    />
+                </LineChart>
+                </ResponsiveContainer>
+            </div>
+        </div>
+    );
+}
 
     const RenderCandidaturas = () => {
         if (!Array.isArray(infoCandidaturas) || infoCandidaturas.length === 0) {
             return <div className="col-12 text-muted">Sem candidaturas</div>;
         }
 
-        return infoCandidaturas.map((candidatura, index) => {
+        return infoCandidaturas.slice(0, 3).map((candidatura, index) => {
             const badge = candidatura?.Badges || candidatura?.Badge || null;
             const utilizador = candidatura?.Utilizador || null;
             const area = badge?.Area?.nome_area || badge?.nome_area || '—';

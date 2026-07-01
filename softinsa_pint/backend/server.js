@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-const sequelize = require("./config/db.config");
 const rotas = require("./routes/central_rotas");
+const db = require("./models");
 
 const app = express();
 
@@ -14,7 +14,7 @@ app.use("/api", rotas);
 
 async function iniciar_bd() {
     try {
-        await sequelize.sync({ force: false }); // Sincroniza tabelas
+        await db.sequelize.sync({ force: false }); // Sincroniza tabelas
         console.log("Base de dados sincronizada.");
 
         app.listen(5000, () => {

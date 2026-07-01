@@ -3,6 +3,7 @@ const { DataTypes } = require('sequelize');
 module.exports = (sequelize) => {
   return sequelize.define('Permissoes', {
     id_permissao: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    descricao_permissao: { type: DataTypes.TEXT, allowNull: false }
+    descricao_permissao: { type: DataTypes.TEXT, allowNull: false },
+    toggle: { type: DataTypes.BOOLEAN, allowNull: false }
   }, { tableName: 'permissoes', timestamps: false });
 };

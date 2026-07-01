@@ -13,13 +13,13 @@ function LoginPage({ onLoginSuccess }) {
   const [password, setPassword] = useState("");
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [estadoLogin, setEstadoLogin] = useState("normal");
-  
+
   const [utilizadorValidado, setUtilizadorValidado] = useState(null);
   const [roles, setRoles] = useState(null);
   const [roleSelecionada, setRoleSelecionada] = useState(null);
 
   const extrairDadosEAvancar = (userApi, roleEscolhida) => {
-    // 🚨 VAMOS OLHAR PARA ESTE LOG NO BROWSER PARA VER OS NOMES CERTOS DAS PROPRIEDADES
+
     console.log("📦 DADOS REAIS DA API:", userApi);
 
     const idParaGuardar = userApi.id;
@@ -41,7 +41,7 @@ function LoginPage({ onLoginSuccess }) {
 
     try {
       const resposta = await axios.post('http://localhost:5000/api/login', { email, password });
-      const { token, utilizador } = resposta.data; 
+      const { token, utilizador } = resposta.data;
 
       localStorage.setItem('token_softinsa', token);
       setUtilizadorValidado(utilizador);
@@ -148,20 +148,34 @@ function LoginPage({ onLoginSuccess }) {
             </div>
             <div className="login-roles-grid">
               {roles.map((role, index) => {
-                const estaSelecionada = role === roleSelecionada; 
+                const estaSelecionada = role === roleSelecionada;
                 const nomeRole = role.tituloKey ? t(role.tituloKey) : (role.nome || role);
-                const iconeRole = role.icone_role || "fi-br-user";
+
+                // Como a BD já traz a classe completa ("fi fi-br-settings"), usamos DIRETAMENTE.
+                // Colocamos o "fi fi-br-user" como fallback só para o caso de algum vir vazio.
+                const classeIcone = role.icone_role || "fi fi-br-user";
 
                 return (
                   <button
-                    key={role.id || index} 
+                    key={role.id || index}
                     type="button"
                     className={`login-role-card ${estaSelecionada ? "login-role-card-selecionado" : ""}`}
                     onClick={() => setRoleSelecionada(role)}
                   >
-                    <span className="login-role-icone"><i className={`fi ${iconeRole}`}></i></span>
-                    <span className="login-role-texto"><span className="texto-auth-role-titulo login-role-titulo">{nomeRole}</span></span>
-                    {estaSelecionada && <span className="login-role-check"><i className="fi fi-br-check"></i></span>}
+                    <span className="login-role-icone">
+                      {/* Usamos a variável diretamente, sem adicionar mais nada! */}
+                      <i className={classeIcone}></i>
+                    </span>
+
+                    <span className="login-role-texto">
+                      <span className="texto-auth-role-titulo login-role-titulo">{nomeRole}</span>
+                    </span>
+
+                    {estaSelecionada && (
+                      <span className="login-role-check">
+                        <i className="fi fi-br-check"></i>
+                      </span>
+                    )}
                   </button>
                 );
               })}

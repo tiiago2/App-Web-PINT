@@ -323,8 +323,6 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
           
         </div>
       </div>
-
-
     </div>
   );
 }

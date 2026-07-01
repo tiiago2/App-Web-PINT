@@ -17,14 +17,14 @@ const User = {
   foto: user_logo
 };
 
-const Assinatura_Pessoal = [
+const Assinatura_Pessoal_Inicial = [
   {
     id: 1,
     nome: "Low Code 1",
     Imagem: badge_logo,
   },
   {
-    id: 2, // Nota: Convém que os IDs sejam diferentes
+    id: 2,
     nome: "Low Code 2",
     Imagem: badge_logo,
   },
@@ -41,89 +41,63 @@ const Assinatura_Pessoal = [
 ];
 
 const Badges_Obtidos = [
-  {
-    id: 1,
-    nome: "Low Code 1",
-    Imagem: badge_logo,
-  },
-  {
-    id: 1,
-    nome: "Low Code 1",
-    Imagem: badge_logo,
-  },
-  {
-    id: 1,
-    nome: "Low Code 1",
-    Imagem: badge_logo,
-  },
-  {
-    id: 1,
-    nome: "Low Code 1",
-    Imagem: badge_logo,
-  },
-  {
-    id: 1,
-    nome: "Low Code 1",
-    Imagem: badge_logo,
-  },
-  {
-    id: 1,
-    nome: "Low Code 1",
-    Imagem: badge_logo,
-  },
-  {
-    id: 1,
-    nome: "Low Code 1",
-    Imagem: badge_logo,
-  },
-  {
-    id: 1,
-    nome: "Low Code 1",
-    Imagem: badge_logo,
-  },
-  {
-    id: 1,
-    nome: "Low Code 1",
-    Imagem: badge_logo,
-  },
-  {
-    id: 1,
-    nome: "Low Code 1",
-    Imagem: badge_logo,
-  },
-  {
-    id: 1,
-    nome: "Low Code 1",
-    Imagem: badge_logo,
-  },
-  {
-    id: 1,
-    nome: "Ole Ole",
-    Imagem: badge_logo,
-  },
+  { id: 5, nome: "Low Code 5", Imagem: badge_logo },
+  { id: 6, nome: "Low Code 6", Imagem: badge_logo },
+  { id: 7, nome: "Low Code 7", Imagem: badge_logo },
+  { id: 8, nome: "Low Code 8", Imagem: badge_logo },
+  { id: 9, nome: "Low Code 9", Imagem: badge_logo },
+  { id: 10, nome: "Low Code 10", Imagem: badge_logo },
+  { id: 11, nome: "Low Code 11", Imagem: badge_logo },
+  { id: 12, nome: "Low Code 12", Imagem: badge_logo },
+  { id: 13, nome: "Low Code 13", Imagem: badge_logo },
+  { id: 14, nome: "Low Code 14", Imagem: badge_logo },
+  { id: 15, nome: "Low Code 15", Imagem: badge_logo },
+  { id: 16, nome: "Ole Ole", Imagem: badge_logo },
 ];
 
-const Render_Badges = () => {
+const Render_Badges = ({ badges, edicao, onAdd, assinaturaBadges }) => {
   return(
     <>
-    {Badges_Obtidos.map((badge, index) => (
-      <div key={index} className='badge_item d-flex flex-column align-items-center text-center'>
+    {badges.map((badge) => {
+      const isSelected = assinaturaBadges.some(b => b.id === badge.id);
+      return (
+      <div key={badge.id} 
+           className='badge_item d-flex flex-column align-items-center text-center position-relative'
+           style={{ cursor: edicao && !isSelected ? 'pointer' : 'default', opacity: isSelected ? 0.5 : 1 }}
+           onClick={() => { if(edicao && !isSelected) onAdd(badge) }}>
         <img src={badge.Imagem} alt={badge.nome} />
         <span className='badge_nome'>{badge.nome}</span>
+        {edicao && !isSelected && (
+          <div className="position-absolute top-0 end-0 bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow" style={{width: '24px', height: '24px', transform: 'translate(25%, -25%)'}}>
+            <i className="fi fi-br-plus" style={{fontSize: '10px'}}></i>
+          </div>
+        )}
       </div>
-    ))}
+    )})}
     </>
   )
 }
 
-const Assinatura = () => {
+const Assinatura = ({ badges, edicao, onRemove }) => {
   return(
     <>
-      {Assinatura_Pessoal.map((badge) => (
-        <div key={badge.id} className='assinatura_badge d-flex align-items-center flex-column justify-content-center'>
+      {badges.map((badge) => (
+        <div key={badge.id} className='assinatura_badge d-flex align-items-center flex-column justify-content-center position-relative'>
           <img src={badge.Imagem} alt={badge.nome} />
+          {edicao && (
+            <div className="position-absolute top-0 end-0 bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow" 
+                 style={{width: '24px', height: '24px', cursor: 'pointer', transform: 'translate(25%, -25%)'}}
+                 onClick={() => onRemove(badge)}>
+              <i className="fi fi-br-cross" style={{fontSize: '10px'}}></i>
+            </div>
+          )}
         </div>
       ))}
+      {edicao && badges.length < 4 && (
+        <div className='assinatura_badge d-flex align-items-center flex-column justify-content-center bg-light text-muted' style={{ border: '2px dashed #ccc', borderRadius: '50%', cursor: 'default' }}>
+          <i className="fi fi-br-plus" style={{fontSize: '24px'}}></i>
+        </div>
+      )}
     </>
   )}
 
@@ -175,6 +149,17 @@ const PerfilPessoal = () => {
     pontos: User.pontos,
     foto: User.foto
   });
+  const [assinaturaBadges, setAssinaturaBadges] = useState(Assinatura_Pessoal_Inicial);
+
+  const handleAddBadge = (badge) => {
+    if (assinaturaBadges.length < 4) {
+      setAssinaturaBadges([...assinaturaBadges, badge]);
+    }
+  };
+
+  const handleRemoveBadge = (badgeToRemove) => {
+    setAssinaturaBadges(assinaturaBadges.filter(b => b.id !== badgeToRemove.id));
+  };
 
   return (
     <div className='perfil-container w-100' style={{ justifyContent: 'space-evenly' }}>
@@ -242,7 +227,7 @@ const PerfilPessoal = () => {
               <p className='assinatura_contacto m-0 mt-1'>{profileData.email} | {profileData.telefone}</p>
             </div>
             <div className='assinatura_badges d-flex gap-3 justify-content-center w-100 flex-wrap'>
-              <Assinatura />
+              <Assinatura badges={assinaturaBadges} edicao={edicao} onRemove={handleRemoveBadge} />
             </div>
           </div>
         </div>
@@ -255,7 +240,7 @@ const PerfilPessoal = () => {
             <h2 className='subtitulo_perfil mb-4'>{t('badges_pessoais')}</h2>
             <div className='badges_scroll_box position-relative'>
               <div className='badges_scroll_container d-flex gap-3 overflow-x-auto'>
-                <Render_Badges/>
+                <Render_Badges badges={Badges_Obtidos} edicao={edicao} onAdd={handleAddBadge} assinaturaBadges={assinaturaBadges} />
               </div>
             </div>
           </div>

@@ -27,6 +27,7 @@ db.Historico = require('./historico.js')(sequelize);
 db.Assinatura = require('./assinatura.js')(sequelize);
 db.BadgesAssinatura = require('./badges_assinatura.js')(sequelize);
 db.Logs = require('./logs.js')(sequelize);
+db.Defs_notificacao = require('./defs_notificacao.js')(sequelize);
 db.Notificacoes = require('./notificacoes.js')(sequelize);
 db.Recetor = require('./recetor.js')(sequelize);
 db.PoliticasRgpd = require('./politicas_rgpd.js')(sequelize);

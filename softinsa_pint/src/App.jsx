@@ -87,7 +87,6 @@ function App() {
           : (roleParseada.nome ? roleParseada.nome.toLowerCase() : null);
 
         const res = await axios.get("http://localhost:5000/api/getuser", { params: { id: idGuardado } });
-        
         if (res.data) {
           setUser({
             id: idGuardado,
@@ -263,7 +262,7 @@ function App() {
           user.cargo === "service line leader") && (
           <Route path="/galeria" element={<Galeria_Talent_ServiceLine />} />
         )}
-
+        
         {/* Rotas Exclusivas */}
         {user.cargo === "consultor" && <Route path="/objetivos" element={<ObjetivosConsultor user={user} />} />}
         {user.cargo === "administrador" && <Route path="/editar" element={<EditarAdmin />} />}
@@ -441,7 +440,7 @@ function App() {
             <span><b>{user.nome}</b></span>
             <span style={{ fontSize: "0.8rem" }}>{user.cargo ? t(user.cargo) : ""}</span>
           </div>
-
+          {console.log("FOTO:", user.foto)}
           <img
             id="user_image"
             className="mx-3 rounded-2"

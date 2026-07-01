@@ -63,25 +63,21 @@ function EditarAdmin() {
   return (
     <div className="editar-container w-100">
       <h1
-        className="texto-titulo-principal d-flex align-items-center"
+        className="texto-titulo-principal d-flex align-items-center gap-4 flex-wrap"
         style={{ marginBottom: "var(--gap-titulo-principal-conteudo)" }}
       >
         Editar {getNomeAba()}
         {abaAtiva !== "areas" ? "s" : ""}
         {abaAtiva === "badges" && (
-          <div className="view-toggle-container">
-            <button
-              className={`view-toggle-btn ${viewMode === "galeria" ? "active" : ""}`}
-              onClick={() => setViewMode("galeria")}
-            >
-              <i className="fi fi-br-grid"></i> Galeria
-            </button>
-            <button
-              className={`view-toggle-btn ${viewMode === "tabela" ? "active" : ""}`}
-              onClick={() => setViewMode("tabela")}
-            >
-              <i className="fi fi-br-table"></i> Tabela
-            </button>
+          <div className="seletor-vista-badges">
+            <SeletorAbas
+              valorAtivo={viewMode}
+              onChange={setViewMode}
+              opcoes={[
+                { valor: "galeria", label: "Galeria", icone: "fi-br-grid" },
+                { valor: "tabela", label: "Tabela", icone: "fi-br-table" },
+              ]}
+            />
           </div>
         )}
       </h1>

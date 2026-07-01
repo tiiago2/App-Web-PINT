@@ -4,6 +4,7 @@ import EditarMetricas from './EditarMetricas';
 import GaleriaBadges from './GaleriaBadges';
 import EditarTabela from './EditarTabela';
 import BadgeModal from '../../../components/Criar_Editar/BadgeModal';
+import BotaoAcao from '../../../components/ui/BotaoAcao/BotaoAcao';
 
 export const MOCK_BADGES_INICIAL = [
   { id: 1, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#b0baf0', icon: 'fi-br-mug-hot' },
@@ -73,6 +74,16 @@ export default function TabBadges({ viewMode }) {
 
   return (
     <>
+      <div className="tab-badges-acoes-superiores">
+        <BotaoAcao
+          variante="secundario"
+          icone="fi-br-plus"
+          onClick={handleOpenCreateModal}
+        >
+          Adicionar Badge
+        </BotaoAcao>
+      </div>
+      
       <EditarFiltros 
         abaNome="Badge"
         searchTerm={searchTerm} setSearchTerm={setSearchTerm}

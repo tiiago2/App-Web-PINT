@@ -96,6 +96,9 @@
         --padding-pill-card-sugerido: 4px 10px;
         --altura-botao-card-sugerido: 36px;
         --duracao-transicao-card-sugerido: 320ms;
+        /*espaçamento entre o seletorAbas e o Título, no caso de estarem ambos na horizontal*/
+            --gap-titulo-seletor-abas: 24px;
+            --largura-seletor-vista-badges: 300px;
 
     /* BORDER RADIUS ESPECÍFICO DE BADGES */
 

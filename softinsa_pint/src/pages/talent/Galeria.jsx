@@ -5,6 +5,8 @@ import EditarMetricas from '../Administrador/EditarTabs/EditarMetricas';
 import GaleriaBadges from '../Administrador/EditarTabs/GaleriaBadges';
 import EditarTabela from '../Administrador/EditarTabs/EditarTabela';
 import BadgeModal from '../../components/Criar_Editar/BadgeModal';
+import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
+import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
 import { MOCK_BADGES_INICIAL } from '../Administrador/EditarTabs/TabBadges';
 import "./Galeria.css";
 
@@ -241,39 +243,43 @@ function Galeria() {
   };
 
   return (
-    <div className="galeria-container w-100 d-flex flex-column h-100">
+    <div className="galeria-container">
       
-      <div className="d-flex justify-content-between align-items-center flex-shrink-0" style={{ marginBottom: 'var(--gap-titulo-principal-conteudo)' }}>
-        <h1 className="texto-titulo-principal m-0 d-flex align-items-center">
-          Galeria de Badges
-          
-          <div className="view-toggle-container">
-            <button 
-              className={`view-toggle-btn ${viewMode === 'galeria' ? 'active' : ''}`}
-              onClick={() => setViewMode('galeria')}
-            >
-              <i className="fi fi-br-grid"></i> Galeria
-            </button>
-            <button 
-              className={`view-toggle-btn ${viewMode === 'tabela' ? 'active' : ''}`}
-              onClick={() => setViewMode('tabela')}
-            >
-              <i className="fi fi-br-table"></i> Tabela
-            </button>
-          </div>
-        </h1>
+      <div className="galeria-topo-admin">
+        <div className="galeria-topo-admin-esquerda">
+          <h1 className="texto-titulo-principal m-0">
+            Galeria de Badges
+          </h1>
 
-        <button
-          className="btn px-4 shadow-sm fw-semibold"
-          style={{
-            backgroundColor: "var(--barra_lateral)",
-            color: "var(--fundo)",
-            borderRadius: "var(--border-radius-pequeno)"
-          }}
-          onClick={() => setMostrarExportar(true)}
-        >
-          <i className="fi fi-br-download me-2"></i> Exportar
-        </button>
+          <div className="seletor-vista-badges">
+            <SeletorAbas
+              valorAtivo={viewMode}
+              onChange={setViewMode}
+              opcoes={[
+                { valor: "galeria", label: "Galeria", icone: "fi-br-grid" },
+                { valor: "tabela", label: "Tabela", icone: "fi-br-table" },
+              ]}
+            />
+          </div>
+        </div>
+
+        <div className="galeria-topo-admin-acoes">
+          <BotaoAcao
+            variante="secundario"
+            icone="fi-br-plus"
+            onClick={handleOpenCreateModal}
+          >
+            Adicionar Badge
+          </BotaoAcao>
+
+          <BotaoAcao
+            variante="primario"
+            icone="fi-br-download"
+            onClick={() => setMostrarExportar(true)}
+          >
+            Exportar
+          </BotaoAcao>
+        </div>
       </div>
 
       {/* --- POP-UP DE EXPORTAÇÃO (MODAL) DO COLEGA --- */}

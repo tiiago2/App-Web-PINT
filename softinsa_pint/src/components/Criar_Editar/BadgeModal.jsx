@@ -1,145 +1,264 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ReactDOM from "react-dom";
 import "./BadgeModal.css";
 import BotaoDropdown from "../ui/BotaoDropdown/BotaoDropdown";
 import BadgeCirculo from "../Galeria/BadgeCirculo/BadgeCirculo";
 
-// 1. MOCK DATA HIERÁRQUICO
-const MOCK_HIERARCHY = [
+const LEARNING_PATHS = [
   {
-    id: "lp1",
-    nome: "Jornada Técnica",
-    serviceLines: [
-      {
-        id: "sl1",
-        nome: "Frontend Development",
-        areas: [
-          { id: "a1", nome: "React JS" },
-          { id: "a2", nome: "Angular Pro" },
-        ],
-      },
-      {
-        id: "sl2",
-        nome: "Backend Development",
-        areas: [
-          { id: "a3", nome: "Node JS" },
-          { id: "a4", nome: "Spring Boot" },
-        ],
-      },
-      {
-        id: "sl3",
-        nome: "Cloud Native",
-        areas: [
-          { id: "a5", nome: "AWS Architecture" },
-          { id: "a6", nome: "Azure Solutions" },
-        ],
-      },
-    ],
+    id: 1,
+    nome: "Backend Dev",
+  },
+  {
+    id: 2,
+    nome: "Frontend Dev",
+  },
+  {
+    id: 3,
+    nome: "Data & Analytics",
+  },
+  {
+    id: 4,
+    nome: "Cloud & DevOps",
   },
 ];
 
-const ICON_OPTIONS = [
-  "fi-br-mug-hot",
-  "fi-br-cloud",
-  "fi-br-target",
-  "fi-br-trophy",
-  "fi-br-microchip",
-  "fi-br-bolt",
-  "fi-br-database",
-  "fi-br-smartphone",
-  "fi-br-browser",
-  "fi-br-shield-check",
-  "fi-br-palette",
-  "fi-br-chart-histogram",
-  "fi-br-graduation-cap",
-  "fi-br-rocket",
-  "fi-br-star",
+const SERVICE_LINES = [
+  {
+    id: 1,
+    idLearningPath: 1,
+    nome: "Software Engineering",
+  },
+  {
+    id: 2,
+    idLearningPath: 3,
+    nome: "Data Insights",
+  },
+  {
+    id: 3,
+    idLearningPath: 4,
+    nome: "Cloud Services",
+  },
 ];
 
+const AREAS = [
+  {
+    id: 1,
+    idServiceLine: 1,
+    nome: "Java Core",
+  },
+  {
+    id: 2,
+    idServiceLine: 1,
+    nome: "Node.js & TypeScript",
+  },
+  {
+    id: 3,
+    idServiceLine: 1,
+    nome: "React & Web UI",
+  },
+  {
+    id: 4,
+    idServiceLine: 2,
+    nome: "Python Data Science",
+  },
+  {
+    id: 5,
+    idServiceLine: 3,
+    nome: "AWS Architecture",
+  },
+];
+
+const NIVEIS = [
+  {
+    id: 1,
+    nome: "Junior",
+  },
+  {
+    id: 2,
+    nome: "Intermédio",
+  },
+  {
+    id: 3,
+    nome: "Sénior",
+  },
+  {
+    id: 4,
+    nome: "Especialista",
+  },
+  {
+    id: 5,
+    nome: "Líder de conhecimento",
+  },
+];
+
+function encontrarAreaPorNome(nomeArea) {
+  if (!nomeArea) return null;
+
+  return AREAS.find(
+    (area) => area.nome.toLowerCase() === String(nomeArea).toLowerCase()
+  );
+}
+
+function encontrarNivelPorNome(nomeNivel) {
+  if (!nomeNivel) return null;
+
+  return NIVEIS.find(
+    (nivel) => nivel.nome.toLowerCase() === String(nomeNivel).toLowerCase()
+  );
+}
+
+function criarRequisitoVazio() {
+  return {
+    id: `tmp-${Date.now()}-${Math.random()}`,
+    nome_requisito: "",
+    descricao_requisito: "",
+  };
+}
+
 export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
-  // Estados Genéricos do Badge
   const [nome, setNome] = useState("");
+  const [descricao, setDescricao] = useState("");
   const [pontos, setPontos] = useState("");
-  const [cor, setCor] = useState("#b0baf0");
-  const [icone, setIcone] = useState("fi-br-star");
   const [validade, setValidade] = useState("");
   const [imagemPreview, setImagemPreview] = useState(null);
   const [isEspecial, setIsEspecial] = useState(false);
-  const [tipoEspecial, setTipoEspecial] = useState("gold");
 
-  // Estados Hierárquicos
   const [learningPathId, setLearningPathId] = useState("");
   const [serviceLineId, setServiceLineId] = useState("");
   const [areaId, setAreaId] = useState("");
-  const [nivel, setNivel] = useState(""); // Júnior, Pleno, Sénior, etc.
+  const [nivelId, setNivelId] = useState("");
 
-  // Estados de Validação Inline
   const [erroSl, setErroSl] = useState("");
   const [erroArea, setErroArea] = useState("");
   const [formErro, setFormErro] = useState("");
 
-  // Estados dos Requisitos Dinâmicos
   const [requisitos, setRequisitos] = useState([]);
 
-  // Opções para as dropdowns baseadas nas escolhas do utilizador
-  const lpOpcoes = MOCK_HIERARCHY.map((lp) => ({
-    valor: lp.id,
-    label: lp.nome,
+  const lpOpcoes = LEARNING_PATHS.map((learningPath) => ({
+    valor: learningPath.id,
+    label: learningPath.nome,
   }));
 
-  const selectedLP = MOCK_HIERARCHY.find((lp) => lp.id === learningPathId);
-  const serviceLinesOptions = selectedLP ? selectedLP.serviceLines : [];
-  const slOpcoes = serviceLinesOptions.map((sl) => ({
-    valor: sl.id,
-    label: sl.nome,
+  const serviceLinesFiltradas = useMemo(() => {
+    if (!learningPathId) return [];
+
+    return SERVICE_LINES.filter(
+      (serviceLine) => serviceLine.idLearningPath === Number(learningPathId)
+    );
+  }, [learningPathId]);
+
+  const slOpcoes = serviceLinesFiltradas.map((serviceLine) => ({
+    valor: serviceLine.id,
+    label: serviceLine.nome,
   }));
 
-  const selectedSL = serviceLinesOptions.find((sl) => sl.id === serviceLineId);
-  const areasOptions = selectedSL ? selectedSL.areas : [];
-  const areaOpcoes = areasOptions.map((a) => ({ valor: a.id, label: a.nome }));
+  const areasFiltradas = useMemo(() => {
+    if (!serviceLineId) return [];
+
+    return AREAS.filter(
+      (area) => area.idServiceLine === Number(serviceLineId)
+    );
+  }, [serviceLineId]);
+
+  const areaOpcoes = areasFiltradas.map((area) => ({
+    valor: area.id,
+    label: area.nome,
+  }));
+
+  const nivelOpcoes = NIVEIS.map((nivel) => ({
+    valor: nivel.id,
+    label: nivel.nome,
+  }));
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      if (badgeToEdit) {
-        setNome(badgeToEdit.nome || "");
-        setPontos(badgeToEdit.pontos !== undefined ? badgeToEdit.pontos : "");
-        setCor(badgeToEdit.cor || "#b0baf0");
-        setIcone(badgeToEdit.icon || "fi-br-star");
-        setValidade(badgeToEdit.validade || "");
-        setImagemPreview(badgeToEdit.imagem || null);
-        setIsEspecial(badgeToEdit.especial || false);
-        setTipoEspecial(badgeToEdit.tipoEspecial || "gold");
-
-        // Simulação da edição da hierarquia e requisitos (se já vierem preenchidos)
-        setLearningPathId(badgeToEdit.learningPathId || "");
-        setServiceLineId(badgeToEdit.serviceLineId || "");
-        setAreaId(badgeToEdit.areaId || "");
-        setNivel(badgeToEdit.nivel || "");
-        setRequisitos(badgeToEdit.requisitos || []);
-      } else {
-        setNome("");
-        setPontos("");
-        setCor("#b0baf0");
-        setIcone("fi-br-star");
-        setValidade("");
-        setImagemPreview(null);
-        setIsEspecial(false);
-        setTipoEspecial("gold");
-        setLearningPathId("");
-        setServiceLineId("");
-        setAreaId("");
-        setNivel("");
-        setRequisitos([
-          { id: Date.now(), titulo: "", descricao: "", imagem: null },
-        ]); // Inicia com 1 requisito vazio
-        setErroSl("");
-        setErroArea("");
-        setFormErro("");
-      }
-    } else {
+    if (!isOpen) {
       document.body.style.overflow = "";
+      return;
     }
+
+    document.body.style.overflow = "hidden";
+    setFormErro("");
+    setErroSl("");
+    setErroArea("");
+
+    if (badgeToEdit) {
+      const areaExistente =
+        Number(badgeToEdit.id_area) ||
+        Number(badgeToEdit.areaId) ||
+        Number(badgeToEdit.idArea) ||
+        encontrarAreaPorNome(
+          badgeToEdit.area ||
+            badgeToEdit.nomeArea ||
+            badgeToEdit.categoria
+        )?.id ||
+        "";
+
+      const areaSelecionada = AREAS.find(
+        (area) => area.id === Number(areaExistente)
+      );
+
+      const serviceLineSelecionada = areaSelecionada
+        ? SERVICE_LINES.find(
+            (serviceLine) =>
+              serviceLine.id === areaSelecionada.idServiceLine
+          )
+        : null;
+
+      const nivelExistente =
+        Number(badgeToEdit.id_nivel) ||
+        Number(badgeToEdit.nivelId) ||
+        Number(badgeToEdit.idNivel) ||
+        encontrarNivelPorNome(badgeToEdit.nivel || badgeToEdit.nomeNivel)?.id ||
+        "";
+
+      setNome(badgeToEdit.nome_badge || badgeToEdit.nome || "");
+      setDescricao(badgeToEdit.descricao_badge || badgeToEdit.descricao || "");
+      setPontos(
+        badgeToEdit.pontos_badge !== undefined
+          ? badgeToEdit.pontos_badge
+          : badgeToEdit.pontos !== undefined
+            ? badgeToEdit.pontos
+            : ""
+      );
+      setValidade(badgeToEdit.validade || "");
+      setImagemPreview(badgeToEdit.imagem || null);
+      setIsEspecial(Boolean(badgeToEdit.especial));
+
+      setAreaId(areaExistente);
+      setServiceLineId(serviceLineSelecionada?.id || "");
+      setLearningPathId(serviceLineSelecionada?.idLearningPath || "");
+      setNivelId(nivelExistente);
+
+      const requisitosExistentes = Array.isArray(badgeToEdit.requisitos)
+        ? badgeToEdit.requisitos
+            .filter((req) => typeof req === "object")
+            .map((req) => ({
+              id: req.id || req.id_requisito || `tmp-${Date.now()}-${Math.random()}`,
+              nome_requisito:
+                req.nome_requisito || req.titulo || req.nome || "",
+              descricao_requisito:
+                req.descricao_requisito || req.descricao || "",
+            }))
+        : [];
+
+      setRequisitos(requisitosExistentes);
+    } else {
+      setNome("");
+      setDescricao("");
+      setPontos("");
+      setValidade("");
+      setImagemPreview(null);
+      setIsEspecial(false);
+
+      setLearningPathId("");
+      setServiceLineId("");
+      setAreaId("");
+      setNivelId("");
+
+      setRequisitos([]);
+    }
+
     return () => {
       document.body.style.overflow = "";
     };
@@ -147,109 +266,171 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
 
   if (!isOpen) return null;
 
-  // Resets em Cascata: Se mudar LP, reseta SL e Área. Se mudar SL, reseta Área.
-  const handleLpChange = (val) => {
-    setLearningPathId(val);
+  function handleLpChange(valor) {
+    setLearningPathId(valor);
     setServiceLineId("");
     setAreaId("");
-    setErroSl(""); // Limpa o erro se o user afinal clicou no correto
+    setErroSl("");
+    setErroArea("");
     setFormErro("");
-  };
+  }
 
-  const handleSlChange = (val) => {
-    setServiceLineId(val);
+  function handleSlChange(valor) {
+    setServiceLineId(valor);
     setAreaId("");
-    setErroArea(""); // Limpa o erro
+    setErroArea("");
     setFormErro("");
-  };
+  }
 
-  // Funções para gerir Requisitos Dinâmicos
-  const handleAddRequisito = () => {
-    setRequisitos([
-      ...requisitos,
-      { id: Date.now(), titulo: "", descricao: "", imagem: null },
+  function handleAddRequisito() {
+    setRequisitos((requisitosAtuais) => [
+      ...requisitosAtuais,
+      criarRequisitoVazio(),
     ]);
-  };
+  }
 
-  const handleRemoveRequisito = (id) => {
-    setRequisitos(requisitos.filter((req) => req.id !== id));
-  };
-
-  const handleUpdateRequisito = (id, field, value) => {
-    setRequisitos(
-      requisitos.map((req) =>
-        req.id === id ? { ...req, [field]: value } : req,
-      ),
+  function handleRemoveRequisito(id) {
+    setRequisitos((requisitosAtuais) =>
+      requisitosAtuais.filter((requisito) => requisito.id !== id)
     );
-  };
+  }
 
-  const handleRequisitoImageUpload = (id, e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        handleUpdateRequisito(id, "imagem", reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  function handleUpdateRequisito(id, campo, valor) {
+    setRequisitos((requisitosAtuais) =>
+      requisitosAtuais.map((requisito) =>
+        requisito.id === id
+          ? {
+              ...requisito,
+              [campo]: valor,
+            }
+          : requisito
+      )
+    );
+  }
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagemPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  function handleImageUpload(event) {
+    const file = event.target.files?.[0];
 
-  const handleSave = (e) => {
-    e.preventDefault();
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      setImagemPreview(reader.result);
+      setFormErro("");
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+  function validarRequisitos() {
+    return requisitos.every((requisito) => {
+      const nomeValido = requisito.nome_requisito.trim();
+      const descricaoValida = requisito.descricao_requisito.trim();
+
+      return nomeValido && descricaoValida;
+    });
+  }
+
+  function handleSave(event) {
+    event.preventDefault();
     setFormErro("");
-    if (!nome.trim() || pontos === "" || !areaId || !nivel.trim()) {
+
+    if (
+      !nome.trim() ||
+      pontos === "" ||
+      validade === "" ||
+      !learningPathId ||
+      !serviceLineId ||
+      !areaId ||
+      !nivelId ||
+      !imagemPreview
+    ) {
       setFormErro(
-        "Por favor preencha todos os campos obrigatórios, incluindo Área e Nível.",
+        "Preenche todos os campos obrigatórios: nome, hierarquia, nível, pontos, validade e imagem."
       );
       return;
     }
 
-    // A Categoria genérica anterior pode ser usada agora para guardar o "Nome da Área" temporariamente na tabela
-    const areaName =
-      areasOptions.find((a) => a.id === areaId)?.nome || "Sem Categoria";
+    if (!validarRequisitos()) {
+      setFormErro(
+        "Todos os requisitos adicionados têm de ter nome e descrição."
+      );
+      return;
+    }
 
-    const newBadge = {
+    const areaSelecionada = AREAS.find(
+      (area) => area.id === Number(areaId)
+    );
+
+    const serviceLineSelecionada = SERVICE_LINES.find(
+      (serviceLine) => serviceLine.id === Number(serviceLineId)
+    );
+
+    const learningPathSelecionado = LEARNING_PATHS.find(
+      (learningPath) => learningPath.id === Number(learningPathId)
+    );
+
+    const nivelSelecionado = NIVEIS.find(
+      (nivel) => nivel.id === Number(nivelId)
+    );
+
+    const requisitosValidos = requisitos
+      .filter(
+        (requisito) =>
+          requisito.nome_requisito.trim() &&
+          requisito.descricao_requisito.trim()
+      )
+      .map((requisito) => ({
+        id: requisito.id,
+        nome_requisito: requisito.nome_requisito.trim(),
+        descricao_requisito: requisito.descricao_requisito.trim(),
+      }));
+
+    const badgeNormalizado = {
       id: badgeToEdit ? badgeToEdit.id : Date.now(),
-      nome,
-      categoria: areaName, // Mantém compatibilidade com a tabela visual
-      learningPathId,
-      serviceLineId,
-      areaId,
-      nivel,
-      pontos: parseInt(pontos) || 0,
-      validade: validade ? parseInt(validade) : null,
-      cor,
-      icon: icone,
+
+      id_badge: badgeToEdit?.id_badge,
+      id_area: Number(areaId),
+      id_nivel: Number(nivelId),
+      validade: Number(validade),
+      especial: Boolean(isEspecial),
+      pontos_badge: Number(pontos),
+      nome_badge: nome.trim(),
       imagem: imagemPreview,
-      especial: isEspecial,
-      tipoEspecial: isEspecial ? tipoEspecial : null,
-      requisitos: requisitos,
+      descricao_badge: descricao.trim(),
+
+      nome: nome.trim(),
+      categoria: areaSelecionada?.nome || "Sem Área",
+      area: areaSelecionada?.nome || "Sem Área",
+      nomeArea: areaSelecionada?.nome || "Sem Área",
+      learningPath: learningPathSelecionado?.nome || "",
+      serviceLine: serviceLineSelecionada?.nome || "",
+      nivel: nivelSelecionado?.nome || "",
+      pontos: Number(pontos),
+
+      requisitos: requisitosValidos,
     };
 
-    onSave(newBadge);
+    onSave(badgeNormalizado);
     onClose();
-  };
+  }
 
   return ReactDOM.createPortal(
     <div className="badge-modal-overlay" onClick={onClose}>
       <div
         className="badge-modal-container"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
       >
         <div className="badge-modal-header">
           <h4>{badgeToEdit ? "Editar Badge" : "Criar Badge"}</h4>
-          <button className="badge-modal-close-btn" onClick={onClose}>
+
+          <button
+            type="button"
+            className="badge-modal-close-btn"
+            onClick={onClose}
+            aria-label="Fechar"
+          >
             <i className="fi fi-br-cross"></i>
           </button>
         </div>
@@ -261,35 +442,43 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
         >
           {formErro && (
             <div
-              className="alert alert-danger d-flex align-items-center gap-2 mb-0"
+              className="alert alert-danger d-flex align-items-center gap-2 mb-3"
               style={{
                 fontSize: "0.85rem",
                 padding: "0.75rem",
-                marginBottom: "1rem",
               }}
             >
-              <i className="fi fi-br-info"></i> {formErro}
+              <i className="fi fi-br-info"></i>
+              {formErro}
             </div>
           )}
 
           <div className="badge-preview-container">
             <div className="badge-preview-label">Pré-visualização</div>
+
             <div
               className="d-flex justify-content-center mb-3"
               style={{ transform: "scale(1.2)" }}
             >
               <BadgeCirculo
                 imagemBadge={imagemPreview}
-                icone={icone}
                 nomeBadge={nome}
                 especial={isEspecial}
-                tipoEspecial={tipoEspecial}
-                corBg={cor}
+                tipoEspecial={isEspecial ? "gold" : null}
               />
             </div>
+
             <div className="preview-name">{nome || "Nome do Badge"}</div>
-            {nivel && <div className="preview-category">Nível: {nivel}</div>}
+
+            {nivelId && (
+              <div className="preview-category">
+                Nível:{" "}
+                {NIVEIS.find((nivel) => nivel.id === Number(nivelId))?.nome}
+              </div>
+            )}
           </div>
+
+          <div className="badge-section-title mt-2">Informação do Badge</div>
 
           <div className="row">
             <div className="col-md-6 badge-form-group">
@@ -297,395 +486,243 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
               <input
                 type="text"
                 className="badge-form-input"
-                placeholder="Ex: Badge Júnior em Outsystems"
+                placeholder="Ex: Java Junior Starter"
                 value={nome}
-                onChange={(e) => setNome(e.target.value)}
+                onChange={(event) => setNome(event.target.value)}
                 required
               />
             </div>
-            <div className="col-md-6 badge-form-group">
-              <label className="badge-form-label">Nível (Ex: Júnior, A1)</label>
-              <input
-                type="text"
-                className="badge-form-input"
-                placeholder="Ex: Júnior"
-                value={nivel}
-                onChange={(e) => setNivel(e.target.value)}
-                required
-              />
-            </div>
-          </div>
 
-          <div className="row">
-            <div className="col-md-12 badge-form-group">
-              <label className="badge-form-label">Learning Path</label>
+            <div className="col-md-6 badge-form-group">
+              <label className="badge-form-label">Nível</label>
               <BotaoDropdown
                 titulo="Selecione..."
-                valor={learningPathId}
-                opcoes={lpOpcoes}
-                onChange={(val) => handleLpChange(val)}
+                valor={nivelId}
+                opcoes={nivelOpcoes}
+                onChange={setNivelId}
                 mostrarTituloNoValor={false}
               />
             </div>
-            <div className="col-md-12 badge-form-group">
-              <label className="badge-form-label">Service Line</label>
-              <div
-                onClickCapture={(e) => {
-                  if (!learningPathId) {
-                    e.stopPropagation();
-                    setErroSl("Por favor, escolha primeiro o Learning Path.");
-                  }
-                }}
-              >
-                <BotaoDropdown
-                  titulo="Selecione..."
-                  valor={serviceLineId}
-                  opcoes={slOpcoes}
-                  onChange={(val) => handleSlChange(val)}
-                  mostrarTituloNoValor={false}
-                />
-              </div>
-              {erroSl && (
-                <div
-                  style={{
-                    color: "#ff4d4d",
-                    fontSize: "0.8rem",
-                    marginTop: "0.2rem",
-                  }}
-                >
-                  {erroSl}
-                </div>
-              )}
-            </div>
-            <div className="col-md-12 badge-form-group">
-              <label className="badge-form-label">Área</label>
-              <div
-                onClickCapture={(e) => {
-                  if (!serviceLineId) {
-                    e.stopPropagation();
-                    setErroArea("Por favor, escolha primeiro a Service Line.");
-                  }
-                }}
-              >
-                <BotaoDropdown
-                  titulo="Selecione..."
-                  valor={areaId}
-                  opcoes={areaOpcoes}
-                  onChange={(val) => setAreaId(val)}
-                  mostrarTituloNoValor={false}
-                  abrirParaCima={true}
-                />
-              </div>
-              {erroArea && (
-                <div
-                  style={{
-                    color: "#ff4d4d",
-                    fontSize: "0.8rem",
-                    marginTop: "0.2rem",
-                  }}
-                >
-                  {erroArea}
-                </div>
-              )}
-            </div>
           </div>
 
-          <div className="badge-section-title mt-2">Identidade Visual</div>
+          <div className="badge-form-group">
+            <label className="badge-form-label">Descrição do Badge</label>
+            <textarea
+              className="badge-form-textarea"
+              placeholder="Descrição do badge..."
+              value={descricao}
+              onChange={(event) => setDescricao(event.target.value)}
+            />
+          </div>
+
+          <div className="badge-form-group">
+            <label className="badge-form-label">Learning Path</label>
+            <BotaoDropdown
+              titulo="Selecione..."
+              valor={learningPathId}
+              opcoes={lpOpcoes}
+              onChange={handleLpChange}
+              mostrarTituloNoValor={false}
+            />
+          </div>
+
+          <div className="badge-form-group">
+            <label className="badge-form-label">Service Line</label>
+            <div
+              onClickCapture={(event) => {
+                if (!learningPathId) {
+                  event.stopPropagation();
+                  setErroSl("Escolhe primeiro o Learning Path.");
+                }
+              }}
+            >
+              <BotaoDropdown
+                titulo="Selecione..."
+                valor={serviceLineId}
+                opcoes={slOpcoes}
+                onChange={handleSlChange}
+                mostrarTituloNoValor={false}
+              />
+            </div>
+
+            {erroSl && (
+              <div style={{ color: "#ff4d4d", fontSize: "0.8rem", marginTop: "0.2rem" }}>
+                {erroSl}
+              </div>
+            )}
+          </div>
+
+          <div className="badge-form-group">
+            <label className="badge-form-label">Área</label>
+            <div
+              onClickCapture={(event) => {
+                if (!serviceLineId) {
+                  event.stopPropagation();
+                  setErroArea("Escolhe primeiro a Service Line.");
+                }
+              }}
+            >
+              <BotaoDropdown
+                titulo="Selecione..."
+                valor={areaId}
+                opcoes={areaOpcoes}
+                onChange={setAreaId}
+                mostrarTituloNoValor={false}
+              />
+            </div>
+
+            {erroArea && (
+              <div style={{ color: "#ff4d4d", fontSize: "0.8rem", marginTop: "0.2rem" }}>
+                {erroArea}
+              </div>
+            )}
+          </div>
+
+          <div className="badge-section-title mt-2">Configuração</div>
 
           <div className="badge-form-group">
             <label className="badge-form-label mb-3">Tipo de Badge</label>
+
             <div className="d-flex gap-3">
-              <div
+              <button
+                type="button"
+                className={`badge-tipo-opcao badge-tipo-opcao--normal ${
+                  !isEspecial ? "ativo" : ""
+                }`}
                 onClick={() => setIsEspecial(false)}
-                style={{
-                  flex: 1,
-                  padding: "1.2rem",
-                  border: "2px solid",
-                  borderColor: !isEspecial
-                    ? "var(--barra_lateral)"
-                    : "var(--contorno)",
-                  borderRadius: "12px",
-                  cursor: "pointer",
-                  textAlign: "center",
-                  backgroundColor: !isEspecial ? "#f0f4ff" : "white",
-                  transition: "all 0.2s",
-                }}
               >
-                <div
-                  style={{
-                    fontWeight: "bold",
-                    fontSize: "1.1rem",
-                    color: !isEspecial
-                      ? "var(--barra_lateral)"
-                      : "var(--fontes)",
-                  }}
-                >
-                  Normal
-                </div>
-              </div>
+                Normal
+              </button>
 
-              <div
-                onClick={() => {
-                  setIsEspecial(true);
-                  setTipoEspecial("silver");
-                }}
-                style={{
-                  flex: 1,
-                  padding: "1.2rem",
-                  border: "2px solid",
-                  borderColor:
-                    isEspecial && tipoEspecial === "silver"
-                      ? "#8f9bb3"
-                      : "var(--contorno)",
-                  borderRadius: "12px",
-                  cursor: "pointer",
-                  textAlign: "center",
-                  background:
-                    isEspecial && tipoEspecial === "silver"
-                      ? "linear-gradient(135deg, #f8f9fa, #e4e9f2)"
-                      : "white",
-                  boxShadow:
-                    isEspecial && tipoEspecial === "silver"
-                      ? "0 4px 12px rgba(143, 155, 179, 0.25)"
-                      : "none",
-                  transition: "all 0.2s",
-                }}
+              <button
+                type="button"
+                className={`badge-tipo-opcao badge-tipo-opcao--especial ${
+                  isEspecial ? "ativo" : ""
+                }`}
+                onClick={() => setIsEspecial(true)}
               >
-                <div
-                  style={{
-                    fontWeight: "bold",
-                    fontSize: "1.1rem",
-                    color:
-                      isEspecial && tipoEspecial === "silver"
-                        ? "#57606f"
-                        : "var(--fontes)",
-                  }}
-                >
-                  Especial Prata
-                </div>
-              </div>
-
-              <div
-                onClick={() => {
-                  setIsEspecial(true);
-                  setTipoEspecial("gold");
-                }}
-                style={{
-                  flex: 1,
-                  padding: "1.2rem",
-                  border: "2px solid",
-                  borderColor:
-                    isEspecial && tipoEspecial === "gold"
-                      ? "#d4af37"
-                      : "var(--contorno)",
-                  borderRadius: "12px",
-                  cursor: "pointer",
-                  textAlign: "center",
-                  background:
-                    isEspecial && tipoEspecial === "gold"
-                      ? "linear-gradient(135deg, #fffdf0, #fcf4c7)"
-                      : "white",
-                  boxShadow:
-                    isEspecial && tipoEspecial === "gold"
-                      ? "0 4px 12px rgba(212, 175, 55, 0.2)"
-                      : "none",
-                  transition: "all 0.2s",
-                }}
-              >
-                <div
-                  style={{
-                    fontWeight: "bold",
-                    fontSize: "1.1rem",
-                    color:
-                      isEspecial && tipoEspecial === "gold"
-                        ? "#b5952f"
-                        : "var(--fontes)",
-                  }}
-                >
-                  Especial Ouro
-                </div>
-              </div>
+                Especial
+              </button>
             </div>
           </div>
 
           <div className="row">
-            <div className="col-md-4 badge-form-group">
-              <label className="badge-form-label">Cor (Opcional)</label>
-              <div className="badge-color-picker-wrap">
-                <input
-                  type="color"
-                  className="badge-color-input"
-                  value={cor}
-                  onChange={(e) => setCor(e.target.value)}
-                />
-                <span style={{ fontFamily: "monospace", color: "#6c757d" }}>
-                  {cor.toUpperCase()}
-                </span>
-              </div>
-            </div>
-            <div className="col-md-4 badge-form-group">
+            <div className="col-md-6 badge-form-group">
               <label className="badge-form-label">Pontos</label>
               <input
                 type="number"
                 className="badge-form-input"
                 placeholder="Ex: 50"
+                min="0"
                 value={pontos}
-                onChange={(e) => setPontos(e.target.value)}
+                onChange={(event) => setPontos(event.target.value)}
                 required
               />
             </div>
-            <div className="col-md-4 badge-form-group">
-              <label className="badge-form-label">Validade</label>
+
+            <div className="col-md-6 badge-form-group">
+              <label className="badge-form-label">Validade em dias</label>
               <input
                 type="number"
                 className="badge-form-input"
-                placeholder="Vitalício se vazio"
+                placeholder="Ex: 365"
+                min="1"
                 value={validade}
-                onChange={(e) => setValidade(e.target.value)}
+                onChange={(event) => setValidade(event.target.value)}
+                required
               />
             </div>
           </div>
 
           <div className="badge-form-group">
-            <label className="badge-form-label">
-              Imagem do Badge (Opcional)
-            </label>
+            <label className="badge-form-label">Imagem do Badge</label>
+
             <label className="badge-upload-zone">
               <input
                 type="file"
                 accept="image/*"
                 style={{ display: "none" }}
                 onChange={handleImageUpload}
+                required={!imagemPreview}
               />
+
               <i className="fi fi-br-cloud-upload badge-upload-icon"></i>
+
               <div className="badge-upload-text">
-                Clique ou arraste uma imagem para fazer upload
+                {imagemPreview
+                  ? "Imagem carregada. Clica para trocar."
+                  : "Clique ou arraste uma imagem para fazer upload"}
               </div>
             </label>
           </div>
 
-          <div className="badge-form-group">
-            <label className="badge-form-label">Ou escolha um Ícone</label>
-            <div className="badge-icon-grid">
-              {ICON_OPTIONS.map((iconClass) => (
-                <div
-                  key={iconClass}
-                  className={`badge-icon-option ${icone === iconClass && !imagemPreview ? "selected" : ""}`}
-                  onClick={() => {
-                    setIcone(iconClass);
-                    setImagemPreview(null);
-                  }}
-                  title={iconClass}
-                >
-                  <i className={`fi ${iconClass}`}></i>
-                </div>
-              ))}
-            </div>
-          </div>
-
           <div className="badge-requisitos-section">
             <div className="badge-section-title">
-              Requisitos para o Nível
+              Requisitos
               <button
                 type="button"
                 className="btn-add-requisito"
                 onClick={handleAddRequisito}
               >
-                <i className="fi fi-br-plus"></i> Adicionar Requisito
+                <i className="fi fi-br-plus"></i>
+                Adicionar Requisito
               </button>
             </div>
 
             {requisitos.length === 0 && (
               <div className="text-muted text-center py-4">
-                Nenhum requisito adicionado. Clique no botão acima para
-                adicionar.
+                Nenhum requisito associado.
               </div>
             )}
 
-            {requisitos.map((req, index) => (
-              <div key={req.id} className="requisito-card">
-                {requisitos.length > 1 && (
+            {requisitos.map((requisito, index) => (
+              <div key={requisito.id} className="requisito-card">
+                <div className="requisito-card-cabecalho">
+                  <span className="requisito-card-titulo">
+                    Requisito #{index + 1}
+                  </span>
+
                   <button
                     type="button"
                     className="btn-remove-requisito"
-                    onClick={() => handleRemoveRequisito(req.id)}
-                    title="Remover Requisito"
+                    onClick={() => handleRemoveRequisito(requisito.id)}
+                    title="Remover requisito"
+                    aria-label="Remover requisito"
                   >
-                    <i className="fi fi-br-cross"></i>
+                    <i className="fi fi-br-cross-small"></i>
                   </button>
-                )}
-                <div
-                  className="badge-form-label mb-3"
-                  style={{ color: "var(--barra_lateral)" }}
-                >
-                  Requisito #{index + 1}
                 </div>
 
-                <div className="row">
-                  <div className="col-md-8">
-                    <div className="badge-form-group mb-2">
-                      <input
-                        type="text"
-                        className="badge-form-input"
-                        placeholder="Título (Ex: A1 - Certificação AWS)"
-                        value={req.titulo}
-                        onChange={(e) =>
-                          handleUpdateRequisito(
-                            req.id,
-                            "titulo",
-                            e.target.value,
-                          )
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="badge-form-group mb-0">
-                      <textarea
-                        className="badge-form-textarea"
-                        placeholder="Descrição e evidências necessárias..."
-                        value={req.descricao}
-                        onChange={(e) =>
-                          handleUpdateRequisito(
-                            req.id,
-                            "descricao",
-                            e.target.value,
-                          )
-                        }
-                        style={{ minHeight: "80px" }}
-                        required
-                      ></textarea>
-                    </div>
-                  </div>
-                  <div className="col-md-4">
-                    <label className="requisito-upload-zone w-100 h-100 m-0">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        style={{ display: "none" }}
-                        onChange={(e) => handleRequisitoImageUpload(req.id, e)}
-                      />
-                      {req.imagem ? (
-                        <img
-                          src={req.imagem}
-                          alt="Preview Requisito"
-                          className="requisito-preview-img"
-                        />
-                      ) : (
-                        <>
-                          <i
-                            className="fi fi-br-picture badge-upload-icon mb-1"
-                            style={{ fontSize: "1.2rem" }}
-                          ></i>
-                          <div
-                            className="badge-upload-text"
-                            style={{ fontSize: "0.8rem" }}
-                          >
-                            Imagem
-                          </div>
-                        </>
-                      )}
-                    </label>
-                  </div>
+                <div className="badge-form-group mb-2">
+                  <input
+                    type="text"
+                    className="badge-form-input"
+                    placeholder="Nome do requisito"
+                    value={requisito.nome_requisito}
+                    onChange={(event) =>
+                      handleUpdateRequisito(
+                        requisito.id,
+                        "nome_requisito",
+                        event.target.value
+                      )
+                    }
+                  />
+                </div>
+
+                <div className="badge-form-group mb-0">
+                  <textarea
+                    className="badge-form-textarea"
+                    placeholder="Descrição do requisito..."
+                    value={requisito.descricao_requisito}
+                    onChange={(event) =>
+                      handleUpdateRequisito(
+                        requisito.id,
+                        "descricao_requisito",
+                        event.target.value
+                      )
+                    }
+                    style={{ minHeight: "80px" }}
+                  />
                 </div>
               </div>
             ))}
@@ -693,15 +730,25 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
         </form>
 
         <div className="badge-modal-footer">
-          <button type="button" className="badge-btn-cancel" onClick={onClose}>
+          <button
+            type="button"
+            className="badge-btn-cancel"
+            onClick={onClose}
+          >
             Cancelar
           </button>
-          <button type="submit" form="badge-form" className="badge-btn-save">
-            <i className="fi fi-br-disk"></i> Guardar Nível & Badge
+
+          <button
+            type="submit"
+            form="badge-form"
+            className="badge-btn-save"
+          >
+            <i className="fi fi-br-disk"></i>
+            Guardar Badge
           </button>
         </div>
       </div>
     </div>,
-    document.body,
+    document.body
   );
 }

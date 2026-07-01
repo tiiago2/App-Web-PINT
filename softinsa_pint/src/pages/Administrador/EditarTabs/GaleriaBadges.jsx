@@ -68,21 +68,7 @@ export default function GaleriaBadges({
   };
 
   return (
-    <div className="d-flex flex-column flex-grow-1" style={{ minHeight: '400px' }}>
-      <div className="d-flex justify-content-between align-items-center mb-3 flex-shrink-0">
-        <h4 className="fw-semibold mb-0" style={{ color: 'var(--fontes)' }}>{t("galeria_titulo_label")}</h4>
-        <button 
-          className="btn px-4 text-white shadow-sm d-flex align-items-center gap-2 fw-semibold" 
-          style={{ 
-            backgroundColor: 'var(--barra_lateral)',
-            borderRadius: 'var(--border-radius-pequeno)'
-          }}
-          onClick={onAdd}
-        >
-          <i className="fi fi-br-plus"></i> {t("add_badge")}
-        </button>
-      </div>
-      
+    <div className="d-flex flex-column flex-grow-1" style={{ minHeight: '400px' }}>     
       <div className="d-flex flex-column gap-4 flex-grow-1 overflow-auto pb-4 pe-2" style={{ overflowX: 'hidden' }}>
         
         {badgesEspeciais.length > 0 && (

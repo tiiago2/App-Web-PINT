@@ -3,7 +3,7 @@
     height: var(--altura-controlos-1);
 
     display: flex;
-    align-items: left;
+    align-items: center;
 
     padding: 4px;
 
@@ -17,6 +17,11 @@
 .seletor-abas-botao {
     flex: 1;
     height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 
     border: none;
     border-radius: var(--border-radius-pequeno);
@@ -34,4 +39,17 @@
 
 .seletor-abas-botao:not(.ativo):hover {
     background: rgba(57, 99, 156, 0.08);
+}
+
+.seletor-abas-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.seletor-vista-badges {
+    width: 100%;
+    max-width: var(--largura-seletor-vista-badges);
+    min-width: var(--largura-seletor-vista-badges);
 }

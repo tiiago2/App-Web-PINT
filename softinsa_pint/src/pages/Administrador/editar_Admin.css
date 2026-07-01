@@ -266,3 +266,12 @@
 .ver-mais-badges-btn:hover {
     opacity: 0.9;
 }
+
+.tab-badges-acoes-superiores {
+    width: 100%;
+
+    display: flex;
+    justify-content: flex-end;
+
+    margin-bottom: var(--gap-default-seccoes);
+}

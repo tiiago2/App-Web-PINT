@@ -15,7 +15,11 @@ function SeletorAbas({ opcoes, valorAtivo, onChange }) {
             }`}
             onClick={() => onChange(opcao.valor)}
           >
-            {opcao.label}
+            {opcao.icone && (
+              <i className={`fi ${opcao.icone} seletor-abas-icone`}></i>
+            )}
+
+            <span>{opcao.label}</span>
           </button>
         );
       })}

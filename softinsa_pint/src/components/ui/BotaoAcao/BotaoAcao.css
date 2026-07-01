@@ -1,0 +1,50 @@
+.botao-acao {
+    height: var(--altura-controlos-1);
+    min-width: 170px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 0 18px;
+
+    border-radius: var(--border-radius-grande);
+    border: var(--borda-principal) solid transparent;
+
+    font-weight: 600;
+    cursor: pointer;
+
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.botao-acao-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.botao-acao--primario {
+    background-color: var(--barra_lateral);
+    border-color: var(--barra_lateral);
+    color: #ffffff;
+}
+
+.botao-acao--primario:hover {
+    background-color: var(--barra_lateral_hover);
+    border-color: var(--barra_lateral_hover);
+    color: #ffffff;
+}
+
+.botao-acao--secundario {
+    background-color: var(--fundo2);
+    border-color: var(--contorno);
+    color: var(--fontes);
+}
+
+.botao-acao--secundario:hover {
+    background-color: var(--fundo);
+    border-color: var(--contorno);
+    color: var(--fontes);
+}

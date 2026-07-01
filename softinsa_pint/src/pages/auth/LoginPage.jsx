@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import axios from 'axios';
+import api from '../../services/api.js';
 import AuthTopBar from "../../components/Auth/AuthTopBar/AuthTopBar.jsx";
 import AuthArtPanel from "../../components/Auth/AuthArtPanel/AuthArtPanel.jsx";
 import "./LoginPage.css";
@@ -40,7 +40,7 @@ function LoginPage({ onLoginSuccess }) {
     setEstadoLogin("loading");
 
     try {
-      const resposta = await axios.post('http://localhost:5000/api/login', { email, password });
+      const resposta = await api.post('/login', { email, password });
       const { token, utilizador } = resposta.data;
 
       localStorage.setItem('token_softinsa', token);

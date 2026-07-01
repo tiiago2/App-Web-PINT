@@ -13,7 +13,7 @@ module.exports = (sequelize) => {
     aceitacao_sla: { type: DataTypes.BOOLEAN, allowNull: false },
     update_user: { type: DataTypes.DATE, allowNull: false },
     ativo: { type: DataTypes.BOOLEAN, allowNull: false },
-    imagem_prefil: { type: DataTypes.TEXT, allowNull: false },
+    imagem_perfil: { type: DataTypes.TEXT, allowNull: false },
     nome_user: { type: DataTypes.TEXT, allowNull: false },
     pontos_totais: { type: DataTypes.INTEGER, allowNull: false }
   }, { tableName: 'consultor', timestamps: false });

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
-import axios from "axios";
+import api from "./services/api.js";
 import { menu_lateral } from "./defs/barra_lateral.jsx";
 import { iconesNotificacao } from "./defs/dicionario.jsx";
 import "./i18n";
@@ -87,7 +87,7 @@ function App() {
           ? roleParseada.toLowerCase() 
           : (roleParseada.nome ? roleParseada.nome.toLowerCase() : null);
 
-        const res = await axios.get("http://localhost:5000/api/getuser", { params: { id: idGuardado } });
+        const res = await api.get("/getuser", { params: { id: idGuardado } });
         if (res.data) {
           setUser({
             id: idGuardado,
@@ -442,7 +442,7 @@ function App() {
             <span><b>{user.nome}</b></span>
             <span style={{ fontSize: "0.8rem" }}>{user.cargo ? t(user.cargo) : ""}</span>
           </div>
-          {console.log("FOTO:", user.foto)}
+          
           <img
             id="user_image"
             className="mx-3 rounded-2"

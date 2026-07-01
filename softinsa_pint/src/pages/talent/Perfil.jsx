@@ -1,105 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import '../../App.css';
 import './Perfil.css';
+import api from '../../services/api.js';
 
 import user_logo from "../../assets/utilizador.png";
 import badge_logo from '../../assets/teste_badge.png';
 
-const User = {
-  id: 1,
-  nome: "Tiago Lourenço",
-  email: "tiagolourenco@gmail.com",
-  telefone: "+351 999 999 999",
-  pontos: 14600,
-  cargo: "Talent Manager",
-  foto: user_logo
-};
-
-const Assinatura_Pessoal_Inicial = [
-  {
-    id: 1,
-    nome: "Low Code 1",
-    Imagem: badge_logo,
-  },
-  {
-    id: 2,
-    nome: "Low Code 2",
-    Imagem: badge_logo,
-  },
-  {
-    id: 3,
-    nome: "Low Code 3",
-    Imagem: badge_logo,
-  },
-  {
-    id: 4,
-    nome: "Low Code 4",
-    Imagem: badge_logo,
-  }
-];
-
-const Badges_Obtidos = [
-  { id: 5, nome: "Low Code 5", Imagem: badge_logo },
-  { id: 6, nome: "Low Code 6", Imagem: badge_logo },
-  { id: 7, nome: "Low Code 7", Imagem: badge_logo },
-  { id: 8, nome: "Low Code 8", Imagem: badge_logo },
-  { id: 9, nome: "Low Code 9", Imagem: badge_logo },
-  { id: 10, nome: "Low Code 10", Imagem: badge_logo },
-  { id: 11, nome: "Low Code 11", Imagem: badge_logo },
-  { id: 12, nome: "Low Code 12", Imagem: badge_logo },
-  { id: 13, nome: "Low Code 13", Imagem: badge_logo },
-  { id: 14, nome: "Low Code 14", Imagem: badge_logo },
-  { id: 15, nome: "Low Code 15", Imagem: badge_logo },
-  { id: 16, nome: "Ole Ole", Imagem: badge_logo },
-];
-
 const Render_Badges = ({ badges, edicao, onAdd, assinaturaBadges }) => {
-  return(
+  return (
     <>
-    {badges.map((badge) => {
-      const isSelected = assinaturaBadges.some(b => b.id === badge.id);
-      return (
-      <div key={badge.id} 
-           className='badge_item d-flex flex-column align-items-center text-center position-relative'
-           style={{ cursor: edicao && !isSelected ? 'pointer' : 'default', opacity: isSelected ? 0.5 : 1 }}
-           onClick={() => { if(edicao && !isSelected) onAdd(badge) }}>
-        <img src={badge.Imagem} alt={badge.nome} />
-        <span className='badge_nome'>{badge.nome}</span>
-        {edicao && !isSelected && (
-          <div className="position-absolute top-0 end-0 bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow" style={{width: '24px', height: '24px', transform: 'translate(25%, -25%)'}}>
-            <i className="fi fi-br-plus" style={{fontSize: '10px'}}></i>
+      {badges.map((badge) => {
+        const isSelected = assinaturaBadges.some(b => b.id === badge.id);
+        return (
+          <div key={badge.id}
+            className='badge_item d-flex flex-column align-items-center text-center position-relative'
+            style={{ cursor: edicao && !isSelected ? 'pointer' : 'default', opacity: isSelected ? 0.5 : 1 }}
+            onClick={() => { if (edicao && !isSelected) onAdd(badge) }}>
+            <img src={badge.Imagem} alt={badge.nome} />
+            <span className='badge_nome'>{badge.nome}</span>
+            {edicao && !isSelected && (
+              <div className="position-absolute top-0 end-0 bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow" style={{ width: '24px', height: '24px', transform: 'translate(25%, -25%)' }}>
+                <i className="fi fi-br-plus" style={{ fontSize: '10px' }}></i>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    )})}
+        )
+      })}
     </>
   )
 }
 
 const Assinatura = ({ badges, edicao, onRemove }) => {
-  return(
+  return (
     <>
       {badges.map((badge) => (
         <div key={badge.id} className='assinatura_badge d-flex align-items-center flex-column justify-content-center position-relative'>
           <img src={badge.Imagem} alt={badge.nome} />
           {edicao && (
-            <div className="position-absolute top-0 end-0 bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow" 
-                 style={{width: '24px', height: '24px', cursor: 'pointer', transform: 'translate(25%, -25%)'}}
-                 onClick={() => onRemove(badge)}>
-              <i className="fi fi-br-cross" style={{fontSize: '10px'}}></i>
+            <div className="position-absolute top-0 end-0 bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow"
+              style={{ width: '24px', height: '24px', cursor: 'pointer', transform: 'translate(25%, -25%)' }}
+              onClick={() => onRemove(badge)}>
+              <i className="fi fi-br-cross" style={{ fontSize: '10px' }}></i>
             </div>
           )}
         </div>
       ))}
       {edicao && badges.length < 4 && (
         <div className='assinatura_badge d-flex align-items-center flex-column justify-content-center bg-light text-muted' style={{ border: '2px dashed #ccc', borderRadius: '50%', cursor: 'default' }}>
-          <i className="fi fi-br-plus" style={{fontSize: '24px'}}></i>
+          <i className="fi fi-br-plus" style={{ fontSize: '24px' }}></i>
         </div>
       )}
     </>
-  )}
+  )
+}
 
 const Componente_Editavel = ({ value, onChange, tipo = "text", edicao }) => {
   return edicao === false ? (
@@ -116,8 +71,7 @@ const Componente_Editavel = ({ value, onChange, tipo = "text", edicao }) => {
 
 const BotaoLogout_Concluir = ({ edicao, setEdicao }) => {
 
-  const {t} = useTranslation();
-
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -138,18 +92,92 @@ const BotaoLogout_Concluir = ({ edicao, setEdicao }) => {
 
 const PerfilPessoal = () => {
 
-  const {t} = useTranslation();
-
+  const { t } = useTranslation();
   const [edicao, setEdicao] = useState(false);
+
+  // Estados com valores por defeito vazios (à espera da API)
   const [profileData, setProfileData] = useState({
-    nome: User.nome,
-    email: User.email,
-    telefone: User.telefone,
-    cargo: User.cargo,
-    pontos: User.pontos,
-    foto: User.foto
+    nome: "",
+    email: "",
+    telefone: "",
+    cargo: "",
+    pontos: 0,
+    foto: user_logo
   });
-  const [assinaturaBadges, setAssinaturaBadges] = useState(Assinatura_Pessoal_Inicial);
+  const [assinaturaBadges, setAssinaturaBadges] = useState([]);
+  const [badgesObtidos, setBadgesObtidos] = useState([]); // Adicionado novo estado para os badges totais
+
+  // A função que faz a magia acontecer
+  const carregarDados = async () => {
+    try {
+      // Vai buscar o ID que guardaste no login
+      const idGuardado = localStorage.getItem('utilizador_id');
+
+      if (!idGuardado) return;
+
+      const roleString = localStorage.getItem('role_softinsa');
+      
+      let cargoGuardado = "";
+
+      // 2. Descodificar o JSON do cargo, se ele existir
+      if (roleString) {
+        try {
+            // Transforma a string '{"nome":"Talent...", "icone..."}' num objeto JavaScript
+            const roleObjeto = JSON.parse(roleString); 
+            // Agora já podemos extrair apenas o nome!
+            cargoGuardado = roleObjeto.nome || ""; 
+        } catch (error) {
+            console.error("Erro ao descodificar o cargo do localStorage:", error);
+            // Se der erro, o cargoGuardado continua a ser a string vazia
+        }
+      }
+
+      // Usa a tua instância 'api' configurada (não precisa de axios solto)
+      const res = await api.get('/profile/getuser', {
+        params: { id: idGuardado, cargo: cargoGuardado }
+      });
+
+      const data = res.data;
+
+      // 1. Atualizar Perfil
+      setProfileData({
+        nome: data.nome || "Nome não definido",
+        email: data.email || "",
+        telefone: data.telefone || "",
+        cargo: data.cargo || "",
+        pontos: data.pontos || 0,
+        foto: data.foto || user_logo // Fallback de segurança da foto
+      });
+
+      // 2. Formatar e guardar todos os Badges obtidos
+      const badgesFormatados = data.badges.map(b => ({
+        id: b.id,
+        nome: b.nome,
+        // Traduzimos 'imagem' da API para o 'Imagem' que os teus componentes usam
+        Imagem: b.imagem || badge_logo, 
+        data_obtencao: b.data_obtencao
+      }));
+      setBadgesObtidos(badgesFormatados);
+
+      // 3. Montar a Assinatura com base nos IDs devolvidos
+      if (data.assinaturas_ids && data.assinaturas_ids.length > 0) {
+        // Filtra a lista de badges para encontrar apenas os que estão na assinatura
+        const badgesDaAssinatura = badgesFormatados.filter(badge =>
+          data.assinaturas_ids.includes(badge.id)
+        );
+        setAssinaturaBadges(badgesDaAssinatura);
+      }
+
+    } catch (error) {
+      console.error("Erro ao carregar dados do perfil:", error);
+    }
+  };
+
+  // O useEffect chama a função carregarDados mal a página arranca!
+  useEffect(() => {
+    carregarDados();
+  }, []);
+
 
   const handleAddBadge = (badge) => {
     if (assinaturaBadges.length < 4) {
@@ -185,10 +213,10 @@ const PerfilPessoal = () => {
                 <img src={profileData.foto} alt={profileData.nome} className="avatar_img" />
               ) : (
                 <>
-                <img src={profileData.foto} alt={profileData.nome} className="avatar_img" />
-                <div className="imagem_overlay d-flex align-items-center justify-content-center">
-                  <i className="fi fi-br-plus"></i>
-                </div>
+                  <img src={profileData.foto} alt={profileData.nome} className="avatar_img" />
+                  <div className="imagem_overlay d-flex align-items-center justify-content-center">
+                    <i className="fi fi-br-plus"></i>
+                  </div>
                 </>
               )}
             </div>
@@ -200,17 +228,17 @@ const PerfilPessoal = () => {
               <p className='info_dado_item m-0'>
                 <span className='info_label'>{t('nome_dots')}</span>
                 <Componente_Editavel value={profileData.nome} onChange={(e) => setProfileData({ ...profileData, nome: e.target.value })}
-                 edicao={edicao}/>
+                  edicao={edicao} />
               </p>
               <p className='info_dado_item m-0'>
                 <span className='info_label'>{t('email_dots')}</span>
                 <Componente_Editavel value={profileData.email} onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                  edicao={edicao}/>
+                  edicao={edicao} />
               </p>
               <p className='info_dado_item m-0'>
                 <span className='info_label'>{t('telefone_dots')}</span>
                 <Componente_Editavel value={profileData.telefone} onChange={(e) => setProfileData({ ...profileData, telefone: e.target.value })}
-                  edicao={edicao}/>
+                  edicao={edicao} />
               </p>
             </div>
           </div>
@@ -240,7 +268,8 @@ const PerfilPessoal = () => {
             <h2 className='subtitulo_perfil mb-4'>{t('badges_pessoais')}</h2>
             <div className='badges_scroll_box position-relative'>
               <div className='badges_scroll_container d-flex gap-3 overflow-x-auto'>
-                <Render_Badges badges={Badges_Obtidos} edicao={edicao} onAdd={handleAddBadge} assinaturaBadges={assinaturaBadges} />
+                {/* Alterado para passar a variável de estado badgesObtidos em vez da constante antiga */}
+                <Render_Badges badges={badgesObtidos} edicao={edicao} onAdd={handleAddBadge} assinaturaBadges={assinaturaBadges} />
               </div>
             </div>
           </div>

@@ -135,38 +135,7 @@
     border-radius: 6px;
 }
 
-/* ── FILTROS RÁPIDOS (pills modernas) ─────────────────── */
-.estat-service-filters {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px 24px;
-    flex-shrink: 0;
-    margin-top: -6px;
-}
-
-.estat-service-filtro-grupo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.estat-service-filtro-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--fontes);
-    white-space: nowrap;
-}
-
-.estat-service-filtro-label i {
-    font-size: 13px;
-    color: var(--barra_lateral);
-}
-
+/* ── PILLS (usadas no header do card de badges atribuídos) ─ */
 .estat-service-pills {
     display: inline-flex;
     align-items: center;
@@ -200,6 +169,17 @@
     background-color: var(--barra_lateral);
     color: #fff;
     box-shadow: 0 2px 6px rgba(57, 99, 156, 0.25);
+}
+
+/* Pills compactas dentro do header de um card */
+.estat-service-pills--header {
+    padding: 3px;
+    gap: 3px;
+}
+
+.estat-service-pills--header .estat-service-pill {
+    padding: 5px 12px;
+    font-size: 11px;
 }
 
 /* ══════════════════════════════════════════════════════
@@ -302,11 +282,11 @@
     background: #fff;
     border: var(--borda-principal) solid var(--contorno);
     border-radius: var(--border-radius-grande);
-    padding: 14px 16px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
     gap: 10px;
     transition: transform 0.15s, box-shadow 0.15s;
 }
@@ -318,29 +298,28 @@
 
 .estat-service-kpi-label {
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     color: #8fa3b8;
     letter-spacing: 0.02em;
-    text-align: left;
+    text-align: center;
 }
 
 .estat-service-kpi-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
+    justify-content: center;
     gap: 10px;
 }
 
 .estat-service-kpi-icon {
-    font-size: 1.35rem;
+    font-size: 1.6rem;
     color: var(--barra_lateral);
     transform: translateY(2px);
     opacity: 0.8;
 }
 
 .estat-service-kpi-valor {
-    font-size: 26px;
+    font-size: 30px;
     font-weight: 700;
     color: var(--fontes);
     line-height: 1;
@@ -446,21 +425,18 @@
         font-size: 22px;
     }
 
-    .estat-service-filters {
-        gap: 12px;
+    .estat-service-card-header {
+        flex-wrap: wrap;
+        gap: 10px;
     }
 
-    .estat-service-filtro-grupo {
-        width: 100%;
-    }
-
-    .estat-service-pills {
+    .estat-service-pills--header {
         overflow-x: auto;
         scrollbar-width: none;
         max-width: 100%;
     }
 
-    .estat-service-pills::-webkit-scrollbar {
+    .estat-service-pills--header::-webkit-scrollbar {
         display: none;
     }
 

@@ -248,7 +248,7 @@ function App() {
         {user.cargo === "administrador" && <Route path="/estatisticas" element={<EstatisticasAdmin />} />}
         {user.cargo === "service line leader" && <Route path="/estatisticas" element={<EstatisticasService user={user} />} />}
         {user.cargo === "talent manager" && <Route path="/estatisticas" element={<EstatisticasTalent />} />}
-        {user.cargo === "consultor" && <Route path="/estatisticas" element={<EstatisticasConsultor />} />}
+        {user.cargo === "consultor" && <Route path="/estatisticas" element={<EstatisticasConsultor user={user} />} />}
 
         {/* Galerias */}
         {user.cargo === "administrador" && (

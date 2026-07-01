@@ -12,15 +12,6 @@
     box-sizing: border-box;
 }
 
-.home-card {
-    background: #fff;
-    border: var(--borda-principal) solid var(--contorno);
-    border-radius: var(--border-radius-grande);
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-}
-
 /* Título dos cartões — usa os tokens de texto e cor */
 .home-card-title {
     font-size: 1.25rem;
@@ -32,18 +23,63 @@
 
 /* Container da secção sem borda exterior */
 .home-consultor-container {
-    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo);
+    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo) var(--margem-inferior-conteudo);
     background-color: var(--fundo);
     height: 100%;
     overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: auto minmax(auto, 0.45fr) minmax(auto, 0.55fr);
+    gap: var(--gap-default-seccoes);
+}
+
+/* Garante altura mínima para as secções principais, evitando que fiquem
+   demasiado comprimidas em ecrãs de menor altura ou quando empilhadas. */
+.home-consultor-container > .row:nth-child(2) {
+    min-height: 260px;
+}
+
+.home-consultor-container > .row:nth-child(3) {
+    min-height: 240px;
 }
 
 .home-consultor-container::-webkit-scrollbar {
     display: none;
 }
 
+/* As rows são grid items — garantimos que esticam e não crescem para além do espaço */
+.home-consultor-container > .row {
+    min-height: 0;
+    margin: 0;
+}
+
+/* As colunas devem esticar para preencher a row e permitir scroll interno */
+.home-consultor-container > .row > [class*="col-"] {
+    min-height: 0;
+    height: 100%;
+}
+
+/* Os filhos diretos das colunas (cards e widgets) também precisam de min-height: 0
+   para o overflow interno funcionar e não crescerem para além do espaço */
+.home-consultor-container > .row > [class*="col-"] > * {
+    min-height: 0;
+}
+
+.home-card {
+    background: #fff;
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: var(--border-radius-grande);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
 .badges-container {
   background-color: transparent;
+  height: 100%;
 }
 
 /* Grid flexível que divide os badges lado a lado */
@@ -52,6 +88,7 @@
   justify-content: space-between;
   align-items: stretch;
   gap: 12px;
+  min-height: 0;
 }
 
 /* Coluna individual com o layout original mas mais polida */
@@ -149,11 +186,7 @@
     font-weight: 600;
     color: var(--fontes);
     line-height: 1.2;
-    min-height: 2.4em;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    margin-bottom: 8px;
     max-width: 100%;
 }
 
@@ -233,12 +266,17 @@
 
 /* ── Objetivos Propostos (v3) ─────────────────────────────── */
 .objetivos-lista-v3 {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
+    display: grid;
+    grid-template-rows: repeat(3, 1fr);
     flex-grow: 1;
-    gap: 0;
-    padding: 4px 0;
+    gap: 10px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.objetivos-lista-v3::-webkit-scrollbar {
+    display: none;
 }
 
 .objetivos-estado-vazio {
@@ -258,24 +296,26 @@
     opacity: 0.5;
 }
 
-/* Item de objetivo sem borda individual */
+/* Item de objetivo alinhado com o card de Progresso */
 .objetivo-item-v3 {
+    flex: 1;
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 16px 4px;
-    border-bottom: 1px solid #f0f4f8;
+    gap: 10px;
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: var(--border-radius-pequeno);
+    padding: 8px 10px;
+    background-color: #ffffff;
     cursor: pointer;
-    transition: background-color 0.15s ease, padding-left 0.15s ease;
-}
-
-.objetivo-item-v3:last-child {
-    border-bottom: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .objetivo-item-v3:hover {
-    background-color: rgba(57, 99, 156, 0.04);
-    padding-left: 8px;
+    border-color: var(--barra_lateral);
+    box-shadow: 0 4px 14px rgba(57, 99, 156, 0.1);
+    transform: translateY(-1px);
 }
 
 .objetivo-item-v3:focus-visible {
@@ -285,14 +325,14 @@
 }
 
 .objetivo-icone-v3 {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     transition: transform 0.2s ease;
 }
 
@@ -305,18 +345,18 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
 }
 
 .objetivo-topo-v3 {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
-    gap: 10px;
+    align-items: flex-end;
+    gap: 6px;
 }
 
 .objetivo-titulo-v3 {
-    font-size: 0.92rem;
+    font-size: 0.78rem;
     font-weight: 600;
     color: var(--fontes);
     line-height: 1.2;
@@ -326,7 +366,7 @@
 }
 
 .objetivo-pct-v3 {
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     font-weight: 800;
     white-space: nowrap;
     flex-shrink: 0;
@@ -350,20 +390,20 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .objetivo-data-v3 {
-    font-size: 0.72rem;
+    font-size: 0.66rem;
     color: #8fa3b8;
     font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
 }
 
 .objetivo-prazo-v3 {
-    font-size: 0.7rem;
+    font-size: 0.64rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.03em;
@@ -373,10 +413,9 @@
 
 /* ── Progresso ───────────────────────────────────────────── */
 .progresso-lista {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: repeat(3, 1fr);
     gap: 10px;
-    justify-content: flex-start;
     flex-grow: 1;
     overflow-y: auto;
     scrollbar-width: none;
@@ -405,6 +444,7 @@
 }
 
 .progresso-card {
+    flex: 1;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -413,6 +453,7 @@
     padding: 10px 12px;
     background-color: #ffffff;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    min-height: 0;
 }
 
 .progresso-card:hover {
@@ -512,7 +553,7 @@
 }
 
 .badge-card-premium,
-.objetivo-card,
+.objetivo-item-v3,
 .progresso-card {
     animation: hc-fade-in-up 0.35s ease forwards;
 }
@@ -532,6 +573,53 @@
 
     .badge-col-separator {
         border-right: none;
+    }
+
+    /* Quando a Classificação Geral empilha abaixo dos badges, a row de cima
+       passa a ter altura automática para não sobrepor a secção inferior. */
+    .home-consultor-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap-default-seccoes);
+    }
+
+    .home-consultor-container > .row {
+        flex-shrink: 0;
+        min-height: auto;
+        height: auto;
+    }
+
+    .home-consultor-container > .row > [class*="col-"] {
+        height: auto;
+        min-height: auto;
+    }
+
+    /* A classificação empilhada deixa de forçar 100% de altura, evitando
+       que o seu conteúdo transborde para cima dos cartões inferiores. */
+    .home-consultor-container > .row:nth-child(2) > [class*="col-"] > * {
+        height: auto !important;
+        max-height: none !important;
+    }
+}
+
+/* Ecrãs de menor altura: middle ground entre a parte de cima (badges +
+   classificação) e a parte de baixo, evitando scroll na classificação sem
+   ocupar demasiado espaço vertical. */
+@media (max-height: 900px) and (min-width: 1200px) {
+    .home-consultor-container {
+        grid-template-rows: auto minmax(295px, 0.52fr) minmax(240px, 1fr);
+    }
+}
+
+@media (max-height: 750px) and (min-width: 1200px) {
+    .home-consultor-container {
+        grid-template-rows: auto minmax(295px, 0.6fr) minmax(220px, 1fr);
+    }
+}
+
+@media (max-height: 650px) and (min-width: 1200px) {
+    .home-consultor-container {
+        grid-template-rows: auto minmax(295px, 0.68fr) minmax(200px, 1fr);
     }
 }
 

@@ -93,13 +93,13 @@ const HomeConsultor = ({ user, saudacao }) => {
     }, []);
 
     return (
-        <div className="home-consultor-container d-flex flex-column gap-3">
+        <div className="home-consultor-container">
             <div className="flex-shrink-0">
                 <h1 className="texto-titulo-principal m-0">{saudacao}</h1>
             </div>
             <div className="row" style={{ rowGap: 'var(--gap-default-seccoes)' }}>
-                <div className="col-12 col-xl-8 mb-xl-0">
-                    <div className="badges-container d-flex flex-column" style={{ height: '35vh' }}>
+                <div className="col-12 col-xl-8">
+                    <div className="badges-container d-flex flex-column">
                         <div className="d-flex justify-content-between align-items-center mb-3">
                             <h5 className="home-card-title m-0 fw-medium">{t('badges_progresso')}</h5>
                             <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.7}/>
@@ -127,7 +127,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                                                     <img className="badge-card-imagem" src={badge.imagem} alt={badge.titulo} />
                                                     <div className="badge-card-progress-ring" aria-hidden="true"></div>
                                                 </div>
-                                                <h6 className="badge-card-titulo">{badge.titulo}</h6>
+                                                <h6 className="badge-card-titulo text-truncate w-100" title={badge.titulo}>{badge.titulo}</h6>
                                                 <div className="badge-card-progresso">
                                                     <div className="badge-card-barra-wrap">
                                                         <div className="badge-card-barra-fill" style={{ width: `${pct}%`, backgroundColor: cor.principal }} />
@@ -146,12 +146,12 @@ const HomeConsultor = ({ user, saudacao }) => {
                     </div>
                 </div>
                 <div className="col-12 col-xl-4">
-                    <ClassificacaoGeral user={user} classificacao={classificacao} />
+                    <ClassificacaoGeral user={user} classificacao={classificacao} fullHeight={true} />
                 </div>
             </div>
-            <div className="row flex-grow-1" style={{ minHeight: 0, rowGap: 'var(--gap-default-seccoes)' }}>
+            <div className="row" style={{ minHeight: 0, rowGap: 'var(--gap-default-seccoes)' }}>
                 {/* Atividade Recente */}
-                <div className="col-12 col-lg-4 mb-4 mb-lg-0 d-flex flex-column">
+                <div className="col-12 col-lg-4 d-flex flex-column">
                     <AtividadeRecente atividades={atividades} fullHeight={true} />
                 </div>
                 {/* Objetivos Propostos */}

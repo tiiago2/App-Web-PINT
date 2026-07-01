@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     BarChart, Bar,
     PieChart, Pie, Cell,
@@ -6,59 +6,100 @@ import {
 } from 'recharts';
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import EvolucaoModal from '../../components/EvolucaoModal.jsx';
-import { mockClassificacao } from '../../defs/classificacao_mock.js';
+import api from '../../services/api.js';
 import './estatisticas_consultor.css';
 
-/* ── DADOS MOCKUP ─────────────────────────── */
-const kpiCards = [
-    { label: 'Lugar atual',       valor: '4',    icone: 'fi fi-br-trophy'  },
-    { label: 'Total de badges',   valor: '1000', icone: 'fi fi-br-badge'   },
-    { label: 'Objetivos Ativos',  valor: '36',   icone: 'fi fi-br-target'  },
-    { label: 'Taxa de aprovação', valor: '85%',  icone: 'fi fi-br-ribbon'  },
-];
-
-const dadosBarPorSemestre = {
-    '1º Semestre 2026': [
-        { mes: 'Jan', pontos: 300  }, { mes: 'Fev', pontos: 600  },
-        { mes: 'Mar', pontos: 800  }, { mes: 'Abr', pontos: 1300 },
-        { mes: 'Mai', pontos: 1050 }, { mes: 'Jun', pontos: 650  },
-    ],
-    '2º Semestre 2025': [
-        { mes: 'Jul', pontos: 700  }, { mes: 'Ago', pontos: 500  },
-        { mes: 'Set', pontos: 900  }, { mes: 'Out', pontos: 1100 },
-        { mes: 'Nov', pontos: 800  }, { mes: 'Dez', pontos: 1200 },
-    ],
-    '1º Semestre 2025': [
-        { mes: 'Jan', pontos: 200  }, { mes: 'Fev', pontos: 400  },
-        { mes: 'Mar', pontos: 600  }, { mes: 'Abr', pontos: 900  },
-        { mes: 'Mai', pontos: 750  }, { mes: 'Jun', pontos: 500  },
-    ],
-};
-
-const dadosPie = [
-    { ID_Area: 1, Nome_Area: 'Low Code',       total_badges: 5,  cor: '#4CAF50' },
-    { ID_Area: 2, Nome_Area: 'Hybrid Systems', total_badges: 35, cor: '#39639C' },
-    { ID_Area: 3, Nome_Area: 'Cloud',          total_badges: 20, cor: '#F44336' },
-    { ID_Area: 4, Nome_Area: 'Cibersegúrança', total_badges: 20, cor: '#FF9800' },
-    { ID_Area: 5, Nome_Area: 'Data & AI',      total_badges: 5,  cor: '#9C27B0' },
-];
+/* ── CORES ─────────────────────────────────────────────────── */
+const CORES_AREAS = ['#4CAF50', '#39639C', '#F44336', '#FF9800', '#9C27B0', '#00BCD4', '#795548', '#607D8B'];
+const mapaCoresAreas = {};
+let idxCorArea = 0;
+function corArea(id_area) {
+    if (!mapaCoresAreas[id_area]) {
+        mapaCoresAreas[id_area] = CORES_AREAS[idxCorArea % CORES_AREAS.length];
+        idxCorArea++;
+    }
+    return mapaCoresAreas[id_area];
+}
 
 /* Badges por nível — gradiente de azuis claros a escuros (Júnior → Líder) */
-const dadosNiveis = [
-    { ID_Nivel: 1, Nome_Nivel: 'Júnior',       total_badges: 18, cor: '#b3cde8' },
-    { ID_Nivel: 2, Nome_Nivel: 'Intermédio',   total_badges: 12, cor: '#7fafd4' },
-    { ID_Nivel: 3, Nome_Nivel: 'Sénior',       total_badges: 8,  cor: '#4d90bf' },
-    { ID_Nivel: 4, Nome_Nivel: 'Especialista', total_badges: 5,  cor: '#2d6da3' },
-    { ID_Nivel: 5, Nome_Nivel: 'Líder',        total_badges: 2,  cor: '#1a4d7a' },
-];
-
+const NIVEIS_CORES = ['#b3cde8', '#7fafd4', '#4d90bf', '#2d6da3', '#1a4d7a', '#4d90bf'];
+function corNivel(id_nivel) {
+    return NIVEIS_CORES[(id_nivel - 1) % NIVEIS_CORES.length];
+}
 
 const TIP = { borderRadius: 'var(--border-radius-pequeno)', border: 'var(--borda-principal) solid var(--contorno)', fontSize: '11px' };
 const COR = '#39639C';
 
-const EstatisticasConsultor = () => {
-    const [sem, setSem] = useState('1º Semestre 2026');
+const PERIODOS = [
+    { key: 'semana',    label: 'Semana' },
+    { key: 'mes',       label: 'Mês' },
+    { key: 'semestre',  label: 'Semestre' },
+    { key: 'ano',       label: 'Ano' },
+    { key: 'sempre',    label: 'Sempre' },
+];
+
+const EstatisticasConsultor = ({ user }) => {
+    const [periodo, setPeriodo] = useState('semestre');
+    const [dadosBar, setDadosBar] = useState([]);
+    const [kpi, setKpi] = useState({
+        lugar_atual: '-',
+        total_badges: '-',
+        objetivos_ativos: '-',
+        taxa_aprovacao: '-'
+    });
+    const [dadosPie, setDadosPie] = useState([]);
+    const [dadosNiveis, setDadosNiveis] = useState([]);
+    const [classificacao, setClassificacao] = useState([]);
     const [showEvolucao, setShowEvolucao] = useState(false);
+    const [carregando, setCarregando] = useState(true);
+
+    // ── Carregar KPIs, conquistados-mês, badges-nível e ranking (uma vez) ──
+    useEffect(() => {
+        const carregar = async () => {
+            try {
+                const [resKpi, resPie, resNiveis, resRanking] = await Promise.all([
+                    api.get('/estatisticasconsultor/kpi'),
+                    api.get('/estatisticasconsultor/conquistados-mes'),
+                    api.get('/estatisticasconsultor/badges-nivel'),
+                    api.get('/homeconsultor/ranking')
+                ]);
+
+                setKpi(resKpi.data || {});
+                setDadosPie((resPie.data || []).map(a => ({ ...a, cor: corArea(a.ID_Area) })));
+                setDadosNiveis((resNiveis.data || []).map(n => ({ ...n, cor: corNivel(n.ID_Nivel) })));
+                setClassificacao(resRanking.data || []);
+            } catch (erro) {
+                console.error('Erro ao carregar estatísticas:', erro);
+            } finally {
+                setCarregando(false);
+            }
+        };
+        carregar();
+    }, []);
+
+    // ── Carregar evolução sempre que o período muda ──
+    useEffect(() => {
+        const carregar = async () => {
+            try {
+                const res = await api.get(`/estatisticasconsultor/evolucao/${periodo}`);
+                setDadosBar(res.data || []);
+            } catch (erro) {
+                console.error('Erro ao carregar evolução de pontos:', erro);
+                setDadosBar([]);
+            }
+        };
+        carregar();
+    }, [periodo]);
+
+    const kpiCards = [
+        { label: 'Lugar atual',       valor: kpi.lugar_atual ?? '-',       icone: 'fi fi-br-trophy'  },
+        { label: 'Total de badges',   valor: kpi.total_badges ?? '-',     icone: 'fi fi-br-badge'   },
+        { label: 'Objetivos Ativos',  valor: kpi.objetivos_ativos ?? '-', icone: 'fi fi-br-target'  },
+        { label: 'Taxa de aprovação', valor: kpi.taxa_aprovacao ?? '-',   icone: 'fi fi-br-ribbon'  },
+    ];
+
+    const totalPie = dadosPie.reduce((s, x) => s + x.total_badges, 0);
+    const totalNiveis = dadosNiveis.reduce((s, x) => s + x.total_badges, 0);
 
     return (
         <div className="estat-page">
@@ -81,12 +122,12 @@ const EstatisticasConsultor = () => {
                         {/* KPI 2×2 */}
                         <div className="estat-kpi-wrap">
                             <div className="estat-kpi-grid h-100">
-                                {kpiCards.map((kpi, i) => (
+                                {kpiCards.map((kpiCard, i) => (
                                     <div key={i} className="estat-kpi-card">
-                                        <span className="estat-kpi-label">{kpi.label}</span>
+                                        <span className="estat-kpi-label">{kpiCard.label}</span>
                                         <div className="estat-kpi-row">
-                                            <i className={`${kpi.icone} estat-kpi-icon`} />
-                                            <span className="estat-kpi-valor">{kpi.valor}</span>
+                                            <i className={`${kpiCard.icone} estat-kpi-icon`} />
+                                            <span className="estat-kpi-valor">{carregando && kpiCard.valor === '-' ? '…' : kpiCard.valor}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -101,19 +142,19 @@ const EstatisticasConsultor = () => {
                                         <p className="estat-chart-title m-0">Evolução de Pontos</p>
                                         <i className="fi fi-br-expand text-muted" style={{ cursor: 'pointer', fontSize: '12px' }} onClick={() => setShowEvolucao(true)}></i>
                                     </div>
-                                    <select className="estat-select" value={sem} onChange={e => setSem(e.target.value)}>
-                                        {Object.keys(dadosBarPorSemestre).map(s =>
-                                            <option key={s} value={s}>{s}</option>
+                                    <select className="estat-select" value={periodo} onChange={e => setPeriodo(e.target.value)}>
+                                        {PERIODOS.map(p =>
+                                            <option key={p.key} value={p.key}>{p.label}</option>
                                         )}
                                     </select>
                                 </div>
                                 <div style={{ flex: 1, minHeight: 0 }}>
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={dadosBarPorSemestre[sem]}
+                                        <BarChart data={dadosBar}
                                             margin={{ top: 18, right: 8, left: 8, bottom: 0 }}
                                             barSize={34}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                                            <XAxis dataKey="mes" tick={{ fontSize: 10, fill: '#8fa3b8' }} axisLine={false} tickLine={false} />
+                                            <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#8fa3b8' }} axisLine={false} tickLine={false} />
                                             <YAxis hide />
                                             <Tooltip contentStyle={TIP} formatter={v => [`${v} pts`, 'Pontos']} />
                                             <Bar dataKey="pontos" fill={COR} radius={[6, 6, 0, 0]}>
@@ -129,12 +170,12 @@ const EstatisticasConsultor = () => {
                     {/* ROW 2 — Pie chart + Badges por Nível */}
                     <div className="estat-row">
 
-                        {/* Donut — Atribuídos este mês */}
+                        {/* Donut — Conquistados este mês */}
                         <div className="estat-pie-wrap">
                             <div className="estat-card h-100">
                                 <div className="estat-card-header">
-                                    <p className="estat-chart-title m-0">Atribuídos este mês</p>
-                                    <span className="estat-chart-total">{dadosPie.reduce((s, x) => s + x.total_badges, 0)}</span>
+                                    <p className="estat-chart-title m-0">Conquistados este mês</p>
+                                    <span className="estat-chart-total">{totalPie}</span>
                                 </div>
                                 <div className="estat-pie-inner">
                                     {/* Donut com total no centro */}
@@ -149,7 +190,7 @@ const EstatisticasConsultor = () => {
                                         </PieChart>
                                         {/* Número total no buraco do donut */}
                                         <div className="estat-donut-center">
-                                            <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--fontes)', lineHeight: 1 }}>{dadosPie.reduce((s, x) => s + x.total_badges, 0)}</div>
+                                            <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--fontes)', lineHeight: 1 }}>{totalPie}</div>
                                             <div style={{ fontSize: '9px', color: '#8fa3b8', marginTop: '2px', fontWeight: 500 }}>total</div>
                                         </div>
                                     </div>
@@ -164,6 +205,9 @@ const EstatisticasConsultor = () => {
                                                 <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--fontes)', marginLeft: '8px', flexShrink: 0 }}>{e.total_badges}</span>
                                             </div>
                                         ))}
+                                        {dadosPie.length === 0 && (
+                                            <span style={{ fontSize: '11px', color: '#8fa3b8' }}>Sem conquistas neste mês.</span>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -174,7 +218,7 @@ const EstatisticasConsultor = () => {
                             <div className="estat-card h-100">
                                 <div className="estat-card-header">
                                     <p className="estat-chart-title m-0">Badges por Nível</p>
-                                    <span className="estat-chart-total">{dadosNiveis.reduce((s, x) => s + x.total_badges, 0)}</span>
+                                    <span className="estat-chart-total">{totalNiveis}</span>
                                 </div>
                                 <div style={{ flex: 1, minHeight: 0 }}>
                                     <ResponsiveContainer width="100%" height="100%">
@@ -201,7 +245,7 @@ const EstatisticasConsultor = () => {
 
                 {/* COLUNA DIREITA — Classificação Geral */}
                 <div className="estat-col-dir">
-                    <ClassificacaoGeral classificacao={mockClassificacao} fullHeight={true} maxItems={9} />
+                    <ClassificacaoGeral user={user} classificacao={classificacao} fullHeight={true} maxItems={9} />
                 </div>
             </div>
 

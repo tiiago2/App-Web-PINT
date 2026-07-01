@@ -8,18 +8,7 @@ import {
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import StatusCandidaturas from '../../components/StatusCandidaturas/StatusCandidaturas.jsx';
 import BadgesPorNivel from '../../components/BadgesPorNivel/BadgesPorNivel.jsx';
-import { mockClassificacao } from '../../defs/classificacao_mock.js';
-import {
-    getConsultoresServiceLine,
-    getTotalBadgesAtribuidos,
-    getTotalUtilizadoresServiceLine,
-    getBadgesPorNivel,
-    getTaxaAprovacao,
-    getAreasServiceLine,
-    serviceLines,
-    submissoes,
-} from '../../defs/service_mock.js';
-import { getDadosBadgesAtribuidos } from '../../utils/estatisticasUtils.js';
+import api from '../../services/api.js';
 import './estatisticas_service.css';
 
 const periodos = [
@@ -28,8 +17,6 @@ const periodos = [
     { chave: 'trimestre', label: 'este_trimestre' },
     { chave: 'ano',       label: 'este_ano' },
 ];
-
-const TODAS_AREAS = 'todas';
 
 const opcoesExportar = [
     { chave: 'pedidos',     label: 'exportar_pedidos' },
@@ -51,38 +38,66 @@ const EstatisticasService = ({ user }) => {
     const exportRef = useRef(null);
 
     const [periodo, setPeriodo] = useState('mes');
-    const [area, setArea] = useState(TODAS_AREAS);
     const [showExport, setShowExport] = useState(false);
 
-    /* Identifica a service line do utilizador logado */
-    const serviceLineAtual = useMemo(() => {
-        return user?.service_line || 'Hybrid Systems';
-    }, [user]);
+    /* Estados para os dados reais da API */
+    const [kpis, setKpis] = useState({
+        badges_por_utilizador: '0,0',
+        total_badges: 0,
+        total_utilizadores: 0,
+        taxa_aprovacao: '0%'
+    });
+    const [dadosNiveis, setDadosNiveis] = useState([]);
+    const [dadosSemana, setDadosSemana] = useState([]);
+    const [statusCandidaturas, setStatusCandidaturas] = useState([]);
+    const [classificacao, setClassificacao] = useState([]);
+    const [carregando, setCarregando] = useState(true);
 
-    const serviceLineId = useMemo(() => {
-        return serviceLines.find((s) => s.Nome_Service_Line === serviceLineAtual)?.ID_Service_Line || 1;
-    }, [serviceLineAtual]);
+    /* KPIs formatados para os cards */
+    const kpiCards = useMemo(() => [
+        { label: 'badges_por_utilizador', valor: kpis.badges_por_utilizador, icone: 'fi fi-br-award' },
+        { label: 'total_badges',          valor: kpis.total_badges,          icone: 'fi fi-br-badge' },
+        { label: 'total_utilizadores',    valor: kpis.total_utilizadores,    icone: 'fi fi-br-users' },
+        { label: 'taxa_aprovacao',        valor: kpis.taxa_aprovacao,        icone: 'fi fi-br-ribbon' },
+    ], [kpis]);
 
-    /* Dados derivados dos mocks (base de dados) */
-    const consultoresSL = useMemo(() => getConsultoresServiceLine(serviceLineId), [serviceLineId]);
+    /* Carrega dados iniciais (KPIs, badges por nível, status e ranking) */
+    useEffect(() => {
+        const carregar = async () => {
+            try {
+                const [resKpis, resNiveis, resStatus, resRanking] = await Promise.all([
+                    api.get('/estatisticasservice/kpis'),
+                    api.get('/estatisticasservice/badges-por-nivel'),
+                    api.get('/estatisticasservice/status-candidaturas'),
+                    api.get('/estatisticasservice/ranking')
+                ]);
 
-    const kpiCards = useMemo(() => {
-        const totalBadges = getTotalBadgesAtribuidos();
-        const totalUsers = getTotalUtilizadoresServiceLine(serviceLineId);
-        const badgesPorUser = totalUsers > 0 ? (totalBadges / totalUsers).toFixed(1).replace('.', ',') : '0,0';
-        const taxaAprovacao = `${getTaxaAprovacao()}%`;
+                setKpis(resKpis.data || {});
+                setDadosNiveis(resNiveis.data || []);
+                setStatusCandidaturas(resStatus.data || []);
+                setClassificacao(resRanking.data || []);
+            } catch (erro) {
+                console.error('Erro ao carregar estatísticas do service line:', erro);
+            } finally {
+                setCarregando(false);
+            }
+        };
+        carregar();
+    }, []);
 
-        return [
-            { label: 'badges_por_utilizador', valor: badgesPorUser, icone: 'fi fi-br-award' },
-            { label: 'total_badges',          valor: totalBadges,    icone: 'fi fi-br-badge' },
-            { label: 'total_utilizadores',    valor: totalUsers,     icone: 'fi fi-br-users' },
-            { label: 'taxa_aprovacao',        valor: taxaAprovacao,  icone: 'fi fi-br-ribbon' },
-        ];
-    }, [serviceLineId]);
-
-    const dadosNiveis = useMemo(() => getBadgesPorNivel(), []);
-
-    const dadosSemana = useMemo(() => getDadosBadgesAtribuidos(periodo, t), [periodo, t]);
+    /* Carrega dados do gráfico sempre que o período muda */
+    useEffect(() => {
+        const carregar = async () => {
+            try {
+                const res = await api.get(`/estatisticasservice/badges-atribuidos/${periodo}`);
+                setDadosSemana(res.data || []);
+            } catch (erro) {
+                console.error('Erro ao carregar badges atribuídos:', erro);
+                setDadosSemana([]);
+            }
+        };
+        carregar();
+    }, [periodo]);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -132,50 +147,6 @@ const EstatisticasService = ({ user }) => {
                 </div>
             </div>
 
-            {/* ── FILTROS RÁPIDOS ── */}
-            <div className="estat-service-filters">
-                <div className="estat-service-filtro-grupo">
-                    <span className="estat-service-filtro-label">
-                        <i className="fi fi-br-clock"></i>
-                        {t('periodo')}
-                    </span>
-                    <div className="estat-service-pills">
-                        {periodos.map((p) => (
-                            <button
-                                key={p.chave}
-                                className={`estat-service-pill ${periodo === p.chave ? 'active' : ''}`}
-                                onClick={() => setPeriodo(p.chave)}
-                            >
-                                {t(p.label)}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-                <div className="estat-service-filtro-grupo">
-                    <span className="estat-service-filtro-label">
-                        <i className="fi fi-br-target"></i>
-                        {t('area')}
-                    </span>
-                    <div className="estat-service-pills">
-                        <button
-                            className={`estat-service-pill ${area === TODAS_AREAS ? 'active' : ''}`}
-                            onClick={() => setArea(TODAS_AREAS)}
-                        >
-                            {t('todas_as_areas')}
-                        </button>
-                        {getAreasServiceLine(serviceLineId).map((a) => (
-                            <button
-                                key={a}
-                                className={`estat-service-pill ${area === a ? 'active' : ''}`}
-                                onClick={() => setArea(a)}
-                            >
-                                {a}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
             {/* ── CORPO PRINCIPAL ── */}
             <div className="estat-service-body">
 
@@ -219,6 +190,17 @@ const EstatisticasService = ({ user }) => {
                             <div className="estat-service-card h-100">
                                 <div className="estat-service-card-header">
                                     <p className="estat-service-chart-title m-0">{t('badges_atribuidos')}</p>
+                                    <div className="estat-service-pills estat-service-pills--header">
+                                        {periodos.map((p) => (
+                                            <button
+                                                key={p.chave}
+                                                className={`estat-service-pill ${periodo === p.chave ? 'active' : ''}`}
+                                                onClick={() => setPeriodo(p.chave)}
+                                            >
+                                                {t(p.label)}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                                 <div style={{ flex: 1, minHeight: 0 }}>
                                     <ResponsiveContainer width="100%" height="100%">
@@ -258,19 +240,17 @@ const EstatisticasService = ({ user }) => {
 
                         {/* Status das candidaturas */}
                         <div className="estat-service-status-wrap">
-                            <StatusCandidaturas dados={submissoes} />
+                            <StatusCandidaturas dados={statusCandidaturas} />
                         </div>
                     </div>
                 </div>
 
-                {/* COLUNA DIREITA — Classificação Geral */}
+                {/* COLUNA DIREITA — Classificação da Service Line */}
                 <div className="estat-service-col-dir">
                     <ClassificacaoGeral
-                        classificacao={mockClassificacao}
+                        classificacao={classificacao}
                         user={user}
-                        filtroInicial="service_line"
-                        filtroValorInicial={serviceLineAtual}
-                        titulo={t('classificacao_geral')}
+                        titulo="Service Line"
                         fullHeight={true}
                         maxItems={10}
                     />

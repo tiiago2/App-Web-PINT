@@ -194,11 +194,11 @@
     background: #fff;
     border: var(--borda-principal) solid var(--contorno);
     border-radius: var(--border-radius-grande);
-    padding: 14px 16px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
     gap: 10px;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
@@ -210,29 +210,28 @@
 
 .estat-talent-kpi-label {
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     color: #8fa3b8;
     letter-spacing: 0.02em;
-    text-align: left;
+    text-align: center;
 }
 
 .estat-talent-kpi-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
+    justify-content: center;
     gap: 10px;
 }
 
 .estat-talent-kpi-icon {
-    font-size: 1.35rem;
+    font-size: 1.6rem;
     color: var(--barra_lateral);
     transform: translateY(2px);
     opacity: 0.8;
 }
 
 .estat-talent-kpi-valor {
-    font-size: 26px;
+    font-size: 30px;
     font-weight: 700;
     color: var(--fontes);
     line-height: 1;
@@ -351,8 +350,9 @@
 .estat-talent-learning-card {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
-    padding: 14px;
+    padding: 14px 16px;
     background: #fff;
     border: var(--borda-principal) solid var(--contorno);
     border-radius: var(--border-radius-grande);
@@ -364,25 +364,7 @@
 .estat-talent-learning-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
-    border-color: var(--lp-cor, var(--barra_lateral));
-}
-
-.estat-talent-learning-icone {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    background-color: var(--lp-fundo, #f0f2f6);
-    color: var(--lp-cor, var(--barra_lateral));
-    font-size: 1.3rem;
-    transition: transform 0.2s ease;
-}
-
-.estat-talent-learning-card:hover .estat-talent-learning-icone {
-    transform: scale(1.08);
+    border-color: var(--barra_lateral);
 }
 
 .estat-talent-learning-info {
@@ -412,14 +394,10 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 15px;
+    font-size: 18px;
     font-weight: 800;
-    color: var(--lp-cor, var(--fontes));
+    color: var(--fontes);
     flex-shrink: 0;
-}
-
-.estat-talent-learning-count i {
-    font-size: 1rem;
 }
 
 /* ══════════════════════════════════════════════════════
@@ -502,12 +480,6 @@
     }
 
     .estat-talent-learning-card {
-        padding: 12px;
-    }
-
-    .estat-talent-learning-icone {
-        width: 40px;
-        height: 40px;
-        font-size: 1.15rem;
+        padding: 12px 14px;
     }
 }

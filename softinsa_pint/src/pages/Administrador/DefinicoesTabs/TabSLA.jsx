@@ -372,10 +372,13 @@ export default function TabSLA() {
 
       <div className="mt-2 text-end">
         <button
-          className="btn px-4 rounded-pill text-white"
+          className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white"
           style={{
             backgroundColor: "var(--barra_lateral)",
-            border: "none",
+            height: "44px",
+            fontWeight: 500,
+            fontSize: "16px",
+            borderRadius: "var(--border-radius-pequeno)"
           }}
         >
           <i className="fi fi-br-disk me-2"></i> {t("guardar_prazos_sla")}

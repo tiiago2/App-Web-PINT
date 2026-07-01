@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import "./home_Admin.css";
+import api from "../../services/api.js";
 
 import { BotaoVerMais, GraficoCandidaturas } from "../../components/components.jsx";
 import AtividadeModal from "../../components/AtividadeModal.jsx";
@@ -154,7 +155,25 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const [stats, setStats] = useState({
+    totalUtilizadores: 0,
+    badgesPorUtilizador: 0,
+    badgesAtribuidos: 0
+  });
 
+  useEffect(() => {
+    const carregarStats = async () => {
+      try {
+        const res = await api.get("/homeadmin/stats");
+        if (res.data) {
+          setStats(res.data);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar estatísticas do admin:", error);
+      }
+    };
+    carregarStats();
+  }, []);
 
   return (
     <div
@@ -246,7 +265,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
               className="fw-bold m-0"
               style={{ fontSize: "clamp(1.2rem, 2vw, 1.6rem)" }}
             >
-              345
+              {stats.totalUtilizadores.toLocaleString("pt-PT")}
             </h3>
             <div className="text-end">
               <BotaoVerMais
@@ -273,7 +292,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
               className="fw-bold m-0"
               style={{ fontSize: "clamp(1.2rem, 2vw, 1.6rem)" }}
             >
-              4.8
+              {stats.badgesPorUtilizador.toLocaleString("pt-PT")}
             </h3>
             <div className="text-end">
               <BotaoVerMais
@@ -304,7 +323,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
               className="fw-bold m-0"
               style={{ fontSize: "clamp(1.2rem, 2vw, 1.6rem)" }}
             >
-              3.456
+              {stats.badgesAtribuidos.toLocaleString("pt-PT")}
             </h3>
             <div className="text-end">
               <BotaoVerMais

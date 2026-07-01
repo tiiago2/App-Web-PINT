@@ -1,20 +1,8 @@
-import React, { useState } from "react";
-import ToggleSwitch from "../../../components/ui/ToggleSwitch/ToggleSwitch";
+import React from "react";
 import { useTranslation } from "react-i18next";
 
 export default function TabRGPD() {
   const { t } = useTranslation();
-
-  const [rgpdConfig, setRgpdConfig] = useState({
-    forcar_aceitacao: true,
-    galeria_publica: true,
-    partilha_linkedin: true,
-    paginas_publicas: false,
-  });
-
-  const toggleRgpd = (key) => {
-    setRgpdConfig((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
 
   return (
     <div className="d-flex flex-column gap-4 pb-4">
@@ -115,108 +103,6 @@ export default function TabRGPD() {
         </div>
       </div>
 
-      {/* Card: Automação / Obrigatoriedade */}
-      <div className="p-4 border border-2 rounded-4 bg-light shadow-sm">
-        <h5
-          className="mb-4 fw-semibold"
-          style={{ color: "var(--fontes)" }}
-        >
-          {t("controlo_acesso_consentimento")}
-        </h5>
-
-        <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
-          <div className="pe-3">
-            <label className="form-check-label fw-semibold mb-1">
-              {t("forcar_aceitacao_rgpd")}
-            </label>
-            <p
-              className="text-muted mb-0"
-              style={{ fontSize: "0.85rem" }}
-            >
-              {t("forcar_aceitacao_rgpd_desc")}
-            </p>
-          </div>
-          <div className="mb-0">
-            <ToggleSwitch
-              checked={rgpdConfig.forcar_aceitacao}
-              onChange={() => toggleRgpd("forcar_aceitacao")}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Card: Travas de Consentimento Vinculadas */}
-      <div className="p-4 border border-2 rounded-4 bg-light shadow-sm">
-        <h5
-          className="mb-4 fw-semibold"
-          style={{ color: "var(--fontes)" }}
-        >
-          {t("travas_consentimento_vinculadas")}
-        </h5>
-
-        <div className="d-flex flex-column gap-3 mb-2">
-          <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
-            <div className="pe-3">
-              <label className="form-check-label fw-semibold mb-1">
-                {t("controlo_galeria_publica")}
-              </label>
-              <p
-                className="text-muted mb-0"
-                style={{ fontSize: "0.85rem" }}
-              >
-                {t("controlo_galeria_publica_desc")}
-              </p>
-            </div>
-            <div className="mb-0">
-              <ToggleSwitch
-                checked={rgpdConfig.galeria_publica}
-                onChange={() => toggleRgpd("galeria_publica")}
-              />
-            </div>
-          </div>
-
-          <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
-            <div className="pe-3">
-              <label className="form-check-label fw-semibold mb-1">
-                {t("controlo_partilha_externa")}
-              </label>
-              <p
-                className="text-muted mb-0"
-                style={{ fontSize: "0.85rem" }}
-              >
-                {t("controlo_partilha_externa_desc")}
-              </p>
-            </div>
-            <div className="mb-0">
-              <ToggleSwitch
-                checked={rgpdConfig.partilha_linkedin}
-                onChange={() => toggleRgpd("partilha_linkedin")}
-              />
-            </div>
-          </div>
-
-          <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
-            <div className="pe-3">
-              <label className="form-check-label fw-semibold mb-1">
-                {t("controlo_indexacao_publica")}
-              </label>
-              <p
-                className="text-muted mb-0"
-                style={{ fontSize: "0.85rem" }}
-              >
-                {t("controlo_indexacao_publica_desc")}
-              </p>
-            </div>
-            <div className="mb-0">
-              <ToggleSwitch
-                checked={rgpdConfig.paginas_publicas}
-                onChange={() => toggleRgpd("paginas_publicas")}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Card: Editor do Texto */}
       <div className="p-4 border border-2 rounded-4 bg-light shadow-sm">
         <h5
@@ -245,10 +131,13 @@ export default function TabRGPD() {
 
         <div className="text-end">
           <button
-            className="btn px-4 rounded-pill text-white"
+            className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white"
             style={{
               backgroundColor: "var(--barra_lateral)",
-              border: "none",
+              height: "44px",
+              fontWeight: 500,
+              fontSize: "16px",
+              borderRadius: "var(--border-radius-pequeno)"
             }}
           >
             <i className="fi fi-br-disk me-2"></i> {t("guardar_configuracoes")}

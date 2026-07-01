@@ -60,11 +60,9 @@ function App() {
   // === REFS E ESTADOS PARA MENUS, NOTIFICAÇÕES E AVISOS ===
   const bellRef = useRef(null);
   const notifPopupRef = useRef(null);
-  const megaphoneRef = useRef(null);
-  const avisosPopupRef = useRef(null);
 
   const [menuNotificacoesAberto, setMenuNotificacoesAberto] = useState(false);
-  const [menuAvisosAberto, setMenuAvisosAberto] = useState(false);
+  const [abaNotificacoes, setAbaNotificacoes] = useState("notificacoes");
   const [isAvisoModalOpen, setIsAvisoModalOpen] = useState(false);
   const [avisoParaEditar, setAvisoParaEditar] = useState(null);
   const [avisoParaVisualizar, setAvisoParaVisualizar] = useState(null);
@@ -109,19 +107,16 @@ function App() {
     buscarUserAPI();
   }, []);
 
-  // === CLICK OUTSIDE (Para fechar menus de Notificações/Avisos) ===
+  // === CLICK OUTSIDE (Para fechar o menu de Notificações) ===
   useEffect(() => {
     const handleCliqFora = (e) => {
       if (menuNotificacoesAberto && bellRef.current && !bellRef.current.contains(e.target) && notifPopupRef.current && !notifPopupRef.current.contains(e.target)) {
         setMenuNotificacoesAberto(false);
       }
-      if (menuAvisosAberto && megaphoneRef.current && !megaphoneRef.current.contains(e.target) && avisosPopupRef.current && !avisosPopupRef.current.contains(e.target)) {
-        setMenuAvisosAberto(false);
-      }
     };
     document.addEventListener("mousedown", handleCliqFora);
     return () => document.removeEventListener("mousedown", handleCliqFora);
-  }, [menuNotificacoesAberto, menuAvisosAberto]);
+  }, [menuNotificacoesAberto]);
 
   // === DADOS DE TESTE E LÓGICA (Avisos e Notificações) ===
   const [avisos, setAvisos] = useState(() => {
@@ -148,8 +143,20 @@ function App() {
 
   const CliqueSino = () => {
     setMenuNotificacoesAberto(!menuNotificacoesAberto);
-    if (!menuNotificacoesAberto && notificacoesNaoLidas > 0) {
-      setNotificacoes(notificacoes.map((n) => ({ ...n, lida: true })));
+    if (!menuNotificacoesAberto) {
+      if (notificacoesNaoLidas > 0) {
+        setNotificacoes(notificacoes.map((n) => ({ ...n, lida: true })));
+      }
+      if (abaNotificacoes === "avisos") {
+        setAvisosNaoLidosCount(0);
+      }
+    }
+  };
+
+  const handleSwitchAba = (aba) => {
+    setAbaNotificacoes(aba);
+    if (aba === "avisos") {
+      setAvisosNaoLidosCount(0);
     }
   };
 
@@ -194,11 +201,6 @@ function App() {
       setAvisosNaoLidosCount(unread);
     }
   }, [avisosFiltrados, user.ultimoLogin]);
-
-  const CliqueMegafone = () => {
-    setMenuAvisosAberto(!menuAvisosAberto);
-    if (!menuAvisosAberto) setAvisosNaoLidosCount(0);
-  };
 
   const getTradDestino = (aviso) => {
     if (aviso.tipoDestino === "individual") return `${t("individual")}: ${aviso.destino}`;
@@ -293,83 +295,143 @@ function App() {
         <div id="image_esquerda"><img id="softinsa_logo" src={softinsa_logo} alt="Softinsa Logo" /></div>
         <div className="d-flex align-items-center pe-2" id="info_direita">
           
-          {/* MEGAFONE DE AVISOS */}
-          <div className="position-relative d-flex align-items-center">
-            <i ref={megaphoneRef} id="megaphone_icon" className="fi fi-br-megaphone mx-2" onClick={CliqueMegafone} style={{ cursor: "pointer", fontSize: "1.2rem", color: "var(--fontes)" }}></i>
-            {avisosNaoLidosCount > 0 && <span className="d-flex position-absolute translate-middle badge rounded-pill align-items-center justify-content-center" id="bolinha_megafone">{avisosNaoLidosCount}</span>}
-          </div>
-
-          {/* SINO DE NOTIFICAÇÕES */}
+          {/* SINO DE NOTIFICAÇÕES (UNIFICADO) */}
           <div className="position-relative d-flex align-items-center">
             <i ref={bellRef} id="bell_icon" className="fi fi-br-bell mx-2" onClick={CliqueSino} style={{ cursor: "pointer", fontSize: "1.2rem", color: "var(--fontes)" }}></i>
-            {!menuNotificacoesAberto && notificacoesNaoLidas > 0 && <span className="d-flex position-absolute translate-middle badge rounded-pill align-items-center justify-content-center" id="bolinha_sino">{notificacoesNaoLidas > 9 ? "9+" : notificacoesNaoLidas}</span>}
+            {!menuNotificacoesAberto && (notificacoesNaoLidas + avisosNaoLidosCount) > 0 && (
+              <span className="d-flex position-absolute translate-middle badge rounded-pill align-items-center justify-content-center" id="bolinha_sino">
+                {(notificacoesNaoLidas + avisosNaoLidosCount) > 9 ? "9+" : (notificacoesNaoLidas + avisosNaoLidosCount)}
+              </span>
+            )}
           </div>
 
-          {/* POPUP NOTIFICAÇÕES */}
+          {/* POPUP NOTIFICAÇÕES (UNIFICADO) */}
           {menuNotificacoesAberto && (
-            <div ref={notifPopupRef} className="position-absolute bg-white shadow-sm p-2 rounded-4" id="pop_up_notification">
-              <h5 className="ms-2 mt-1 mb-2 user-select-none">{t("notificacao_titulo")}</h5>
-              <hr className="mt-0 mb-3" style={{ opacity: 0.15 }} />
-              <div className="d-flex flex-column gap-1" id="notification_list">
-                {notificacoesRecentes.length === 0 ? (
-                  <p className="text-center my-3">{t("notificacao_vazia")}</p>
-                ) : (
-                  notificacoesRecentes.map((notif) => (
-                    <div key={notif.id} className="d-flex justify-content-between align-items-center p-2 bg-white" id="notification_option">
-                      <div className="m-0 pe-2" id="notification_esquerda">
-                        <span id="nome_notificacao"><b>{notif.remetente}</b></span>
-                        <span id="nome_notificacao">{notif.texto}</span>
-                      </div>
-                      <div className="d-flex flex-column align-items-center justify-content-center" id="notification_direita">
-                        <i className={`${iconesNotificacao[notif.tipo].desenho}`} style={{ color: iconesNotificacao[notif.tipo].cor }}></i>
-                        <span>{notif.data}</span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* POPUP AVISOS */}
-          {menuAvisosAberto && (
-            <div ref={avisosPopupRef} className="position-absolute bg-white shadow-sm p-3 rounded-4" id="pop_up_avisos">
-              <div className="d-flex justify-content-between align-items-center mb-2">
-                <h5 className="ms-1 mt-1 mb-0 user-select-none text-dark">{t("avisos_titulo")}</h5>
-                <button className="rounded-circle d-flex align-items-center justify-content-center border-0 text-white" style={{ width: "24px", height: "24px", padding: 0, backgroundColor: "#3a5a92" }} onClick={() => { setAvisoParaEditar(null); setIsAvisoModalOpen(true); setMenuAvisosAberto(false); }}>
-                  <i className="fi fi-br-plus" style={{ fontSize: "10px", lineHeight: "0" }}></i>
+            <div ref={notifPopupRef} className="position-absolute bg-white shadow-sm p-3 rounded-4" id="pop_up_notification" style={{ top: "63%", right: "5%", width: "380px", zIndex: 1050 }}>
+              
+              {/* Header com Tabs */}
+              <div className="d-flex border-bottom mb-3 justify-content-around align-items-center" style={{ borderColor: "var(--contorno)" }}>
+                <button
+                  type="button"
+                  className={`notif-popup-tab pb-2 px-3 fw-semibold border-0 bg-transparent position-relative ${abaNotificacoes === "notificacoes" ? "active" : ""}`}
+                  onClick={() => handleSwitchAba("notificacoes")}
+                >
+                  {t("notificacoes")}
+                  {notificacoesNaoLidas > 0 && (
+                    <span className="badge bg-danger rounded-circle ms-1" style={{ fontSize: "0.65rem", padding: "0.2rem 0.4rem" }}>
+                      {notificacoesNaoLidas}
+                    </span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className={`notif-popup-tab pb-2 px-3 fw-semibold border-0 bg-transparent position-relative ${abaNotificacoes === "avisos" ? "active" : ""}`}
+                  onClick={() => handleSwitchAba("avisos")}
+                >
+                  {t("avisos_titulo")}
+                  {avisosNaoLidosCount > 0 && (
+                    <span className="badge bg-danger rounded-circle ms-1" style={{ fontSize: "0.65rem", padding: "0.2rem 0.4rem" }}>
+                      {avisosNaoLidosCount}
+                    </span>
+                  )}
                 </button>
               </div>
-              <div className="d-flex border-bottom mb-3 justify-content-around" style={{ borderColor: "var(--contorno)" }}>
-                <span className={`aviso-popup-tab pb-2 px-3 fw-semibold ${abaAvisos === "recebidos" ? "active" : ""}`} onClick={() => setAbaAvisos("recebidos")}>{t("recebidos")}</span>
-                <span className={`aviso-popup-tab pb-2 px-3 fw-semibold ${abaAvisos === "enviados" ? "active" : ""}`} onClick={() => setAbaAvisos("enviados")}>{t("enviados")}</span>
-              </div>
-              <div className="d-flex flex-column gap-2" id="avisos_list" style={{ maxHeight: "250px", overflowY: "auto" }}>
-                {avisosExibidos.length === 0 ? (
-                  <p className="text-center my-3 text-muted">{t("aviso_vazio")}</p>
-                ) : (
-                  [...avisosExibidos].reverse().map((aviso) => (
-                    <div key={aviso.id} className="aviso-item p-2 rounded-3 position-relative">
-                      <div className="d-flex justify-content-between align-items-start gap-2">
-                        <span className="fw-bold text-truncate text-dark" style={{ cursor: "pointer", maxWidth: "160px" }} onClick={() => { setAvisoParaVisualizar(aviso); setMenuAvisosAberto(false); }}>{aviso.titulo}</span>
-                        <div className="d-flex gap-1 align-items-center flex-shrink-0">
-                          <span className={`aviso-tag aviso-tag-${getStyleClass(aviso)}`}>{getTradDestino(aviso)}</span>
-                          {aviso.autor === user.nome && (
-                            <div className="d-flex gap-1 ms-2">
-                              <i className="fi fi-br-pencil text-muted" style={{ cursor: "pointer", fontSize: "11px" }} onClick={() => { setAvisoParaEditar(aviso); setIsAvisoModalOpen(true); setMenuAvisosAberto(false); }}></i>
-                              <i className="fi fi-br-trash text-danger" style={{ cursor: "pointer", fontSize: "11px" }} onClick={() => setAvisoToDelete(aviso)}></i>
-                            </div>
-                          )}
+
+              {/* Conteúdo: Aba Notificações */}
+              {abaNotificacoes === "notificacoes" && (
+                <div className="d-flex flex-column gap-1" id="notification_list" style={{ maxHeight: "250px", overflowY: "auto" }}>
+                  {notificacoesRecentes.length === 0 ? (
+                    <p className="text-center my-3 text-muted">{t("notificacao_vazia")}</p>
+                  ) : (
+                    notificacoesRecentes.map((notif) => (
+                      <div key={notif.id} className="d-flex justify-content-between align-items-center p-2 bg-white" id="notification_option">
+                        <div className="m-0 pe-2" id="notification_esquerda">
+                          <span id="nome_notificacao"><b>{notif.remetente}</b></span>
+                          <span id="nome_notificacao">{notif.texto}</span>
+                        </div>
+                        <div className="d-flex flex-column align-items-center justify-content-center" id="notification_direita">
+                          <i className={`${iconesNotificacao[notif.tipo].desenho}`} style={{ color: iconesNotificacao[notif.tipo].cor }}></i>
+                          <span>{notif.data}</span>
                         </div>
                       </div>
-                      <p className="text-muted mb-1 text-truncate" style={{ fontSize: "0.8rem", cursor: "pointer" }} onClick={() => { setAvisoParaVisualizar(aviso); setMenuAvisosAberto(false); }}>{aviso.mensagem}</p>
-                      <div className="d-flex justify-content-between text-muted" style={{ fontSize: "0.7rem" }}>
-                        <span>Por: {aviso.autor}</span><span>{aviso.data}</span>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* Conteúdo: Aba Avisos */}
+              {abaNotificacoes === "avisos" && (
+                <div className="d-flex flex-column" id="unified_avisos_container">
+                  {/* Linha de controlo (Adicionar aviso / Filtro Recebidos-Enviados) para Admin/TM */}
+                  {(user.cargo === "administrador" || user.cargo === "talent manager") && (
+                    <div className="d-flex justify-content-between align-items-center mb-2 px-1">
+                      <div className="d-flex gap-2">
+                        <span 
+                          className={`aviso-popup-tab pb-1 px-2 fw-semibold`}
+                          style={{ 
+                            cursor: "pointer", 
+                            fontSize: "0.75rem", 
+                            borderBottom: abaAvisos === "recebidos" ? "2px solid var(--barra_lateral)" : "none",
+                            color: abaAvisos === "recebidos" ? "var(--barra_lateral)" : "var(--cor-cinza-escura)"
+                          }} 
+                          onClick={() => setAbaAvisos("recebidos")}
+                        >
+                          {t("recebidos")}
+                        </span>
+                        <span 
+                          className={`aviso-popup-tab pb-1 px-2 fw-semibold`}
+                          style={{ 
+                            cursor: "pointer", 
+                            fontSize: "0.75rem", 
+                            borderBottom: abaAvisos === "enviados" ? "2px solid var(--barra_lateral)" : "none",
+                            color: abaAvisos === "enviados" ? "var(--barra_lateral)" : "var(--cor-cinza-escura)"
+                          }} 
+                          onClick={() => setAbaAvisos("enviados")}
+                        >
+                          {t("enviados")}
+                        </span>
                       </div>
+                      <button 
+                        type="button"
+                        className="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center border-0 text-white" 
+                        style={{ width: "22px", height: "22px", padding: 0, backgroundColor: "var(--barra_lateral)" }} 
+                        onClick={() => { setAvisoParaEditar(null); setIsAvisoModalOpen(true); setMenuNotificacoesAberto(false); }}
+                        title={t("criar_aviso_btn") || "Criar Aviso"}
+                      >
+                        <i className="fi fi-br-plus" style={{ fontSize: "9px", lineHeight: "0" }}></i>
+                      </button>
                     </div>
-                  ))
-                )}
-              </div>
+                  )}
+
+                  <div className="d-flex flex-column gap-2" id="avisos_list" style={{ maxHeight: "230px", overflowY: "auto" }}>
+                    {avisosExibidos.length === 0 ? (
+                      <p className="text-center my-3 text-muted">{t("aviso_vazio")}</p>
+                    ) : (
+                      [...avisosExibidos].reverse().map((aviso) => (
+                        <div key={aviso.id} className="aviso-item p-2 rounded-3 position-relative">
+                          <div className="d-flex justify-content-between align-items-start gap-2">
+                            <span className="fw-bold text-truncate text-dark" style={{ cursor: "pointer", maxWidth: "160px", fontSize: "0.85rem" }} onClick={() => { setAvisoParaVisualizar(aviso); setMenuNotificacoesAberto(false); }}>{aviso.titulo}</span>
+                            <div className="d-flex gap-1 align-items-center flex-shrink-0">
+                              <span className={`aviso-tag aviso-tag-${getStyleClass(aviso)}`}>{getTradDestino(aviso)}</span>
+                              {aviso.autor === user.nome && (
+                                <div className="d-flex gap-1 ms-2">
+                                  <i className="fi fi-br-pencil text-muted" style={{ cursor: "pointer", fontSize: "11px" }} onClick={() => { setAvisoParaEditar(aviso); setIsAvisoModalOpen(true); setMenuNotificacoesAberto(false); }}></i>
+                                  <i className="fi fi-br-trash text-danger" style={{ cursor: "pointer", fontSize: "11px" }} onClick={() => setAvisoToDelete(aviso)}></i>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-muted mb-1 text-truncate" style={{ fontSize: "0.75rem", cursor: "pointer" }} onClick={() => { setAvisoParaVisualizar(aviso); setMenuNotificacoesAberto(false); }}>{aviso.mensagem}</p>
+                          <div className="d-flex justify-content-between text-muted" style={{ fontSize: "0.65rem" }}>
+                            <span>Por: {aviso.autor}</span><span>{aviso.data}</span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
             </div>
           )}
 
@@ -486,8 +548,32 @@ function AvisoFormModal({ aviso, onClose, onSave, t }) {
             <textarea className="form-control" rows="5" value={mensagem} onChange={(e) => setMensagem(e.target.value)} placeholder="Escreva a mensagem aqui..." required></textarea>
           </div>
           <div className="d-flex justify-content-end gap-2">
-            <button type="button" className="btn btn-light rounded-pill px-4" onClick={onClose}>{t("cancelar")}</button>
-            <button type="submit" className="btn text-white border-0 rounded-pill px-4" style={{ backgroundColor: "#3a5a92" }}>{t("enviar")}</button>
+            <button
+              type="button"
+              className="btn btn-light border d-inline-flex align-items-center justify-content-center px-4"
+              style={{
+                height: "44px",
+                fontWeight: 500,
+                fontSize: "16px",
+                borderRadius: "var(--border-radius-pequeno)"
+              }}
+              onClick={onClose}
+            >
+              {t("cancelar")}
+            </button>
+            <button
+              type="submit"
+              className="btn text-white border-0 d-inline-flex align-items-center justify-content-center px-4 shadow-sm"
+              style={{
+                backgroundColor: "var(--barra_lateral)",
+                height: "44px",
+                fontWeight: 500,
+                fontSize: "16px",
+                borderRadius: "var(--border-radius-pequeno)"
+              }}
+            >
+              {t("enviar")}
+            </button>
           </div>
         </form>
       </div>

@@ -29,6 +29,7 @@ import Atividade from "./pages/atividade/Atividade.jsx";
 import Candidaturas from "./pages/candidaturas/Candidaturas.jsx";
 import ModalConfirmacao from "./components/ui/ModalConfirmacao/ModalConfirmacao";
 import LoginPage from "./pages/auth/LoginPage.jsx";
+import Utilizadores from "./pages/utilizadores/Utilizadores.jsx";
 import LanguageSelector from "./components/ui/LanguageSelector/LanguageSelector.jsx";
 
 // Imagens
@@ -267,6 +268,7 @@ function App() {
         {user.cargo === "consultor" && <Route path="/objetivos" element={<ObjetivosConsultor user={user} />} />}
         {user.cargo === "administrador" && <Route path="/editar" element={<EditarAdmin />} />}
         {user.cargo === "administrador" && <Route path="/definicoes" element={<DefinicoesAdmin />} />}
+        {["administrador", "talent manager", "service line leader"].includes(user.cargo) && <Route path="/utilizadores" element={<Utilizadores userRole={user.cargo} />} />}
 
         {/* Fallbacks */}
         <Route path="/" element={<Navigate to="/home" replace />} />

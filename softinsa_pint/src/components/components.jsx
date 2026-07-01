@@ -76,12 +76,12 @@ export function BotaoRejeitar({ onClick, tamanho }) {
 
 
 
-export const GraficoCandidaturas = ({dados_grafico_candidaturas}) => {
+export const GraficoCandidaturas = ({dados_grafico_candidaturas, loading}) => {
 
     const {t} = useTranslation();
 
     const total = dados_grafico_candidaturas.reduce((acumulador, dado) => {
-        return acumulador + dado.quantidade;
+        return acumulador + (dado.quantidade || 0);
     }, 0);
 
     const dados_traduzidos = dados_grafico_candidaturas.map((dado) => {
@@ -91,67 +91,80 @@ export const GraficoCandidaturas = ({dados_grafico_candidaturas}) => {
         };
     });
 
+    const isVazio = dados_grafico_candidaturas.every(d => !d.quantidade);
+
     return (
         <div className="p-3 d-flex flex-column bg-white h-100" style={{ border: 'var(--borda-principal) solid var(--contorno)', borderRadius: 'var(--border-radius-grande)', boxSizing: 'border-box' }}>
             <h5 className="mb-2">{t('titulo_candidaturas')}</h5>
             
-            <div className="flex-grow-1" style={{ width: '100%', minHeight: '140px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                        <Pie
-                            cx="50%"
-                            cy="50%"
-                            data={dados_traduzidos}
-                            innerRadius="60%"
-                            outerRadius="85%" 
-                            dataKey="quantidade"
-                            nameKey="nome"
-                            stroke="none"
-                            isAnimationActive={false}
-                            labelLine={false}
-                            label={({ cx, cy, index }) => {
-                                if (index !== 0) return null; 
-                                return (
-                                    <g>
-                                        <text 
-                                            x={cx} 
-                                            y={cy - 5} 
-                                            textAnchor="middle" 
-                                            dominantBaseline="central" 
-                                            className="fw-bold" 
-                                            style={{ fontSize: '28px', fill: 'var(--fontes)'}}
-                                        >
-                                            {total}
-                                        </text>
-                                        <text 
-                                            x={cx} 
-                                            y={cy + 15} 
-                                            textAnchor="middle" 
-                                            dominantBaseline="central" 
-                                            style={{ fontSize: '12px', fill: 'var(--fontes)' }}
-                                        >
-                                            {t('total')}
-                                        </text>
-                                    </g>
-                                );
-                            }}
-                        >
-                            {dados_traduzidos.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.cor} />
-                            ))}
-                        </Pie>
-                        
-                        <Tooltip />
-                        
-                        <Legend 
-                            layout="vertical" 
-                            verticalAlign="middle" 
-                            align="right" 
-                            iconType="circle" 
-                            wrapperStyle={{ right: 0 }}
-                        /> 
-                    </PieChart>
-                </ResponsiveContainer>
+            <div className="flex-grow-1 d-flex justify-content-center align-items-center" style={{ width: '100%', minHeight: '140px' }}>
+                {loading ? (
+                    <div className="spinner-border text-primary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                    </div>
+                ) : isVazio ? (
+                    <div className="text-muted text-center w-100">
+                        <i className="fi fi-br-info text-muted fs-4 mb-2 d-block"></i>
+                        <span>{t('sem_dados')}</span>
+                    </div>
+                ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie
+                                cx="50%"
+                                cy="50%"
+                                data={dados_traduzidos}
+                                innerRadius="60%"
+                                outerRadius="85%" 
+                                dataKey="quantidade"
+                                nameKey="nome"
+                                stroke="none"
+                                isAnimationActive={false}
+                                labelLine={false}
+                                label={({ cx, cy, index }) => {
+                                    if (index !== 0) return null; 
+                                    return (
+                                        <g>
+                                            <text 
+                                                x={cx} 
+                                                y={cy - 5} 
+                                                textAnchor="middle" 
+                                                dominantBaseline="central" 
+                                                className="fw-bold" 
+                                                style={{ fontSize: '28px', fill: 'var(--fontes)'}}
+                                            >
+                                                {total}
+                                            </text>
+                                            <text 
+                                                x={cx} 
+                                                y={cy + 15} 
+                                                textAnchor="middle" 
+                                                dominantBaseline="central" 
+                                                style={{ fontSize: '12px', fill: 'var(--fontes)' }}
+                                            >
+                                                {t('total')}
+                                            </text>
+                                        </g>
+                                    );
+                                }}
+                            >
+                                {dados_traduzidos.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.cor} />
+                                ))}
+                            </Pie>
+                            
+                            <Tooltip />
+                            
+                            <Legend 
+                                layout="vertical" 
+                                verticalAlign="middle" 
+                                align="right" 
+                                iconType="circle" 
+                                wrapperStyle={{ right: 0 }}
+                            /> 
+                        </PieChart>
+                    </ResponsiveContainer>
+                )}
             </div>
         </div>
     );

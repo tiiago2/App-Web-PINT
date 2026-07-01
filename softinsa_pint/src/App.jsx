@@ -83,9 +83,9 @@ function App() {
         }
 
         const roleParseada = JSON.parse(roleGuardada);
-        const cargoFinal = typeof roleParseada === "string" 
-          ? roleParseada.toLowerCase() 
-          : (roleParseada.nome ? roleParseada.nome.toLowerCase() : null);
+        const cargoFinal = typeof roleParseada === "string"
+          ? roleParseada
+          : (roleParseada.nome ? roleParseada.nome : null);
 
         const res = await api.get("/getuser", { params: { id: idGuardado } });
         if (res.data) {
@@ -231,46 +231,60 @@ function App() {
 
     return (
       <Routes>
+        {/* Rota Home Comum */}
         <Route path="/home" element={
-          user.cargo === "administrador" 
-            ? <HomeAdmin user={user} saudacao={t("saudacao_dia")} onCriarAviso={() => setIsAvisoModalOpen(true)} />
-            : user.cargo === "service line leader" ? <HomeService user={user} saudacao={t("saudacao_dia")} />
-            : user.cargo === "talent manager" ? <HomeTalent user={user} saudacao={t("saudacao_dia")} />
-            : <HomeConsultor user={user} saudacao={t("saudacao_dia")} />
+          user.cargo === "Administrador" ? <HomeAdmin user={user} saudacao={t("saudacao_dia")} onCriarAviso={() => setIsAvisoModalOpen(true)} /> :
+            user.cargo === "Service Line Leader" ? <HomeService user={user} saudacao={t("saudacao_dia")} /> :
+              user.cargo === "Talent Manager" ? <HomeTalent user={user} saudacao={t("saudacao_dia")} /> :
+                <HomeConsultor user={user} saudacao={t("saudacao_dia")} />
         } />
-        
-        {/* Rotas partilhadas */}
-        <Route path="/candidaturas" element={<Candidaturas />} />
+
+        {/* Atividade (se for comum a todos) */}
         <Route path="/atividade" element={<Atividade />} />
         <Route path="/perfil/:id" element={<PerfilPessoal />} />
 
-        {/* Estatisticas Especificas */}
-        {user.cargo === "administrador" && <Route path="/estatisticas" element={<EstatisticasAdmin />} />}
-        {user.cargo === "service line leader" && <Route path="/estatisticas" element={<EstatisticasService user={user} />} />}
-        {user.cargo === "talent manager" && <Route path="/estatisticas" element={<EstatisticasTalent />} />}
-        {user.cargo === "consultor" && <Route path="/estatisticas" element={<EstatisticasConsultor user={user} />} />}
-
-        {/* Galerias */}
-        {user.cargo === "administrador" && (
-          <Route path="/galeria" element={<Galeria />} />
+        {/* --- BLOCO ADMINISTRADOR --- */}
+        {user.cargo === "Administrador" && (
+          <>
+            <Route path="/candidaturas" element={<Candidaturas />} />
+            <Route path="/estatisticas" element={<EstatisticasAdmin />} />
+            <Route path="/galeria" element={<Galeria />} />
+            <Route path="/editar" element={<EditarAdmin />} />
+            <Route path="/definicoes" element={<DefinicoesAdmin />} />
+            <Route path="/utilizadores" element={<Utilizadores userRole={user.cargo} />} />
+          </>
         )}
 
-        {user.cargo === "consultor" && (
-          <Route path="/galeria" element={<GaleriaConsultor />} />
+        {/* --- BLOCO TALENT MANAGER --- */}
+        {user.cargo === "Talent Manager" && (
+          <>
+            <Route path="/candidaturas" element={<Candidaturas />} />
+            <Route path="/estatisticas" element={<EstatisticasTalent />} />
+            <Route path="/galeria" element={<Galeria_Talent_ServiceLine />} />
+            <Route path="/utilizadores" element={<Utilizadores userRole={user.cargo} />} />
+          </>
         )}
 
-        {(user.cargo === "talent manager" ||
-          user.cargo === "service line leader") && (
-          <Route path="/galeria" element={<Galeria_Talent_ServiceLine />} />
+        {/* --- BLOCO SERVICE LINE LEADER --- */}
+        {user.cargo === "Service Line Leader" && (
+          <>
+            <Route path="/candidaturas" element={<Candidaturas />} />
+            <Route path="/estatisticas" element={<EstatisticasService user={user} />} />
+            <Route path="/galeria" element={<Galeria_Talent_ServiceLine />} />
+            <Route path="/utilizadores" element={<Utilizadores userRole={user.cargo} />} />
+          </>
         )}
-        
-        {/* Rotas Exclusivas */}
-        {user.cargo === "consultor" && <Route path="/objetivos" element={<ObjetivosConsultor user={user} />} />}
-        {user.cargo === "administrador" && <Route path="/editar" element={<EditarAdmin />} />}
-        {user.cargo === "administrador" && <Route path="/definicoes" element={<DefinicoesAdmin />} />}
-        {["administrador", "talent manager", "service line leader"].includes(user.cargo) && <Route path="/utilizadores" element={<Utilizadores userRole={user.cargo} />} />}
 
-        {/* Fallbacks */}
+        {/* --- BLOCO CONSULTOR --- */}
+        {user.cargo === "Consultor" && (
+          <>
+            <Route path="/candidaturas" element={<Candidaturas />} />
+            <Route path="/estatisticas" element={<EstatisticasConsultor user={user} />} />
+            <Route path="/galeria" element={<GaleriaConsultor />} />
+            <Route path="/objetivos" element={<ObjetivosConsultor user={user} />} />
+          </>
+        )}
+
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
@@ -282,10 +296,16 @@ function App() {
 
   if (location.pathname === "/login") {
     if (user.cargo) return <Navigate to="/home" replace />;
-    
-    return <LoginPage onLoginSuccess={({ id, nome, role, foto }) => {
-      setUser({ id, nome, cargo: role.toLowerCase(), foto, ultimoLogin: new Date() });
-    }} />;
+
+    return <LoginPage onLoginSuccess={(dados) => {
+      setUser({
+        id: dados.id,
+        nome: dados.nome,
+        cargo: dados.role,
+        foto: dados.imagem_perfil,
+        ultimoLogin: new Date()
+      });
+    }} />
   }
 
   // === ESTRUTURA PRINCIPAL (LAYOUT) ===
@@ -295,7 +315,7 @@ function App() {
       <header className="d-flex justify-content-between align-items-center px-2 py-1 position-relative z-3" id="barra_horizontal">
         <div id="image_esquerda"><img id="softinsa_logo" src={softinsa_logo} alt="Softinsa Logo" /></div>
         <div className="d-flex align-items-center pe-2" id="info_direita">
-          
+
           {/* SINO DE NOTIFICAÇÕES (UNIFICADO) */}
           <div className="position-relative d-flex align-items-center">
             <i ref={bellRef} id="bell_icon" className="fi fi-br-bell mx-2" onClick={CliqueSino} style={{ cursor: "pointer", fontSize: "1.2rem", color: "var(--fontes)" }}></i>
@@ -309,7 +329,7 @@ function App() {
           {/* POPUP NOTIFICAÇÕES (UNIFICADO) */}
           {menuNotificacoesAberto && (
             <div ref={notifPopupRef} className="position-absolute bg-white shadow-sm p-3 rounded-4" id="pop_up_notification" style={{ top: "63%", right: "5%", width: "380px", zIndex: 1050 }}>
-              
+
               {/* Header com Tabs */}
               <div className="d-flex border-bottom mb-3 justify-content-around align-items-center" style={{ borderColor: "var(--contorno)" }}>
                 <button
@@ -367,35 +387,35 @@ function App() {
                   {(user.cargo === "administrador" || user.cargo === "talent manager") && (
                     <div className="d-flex justify-content-between align-items-center mb-2 px-1">
                       <div className="d-flex gap-2">
-                        <span 
+                        <span
                           className={`aviso-popup-tab pb-1 px-2 fw-semibold`}
-                          style={{ 
-                            cursor: "pointer", 
-                            fontSize: "0.75rem", 
+                          style={{
+                            cursor: "pointer",
+                            fontSize: "0.75rem",
                             borderBottom: abaAvisos === "recebidos" ? "2px solid var(--barra_lateral)" : "none",
                             color: abaAvisos === "recebidos" ? "var(--barra_lateral)" : "var(--cor-cinza-escura)"
-                          }} 
+                          }}
                           onClick={() => setAbaAvisos("recebidos")}
                         >
                           {t("recebidos")}
                         </span>
-                        <span 
+                        <span
                           className={`aviso-popup-tab pb-1 px-2 fw-semibold`}
-                          style={{ 
-                            cursor: "pointer", 
-                            fontSize: "0.75rem", 
+                          style={{
+                            cursor: "pointer",
+                            fontSize: "0.75rem",
                             borderBottom: abaAvisos === "enviados" ? "2px solid var(--barra_lateral)" : "none",
                             color: abaAvisos === "enviados" ? "var(--barra_lateral)" : "var(--cor-cinza-escura)"
-                          }} 
+                          }}
                           onClick={() => setAbaAvisos("enviados")}
                         >
                           {t("enviados")}
                         </span>
                       </div>
-                      <button 
+                      <button
                         type="button"
-                        className="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center border-0 text-white" 
-                        style={{ width: "22px", height: "22px", padding: 0, backgroundColor: "var(--barra_lateral)" }} 
+                        className="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center border-0 text-white"
+                        style={{ width: "22px", height: "22px", padding: 0, backgroundColor: "var(--barra_lateral)" }}
                         onClick={() => { setAvisoParaEditar(null); setIsAvisoModalOpen(true); setMenuNotificacoesAberto(false); }}
                         title={t("criar_aviso_btn") || "Criar Aviso"}
                       >
@@ -437,31 +457,22 @@ function App() {
           )}
 
           <div className="mx-2"><LanguageSelector /></div>
-          
+
           <div id="name_cargo" className="d-flex flex-column align-items-center mx-2 d-none d-md-flex text-dark">
             <span><b>{user.nome}</b></span>
             <span style={{ fontSize: "0.8rem" }}>{user.cargo ? t(user.cargo) : ""}</span>
           </div>
-          
+
           <img
             id="user_image"
             className="mx-3 rounded-2"
-            src={user.foto || user_logo} 
+            src={user.foto || user_logo}
             width="30"
             height="30"
             alt="Utilizador"
             style={{ cursor: "pointer", objectFit: "cover" }}
             onClick={() => navigate(`perfil/${user.id}`)}
           />
-          <i
-            className="fi fi-br-sign-out-alt me-2 text-secondary"
-            style={{ cursor: "pointer", fontSize: "1.1rem" }}
-            title={t("auth_roles_terminar")}
-            onClick={() => {
-              setUser((prev) => ({ ...prev, cargo: null }));
-              navigate("/login");
-            }}
-          ></i>
         </div>
       </header>
 
@@ -477,7 +488,7 @@ function App() {
             ))}
           </div>
         </div>
-        
+
         <div className="h-100 d-flex flex-column flex-grow-1" id="Container" style={{ overflow: "hidden", minWidth: 0 }}>
           {renderPagina()}
         </div>

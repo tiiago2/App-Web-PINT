@@ -16,12 +16,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// --- DADOS FALSOS ---
-const dados_grafico_candidaturas = [
-    { nome: 'aceites', quantidade: 405, cor: '#3bb413' },    
-    { nome: 'rejeitadas', quantidade: 15, cor: '#de2121' }, 
-    { nome: 'em_analise', quantidade: 25, cor: '#1c8cae' }  
-];
+// --- DADOS FALSOS --
 
 const dados_atividade = [
   {
@@ -152,9 +147,14 @@ function AcaoRapida({ cor, icone, texto, onClick }) {
 
 // --- 2. PÁGINA PRINCIPAL ---
 const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
+  const idGuardado = localStorage.getItem("utilizador_id");
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const [dados_grafico_candidaturas, setDados_grafico_candidaturas] = useState([
+    { nome: 'aceites', quantidade: null, cor: '#3bb413' },
+    { nome: 'rejeitadas', quantidade: null, cor: '#de2121' }
+  ]);
   const [stats, setStats] = useState({
     totalUtilizadores: 0,
     badgesPorUtilizador: 0,
@@ -172,6 +172,34 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
         console.error("Erro ao carregar estatísticas do admin:", error);
       }
     };
+    const getGrafCandidaturas = async () => {
+      if (!localStorage.getItem('token_softinsa')) {
+        setDados_grafico_candidaturas(prev => prev.map(item => ({ ...item, quantidade: 0 })));
+        return;
+      }
+
+      try {
+        const res = await api.get(`/commun/candidaturasweek/${idGuardado}`);
+
+        setDados_grafico_candidaturas(prevDados =>
+          prevDados.map(item => {
+            if (item.nome === 'aceites') {
+              return { ...item, quantidade: res.data.aceites };
+            }
+            if (item.nome === 'rejeitadas') {
+              return { ...item, quantidade: res.data.rejeitadas };
+            }
+            return item;
+          })
+        );
+
+      } catch (erro) {
+        console.error('Erro ao buscar dados do gráfico:', erro);
+        setDados_grafico_candidaturas(prev => prev.map(item => ({ ...item, quantidade: null })));
+      }
+    };
+
+    getGrafCandidaturas();
     carregarStats();
   }, []);
 
@@ -202,7 +230,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
             cor="#00b4d8"
             icone="fi-br-user-add"
             texto={t("add_utilizador")}
-            onClick={() => {}}
+            onClick={() => { }}
           />
 
           <AcaoRapida
@@ -365,7 +393,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
           className="col-4 h-100 d-flex flex-column"
           style={{ minHeight: 0 }}
         >
-          <GraficoCandidaturas dados_grafico_candidaturas={dados_grafico_candidaturas}/>
+          <GraficoCandidaturas dados_grafico_candidaturas={dados_grafico_candidaturas} />
         </div>
       </div>
     </div>

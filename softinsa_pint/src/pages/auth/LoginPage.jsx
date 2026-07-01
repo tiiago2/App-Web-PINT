@@ -20,18 +20,15 @@ function LoginPage({ onLoginSuccess }) {
 
   const extrairDadosEAvancar = (userApi, roleEscolhida) => {
 
-    console.log("📦 DADOS REAIS DA API:", userApi);
-
     const idParaGuardar = userApi.id;
     localStorage.setItem('utilizador_id', idParaGuardar);
     localStorage.setItem('role_softinsa', JSON.stringify(roleEscolhida));
 
-    // Enviar para o App.jsx (com fallbacks para cobrir vários nomes possíveis da BD)
     onLoginSuccess({
       id: idParaGuardar,
       nome: userApi.nome || userApi.nome_user,
-      role: roleEscolhida.nome || roleEscolhida,
-      foto: userApi.foto || userApi.imagem_perfil || userApi.avatar || null
+      role: roleEscolhida.nome,
+      foto: userApi.imagem_perfil || userApi.foto || null
     });
   };
 

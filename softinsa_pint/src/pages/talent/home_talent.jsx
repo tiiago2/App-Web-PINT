@@ -6,7 +6,7 @@ import './home_talent.css';
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import AtividadeRecente from '../../components/AtividadeModal.jsx';
 import badge_logo from '../../assets/teste_badge.png';
-import {BotaoVerMais, BotaoAceitar, BotaoRejeitar, GraficoCandidaturas} from '../../components/components.jsx'
+import { BotaoVerMais, BotaoAceitar, BotaoRejeitar, GraficoCandidaturas } from '../../components/components.jsx'
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, Label, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 const atividadeRecente = [
@@ -22,77 +22,6 @@ const atividadeRecente = [
 ];
 //---------------------------------------------------------------------------------------------------------------------------------
 
-const GraficoEstatistica = () => {
-
-    const {t} = useTranslation();
-
-    const dados_traduzidos = dados_linhas.map((dado) => {
-        return {
-            ...dado,
-            nome: t(dado.periodo)
-        };
-    });
-
-    return (
-        <div className="border border-2 rounded-4 p-2 d-flex flex-column h-100">
-            <h5 className="ms-1 mb-2">{t('evo_users')}</h5>
-            
-            <div className="flex-grow-1" style={{ width: '100%', minHeight: '200px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={dados_traduzidos} margin={{ top: 12, right: 25, left: -20, bottom: 0 }}>
-    
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ccc" />
-                    
-                    <XAxis dataKey="nome" tick={{ fontSize: 11 }} tickMargin={10} />
-                    
-                    <YAxis tick={{ fontSize: 11 }} />
-                    
-                    <Tooltip isAnimationActive={false}/>
-                    <Legend 
-                        verticalAlign="bottom"
-                        iconType="circle"
-                        formatter={(value) => <span style={{ fontSize: '12px'}}>{value}</span>}
-                        wrapperStyle={{
-                            paddingLeft: '7vh',
-                            paddingBottom: '1vh',
-                            width: '100%',
-                            display: 'flex',
-                            justifyContent: 'center'}}/>
-
-                    <Line 
-                        type="monotone" 
-                        dataKey="media_badges"
-                        name={t('media_badges')}
-                        stroke="#009966" 
-                        strokeWidth={3} 
-                        dot={false} 
-                        activeDot={false}
-                    />
-                    <Line 
-                        type="monotone" 
-                        dataKey="pontos" 
-                        name={t('pontos')} 
-                        stroke="#39639C" 
-                        strokeWidth={3} 
-                        dot={false} 
-                        activeDot={false}
-                    />
-                    <Line 
-                        type="monotone" 
-                        dataKey="atribuicoes" 
-                        name={t('atribuicoes')} 
-                        stroke="#C40003" 
-                        strokeWidth={3} 
-                        dot={false} 
-                        activeDot={false}
-                    />
-                </LineChart>
-                </ResponsiveContainer>
-            </div>
-        </div>
-    );
-}
-
 const HomeTalent = ({ user, saudacao }) => {
 
     const idGuardado = localStorage.getItem("utilizador_id");
@@ -101,9 +30,10 @@ const HomeTalent = ({ user, saudacao }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
 
+    const [loadingGraficos, setLoadingGraficos] = useState(true);
     const [infoCandidaturas, setInfoCandidaturas] = useState();
     const [dados_grafico_candidaturas, setDados_grafico_candidaturas] = useState([
-        { nome: 'aceites', quantidade: null, cor: '#3bb413' },    
+        { nome: 'aceites', quantidade: null, cor: '#3bb413' },
         { nome: 'rejeitadas', quantidade: null, cor: '#de2121' }
     ]);
     const [dados_linhas, setDados_linhas] = useState([
@@ -131,16 +61,16 @@ const HomeTalent = ({ user, saudacao }) => {
             }
         };
 
-        const getGrafCandidaturas = async() => {
+        const getGrafCandidaturas = async () => {
             if (!localStorage.getItem('token_softinsa')) {
                 setDados_grafico_candidaturas(prev => prev.map(item => ({ ...item, quantidade: 0 })));
                 return;
             }
-            
+
             try {
                 const res = await api.get(`/commun/candidaturasweek/${idGuardado}`);
-                
-                setDados_grafico_candidaturas(prevDados => 
+
+                setDados_grafico_candidaturas(prevDados =>
                     prevDados.map(item => {
                         if (item.nome === 'aceites') {
                             return { ...item, quantidade: res.data.aceites };
@@ -151,8 +81,8 @@ const HomeTalent = ({ user, saudacao }) => {
                         return item;
                     })
                 );
-                
-            } catch(erro) {
+
+            } catch (erro) {
                 console.error('Erro ao buscar dados do gráfico:', erro);
                 setDados_grafico_candidaturas(prev => prev.map(item => ({ ...item, quantidade: null })));
             }
@@ -165,95 +95,116 @@ const HomeTalent = ({ user, saudacao }) => {
                 setDados_linhas([]);
                 return;
             }
-            
+
             try {
-                const res = await api.get('/hometalent/dados4month'); 
+                const res = await api.get('/hometalent/dados4month');
 
                 setDados_linhas(res.data);
                 console.log('DADOS LINHAS:', dados_linhas);
-                
-            } catch(erro) {
+
+            } catch (erro) {
                 console.error('Erro ao buscar dados do gráfico de linhas:', erro);
 
-                setDados_linhas([]); 
+                setDados_linhas([]);
             }
         }
 
-        buscarCandidaturas();
-        getGrafCandidaturas();
-        getDados_Linhas();
+        const carregarDados = async () => {
+            setLoadingGraficos(true);
+            await Promise.all([
+                buscarCandidaturas(),
+                getGrafCandidaturas(),
+                getDados_Linhas()
+            ]);
+            setLoadingGraficos(false);
+        };
+        carregarDados();
     }, []);
 
     const GraficoEstatistica = () => {
 
-    const {t} = useTranslation();
+        const { t } = useTranslation();
 
-    const dados_traduzidos = dados_linhas.map((dado) => {
-        return {
-            ...dado,
-            nome: t(dado.periodo)
-        };
-    });
+        const dados_traduzidos = dados_linhas.map((dado) => {
+            return {
+                ...dado,
+                nome: t(dado.periodo)
+            };
+        });
 
-    return (
-        <div className="border border-2 rounded-4 p-2 d-flex flex-column h-100">
-            <h5 className="ms-1 mb-2">{t('evo_users')}</h5>
-            
-            <div className="flex-grow-1" style={{ width: '100%', minHeight: '200px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={dados_traduzidos} margin={{ top: 12, right: 25, left: -20, bottom: 0 }}>
-    
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ccc" />
-                    
-                    <XAxis dataKey="nome" tick={{ fontSize: 11 }} tickMargin={10} />
-                    
-                    <YAxis tick={{ fontSize: 11 }} />
-                    
-                    <Tooltip isAnimationActive={false}/>
-                    <Legend 
-                        verticalAlign="bottom"
-                        iconType="circle"
-                        formatter={(value) => <span style={{ fontSize: '12px'}}>{value}</span>}
-                        wrapperStyle={{
-                            paddingLeft: '7vh',
-                            paddingBottom: '1vh',
-                            width: '100%',
-                            display: 'flex',
-                            justifyContent: 'center'}}/>
+        const isVazio = !dados_linhas || dados_linhas.length === 0 || dados_linhas.every(d => d.media_badges == null && d.pontos == null && d.atribuicoes == null);
 
-                    <Line 
-                        type="monotone" 
-                        dataKey="media_badges"
-                        name={t('media_badges')}
-                        stroke="#009966" 
-                        strokeWidth={3} 
-                        dot={false} 
-                        activeDot={false}
-                    />
-                    <Line 
-                        type="monotone" 
-                        dataKey="pontos" 
-                        name={t('pontos')} 
-                        stroke="#39639C" 
-                        strokeWidth={3} 
-                        dot={false} 
-                        activeDot={false}
-                    />
-                    <Line 
-                        type="monotone" 
-                        dataKey="atribuicoes" 
-                        name={t('atribuicoes')} 
-                        stroke="#C40003" 
-                        strokeWidth={3} 
-                        dot={false} 
-                        activeDot={false}
-                    />
-                </LineChart>
-                </ResponsiveContainer>
+        return (
+            <div className="border border-2 rounded-4 p-2 d-flex flex-column h-100">
+                <h5 className="ms-1 mb-2">{t('evo_users')}</h5>
+
+                <div className="flex-grow-1 d-flex justify-content-center align-items-center" style={{ width: '100%', minHeight: '200px' }}>
+                    {loadingGraficos ? (
+                        <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
+                    ) : isVazio ? (
+                        <div className="text-muted text-center w-100">
+                            <i className="fi fi-br-info text-muted fs-4 mb-2 d-block"></i>
+                            <span>{t('sem_dados')}</span>
+                        </div>
+                    ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={dados_traduzidos} margin={{ top: 12, right: 25, left: -20, bottom: 0 }}>
+
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ccc" />
+
+                                <XAxis dataKey="nome" tick={{ fontSize: 11 }} tickMargin={10} />
+
+                                <YAxis tick={{ fontSize: 11 }} />
+
+                                <Tooltip isAnimationActive={false} />
+                                <Legend
+                                    verticalAlign="bottom"
+                                    iconType="circle"
+                                    formatter={(value) => <span style={{ fontSize: '12px' }}>{value}</span>}
+                                    wrapperStyle={{
+                                        paddingLeft: '7vh',
+                                        paddingBottom: '1vh',
+                                        width: '100%',
+                                        display: 'flex',
+                                        justifyContent: 'center'
+                                    }} />
+
+                                <Line
+                                    type="monotone"
+                                    dataKey="media_badges"
+                                    name={t('media_badges')}
+                                    stroke="#009966"
+                                    strokeWidth={3}
+                                    dot={false}
+                                    activeDot={false}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="pontos"
+                                    name={t('pontos')}
+                                    stroke="#39639C"
+                                    strokeWidth={3}
+                                    dot={false}
+                                    activeDot={false}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="atribuicoes"
+                                    name={t('atribuicoes')}
+                                    stroke="#C40003"
+                                    strokeWidth={3}
+                                    dot={false}
+                                    activeDot={false}
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    )}
+                </div>
             </div>
-        </div>
-    );
-}
+        );
+    }
 
     const RenderCandidaturas = () => {
         if (!Array.isArray(infoCandidaturas) || infoCandidaturas.length === 0) {
@@ -291,9 +242,9 @@ const HomeTalent = ({ user, saudacao }) => {
                         <div className="text-muted mb-2" style={{ fontSize: '0.7rem' }}>{candidatura?.data_submissao || '—'}</div>
 
                         <div className="d-flex justify-content-center gap-1">
-                            <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.7}/>
-                            <BotaoAceitar onClick={() => navigate('/candidaturas')} tamanho={0.7}/>
-                            <BotaoRejeitar onClick={() => navigate('/candidaturas')} tamanho={0.7}/>
+                            <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.7} />
+                            <BotaoAceitar onClick={() => navigate('/candidaturas')} tamanho={0.7} />
+                            <BotaoRejeitar onClick={() => navigate('/candidaturas')} tamanho={0.7} />
                         </div>
                     </div>
                 </div>
@@ -301,56 +252,56 @@ const HomeTalent = ({ user, saudacao }) => {
         });
     };
 
-  return(
-    <div className="home-talent-container gap-3">
-        <div className="flex-shrink-0">
-            <h1 className="texto-titulo-principal m-0">{saudacao}</h1>
-        </div>
-        
-        <div className="d-flex flex-column gap-3" style={{ flex: '1 1 auto' }}>
-            {/* Primeira linha: Candidaturas e Gráfico Estatísticas */}
-            <div className="row g-2 g-md-3 primeira-linha-home">
-                <div className="col-12 col-xl-8 candidaturas-column">
-                    <div>
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                            <h5 className="m-0" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>{t('candidaturas_recentes')}</h5>
-                            {infoCandidaturas !== null && infoCandidaturas !== undefined && (
-                                <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.6} />
-                            )}
-                        </div>
-                        <div className="row g-2 g-md-3">
-                            {RenderCandidaturas()}       
-                        </div>
-                    </div>
-                </div>
-                <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
-                    <div className="grafico-estatistica-container" style={{ overflow: 'hidden' }}>
-                        <GraficoEstatistica/>
-                    </div>
-                </div>
+    return (
+        <div className="home-talent-container gap-3">
+            <div className="flex-shrink-0">
+                <h1 className="texto-titulo-principal m-0">{saudacao}</h1>
             </div>
 
-            {/* Segunda linha: Atividade, Classificação e Gráfico Candidaturas */}
-            <div className="row g-2 g-md-3 segunda-linha-home">
-                <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
-                    <div style={{ height: '100%', overflow: 'hidden' }}>
-                        <AtividadeRecente atividades={atividadeRecente} />
+            <div className="d-flex flex-column gap-3" style={{ flex: '1 1 auto' }}>
+                {/* Primeira linha: Candidaturas e Gráfico Estatísticas */}
+                <div className="row g-2 g-md-3 primeira-linha-home">
+                    <div className="col-12 col-xl-8 candidaturas-column">
+                        <div>
+                            <div className="d-flex justify-content-between align-items-center mb-2">
+                                <h5 className="m-0" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>{t('candidaturas_recentes')}</h5>
+                                {infoCandidaturas !== null && infoCandidaturas !== undefined && (
+                                    <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.6} />
+                                )}
+                            </div>
+                            <div className="row g-2 g-md-3">
+                                {RenderCandidaturas()}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
+                        <div className="grafico-estatistica-container" style={{ overflow: 'hidden' }}>
+                            <GraficoEstatistica />
+                        </div>
                     </div>
                 </div>
-                <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
-                    <div style={{ height: '100%', overflow: 'hidden' }}>
-                        <ClassificacaoGeral user={user}/>
+
+                {/* Segunda linha: Atividade, Classificação e Gráfico Candidaturas */}
+                <div className="row g-2 g-md-3 segunda-linha-home">
+                    <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
+                        <div style={{ height: '100%', overflow: 'hidden' }}>
+                            <AtividadeRecente atividades={atividadeRecente} />
+                        </div>
                     </div>
-                </div>
-                <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
-                    <div className="grafico-wrapper" style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                        <GraficoCandidaturas dados_grafico_candidaturas={dados_grafico_candidaturas}/>
+                    <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
+                        <div style={{ height: '100%', overflow: 'hidden' }}>
+                            <ClassificacaoGeral user={user} />
+                        </div>
+                    </div>
+                    <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
+                        <div className="grafico-wrapper" style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                            <GraficoCandidaturas dados_grafico_candidaturas={dados_grafico_candidaturas} loading={loadingGraficos} />
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-  );
+    );
 };
 
 export default HomeTalent;

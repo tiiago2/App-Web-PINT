@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import '../../App.css';
 import './Perfil.css';
 import api from '../../services/api.js';
+import { handleLogout } from '../../functions/log_out.js';
 
 import user_logo from "../../assets/utilizador.png";
 import badge_logo from '../../assets/teste_badge.png';
@@ -74,12 +75,8 @@ const BotaoLogout_Concluir = ({ edicao, setEdicao }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    navigate('/home ');
-  };
-
   return edicao === false ? (
-    <button className='btn btn_logout d-flex align-items-center gap-2 px-3 py-2 shadow-sm' onClick={handleLogout}>
+    <button className='btn btn_logout d-flex align-items-center gap-2 px-3 py-2 shadow-sm' onClick={() => handleLogout(navigate)}>
       <span>{t('terminar_sessao')}</span>
       <i className="fi fi-br-exit"></i>
     </button>
@@ -92,6 +89,7 @@ const BotaoLogout_Concluir = ({ edicao, setEdicao }) => {
 
 const PerfilPessoal = () => {
 
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const [edicao, setEdicao] = useState(false);
 

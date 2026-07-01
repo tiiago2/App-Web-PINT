@@ -1,8 +1,13 @@
 .galeria-container {
-    width: 100%;
-    height: 100%;
+    width: auto;
+    min-height: 100%;
 
-    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo);
+    margin-left: var(--margem-lateral-conteudo);
+    margin-right: var(--margem-lateral-conteudo);
+    margin-top: var(--margem-superior-conteudo);
+    margin-bottom: var(--margem-inferior-conteudo);
+
+    padding: 0;
 
     background-color: var(--fundo);
 
@@ -15,22 +20,25 @@
     box-sizing: border-box;
 }
 
+/* TOPO — equivalente à lógica das galerias normais */
 .galeria-topo-admin {
     width: 100%;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
+
+    gap: var(--gap-default-seccoes);
     flex-wrap: wrap;
 
-    margin-bottom: var(--gap-titulo-principal-conteudo);
+    margin-bottom: 0;
 }
 
 .galeria-topo-admin-esquerda {
     display: flex;
     align-items: center;
-    gap: var(--gap-titulo-seletor-abas, 24px);
+
+    gap: var(--gap-default-seccoes);
     flex-wrap: wrap;
 }
 
@@ -38,8 +46,91 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 12px;
+
+    gap: var(--gap-default-seccoes);
     flex-wrap: wrap;
+}
+
+/* CONTEÚDO — replica .galeria-badges-conteudo */
+.galeria-admin-conteudo {
+    width: 100%;
+
+    padding-top: var(--gap-default-seccoes);
+
+    display: flex;
+    flex-direction: column;
+}
+
+/* MÉTRICAS — substitui row g-3 mb-3 do Bootstrap */
+.galeria-admin-metricas {
+    width: 100%;
+
+    margin-top: var(--gap-default-seccoes);
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gap-default-seccoes);
+}
+
+.galeria-admin-metrica-card {
+    min-height: 64px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 12px 16px;
+
+    background-color: var(--fundo);
+
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: var(--border-radius-grande);
+
+    box-sizing: border-box;
+}
+
+.galeria-admin-metrica-titulo {
+    margin: 0 0 4px 0;
+
+    color: var(--fontes);
+    opacity: 0.75;
+
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.galeria-admin-metrica-valor {
+    margin: 0;
+
+    color: var(--fontes);
+
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.galeria-admin-metrica-icone {
+    color: var(--fontes);
+
+    font-size: 1.7rem;
+    line-height: 1;
+
+    opacity: 0.35;
+}
+
+/* RESULTADOS — replica a entrada das secções normais */
+.galeria-admin-resultados {
+    width: 100%;
+
+    margin-top: var(--espacamento-seccao-conteudo);
+    padding-bottom: var(--padding-bottom-scroll-galeria);
+}
+
+/* Responsividade */
+@media (max-width: 1199.98px) {
+    .galeria-admin-metricas {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 700px) {
@@ -57,4 +148,14 @@
         min-width: 0;
         flex: 1;
     }
+}
+
+/* Esconde o scrollbar interno, como nas galerias normais */
+.galeria-container {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.galeria-container::-webkit-scrollbar {
+    display: none;
 }

@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
-import EditarFiltros from '../Administrador/EditarTabs/EditarFiltros';
-import EditarMetricas from '../Administrador/EditarTabs/EditarMetricas';
 import GaleriaBadges from '../Administrador/EditarTabs/GaleriaBadges';
-import EditarTabela from '../Administrador/EditarTabs/EditarTabela';
 import BadgeModal from '../../components/Criar_Editar/BadgeModal';
 import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
 import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
+import VistaTabelaBadges from "../../components/Galeria/VistaTabelaBadges/VistaTabelaBadges";
+import GaleriaToolbar from "../../components/Galeria/GaleriaToolbar/GaleriaToolbar";
 import { MOCK_BADGES_INICIAL } from '../Administrador/EditarTabs/TabBadges';
 import "./Galeria.css";
 
@@ -213,8 +212,6 @@ function Galeria() {
     { titulo: "Áreas", valor: 4, icon: "fi-br-crosshairs" },
     { titulo: "Service Lines", valor: 30, icon: "fi-br-diagram-project" }
   ];
-
-  const colunasTabela = ["Categoria"]; // Apenas categoria, pois os outros campos são ícone/cor
 
   const handleOpenCreateModal = () => {
     setBadgeToEdit(null);
@@ -460,38 +457,52 @@ function Galeria() {
         </div>
       )}
 
-      {/* Componentes de Filtragem e Métricas Reutilizáveis */}
-      <EditarFiltros 
-        abaNome="Badge"
-        searchTerm={searchTerm} setSearchTerm={setSearchTerm}
-        ordenacao={ordenacao} setOrdenacao={setOrdenacao}
-        filtro={filtro} setFiltro={setFiltro}
-        usarFiltroAvancado={true}
-        opcoesFiltroAvancado={opcoesFiltroAvancado}
-      />
-      
-      <EditarMetricas metricas={metricas} />
+      <div className="galeria-admin-conteudo">
+        <GaleriaToolbar
+          pesquisa={searchTerm}
+          onPesquisaChange={setSearchTerm}
+          ordenacao={ordenacao}
+          onOrdenacaoChange={setOrdenacao}
+          filtro={filtro}
+          onFiltroChange={setFiltro}
+          opcoesFiltro={opcoesFiltroAvancado}
+        />
 
-      <div className="d-flex flex-column flex-grow-1 pb-2">
-        {viewMode === 'galeria' ? (
-          <GaleriaBadges 
-            mockBadges={badgesVisiveis}
-            searchTerm=""
-            onAdd={handleOpenCreateModal}
-            onEdit={handleOpenEditModal}
-            onDelete={handleDeleteBadge}
-          />
-        ) : (
-          <EditarTabela 
-            abaNome="Badge"
-            dados={badgesVisiveis}
-            searchTerm=""
-            colunas={colunasTabela}
-            onAdd={handleOpenCreateModal}
-            onEdit={handleOpenEditModal}
-            onDelete={handleDeleteBadge}
-          />
-        )}
+        <div className="galeria-admin-metricas">
+          {metricas.map((metrica, index) => (
+            <article key={index} className="galeria-admin-metrica-card">
+              <div>
+                <h3 className="galeria-admin-metrica-titulo">
+                  {metrica.titulo}
+                </h3>
+
+                <p className="galeria-admin-metrica-valor">
+                  {metrica.valor}
+                </p>
+              </div>
+
+              <i className={`fi ${metrica.icon} galeria-admin-metrica-icone`}></i>
+            </article>
+          ))}
+        </div>
+
+        <div className="galeria-admin-resultados">
+          {viewMode === "galeria" ? (
+            <GaleriaBadges
+              mockBadges={badgesVisiveis}
+              searchTerm=""
+              onAdd={handleOpenCreateModal}
+              onEdit={handleOpenEditModal}
+              onDelete={handleDeleteBadge}
+            />
+          ) : (
+            <VistaTabelaBadges
+              badges={badgesVisiveis}
+              onEdit={handleOpenEditModal}
+              onDelete={(badge) => handleDeleteBadge(badge.id_badge ?? badge.id)}
+            />
+          )}
+        </div>
       </div>
 
       <BadgeModal 

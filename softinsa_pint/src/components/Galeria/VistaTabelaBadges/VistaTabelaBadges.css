@@ -1,0 +1,90 @@
+.vista-tabela-badges {
+    --altura-maxima-vista-tabela: clamp(360px, calc(100vh - 430px), 560px);
+}
+
+.vt-col-badge {
+    min-width: 280px;
+}
+
+.vt-badge-celula {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.vt-thumb {
+    flex-shrink: 0;
+
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: var(--border-radius-badge-circular);
+
+    overflow: hidden;
+}
+
+.vt-thumb-imagem {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+    display: block;
+}
+
+.vt-thumb-placeholder {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: var(--fundo2);
+
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: var(--border-radius-badge-circular);
+}
+
+.vt-thumb-placeholder i {
+    font-size: 16px;
+    line-height: 1;
+
+    color: var(--barra_lateral);
+}
+
+.vt-badge-nome {
+    color: var(--fontes);
+}
+
+.vt-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 4px 12px;
+
+    border-radius: var(--border-radius-filtro-estado-badge);
+    border: var(--borda-principal) solid transparent;
+
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+.vt-pill-especial {
+    color: var(--gold_badge_fonte);
+    border-color: var(--gold_badge_fonte);
+    background-color: var(--fundo);
+}
+
+.vt-pill-normal {
+    color: var(--fontes);
+    border-color: var(--contorno);
+    background-color: var(--fundo2);
+}

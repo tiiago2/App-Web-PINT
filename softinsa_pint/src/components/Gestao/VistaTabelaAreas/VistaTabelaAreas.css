@@ -1,0 +1,11 @@
+.vista-tabela-areas {
+    --altura-maxima-vista-tabela: clamp(320px, calc(100vh - 430px), 560px);
+}
+
+.vt-area-col-nome {
+    min-width: 260px;
+}
+
+.vt-area-nome {
+    color: var(--fontes);
+}

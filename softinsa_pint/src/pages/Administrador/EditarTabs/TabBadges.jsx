@@ -1,55 +1,169 @@
-import React, { useState } from 'react';
-import EditarFiltros from './EditarFiltros';
-import EditarMetricas from './EditarMetricas';
-import GaleriaBadges from './GaleriaBadges';
-import EditarTabela from './EditarTabela';
-import BadgeModal from '../../../components/Criar_Editar/BadgeModal';
-import BotaoAcao from '../../../components/ui/BotaoAcao/BotaoAcao';
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import GaleriaToolbar from "../../../components/Galeria/GaleriaToolbar/GaleriaToolbar";
+import VistaTabelaBadges from "../../../components/Galeria/VistaTabelaBadges/VistaTabelaBadges";
+import BadgeModal from "../../../components/Criar_Editar/BadgeModal";
+import ModalConfirmacao from "../../../components/ui/ModalConfirmacao/ModalConfirmacao";
+import { obterBadgesCatalogoNormalizados } from "../../../services/badgesService";
+import { normalizarBadgeCatalogo } from "../../../utils/badgesNormalizadores";
+import MetricasResumo from "../../../components/ui/MetricasResumo/MetricasResumo";
 
-export const MOCK_BADGES_INICIAL = [
-  { id: 1, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#b0baf0', icon: 'fi-br-mug-hot' },
-  { id: 2, nome: 'Angular Master', categoria: 'Web UI', cor: '#dce5f0', icon: 'fi-br-cloud', especial: true, tipoEspecial: 'silver' },
-  { id: 3, nome: 'AWS Architect', categoria: 'Cloud Native', cor: '#f0df81', icon: 'fi-br-target', especial: true, tipoEspecial: 'gold' },
-  { id: 4, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#df7983', icon: 'fi-br-trophy' },
-  { id: 5, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#aec87e', icon: 'fi-br-microchip' },
-  { id: 6, nome: 'Spring Guru', categoria: 'Backend', cor: '#76a8ef', icon: 'fi-br-bolt', especial: true, tipoEspecial: 'gold' },
-  { id: 7, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#f4ce5a', icon: 'fi-br-target' },
-  { id: 8, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#c2c9f5', icon: 'fi-br-mug-hot' },
-  { id: 9, nome: 'React Expert', categoria: 'Web UI', cor: '#df7983', icon: 'fi-br-trophy', especial: true, tipoEspecial: 'silver' },
-  { id: 10, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#a0e4b8', icon: 'fi-br-database' },
-  { id: 11, nome: 'Low Code', categoria: 'Hybrid Systems', cor: '#aec87e', icon: 'fi-br-microchip' },
-  { id: 12, nome: 'React Native', categoria: 'Mobile', cor: '#61dafb', icon: 'fi-br-smartphone' },
-  { id: 13, nome: 'Angular Pro', categoria: 'Web UI', cor: '#dd0031', icon: 'fi-br-browser' },
-  { id: 14, nome: 'CyberSec', categoria: 'Security', cor: '#4a4e69', icon: 'fi-br-shield-check' },
-  { id: 15, nome: 'DevOps Master', categoria: 'Infrastructure', cor: '#f4a261', icon: 'fi-br-server' },
-  { id: 16, nome: 'UI/UX Design', categoria: 'Design', cor: '#e76f51', icon: 'fi-br-palette' },
-  { id: 17, nome: 'Python AI', categoria: 'Data Science', cor: '#2a9d8f', icon: 'fi-br-chart-histogram' },
-];
+function normalizarTexto(texto = "") {
+  return String(texto)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
 
-export default function TabBadges({ viewMode }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [ordenacao, setOrdenacao] = useState('recentes');
-  const [filtro, setFiltro] = useState('');
-  
-  // Estado local para os badges
-  const [badges, setBadges] = useState(MOCK_BADGES_INICIAL);
-  
-  // Estado do Modal
+function obterIdBadge(badge = {}) {
+  return badge.id_badge ?? badge.idBadge ?? badge.id;
+}
+
+function obterNomeBadge(badge = {}) {
+  return badge.nome_badge ?? badge.nomeBadge ?? badge.nome ?? "badge";
+}
+
+function criarOpcoesUnicas(lista, campo) {
+  const mapa = new Map();
+
+  lista.forEach((item) => {
+    const valor = item[campo];
+
+    if (valor && !mapa.has(valor)) {
+      mapa.set(valor, {
+        valor,
+        label: valor,
+      });
+    }
+  });
+
+  return Array.from(mapa.values()).sort((a, b) =>
+    a.label.localeCompare(b.label, "pt")
+  );
+}
+
+function badgeCumpreFiltroAdmin(badge, filtro) {
+  if (!filtro || filtro.tipo === "todos") {
+    return true;
+  }
+
+  if (filtro.tipo === "learningPath") {
+    return badge.learningPath === filtro.valor;
+  }
+
+  if (filtro.tipo === "serviceLine") {
+    return badge.serviceLine === filtro.valor;
+  }
+
+  if (filtro.tipo === "area") {
+    return badge.area === filtro.valor;
+  }
+
+  return true;
+}
+
+function ordenarBadgesAdmin(lista, ordenacao) {
+  const listaOrdenada = [...lista];
+
+  switch (ordenacao) {
+    case "az":
+      listaOrdenada.sort((a, b) =>
+        obterNomeBadge(a).localeCompare(obterNomeBadge(b), "pt")
+      );
+      break;
+
+    case "za":
+      listaOrdenada.sort((a, b) =>
+        obterNomeBadge(b).localeCompare(obterNomeBadge(a), "pt")
+      );
+      break;
+
+    case "antigos":
+      listaOrdenada.sort((a, b) => {
+        const dataA = new Date(a.dataCriacao || a.data_criacao || 0);
+        const dataB = new Date(b.dataCriacao || b.data_criacao || 0);
+
+        return dataA - dataB;
+      });
+      break;
+
+    case "recentes":
+    default:
+      listaOrdenada.sort((a, b) => {
+        const dataA = new Date(a.dataCriacao || a.data_criacao || 0);
+        const dataB = new Date(b.dataCriacao || b.data_criacao || 0);
+
+        return dataB - dataA;
+      });
+      break;
+  }
+
+  return listaOrdenada;
+}
+
+function TabBadges({ onRegisterAdicionar }) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [ordenacao, setOrdenacao] = useState("recentes");
+  const [filtro, setFiltro] = useState({
+    tipo: "todos",
+    valor: "",
+    label: "Todos",
+  });
+
+  const [badges, setBadges] = useState([]);
+  const [isLoadingBadges, setIsLoadingBadges] = useState(true);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [badgeToEdit, setBadgeToEdit] = useState(null);
+  const [badgeAEliminar, setBadgeAEliminar] = useState(null);
 
-  const metricas = [
-    { titulo: "Total de Badges", valor: badges.length, icon: "fi-br-badge" },
-    { titulo: "Áreas", valor: 4, icon: "fi-br-crosshairs" },
-    { titulo: "Service Lines", valor: 30, icon: "fi-br-diagram-project" }
-  ];
+  useEffect(() => {
+    let ativo = true;
 
-  const colunasTabela = ["Categoria"]; // Apenas categoria, pois os outros campos são ícone/cor
+    async function carregarBadges() {
+      try {
+        setIsLoadingBadges(true);
 
-  const handleOpenCreateModal = () => {
+        const badgesCatalogo = await obterBadgesCatalogoNormalizados();
+
+        if (ativo) {
+          setBadges(badgesCatalogo);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar badges:", error);
+
+        if (ativo) {
+          setBadges([]);
+        }
+      } finally {
+        if (ativo) {
+          setIsLoadingBadges(false);
+        }
+      }
+    }
+
+    carregarBadges();
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  const handleOpenCreateModal = useCallback(() => {
     setBadgeToEdit(null);
     setIsModalOpen(true);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!onRegisterAdicionar) {
+      return;
+    }
+
+    onRegisterAdicionar(() => handleOpenCreateModal);
+
+    return () => {
+      onRegisterAdicionar(null);
+    };
+  }, [onRegisterAdicionar, handleOpenCreateModal]);
 
   const handleOpenEditModal = (badge) => {
     setBadgeToEdit(badge);
@@ -57,63 +171,180 @@ export default function TabBadges({ viewMode }) {
   };
 
   const handleDeleteBadge = (id) => {
-    setBadges(prev => prev.filter(b => b.id !== id));
+    setBadges((prev) =>
+      prev.filter((badge) => obterIdBadge(badge) !== id)
+    );
+  };
+
+  const handleConfirmDeleteBadge = () => {
+    if (!badgeAEliminar) {
+      return;
+    }
+
+    handleDeleteBadge(obterIdBadge(badgeAEliminar));
+    setBadgeAEliminar(null);
   };
 
   const handleSaveBadge = (badgeObj) => {
-    setBadges(prev => {
-      // Se já existir, é edição
-      const exists = prev.find(b => b.id === badgeObj.id);
+    const badgeNormalizado = normalizarBadgeCatalogo({
+      ...badgeObj,
+      id_badge:
+        badgeObj.id_badge ??
+        badgeObj.idBadge ??
+        badgeObj.id ??
+        Date.now(),
+      data_criacao:
+        badgeObj.data_criacao ??
+        badgeObj.dataCriacao ??
+        new Date().toISOString(),
+    });
+
+    const idBadgeGuardado = obterIdBadge(badgeNormalizado);
+
+    setBadges((prev) => {
+      const exists = prev.some(
+        (badge) => obterIdBadge(badge) === idBadgeGuardado
+      );
+
       if (exists) {
-        return prev.map(b => b.id === badgeObj.id ? badgeObj : b);
+        return prev.map((badge) =>
+          obterIdBadge(badge) === idBadgeGuardado
+            ? badgeNormalizado
+            : badge
+        );
       }
-      // Senão, é criação
-      return [badgeObj, ...prev]; // Adiciona ao início da lista
+
+      return [badgeNormalizado, ...prev];
     });
   };
 
+  const badgesComCamposFiltro = useMemo(() => {
+    return badges;
+  }, [badges]);
+
+  const opcoesFiltroAvancado = useMemo(() => {
+    return {
+      learningPath: criarOpcoesUnicas(
+        badgesComCamposFiltro,
+        "learningPath"
+      ),
+      serviceLine: criarOpcoesUnicas(
+        badgesComCamposFiltro,
+        "serviceLine"
+      ),
+      area: criarOpcoesUnicas(
+        badgesComCamposFiltro,
+        "area"
+      ),
+    };
+  }, [badgesComCamposFiltro]);
+
+  const badgesVisiveis = useMemo(() => {
+    let lista = [...badgesComCamposFiltro];
+
+    const pesquisaNormalizada = normalizarTexto(searchTerm).trim();
+
+    if (pesquisaNormalizada) {
+      lista = lista.filter((badge) => {
+        const camposPesquisaveis = [
+          badge.nome,
+          badge.nome_badge,
+          badge.nomeBadge,
+          badge.area,
+          badge.nome_area,
+          badge.nomeArea,
+          badge.serviceLine,
+          badge.nome_service_line,
+          badge.learningPath,
+          badge.nome_learning_path,
+          badge.nivel,
+          badge.nome_nivel,
+        ];
+
+        return camposPesquisaveis.some((campo) =>
+          normalizarTexto(campo).includes(pesquisaNormalizada)
+        );
+      });
+    }
+
+    lista = lista.filter((badge) =>
+      badgeCumpreFiltroAdmin(badge, filtro)
+    );
+
+    return ordenarBadgesAdmin(lista, ordenacao);
+  }, [badgesComCamposFiltro, searchTerm, filtro, ordenacao]);
+
+  const metricas = useMemo(() => {
+    const totalAreas = new Set(
+      badgesComCamposFiltro
+        .map((badge) => badge.area)
+        .filter(Boolean)
+    ).size;
+
+    const totalServiceLines = new Set(
+      badgesComCamposFiltro
+        .map((badge) => badge.serviceLine)
+        .filter(Boolean)
+    ).size;
+
+    return [
+      {
+        titulo: "Total de Badges",
+        valor: badgesComCamposFiltro.length,
+        icon: "fi-br-badge",
+      },
+      {
+        titulo: "Áreas",
+        valor: totalAreas,
+        icon: "fi-br-crosshairs",
+      },
+      {
+        titulo: "Service Lines",
+        valor: totalServiceLines,
+        icon: "fi-br-diagram-project",
+      },
+    ];
+  }, [badgesComCamposFiltro]);
+
   return (
     <>
-      <div className="tab-badges-acoes-superiores">
-        <BotaoAcao
-          variante="secundario"
-          icone="fi-br-plus"
-          onClick={handleOpenCreateModal}
-        >
-          Adicionar Badge
-        </BotaoAcao>
+      <div className="editar-badges-conteudo">
+        <GaleriaToolbar
+          pesquisa={searchTerm}
+          onPesquisaChange={setSearchTerm}
+          ordenacao={ordenacao}
+          onOrdenacaoChange={setOrdenacao}
+          filtro={filtro}
+          onFiltroChange={setFiltro}
+          opcoesFiltro={opcoesFiltroAvancado}
+        />
+
+        <MetricasResumo metricas={metricas} />
+
+        <div className="editar-badges-resultados">
+          <VistaTabelaBadges
+            badges={badgesVisiveis}
+            isLoading={isLoadingBadges}
+            onEdit={handleOpenEditModal}
+            onDelete={setBadgeAEliminar}
+          />
+        </div>
       </div>
-      
-      <EditarFiltros 
-        abaNome="Badge"
-        searchTerm={searchTerm} setSearchTerm={setSearchTerm}
-        ordenacao={ordenacao} setOrdenacao={setOrdenacao}
-        filtro={filtro} setFiltro={setFiltro}
+
+      <ModalConfirmacao
+        isOpen={!!badgeAEliminar}
+        onClose={() => setBadgeAEliminar(null)}
+        onConfirm={handleConfirmDeleteBadge}
+        titulo="Eliminar badge"
+        mensagem={`Tem a certeza que pretende eliminar o badge "${obterNomeBadge(
+          badgeAEliminar || {}
+        )}"?`}
+        textoConfirmar="Eliminar"
+        textoCancelar="Cancelar"
+        isDanger={true}
       />
-      
-      <EditarMetricas metricas={metricas} />
 
-      {viewMode === 'galeria' ? (
-        <GaleriaBadges 
-          mockBadges={badges}
-          searchTerm={searchTerm}
-          onAdd={handleOpenCreateModal}
-          onEdit={handleOpenEditModal}
-          onDelete={handleDeleteBadge}
-        />
-      ) : (
-        <EditarTabela 
-          abaNome="Badge"
-          dados={badges}
-          searchTerm={searchTerm}
-          colunas={colunasTabela}
-          onAdd={handleOpenCreateModal}
-          onEdit={handleOpenEditModal}
-          onDelete={handleDeleteBadge}
-        />
-      )}
-
-      <BadgeModal 
+      <BadgeModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveBadge}
@@ -122,3 +353,5 @@ export default function TabBadges({ viewMode }) {
     </>
   );
 }
+
+export default TabBadges;

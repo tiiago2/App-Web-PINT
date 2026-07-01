@@ -1,0 +1,11 @@
+.vista-tabela-service-lines {
+    --altura-maxima-vista-tabela: clamp(320px, calc(100vh - 430px), 560px);
+}
+
+.vt-service-line-col-nome {
+    min-width: 280px;
+}
+
+.vt-service-line-nome {
+    color: var(--fontes);
+}

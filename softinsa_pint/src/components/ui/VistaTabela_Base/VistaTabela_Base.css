@@ -82,14 +82,25 @@
 }
 
 .vtb-col-acoes {
-    text-align: center;
+    width: 1%;
+    min-width: 112px;
+
+    text-align: right;
     white-space: nowrap;
+}
+
+.vista-tabela-base-tabela thead th.vtb-col-acoes {
+    padding-right: 24px;
+}
+
+.vista-tabela-base-tabela tbody td.vtb-col-acoes {
+    padding-right: 20px;
 }
 
 .vtb-acoes {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 8px;
 }
 

@@ -1,5 +1,15 @@
+import { Fragment } from "react";
 import BadgeItem from "../BadgeItem/BadgeItem";
 import "./BadgeSeccao.css";
+
+function obterIdBadge(badge, index) {
+  return (
+    badge.idBadge ??
+    badge.id_badge ??
+    badge.id ??
+    index
+  );
+}
 
 function BadgeSeccao({
   titulo,
@@ -8,6 +18,7 @@ function BadgeSeccao({
   badges = [],
   mostrarEstado = true,
   onBadgeClick,
+  renderBadge,
   children,
 }) {
   if (!badges.length && !children) {
@@ -32,14 +43,26 @@ function BadgeSeccao({
       </div>
 
       <div className="badge-seccao-grid">
-        {badges.map((badge) => (
-          <BadgeItem
-            key={badge.idBadge || badge.id}
-            badge={badge}
-            mostrarEstado={mostrarEstado}
-            onBadgeClick={onBadgeClick}
-          />
-        ))}
+        {badges.map((badge, index) => {
+          const key = obterIdBadge(badge, index);
+
+          if (renderBadge) {
+            return (
+              <Fragment key={key}>
+                {renderBadge(badge)}
+              </Fragment>
+            );
+          }
+
+          return (
+            <BadgeItem
+              key={key}
+              badge={badge}
+              mostrarEstado={mostrarEstado}
+              onBadgeClick={onBadgeClick}
+            />
+          );
+        })}
 
         {children}
       </div>

@@ -11,6 +11,7 @@ function GaleriaToolbar({
   filtro,
   onFiltroChange,
   opcoesFiltro,
+  placeholderPesquisa = "Pesquisar Badge...",
 }) {
   const opcoesOrdenacao = [
     { valor: "recentes", label: "Mais recentes" },
@@ -25,7 +26,7 @@ function GaleriaToolbar({
         <BarraPesquisa
           valor={pesquisa}
           onChange={onPesquisaChange}
-          placeholder="Pesquisar Badge..."
+          placeholder={placeholderPesquisa}
         />
       </div>
 

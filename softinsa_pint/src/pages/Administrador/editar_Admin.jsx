@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import { useLocation } from "react-router-dom";
 import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
+import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
 import "./editar_Admin.css";
 
 // Importação das Abas
@@ -10,12 +11,27 @@ import TabAreas from "./EditarTabs/TabAreas";
 import TabServiceLine from "./EditarTabs/TabServiceLine";
 import TabLearningPaths from "./EditarTabs/TabLearningPaths";
 
+function getTextoBotaoAdicionar(abaAtiva) {
+    switch (abaAtiva) {
+        case "badges":
+            return "Adicionar Badge";
+        case "areas":
+            return "Adicionar Área";
+        case "service_line":
+            return "Adicionar Service Line";
+        case "learning_paths":
+            return "Adicionar Learning Path";
+        default:
+            return "Adicionar";
+    }
+}
+
 function EditarAdmin() {
   const location = useLocation();
   const [abaAtiva, setAbaAtiva] = useState(
     location.state?.abaAtiva || "badges",
   );
-  const [viewMode, setViewMode] = useState("galeria"); // 'galeria' ou 'tabela' (usado apenas na aba Badges)
+  const [abrirCriarEntidade, setAbrirCriarEntidade] = useState(null);
 
   useEffect(() => {
     if (location.state?.abaAtiva) {
@@ -48,13 +64,29 @@ function EditarAdmin() {
   const renderAbaConteudo = () => {
     switch (abaAtiva) {
       case "badges":
-        return <TabBadges viewMode={viewMode} />;
+        return (
+          <TabBadges
+            onRegisterAdicionar={setAbrirCriarEntidade}
+          />
+        );
       case "areas":
-        return <TabAreas />;
+        return (
+          <TabAreas
+            onRegisterAdicionar={setAbrirCriarEntidade}
+          />
+        );
       case "service_line":
-        return <TabServiceLine />;
+        return (
+          <TabServiceLine
+            onRegisterAdicionar={setAbrirCriarEntidade}
+          />
+        );
       case "learning_paths":
-        return <TabLearningPaths />;
+        return (
+            <TabLearningPaths
+                onRegisterAdicionar={setAbrirCriarEntidade}
+            />
+        );
       default:
         return null;
     }
@@ -62,32 +94,34 @@ function EditarAdmin() {
 
   return (
     <div className="editar-container w-100">
-      <h1
-        className="texto-titulo-principal d-flex align-items-center gap-4 flex-wrap"
-        style={{ marginBottom: "var(--gap-titulo-principal-conteudo)" }}
-      >
-        Editar {getNomeAba()}
-        {abaAtiva !== "areas" ? "s" : ""}
-        {abaAtiva === "badges" && (
-          <div className="seletor-vista-badges">
+      <div className="editar-cabecalho">
+        <div className="editar-cabecalho-esquerda">
+          <h1 className="texto-titulo-principal editar-titulo">
+            Editar
+          </h1>
+
+          <div className="editar-seletor-entidade">
             <SeletorAbas
-              valorAtivo={viewMode}
-              onChange={setViewMode}
-              opcoes={[
-                { valor: "galeria", label: "Galeria", icone: "fi-br-grid" },
-                { valor: "tabela", label: "Tabela", icone: "fi-br-table" },
-              ]}
+              opcoes={abasEditar}
+              valorAtivo={abaAtiva}
+              onChange={setAbaAtiva}
             />
           </div>
-        )}
-      </h1>
+        </div>
 
-      <div style={{ marginBottom: "2rem", width: "50%" }}>
-        <SeletorAbas
-          opcoes={abasEditar}
-          valorAtivo={abaAtiva}
-          onChange={setAbaAtiva}
-        />
+        <div className="editar-cabecalho-acoes">
+          <BotaoAcao
+            variante="secundario"
+            icone="fi-br-plus"
+            onClick={() => {
+              if (abrirCriarEntidade) {
+                abrirCriarEntidade();
+              }
+            }}
+          >
+            {getTextoBotaoAdicionar(abaAtiva)}
+          </BotaoAcao>
+        </div>
       </div>
 
       {/* Conteúdo dinâmico da Aba */}

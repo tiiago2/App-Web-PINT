@@ -1,0 +1,11 @@
+.vista-tabela-learning-paths {
+    --altura-maxima-vista-tabela: clamp(320px, calc(100vh - 430px), 560px);
+}
+
+.vt-learning-path-col-nome {
+    min-width: 300px;
+}
+
+.vt-learning-path-nome {
+    color: var(--fontes);
+}

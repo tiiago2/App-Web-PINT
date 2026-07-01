@@ -126,6 +126,10 @@
     padding-bottom: var(--padding-bottom-scroll-galeria);
 }
 
+.galeria-admin-resultados .galeria-todos-badges {
+    margin-top: 0;
+}
+
 /* Responsividade */
 @media (max-width: 1199.98px) {
     .galeria-admin-metricas {

@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
-import GaleriaBadges from '../Administrador/EditarTabs/GaleriaBadges';
+import GaleriaTodosBadges from "../../components/Galeria/GaleriaTodosBadges/GaleriaTodosBadges";
+import BadgeItemAdmin from "../../components/Galeria/BadgeItemAdmin/BadgeItemAdmin";
+import ModalConfirmacao from "../../components/ui/ModalConfirmacao/ModalConfirmacao";
 import BadgeModal from '../../components/Criar_Editar/BadgeModal';
 import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
 import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
 import VistaTabelaBadges from "../../components/Galeria/VistaTabelaBadges/VistaTabelaBadges";
 import GaleriaToolbar from "../../components/Galeria/GaleriaToolbar/GaleriaToolbar";
-import { MOCK_BADGES_INICIAL } from '../Administrador/EditarTabs/TabBadges';
+import { obterBadgesCatalogoNormalizados } from "../../services/badgesService";
+import { normalizarBadgeCatalogo } from "../../utils/badgesNormalizadores";
 import "./Galeria.css";
 
 const mapaCategoriaParaFiltro = {
@@ -140,6 +143,14 @@ function ordenarBadgesAdmin(lista, ordenacao) {
   return listaOrdenada;
 }
 
+function obterIdBadge(badge) {
+  return badge.id_badge ?? badge.idBadge ?? badge.id;
+}
+
+function obterNomeBadge(badge = {}) {
+  return badge.nome_badge ?? badge.nomeBadge ?? badge.nome ?? "badge";
+}
+
 function Galeria() {
   const location = useLocation();
 
@@ -151,9 +162,11 @@ function Galeria() {
     label: "Todos",
   });
   const [viewMode, setViewMode] = useState('galeria'); 
-  const [badges, setBadges] = useState(MOCK_BADGES_INICIAL);
+  const [badges, setBadges] = useState([]);
+  const [isLoadingBadges, setIsLoadingBadges] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [badgeToEdit, setBadgeToEdit] = useState(null);
+  const [badgeAEliminar, setBadgeAEliminar] = useState(null);
 
   const badgesComCamposFiltro = useMemo(() => {
     return badges.map(prepararBadgeAdminParaFiltro);
@@ -207,11 +220,37 @@ function Galeria() {
     }
   }, [location.state]);
 
-  const metricas = [
-    { titulo: "Total de Badges", valor: badges.length, icon: "fi-br-badge" },
-    { titulo: "Áreas", valor: 4, icon: "fi-br-crosshairs" },
-    { titulo: "Service Lines", valor: 30, icon: "fi-br-diagram-project" }
-  ];
+  const metricas = useMemo(() => {
+    const totalAreas = new Set(
+      badgesComCamposFiltro
+        .map((badge) => badge.area)
+        .filter(Boolean)
+    ).size;
+
+    const totalServiceLines = new Set(
+      badgesComCamposFiltro
+        .map((badge) => badge.serviceLine)
+        .filter(Boolean)
+    ).size;
+
+    return [
+      {
+        titulo: "Total de Badges",
+        valor: badgesComCamposFiltro.length,
+        icon: "fi-br-badge",
+      },
+      {
+        titulo: "Áreas",
+        valor: totalAreas,
+        icon: "fi-br-crosshairs",
+      },
+      {
+        titulo: "Service Lines",
+        valor: totalServiceLines,
+        icon: "fi-br-diagram-project",
+      },
+    ];
+  }, [badgesComCamposFiltro]);
 
   const handleOpenCreateModal = () => {
     setBadgeToEdit(null);
@@ -224,20 +263,84 @@ function Galeria() {
   };
 
   const handleDeleteBadge = (id) => {
-    setBadges(prev => prev.filter(b => b.id !== id));
+    setBadges((prev) =>
+      prev.filter((badge) => obterIdBadge(badge) !== id)
+    );
+  };
+
+  const handleConfirmDeleteBadge = () => {
+    if (!badgeAEliminar) {
+      return;
+    }
+
+    handleDeleteBadge(obterIdBadge(badgeAEliminar));
+    setBadgeAEliminar(null);
   };
 
   const handleSaveBadge = (badgeObj) => {
-    setBadges(prev => {
-      // Se já existir, é edição
-      const exists = prev.find(b => b.id === badgeObj.id);
+    const badgeNormalizado = normalizarBadgeCatalogo({
+      ...badgeObj,
+      id_badge:
+        badgeObj.id_badge ??
+        badgeObj.idBadge ??
+        badgeObj.id ??
+        Date.now(),
+      data_criacao:
+        badgeObj.data_criacao ??
+        badgeObj.dataCriacao ??
+        new Date().toISOString(),
+    });
+
+    const idBadgeGuardado = obterIdBadge(badgeNormalizado);
+
+    setBadges((prev) => {
+      const exists = prev.some(
+        (badge) => obterIdBadge(badge) === idBadgeGuardado
+      );
+
       if (exists) {
-        return prev.map(b => b.id === badgeObj.id ? badgeObj : b);
+        return prev.map((badge) =>
+          obterIdBadge(badge) === idBadgeGuardado
+            ? badgeNormalizado
+            : badge
+        );
       }
-      // Senão, é criação
-      return [badgeObj, ...prev]; // Adiciona ao início da lista
+
+      return [badgeNormalizado, ...prev];
     });
   };
+
+  useEffect(() => {
+    let ativo = true;
+
+    async function carregarBadges() {
+      try {
+        setIsLoadingBadges(true);
+
+        const badgesCatalogo = await obterBadgesCatalogoNormalizados();
+
+        if (ativo) {
+          setBadges(badgesCatalogo);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar badges:", error);
+
+        if (ativo) {
+          setBadges([]);
+        }
+      } finally {
+        if (ativo) {
+          setIsLoadingBadges(false);
+        }
+      }
+    }
+
+    carregarBadges();
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   return (
     <div className="galeria-container">
@@ -488,22 +591,48 @@ function Galeria() {
 
         <div className="galeria-admin-resultados">
           {viewMode === "galeria" ? (
-            <GaleriaBadges
-              mockBadges={badgesVisiveis}
-              searchTerm=""
-              onAdd={handleOpenCreateModal}
-              onEdit={handleOpenEditModal}
-              onDelete={handleDeleteBadge}
+            <GaleriaTodosBadges
+              modo="admin"
+              badges={badgesVisiveis}
+              aplicarFiltros={false}
+              mostrarEstado={false}
+              onBadgeClick={(badge) => {
+                console.log("Abrir detalhe do badge:", badge);
+              }}
+              renderBadge={(badge) => (
+                <BadgeItemAdmin
+                  badge={badge}
+                  onEdit={handleOpenEditModal}
+                  onDelete={setBadgeAEliminar}
+                  onBadgeClick={(badge) => {
+                    console.log("Abrir detalhe do badge:", badge);
+                  }}
+                />
+              )}
             />
           ) : (
             <VistaTabelaBadges
               badges={badgesVisiveis}
+              isLoading={isLoadingBadges}
               onEdit={handleOpenEditModal}
-              onDelete={(badge) => handleDeleteBadge(badge.id_badge ?? badge.id)}
+              onDelete={(badge) => handleDeleteBadge(obterIdBadge(badge))}
             />
           )}
         </div>
       </div>
+
+      <ModalConfirmacao
+        isOpen={!!badgeAEliminar}
+        onClose={() => setBadgeAEliminar(null)}
+        onConfirm={handleConfirmDeleteBadge}
+        titulo="Eliminar badge"
+        mensagem={`Tem a certeza que pretende eliminar o badge "${obterNomeBadge(
+          badgeAEliminar || {}
+        )}"?`}
+        textoConfirmar="Eliminar"
+        textoCancelar="Cancelar"
+        isDanger={true}
+      />
 
       <BadgeModal 
         isOpen={isModalOpen}

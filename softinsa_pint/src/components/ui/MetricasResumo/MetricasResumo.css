@@ -1,0 +1,61 @@
+.metricas-resumo {
+    width: 100%;
+
+    margin-top: var(--gap-default-seccoes);
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gap-default-seccoes);
+}
+
+.metricas-resumo-card {
+    min-height: 64px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 12px 16px;
+
+    background-color: var(--fundo);
+
+    border: var(--borda-principal) solid var(--contorno);
+    border-radius: var(--border-radius-grande);
+
+    box-sizing: border-box;
+}
+
+.metricas-resumo-titulo {
+    margin: 0 0 4px 0;
+
+    color: var(--fontes);
+    opacity: 0.75;
+
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.metricas-resumo-valor {
+    margin: 0;
+
+    color: var(--fontes);
+
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.metricas-resumo-icone {
+    color: var(--fontes);
+
+    font-size: 1.7rem;
+    line-height: 1;
+
+    opacity: 0.35;
+}
+
+@media (max-width: 1199.98px) {
+    .metricas-resumo {
+        grid-template-columns: 1fr;
+    }
+}

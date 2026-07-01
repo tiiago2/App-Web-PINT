@@ -3,7 +3,9 @@
 }
 
 .vt-col-badge {
-    min-width: 280px;
+    width: 240px;
+    min-width: 230px;
+    max-width: 260px;
 }
 
 .vt-badge-celula {
@@ -57,7 +59,13 @@
 }
 
 .vt-badge-nome {
+    max-width: 170px;
+
     color: var(--fontes);
+
+    white-space: normal;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
 }
 
 .vt-pill {

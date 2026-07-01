@@ -2,11 +2,13 @@
 
 const cloudinary = require('cloudinary').v2;
 
-// 1. Configure Cloudinary inline
+require('dotenv').config();
+
+// 1. Configure Cloudinary using process.env
 cloudinary.config({
-  cloud_name: 'nvvadzck',
-  api_key: '528239935959973',
-  api_secret: 'w9C-6oRdWDcyuII4_gWn3zh0y6g',
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true
 });
 

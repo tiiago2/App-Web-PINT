@@ -28,7 +28,7 @@ function LoginPage({ onLoginSuccess }) {
       id: idParaGuardar,
       nome: userApi.nome || userApi.nome_user,
       role: roleEscolhida.nome,
-      foto: userApi.imagem_perfil || userApi.foto || null
+      foto: userApi.imagem_perfil
     });
   };
 

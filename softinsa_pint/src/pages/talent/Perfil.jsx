@@ -188,11 +188,11 @@ const PerfilPessoal = () => {
   };
 
   return (
-    <div className='perfil-container w-100' style={{ justifyContent: 'space-evenly' }}>
+    <div className='perfil-container w-100'>
       {/* Cabeçalho Superior */}
-      <div className='header_perfil d-flex justify-content-between align-items-center mb-4'>
-        <div className='d-flex align-items-center'>
-          <h1 className='texto-titulo-principal mb-0 pe-3'>{t('perfil_pessoal')}</h1>
+      <div className='d-flex justify-content-between align-items-center'>
+        <div className='d-flex align-items-center gap-3'>
+          <h1 className='texto-titulo-principal mb-0'>{t('perfil_pessoal')}</h1>
           <button className='btn_edit_assinatura p-1 border-0 bg-transparent d-flex align-items-center justify-content-center'>
             {edicao === false ? (
               <i className="fi fi-br-pencil edit_icon" onClick={() => setEdicao(!edicao)}></i>
@@ -202,20 +202,17 @@ const PerfilPessoal = () => {
         <BotaoLogout_Concluir edicao={edicao} setEdicao={setEdicao} />
       </div>
 
-      <div className='row content_row g-4 mb-4'>
+      <div className='row g-4'>
+        {/* Informação Pessoal */}
         <div className='col-lg-6 col-12 d-flex flex-column'>
           <h2 className='subtitulo_perfil mb-3'>{t('info_pessoal')}</h2>
-          <div className='info_pessoal_wrapper d-flex align-items-center gap-5 flex-grow-1 p-3'>
-            <div className='avatar_wrapper d-flex align-items-center justify-content-center'>
-              {edicao === false ? (
-                <img src={profileData.foto} alt={profileData.nome} className="avatar_img" />
-              ) : (
-                <>
-                  <img src={profileData.foto} alt={profileData.nome} className="avatar_img" />
-                  <div className="imagem_overlay d-flex align-items-center justify-content-center">
-                    <i className="fi fi-br-plus"></i>
-                  </div>
-                </>
+          <div className='d-flex align-items-center gap-4 flex-grow-1'>
+            <div className='avatar_wrapper flex-shrink-0'>
+              <img src={profileData.foto} alt={profileData.nome} className="avatar_img" />
+              {edicao && (
+                <div className="imagem_overlay">
+                  <i className="fi fi-br-camera"></i>
+                </div>
               )}
             </div>
             <div className='info_dados d-flex flex-column gap-3'>
@@ -242,13 +239,11 @@ const PerfilPessoal = () => {
           </div>
         </div>
 
-        {/* Secção de Assinatura Pessoal */}
+        {/* Assinatura Pessoal */}
         <div className='col-lg-6 col-12 d-flex flex-column'>
-          <div className='d-flex justify-content-between align-items-center mb-2'>
-            <h2 className='subtitulo_perfil m-0'>{t('assinatura_pessoal')}</h2>
-          </div>
-          <div className='assinatura_card d-flex flex-column align-items-center justify-content-center flex-grow-1'>
-            <div className='assinatura_texto text-center mb-3'>
+          <h2 className='subtitulo_perfil mb-3'>{t('assinatura_pessoal')}</h2>
+          <div className='perfil-card d-flex flex-column align-items-center justify-content-center flex-grow-1'>
+            <div className='assinatura_texto text-center mb-2'>
               <h4 className='assinatura_nome m-0'>{profileData.nome} | {profileData.cargo}</h4>
               <p className='assinatura_contacto m-0 mt-1'>{profileData.email} | {profileData.telefone}</p>
             </div>
@@ -259,14 +254,13 @@ const PerfilPessoal = () => {
         </div>
       </div>
 
-      {/* Secção Inferior: Badges Pessoais */}
-      <div className='row badges_row'>
+      {/* Badges Pessoais */}
+      <div className='row'>
         <div className='col-12'>
-          <div className='badges_container_full'>
+          <div className='perfil-card'>
             <h2 className='subtitulo_perfil mb-4'>{t('badges_pessoais')}</h2>
-            <div className='badges_scroll_box position-relative'>
-              <div className='badges_scroll_container d-flex gap-3 overflow-x-auto'>
-                {/* Alterado para passar a variável de estado badgesObtidos em vez da constante antiga */}
+            <div className='badges_scroll_box'>
+              <div className='badges_scroll_container'>
                 <Render_Badges badges={badgesObtidos} edicao={edicao} onAdd={handleAddBadge} assinaturaBadges={assinaturaBadges} />
               </div>
             </div>

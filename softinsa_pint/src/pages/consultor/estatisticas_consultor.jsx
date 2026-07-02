@@ -7,6 +7,7 @@ import {
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import EvolucaoModal from '../../components/EvolucaoModal.jsx';
 import api from '../../services/api.js';
+import BotaoAcao from '../../components/ui/BotaoAcao/BotaoAcao';
 import './estatisticas_consultor.css';
 
 /* ── CORES ─────────────────────────────────────────────────── */
@@ -52,6 +53,7 @@ const EstatisticasConsultor = ({ user }) => {
     const [classificacao, setClassificacao] = useState([]);
     const [showEvolucao, setShowEvolucao] = useState(false);
     const [carregando, setCarregando] = useState(true);
+    const [mostrarExportar, setMostrarExportar] = useState(false);
 
     // ── Carregar KPIs, conquistados-mês, badges-nível e ranking (uma vez) ──
     useEffect(() => {
@@ -107,7 +109,21 @@ const EstatisticasConsultor = ({ user }) => {
             {/* ── CABEÇALHO ── */}
             <div className="estat-header">
                 <h1 className="texto-titulo-principal m-0">Estatísticas</h1>
-                <button className="estat-btn-exportar">Exportar</button>
+                <div className="position-relative">
+                    <BotaoAcao
+                        variante="primario"
+                        icone="fi-br-download"
+                        onClick={() => setMostrarExportar(o => !o)}
+                    >
+                        Exportar
+                    </BotaoAcao>
+                    {mostrarExportar && (
+                        <div className="estat-admin-export-menu">
+                            <div className="estat-admin-export-item">Excel</div>
+                            <div className="estat-admin-export-item">PDF</div>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* ── CORPO PRINCIPAL ── */}

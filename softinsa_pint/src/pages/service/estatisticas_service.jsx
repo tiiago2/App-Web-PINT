@@ -9,6 +9,7 @@ import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import StatusCandidaturas from '../../components/StatusCandidaturas/StatusCandidaturas.jsx';
 import BadgesPorNivel from '../../components/BadgesPorNivel/BadgesPorNivel.jsx';
 import api from '../../services/api.js';
+import BotaoAcao from '../../components/ui/BotaoAcao/BotaoAcao';
 import './estatisticas_service.css';
 
 const periodos = [
@@ -123,24 +124,17 @@ const EstatisticasService = ({ user }) => {
                         {t('historico_atribuidos')}
                     </button>
                     <div className="estat-service-export-wrap" ref={exportRef}>
-                        <button
-                            className="estat-service-btn-primary"
+                        <BotaoAcao
+                            variante="primario"
+                            icone="fi-br-download"
                             onClick={() => setShowExport(o => !o)}
                         >
                             {t('exportar')}
-                        </button>
+                        </BotaoAcao>
                         {showExport && (
-                            <div className="estat-service-export-menu">
-                                <div className="estat-service-export-header">{t('exportar_como')}</div>
-                                {opcoesExportar.map((op) => (
-                                    <div key={op.chave} className="estat-service-export-item">
-                                        <span className="estat-service-export-label">{t(op.label)}</span>
-                                        <div className="estat-service-export-formats">
-                                            <span>Excel</span>
-                                            <span>PDF</span>
-                                        </div>
-                                    </div>
-                                ))}
+                            <div className="estat-admin-export-menu">
+                                <div className="estat-admin-export-item">Excel</div>
+                                <div className="estat-admin-export-item">PDF</div>
                             </div>
                         )}
                     </div>

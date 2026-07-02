@@ -1,51 +1,45 @@
-/* Estrutura Principal */
+/* =============================================
+   PERFIL — Estrutura Principal
+   ============================================= */
 .perfil-container {
-  padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo);
-  background-color: var(--fundo);
+  padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo) var(--margem-inferior-conteudo);
+  background-color: var(--fundo2);
   height: 100%;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-}
-
-.main-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  color: #334155;
-  background-color: #ffffff;
-}
-
-/* Cabeçalho */
-.header_perfil {
-  border-bottom: 1.6px solid transparent;
-}
-
-.titulo_perfil {
-  font-family: "Inter", "Outfit", sans-serif;
-  font-size: clamp(1.4rem, 3.5vw, 1.8rem); /* Reduzido de 2.2rem */
-  font-weight: 700;
+  gap: var(--gap-default-seccoes);
+  font-family: var(--fonte-principal);
   color: var(--fontes);
-  margin: 0;
 }
 
-/* Botão de Terminar Sessão */
+/* =============================================
+   CABEÇALHO
+   ============================================= */
+.header_perfil {
+  border-bottom: var(--borda-principal) solid var(--contorno);
+  padding-bottom: var(--gap-default-seccoes);
+}
+
+/* =============================================
+   BOTÃO CONCLUIR / TERMINAR SESSÃO
+   ============================================= */
 .btn_logout {
   background-color: var(--barra_lateral) !important;
-  color: #ffffff !important;
+  color: var(--fundo) !important;
   border: none !important;
   border-radius: var(--border-radius-pequeno) !important;
   font-weight: 500;
-  font-size: 0.85rem; /* Reduzido de 0.95rem */
-  padding: 6px 14px !important; /* Reduzido */
-  transition: all 0.2s ease-in-out !important;
+  font-size: 0.85rem;
+  height: var(--altura-controlos-1);
+  padding: 0 16px !important;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out !important;
 }
 
 .btn_logout:hover {
-  background-color: #2b4b79 !important;
+  background-color: var(--barra_lateral_hover) !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 10px rgba(57, 99, 156, 0.2) !important;
 }
 
 .btn_logout i {
@@ -53,103 +47,123 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transform: translateY(
-    1.5px
-  ); /* Ajuste de precisão para centrar perfeitamente o ícone */
 }
 
-/* Subtítulos de Secções */
-.subtitulo_perfil {
-  font-family: "Inter", sans-serif;
-  font-size: clamp(1.05rem, 2.2vw, 1.25rem); /* Reduzido de 1.45rem */
-  font-weight: 500; /* Reduzido de 600 para menos bold */
+/* =============================================
+   ÍCONE DE EDIÇÃO
+   ============================================= */
+.btn_edit_assinatura {
+  cursor: pointer;
+  outline: none;
+}
+
+.edit_icon {
+  font-size: 1.1rem;
   color: var(--fontes);
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(1.5px);
 }
 
-/* --- SECÇÃO SUPERIOR --- */
-
-/* Informação Pessoal */
-.info_pessoal_wrapper {
-  background: transparent;
-  min-height: 140px; /* Reduzido de 180px */
+.edit_icon:hover {
+  opacity: 1;
+  transform: translateY(1.5px) scale(1.1);
 }
 
+/* =============================================
+   CARDS DE SECÇÃO (padrão do projeto)
+   ============================================= */
+.perfil-card {
+  background-color: var(--fundo);
+  border: var(--borda-principal) solid var(--contorno);
+  border-radius: var(--border-radius-grande);
+  padding: 24px;
+  height: 100%;
+}
+
+/* =============================================
+   SUBTÍTULOS DE SECÇÃO
+   ============================================= */
+.subtitulo_perfil {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--fontes);
+  letter-spacing: 0em;
+}
+
+/* =============================================
+   AVATAR / FOTO DE PERFIL
+   ============================================= */
 .avatar_wrapper {
-  position: relative; /* Para conter a overlay absoluta */
-  width: 160px;
-  height: 160px;
-  background-color: #dde4ec;
-  border-radius: 46px; /* Mais arredondado */
+  position: relative;
+  width: 140px;
+  height: 140px;
+  background-color: var(--contorno);
+  border-radius: var(--border-radius-grande);
   flex-shrink: 0;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-  overflow: hidden; /* Garante que a foto fique contida dentro do contentor */
+  overflow: hidden;
 }
 
-/* Overlay da Imagem de Perfil (Aparece no Hover) */
+.avatar_img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .imagem_overlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(
-    57,
-    99,
-    156,
-    0.7
-  ) !important; /* Azul translúcido coeso com o tom da Softinsa */
+  background: rgba(57, 99, 156, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0; /* Invisível por padrão */
-  pointer-events: none; /* Evita bloquear cliques quando invisível */
-  transition: opacity 0.25s ease-in-out !important;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-in-out;
   cursor: pointer;
-  border-radius: 46px; /* Acompanha o squircle */
 }
 
 .avatar_wrapper:hover .imagem_overlay {
-  opacity: 1 !important; /* Fica visível ao passar o rato */
+  opacity: 1;
   pointer-events: auto;
 }
 
 .imagem_overlay i {
   font-size: 1.8rem;
-  color: #ffffff !important;
-  transition: transform 0.2s ease-in-out !important;
+  color: var(--fundo);
+  transition: transform 0.2s ease-in-out;
 }
 
 .avatar_wrapper:hover .imagem_overlay i {
-  transform: scale(1.1); /* Micro-animação */
+  transform: scale(1.1);
 }
 
-.avatar_icon {
-  font-size: 3.6rem;
-  color: #6c8297;
-}
-
-.avatar_img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Faz com que a imagem preencha perfeitamente */
-}
-
+/* =============================================
+   INFORMAÇÃO PESSOAL
+   ============================================= */
 .info_dados {
-  font-size: 0.95rem; /* Reduzido de 1.15rem */
+  font-size: 0.9rem;
   color: var(--fontes);
-  line-height: 1.5;
+  line-height: 1.6;
 }
+
 .info_dado_item {
   display: flex;
   align-items: center;
-  gap: 8px; /* Espaço elegante e controlado */
+  gap: 8px;
 }
 
 .info_label {
-  font-weight: 500; /* Reduzido de 700 para menos bold */
+  font-weight: 600;
   color: var(--fontes);
-  margin-right: 2px;
   white-space: nowrap;
+  min-width: 70px;
 }
 
 .info_valor {
@@ -157,86 +171,46 @@
   color: var(--fontes);
 }
 
-/* Inputs no Modo de Edição */
+/* Input no modo de edição */
 .edit_input {
   display: inline-block;
   width: 100%;
   max-width: 240px;
-  height: 32px; /* Mais compactos verticalmente (mais juntos) */
-  padding: 4px 14px !important;
+  height: 36px;
+  padding: 4px 12px !important;
   font-size: 0.88rem !important;
-  font-family: "Inter", sans-serif !important;
+  font-family: var(--fonte-principal) !important;
   color: var(--fontes) !important;
-  background-color: #ffffff !important;
-  border: 3px solid rgba(202, 213, 226, 0.6) !important; /* Mesma cor e espessura das outras bordas */
-  border-radius: 10px !important; /* Pontas menos redondas e elegantes */
+  background-color: var(--fundo) !important;
+  border: var(--borda-principal) solid var(--contorno) !important;
+  border-radius: var(--border-radius-pequeno) !important;
   outline: none !important;
   box-sizing: border-box !important;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
 }
 
 .edit_input:focus {
-  border-color: rgba(202, 213, 226, 1) !important;
-  box-shadow: 0 0 0 3px rgba(202, 213, 226, 0.2) !important;
+  border-color: var(--barra_lateral) !important;
+  box-shadow: 0 0 0 3px rgba(57, 99, 156, 0.12) !important;
 }
 
-/* Assinatura Pessoal */
-.btn_edit_assinatura {
-  cursor: pointer;
-  outline: none;
-}
-
-.edit_icon {
-  font-size: 1.1rem; /* Reduzido de 1.25rem */
-  color: var(--fontes);
-  opacity: 0.8;
-  transition:
-    opacity 0.2s,
-    transform 0.2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transform: translateY(
-    1.5px
-  ); /* Ajuste de precisão para centrar perfeitamente o ícone do lápis */
-}
-
-.edit_icon:hover {
-  opacity: 1;
-  transform: translateY(1.5px) scale(1.1); /* Mantém o alinhamento vertical no hover */
-}
-
-.assinatura_card {
-  background-color: #ffffff;
-  border: 3px solid rgba(202, 213, 226, 0.6);
-  border-radius: var(--border-radius-grande);
-  min-height: 140px; /* Reduzido de 180px */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 24px 8px; /* Restaurado para margem lateral reduzida */
-}
-
+/* =============================================
+   ASSINATURA PESSOAL
+   ============================================= */
 .assinatura_nome {
-  font-family: "Inter", sans-serif;
-  font-size: 0.95rem; /* Reduzido de 1.05rem */
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: var(--fontes);
 }
 
 .assinatura_contacto {
-  font-family: "Inter", sans-serif;
-  font-size: 0.82rem; /* Reduzido de 0.9rem */
+  font-size: 0.82rem;
   color: var(--fontes);
-  opacity: 0.8;
+  opacity: 0.65;
 }
 
-/* Círculos da Assinatura */
 .assinatura_badges {
-  margin-top: 15px; /* Aumentado para dar mais margem e respiro */
+  margin-top: 16px;
 }
 
 .assinatura_badge {
@@ -247,27 +221,21 @@
 }
 
 .assinatura_badge img {
-  width: clamp(96px, 10vh, 150px);
-  height: clamp(96px, 10vh, 150px);
+  width: clamp(80px, 9vh, 130px);
+  height: clamp(80px, 9vh, 130px);
   object-fit: contain;
 }
 
 .assinatura_badge span {
-  font-family: "Inter", sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--fontes);
   font-weight: 500;
   margin-top: 4px;
 }
 
-/* --- SECÇÃO INFERIOR: BADGES PESSOAIS --- */
-.badges_container_full {
-  background-color: #ffffff;
-  border: 3px solid rgba(202, 213, 226, 0.6);
-  border-radius: var(--border-radius-grande);
-  padding: 16px 24px 0px 24px; /* Removido o padding inferior para colar a barra de scroll à borda */
-}
-
+/* =============================================
+   BADGES PESSOAIS (secção inferior)
+   ============================================= */
 .badges_scroll_box {
   width: 100%;
 }
@@ -275,8 +243,10 @@
 .badges_scroll_container {
   display: flex;
   overflow-x: auto;
-  scrollbar-width: auto;
-  padding-bottom: 12px; /* Margem perfeita e sutil entre a informação dos badges e a barra de rolagem */
+  scrollbar-width: thin;
+  scrollbar-color: var(--contorno) transparent;
+  padding-bottom: 8px;
+  gap: var(--gap-grid-badges-horizontal);
 }
 
 .badge_item {
@@ -290,15 +260,15 @@
 }
 
 .badge_item img {
-  width: clamp(120px, 12vh, 180px);
-  height: clamp(120px, 12vh, 180px);
+  width: clamp(100px, 10vh, 150px);
+  height: clamp(100px, 10vh, 150px);
   object-fit: contain;
   margin-bottom: 6px;
 }
 
 .badge_nome {
-  font-family: "Inter", sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--fontes);
   font-weight: 500;
+  text-align: center;
 }

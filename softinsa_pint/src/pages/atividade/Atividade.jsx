@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
 import BarraPesquisa from "../../components/ui/BarraPesquisa/BarraPesquisa";
 import "./Atividade.css";
+import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
 const activityConfig = {
   received: {
     icon: "fi-br-check",
@@ -92,6 +93,18 @@ export default function Atividade() {
   const [activitiesList, setActivitiesList] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [visibleCount, setVisibleCount] = useState(10);
+  const [mostrarExportar, setMostrarExportar] = useState(false);
+  const exportRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+        if (exportRef.current && !exportRef.current.contains(e.target)) {
+            setMostrarExportar(false);
+        }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     axios
@@ -209,10 +222,21 @@ export default function Atividade() {
             </button>
           )}
         </div>
-        <button className="btn btn-exportar d-flex align-items-center gap-2" style={{ height: "38px" }}>
-          <i className="fi fi-br-filter"></i>
-          {t("exportar")}
-        </button>
+        <div className="estat-talent-export-wrap" ref={exportRef}>
+          <BotaoAcao
+            variante="primario"
+            icone="fi-br-download"
+            onClick={() => setMostrarExportar(o => !o)}
+          >
+            {t("exportar")}
+          </BotaoAcao>
+          {mostrarExportar && (
+            <div className="estat-talent-export-menu">
+              <div className="estat-talent-export-item">Excel</div>
+              <div className="estat-talent-export-item">PDF</div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Linha de Tempo de Atividades */}

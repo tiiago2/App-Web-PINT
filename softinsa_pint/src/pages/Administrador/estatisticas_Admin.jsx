@@ -6,10 +6,9 @@ import {
 } from 'recharts';
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import BadgesPorNivel from '../../components/BadgesPorNivel/BadgesPorNivel.jsx';
+import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
 import api from '../../services/api.js';
 import './estatisticas_Admin.css';
-
-const CORES_DONUT = ['#4CAF50', '#64B5F6', '#F44336', '#FFEB3B', '#E91E63', '#9C27B0', '#00BCD4', '#FF9800'];
 
 const TIP = {
     borderRadius: 'var(--border-radius-pequeno)',
@@ -40,18 +39,22 @@ const EstatisticasAdmin = () => {
     /* KPIs formatados para os cards */
     const kpiCards = useMemo(() => [
         { label: 'badges_por_utilizador', valor: kpis.badges_por_utilizador, icone: 'fi fi-br-award' },
-        { label: 'total_badges',          valor: kpis.total_badges,          icone: 'fi fi-br-badge' },
-        { label: 'total_utilizadores',    valor: kpis.total_utilizadores,    icone: 'fi fi-br-users' },
-        { label: 'taxa_aprovacao',        valor: kpis.taxa_aprovacao,        icone: 'fi fi-br-ribbon' },
+        { label: 'total_badges', valor: kpis.total_badges, icone: 'fi fi-br-badge' },
+        { label: 'total_utilizadores', valor: kpis.total_utilizadores, icone: 'fi fi-br-users' },
+        { label: 'taxa_aprovacao', valor: kpis.taxa_aprovacao, icone: 'fi fi-br-ribbon' },
     ], [kpis]);
 
-    /* Cores do donut atribuídas por índice */
-    const dadosPieComCores = useMemo(() =>
-        dadosPie.map((item, i) => ({
-            ...item,
-            cor: CORES_DONUT[i % CORES_DONUT.length]
-        })),
-    [dadosPie]);
+    /* Cores do donut geradas dinamicamente com base na quantidade exata de fatias (dadosPie.length) */
+    const dadosPieComCores = useMemo(() => {
+        return dadosPie.map((item, i) => {
+            // Calcula o ângulo da cor de forma proporcional à quantidade de dados
+            const hue = (i * (360 / dadosPie.length)) % 360;
+            return {
+                ...item,
+                cor: `hsl(${hue}, 70%, 55%)`
+            };
+        });
+    }, [dadosPie]);
 
     /* Carrega todos os dados da API */
     useEffect(() => {
@@ -105,12 +108,13 @@ const EstatisticasAdmin = () => {
                         {t('historico_atribuidos')}
                     </button>
                     <div className="estat-admin-export-wrap" ref={exportRef}>
-                        <button
-                            className="estat-admin-btn-primary"
+                        <BotaoAcao
+                            variante="primario"
+                            icone="fi-br-download"
                             onClick={() => setShowExport(o => !o)}
                         >
                             {t('exportar')}
-                        </button>
+                        </BotaoAcao>
                         {showExport && (
                             <div className="estat-admin-export-menu">
                                 <div className="estat-admin-export-item">Excel</div>

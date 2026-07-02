@@ -384,7 +384,7 @@ function App() {
               {abaNotificacoes === "avisos" && (
                 <div className="d-flex flex-column" id="unified_avisos_container">
                   {/* Linha de controlo (Adicionar aviso / Filtro Recebidos-Enviados) para Admin/TM */}
-                  {(user.cargo === "administrador" || user.cargo === "talent manager") && (
+                  {(user.cargo === "Administrador" || user.cargo === "Talent Manager") && (
                     <div className="d-flex justify-content-between align-items-center mb-2 px-1">
                       <div className="d-flex gap-2">
                         <span

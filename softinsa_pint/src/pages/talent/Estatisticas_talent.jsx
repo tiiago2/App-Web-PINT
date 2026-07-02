@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     PieChart, Pie, Cell, Tooltip
 } from 'recharts';
+import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import BadgesPorNivel from '../../components/BadgesPorNivel/BadgesPorNivel.jsx';
 import api from '../../services/api.js';
@@ -36,6 +37,7 @@ const EstatisticasTalent = () => {
     const [learningPaths, setLearningPaths] = useState([]);
     const [classificacao, setClassificacao] = useState([]);
     const [carregando, setCarregando] = useState(true);
+    const [mostrarExportar, setMostrarExportar] = useState(false);
 
     /* KPIs formatados para os cards */
     const kpiCards = useMemo(() => [
@@ -105,13 +107,14 @@ const EstatisticasTalent = () => {
                         {t('historico_atribuidos')}
                     </button>
                     <div className="estat-talent-export-wrap" ref={exportRef}>
-                        <button
-                            className="estat-talent-btn-primary"
-                            onClick={() => setShowExport(o => !o)}
+                        <BotaoAcao
+                            variante="primario"
+                            icone="fi-br-download"
+                            onClick={() => setMostrarExportar(o => !o)}
                         >
-                            {t('exportar')}
-                        </button>
-                        {showExport && (
+                            Exportar
+                        </BotaoAcao>
+                        {mostrarExportar && (
                             <div className="estat-talent-export-menu">
                                 <div className="estat-talent-export-item">Excel</div>
                                 <div className="estat-talent-export-item">PDF</div>
@@ -120,7 +123,6 @@ const EstatisticasTalent = () => {
                     </div>
                 </div>
             </div>
-
             {/* ── CORPO PRINCIPAL ── */}
             <div className="estat-talent-body">
 

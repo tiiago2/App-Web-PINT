@@ -398,3 +398,32 @@
 .btn-filtrar-data-bootstrap::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
+
+/* Dropdown de exportação */
+.estat-talent-export-wrap {
+    position: relative;
+}
+
+.estat-talent-export-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: #fff;
+    border: 1px solid var(--contorno);
+    border-radius: var(--border-radius-pequeno);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+    min-width: 120px;
+    z-index: 10;
+    overflow: hidden;
+}
+
+.estat-talent-export-item {
+    padding: 10px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.estat-talent-export-item:hover {
+    background-color: var(--fundo_submenu_hover);
+}

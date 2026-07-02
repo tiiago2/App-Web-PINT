@@ -4,6 +4,7 @@ import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
 import BarraPesquisa from "../../components/ui/BarraPesquisa/BarraPesquisa";
 import BotaoDropdown from "../../components/ui/BotaoDropdown/BotaoDropdown";
 import ToggleSwitch from "../../components/ui/ToggleSwitch/ToggleSwitch";
+import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
 import "./candidaturas.css";
 
 // MOCK DATABASE & DATA SCHEMA
@@ -338,6 +339,7 @@ export default function Candidaturas() {
   const [ordenacao, setOrdenacao] = useState("Mais Recentes");
   const [pesquisa, setPesquisa] = useState("");
   const [toastMessage, setToastMessage] = useState(null);
+  const [mostrarExportar, setMostrarExportar] = useState(false);
 
   // Set timeout to automatically hide success toast
   useEffect(() => {
@@ -419,9 +421,7 @@ export default function Candidaturas() {
     setToastMessage(t("candidatura_rejeitada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
   };
 
-  const handleExport = () => {
-    alert(t("exportacao_iniciada"));
-  };
+
 
   return (
     <main className="candidaturas-page position-relative">
@@ -484,21 +484,21 @@ export default function Candidaturas() {
             <span className="fw-medium text-secondary" style={{ fontSize: "0.85rem" }}>{t("minha_service_line")}</span>
           </div>
 
-          <button 
-            onClick={handleExport}
-            className="btn d-flex align-items-center gap-2 shadow-sm border-0 px-4"
-            style={{ 
-              backgroundColor: "var(--barra_lateral)", 
-              color: "var(--fundo)",
-              height: "44px",
-              fontWeight: 500,
-              fontSize: "16px",
-              borderRadius: "8px"
-            }}
-          >
-            <i className="fi fi-br-download"></i>
-            <span>{t("exportar")}</span>
-          </button>
+          <div className="position-relative">
+            <BotaoAcao
+              variante="primario"
+              icone="fi-br-download"
+              onClick={() => setMostrarExportar(o => !o)}
+            >
+              {t("exportar")}
+            </BotaoAcao>
+            {mostrarExportar && (
+              <div className="estat-admin-export-menu">
+                <div className="estat-admin-export-item">Excel</div>
+                <div className="estat-admin-export-item">PDF</div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

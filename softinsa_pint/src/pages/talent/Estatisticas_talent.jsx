@@ -9,6 +9,8 @@ import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import BadgesPorNivel from '../../components/BadgesPorNivel/BadgesPorNivel.jsx';
 import api from '../../services/api.js';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import './estatisticas_talent.css';
 
 const TIP = {
@@ -125,6 +127,99 @@ const EstatisticasTalent = () => {
         setShowExport(false);
     };
 
+    const handleExportarPDF = () => {
+        try {
+            const doc = new jsPDF('p', 'pt', 'a4');
+
+            doc.setFontSize(18);
+            doc.setTextColor(0, 86, 179);
+            doc.text("Relatório Geral de Estatísticas - Talent", 40, 40);
+
+            doc.setFontSize(11);
+            doc.setTextColor(80);
+            doc.text(`Total de Badges: ${kpis?.total_badges || 0}`, 40, 70);
+            doc.text(`Total de Utilizadores: ${kpis?.total_utilizadores || 0}`, 40, 90);
+            doc.text(`Média por Utilizador: ${kpis?.badges_por_utilizador || 0}`, 240, 70);
+            doc.text(`Taxa de Aprovação: ${kpis?.taxa_aprovacao || '0%'}`, 240, 90);
+
+            let posiçãoY_Atual = 140;
+
+            doc.setFontSize(14);
+            doc.setTextColor(40);
+            doc.text("Atribuídos do Mês (Por Área)", 40, posiçãoY_Atual);
+            
+            autoTable(doc, {
+                startY: posiçãoY_Atual + 10,
+                head: [["Área", "Total Badges"]],
+                body: dadosPie.length > 0 
+                    ? dadosPie.map(d => [d.Nome_Area || "N/A", d.total_badges || 0])
+                    : [["Sem dados neste mês", "-"]],
+                theme: 'striped',
+                headStyles: { fillColor: [0, 86, 179] },
+                styles: { fontSize: 10 }
+            });
+
+            posiçãoY_Atual = doc.lastAutoTable.finalY + 40;
+
+            doc.setFontSize(14);
+            doc.text("Distribuição por Níveis", 40, posiçãoY_Atual);
+            
+            autoTable(doc, {
+                startY: posiçãoY_Atual + 10,
+                head: [["Nível", "Quantidade (%)"]],
+                body: dadosNiveis.length > 0
+                    ? dadosNiveis.map(d => [d.Nome_Nivel || "N/A", d.valor !== undefined ? `${d.valor}%` : "0%"])
+                    : [["Sem dados", "-"]],
+                theme: 'striped',
+                headStyles: { fillColor: [0, 86, 179] },
+                styles: { fontSize: 10 }
+            });
+
+            posiçãoY_Atual = doc.lastAutoTable.finalY + 40;
+
+            if (posiçãoY_Atual > 700) { doc.addPage(); posiçãoY_Atual = 40; }
+
+            doc.setFontSize(14);
+            doc.text("Learning Paths Ativos", 40, posiçãoY_Atual);
+            
+            autoTable(doc, {
+                startY: posiçãoY_Atual + 10,
+                head: [["Nome da Learning Path", "Total Badges"]],
+                body: learningPaths.length > 0
+                    ? learningPaths.map(lp => [lp.nome || "N/A", lp.total_badges || 0])
+                    : [["Sem dados", "-"]],
+                theme: 'striped',
+                headStyles: { fillColor: [0, 86, 179] },
+                styles: { fontSize: 10 }
+            });
+
+            posiçãoY_Atual = doc.lastAutoTable.finalY + 40;
+
+            if (posiçãoY_Atual > 700) { doc.addPage(); posiçãoY_Atual = 40; }
+
+            doc.setFontSize(14);
+            doc.text("Ranking Geral de Utilizadores", 40, posiçãoY_Atual);
+            
+            autoTable(doc, {
+                startY: posiçãoY_Atual + 10,
+                head: [["#", "Nome", "Total Pontos"]],
+                body: classificacao.length > 0
+                    ? classificacao.map((c, index) => [index + 1, c.nome || c.nome_user || "N/A", c.pontos_sempre || c.pontos || 0])
+                    : [["Sem dados", "-", "-"]],
+                theme: 'striped',
+                headStyles: { fillColor: [0, 86, 179] },
+                styles: { fontSize: 10 }
+            });
+
+            doc.save("Estatisticas_Talent_Export.pdf");
+            setShowExport(false);
+
+        } catch (erro) {
+            console.error("Erro CRÍTICO ao gerar o PDF:", erro);
+            alert("Erro ao gerar o PDF. Vê a consola para detalhes.");
+        }
+    };
+
     const totalAtribuidos = dadosPieComCores.reduce((s, x) => s + x.total_badges, 0);
 
     return (
@@ -151,7 +246,7 @@ const EstatisticasTalent = () => {
                         {showExport && (
                             <div className="estat-admin-export-menu">
                                 <div className="estat-admin-export-item" onClick={handleExportarExcel}>Excel</div>
-                                <div className="estat-admin-export-item">PDF</div>
+                                <div className="estat-admin-export-item" onClick={handleExportarPDF}>PDF</div>
                             </div>
                         )}
                     </div>

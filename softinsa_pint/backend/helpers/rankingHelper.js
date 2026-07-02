@@ -82,6 +82,7 @@ async function calcularRanking(id_service_line = null) {
     let pontosSemana = 0;
     let pontosMes = 0;
     let pontosAno = 0;
+    let pontosSempre = 0;
 
     for (const r of registos) {
       const data = new Date(r.data_obtencao);
@@ -90,9 +91,10 @@ async function calcularRanking(id_service_line = null) {
       if (data >= inicioAnoDate) pontosAno += pontos;
       if (data >= inicioMesDate) pontosMes += pontos;
       if (data >= inicioSemanaDate) pontosSemana += pontos;
+      pontosSempre += pontos;
     }
 
-    ranking.push({
+      ranking.push({
       id: c.id_utilizador,
       nome: user ? user.nome_user : c.nome_user,
       area: area ? area.nome_area : "",
@@ -101,7 +103,8 @@ async function calcularRanking(id_service_line = null) {
       pontos_semana: pontosSemana,
       pontos_mes: pontosMes,
       pontos_ano: pontosAno,
-      pontos_sempre: c.pontos_totais
+      pontos_sempre: pontosSempre > 0 ? pontosSempre : c.pontos_totais,
+      total_badges: registos.length
     });
   }
 

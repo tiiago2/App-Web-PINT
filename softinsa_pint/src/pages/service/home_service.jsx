@@ -87,11 +87,11 @@ const HomeService = ({ user, saudacao }) => {
 
     const RenderCandidaturas = () => {
         if (!Array.isArray(infoCandidaturas) || infoCandidaturas.length === 0) {
-                    return <div className="col-12 text-muted">Sem candidaturas</div>;
-                }
-        
-                return infoCandidaturas.map((candidatura, index) => {
-                    const badge = candidatura?.Badges || candidatura?.Badge || null;
+            return <div className="col-12 text-muted">Sem candidaturas</div>;
+        }
+
+        return infoCandidaturas.slice(0, 3).map((candidatura, index) => {
+            const badge = candidatura?.Badges || candidatura?.Badge || null;
                     const utilizador = candidatura?.Utilizador || null;
                     const area = badge?.Area?.nome_area || badge?.nome_area || '—';
                     const nomeBadge = badge?.nome_badge || 'Badge';
@@ -132,17 +132,16 @@ const HomeService = ({ user, saudacao }) => {
     };
 
     return (
-        <div className="p-3 p-md-4 d-flex flex-column gap-3" style={{ height: '100%', overflow: 'hidden' }}>
+        <div className="home-service-container gap-3">
             <div className="flex-shrink-0">
-                <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', marginBottom: '0' }}>{saudacao}</h1>
+                <h1 className="texto-titulo-principal m-0">{saudacao}</h1>
             </div>
             
-            <div className="flex-grow-1" style={{ overflowY: 'auto', paddingLeft: '0.5rem', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                <style>{`.flex-grow-1::-webkit-scrollbar { display: none; }`}</style>
+            <div className="d-flex flex-column gap-3" style={{ flex: '1 1 auto' }}>
                 
-                {/* Primeira linha: Candidaturas Recentes (col-xl-8) e Gráfico de Candidaturas (col-xl-4) */}
-                <div className="row gy-3">
-                    <div className="col-12 col-xl-8">
+                {/* Primeira linha: Candidaturas Recentes e Gráfico de Candidaturas */}
+                <div className="row g-2 g-md-3 primeira-linha-home">
+                    <div className="col-12 col-xl-8 candidaturas-column">
                         <div>
                             <div className="d-flex justify-content-between align-items-center mb-2">
                                 <h5 className="m-0" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>{t('candidaturas_recentes')}</h5>
@@ -153,27 +152,27 @@ const HomeService = ({ user, saudacao }) => {
                             </div>
                         </div>
                     </div>
-                    <div className="col-12 col-xl-4">
-                        <div style={{ height: '100%', minHeight: '250px' }}>
+                    <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
+                        <div className="grafico-estatistica-container" style={{ overflow: 'hidden' }}>
                             <GraficoCandidaturas dados_grafico_candidaturas={dados_grafico_candidaturas}/>
                         </div>
                     </div>
                 </div>
 
                 {/* Segunda linha: Atividade Recente, Classificação Geral e Classificação da Service Line */}
-                <div className="row gy-3 align-items-start">
-                    <div className="col-12 col-md-4">
-                        <div style={{ height: '100%', minHeight: '250px' }}>
+                <div className="row g-2 g-md-3 segunda-linha-home">
+                    <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
+                        <div style={{ height: '100%', overflow: 'hidden' }}>
                             <AtividadeRecente atividades={atividadeRecente} />
                         </div>
                     </div>
-                    <div className="col-12 col-md-4">
-                        <div style={{ height: '100%', minHeight: '250px' }}>
+                    <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
+                        <div style={{ height: '100%', overflow: 'hidden' }}>
                             <ClassificacaoGeral user={user}/>
                         </div>
                     </div>
-                    <div className="col-12 col-md-4">
-                        <div style={{ height: '100%', minHeight: '250px' }}>
+                    <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
+                        <div style={{ height: '100%', overflow: 'hidden' }}>
                             <ClassificacaoGeral 
                                 user={user}
                                 filtroInicial="service_line"

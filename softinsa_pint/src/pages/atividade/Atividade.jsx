@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import BarraPesquisa from "../../components/ui/BarraPesquisa/BarraPesquisa";
 import "./Atividade.css";
 import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
@@ -175,6 +177,46 @@ export default function Atividade() {
     setMostrarExportar(false);
   };
 
+  const handleExportarPDF = () => {
+    try {
+      const doc = new jsPDF('p', 'pt', 'a4');
+
+      doc.setFontSize(18);
+      doc.setTextColor(0, 86, 179);
+      doc.text("Histórico de Atividades", 40, 40);
+
+      doc.setFontSize(11);
+      doc.setTextColor(80);
+      doc.text(`Total de Registos Exportados: ${filteredActivities.length}`, 40, 70);
+
+      let posiçãoY_Atual = 100;
+
+      const dadosExportar = filteredActivities.map(a => [
+        a.user || "-",
+        a.item || "-",
+        a.action || "-",
+        a.type || "-",
+        a.timestamp ? a.timestamp.toLocaleString() : "-"
+      ]);
+
+      autoTable(doc, {
+        startY: posiçãoY_Atual,
+        head: [["Utilizador", "Item", "Ação", "Tipo", "Data"]],
+        body: dadosExportar.length > 0 ? dadosExportar : [["Sem dados", "-", "-", "-", "-"]],
+        theme: 'striped',
+        headStyles: { fillColor: [0, 86, 179] },
+        styles: { fontSize: 10 }
+      });
+
+      doc.save("Atividades_Export.pdf");
+      setMostrarExportar(false);
+
+    } catch (erro) {
+      console.error("Erro CRÍTICO ao gerar o PDF:", erro);
+      alert("Erro ao gerar o PDF.");
+    }
+  };
+
   return (
     <div className="atividade-container w-100">
       <h1 className="texto-titulo-principal mb-4">{t("Atividades") || "Atividades"}</h1>
@@ -253,7 +295,7 @@ export default function Atividade() {
           {mostrarExportar && (
             <div className="estat-talent-export-menu">
               <div className="estat-talent-export-item" onClick={handleExportarExcel}>Excel</div>
-              <div className="estat-talent-export-item">PDF</div>
+              <div className="estat-talent-export-item" onClick={handleExportarPDF}>PDF</div>
             </div>
           )}
         </div>

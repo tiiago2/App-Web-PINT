@@ -71,3 +71,56 @@
 #total_meio_palavra{
     font-size: 12px;
 }
+
+/* === Classes de Estrutura Híbrida (Portátil vs Monitor) === */
+.home-service-container {
+    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo);
+    background-color: var(--fundo);
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.primeira-linha-home {
+    flex: 0 0 auto;
+}
+
+.segunda-linha-home {
+    flex: 0 0 auto;
+}
+
+.grafico-estatistica-container {
+    height: 265px;
+}
+
+.segunda-linha-home .card,
+.segunda-linha-home > div > div > div {
+    height: 265px !important;
+    max-height: 265px !important;
+    margin-bottom: 0 !important;
+    overflow-y: hidden;
+}
+
+@media (min-width: 1440px) and (min-height: 800px) {
+    .candidaturas-column {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .primeira-linha-home, .segunda-linha-home {
+        flex: 1 1 50%;
+    }
+
+    .grafico-estatistica-container {
+        height: 100%;
+    }
+
+    .segunda-linha-home .card,
+    .segunda-linha-home > div > div > div {
+        height: 100% !important;
+        max-height: none !important;
+        overflow-y: visible;
+    }
+}

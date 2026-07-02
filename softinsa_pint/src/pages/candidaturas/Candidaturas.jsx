@@ -6,6 +6,8 @@ import BotaoDropdown from "../../components/ui/BotaoDropdown/BotaoDropdown";
 import ToggleSwitch from "../../components/ui/ToggleSwitch/ToggleSwitch";
 import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import "./candidaturas.css";
 
 // MOCK DATABASE & DATA SCHEMA
@@ -455,6 +457,46 @@ export default function Candidaturas() {
     setMostrarExportar(false);
   };
 
+  const handleExportarPDF = () => {
+    try {
+      const doc = new jsPDF('p', 'pt', 'a4');
+
+      doc.setFontSize(18);
+      doc.setTextColor(0, 86, 179);
+      doc.text("Relatório de Candidaturas", 40, 40);
+
+      doc.setFontSize(11);
+      doc.setTextColor(80);
+      doc.text(`Total de Registos Exportados: ${candidaturasFiltradas.length}`, 40, 70);
+
+      let posiçãoY_Atual = 100;
+
+      const dadosExportar = candidaturasFiltradas.map(c => [
+        c.user ? c.user.nome : "Desconhecido",
+        c.badge ? c.badge.titulo : "-",
+        c.status || "-",
+        c.progresso !== undefined ? `${c.progresso}%` : "-",
+        c.submetido ? new Date(c.submetido).toLocaleDateString() : "-"
+      ]);
+
+      autoTable(doc, {
+        startY: posiçãoY_Atual,
+        head: [["Candidato", "Badge", "Estado", "Progresso", "Data Submissão"]],
+        body: dadosExportar.length > 0 ? dadosExportar : [["Sem dados", "-", "-", "-", "-"]],
+        theme: 'striped',
+        headStyles: { fillColor: [0, 86, 179] },
+        styles: { fontSize: 10 }
+      });
+
+      doc.save("Candidaturas_Export.pdf");
+      setMostrarExportar(false);
+
+    } catch (erro) {
+      console.error("Erro CRÍTICO ao gerar o PDF:", erro);
+      alert("Erro ao gerar o PDF.");
+    }
+  };
+
 
 
   return (
@@ -529,7 +571,7 @@ export default function Candidaturas() {
             {mostrarExportar && (
               <div className="estat-talent-export-menu">
                 <div className="estat-talent-export-item" onClick={handleExportarExcel}>Excel</div>
-                <div className="estat-talent-export-item">PDF</div>
+                <div className="estat-talent-export-item" onClick={handleExportarPDF}>PDF</div>
               </div>
             )}
           </div>

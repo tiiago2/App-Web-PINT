@@ -107,7 +107,8 @@ module.exports = {
         const nome = n.nome_nivel;
         return {
           Nome_Nivel: CHAVES_NIVEL[nome] || nome,
-          valor: total > 0 ? Math.round((porNivel[nome] || 0) / total * 100) : 0
+          valor: total > 0 ? Math.round((porNivel[nome] || 0) / total * 100) : 0,
+          total_badges: porNivel[nome] || 0
         };
       });
 

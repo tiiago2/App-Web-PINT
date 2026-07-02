@@ -116,6 +116,14 @@ function criarRequisitoVazio() {
   };
 }
 
+const REQUISITOS_MOCK = [
+  { id: 1, nome: "Certificação AWS Cloud Practitioner", descricao: "Apresentar certificado válido da AWS." },
+  { id: 2, nome: "Curso de Node.js", descricao: "Conclusão de curso de Node.js com mais de 20 horas." },
+  { id: 3, nome: "Formação React Avançado", descricao: "Certificado de conclusão de React Hooks e Context API." },
+  { id: 4, nome: "Participação em Projeto Interno", descricao: "Ter estado envolvido em pelo menos 1 projeto interno na respetiva área." },
+  { id: 5, nome: "Avaliação de Desempenho", descricao: "Ter avaliação positiva na última revisão semestral." }
+];
+
 export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -134,6 +142,7 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
   const [formErro, setFormErro] = useState("");
 
   const [requisitos, setRequisitos] = useState([]);
+  const [focusedRequisitoId, setFocusedRequisitoId] = useState(null);
 
   const lpOpcoes = LEARNING_PATHS.map((learningPath) => ({
     valor: learningPath.id,
@@ -306,6 +315,17 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
           : requisito
       )
     );
+  }
+
+  function handleNomeRequisitoChange(idReq, novoNome) {
+    // Atualiza o nome escrito pelo utilizador
+    handleUpdateRequisito(idReq, "nome_requisito", novoNome);
+
+    // Se houver um match exato (selecionado do autocomplete), auto-preenche a descrição
+    const reqEncontrado = REQUISITOS_MOCK.find(r => r.nome.toLowerCase() === novoNome.toLowerCase());
+    if (reqEncontrado) {
+      handleUpdateRequisito(idReq, "descricao_requisito", reqEncontrado.descricao);
+    }
   }
 
   function handleImageUpload(event) {
@@ -693,20 +713,71 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
                   </button>
                 </div>
 
-                <div className="badge-form-group mb-2">
+                <div className="badge-form-group mb-2 position-relative">
                   <input
                     type="text"
                     className="badge-form-input"
-                    placeholder="Nome do requisito"
+                    placeholder="Nome do requisito (Pesquise ou crie um novo)"
                     value={requisito.nome_requisito}
                     onChange={(event) =>
-                      handleUpdateRequisito(
-                        requisito.id,
-                        "nome_requisito",
-                        event.target.value
-                      )
+                      handleNomeRequisitoChange(requisito.id, event.target.value)
                     }
+                    onFocus={() => setFocusedRequisitoId(requisito.id)}
+                    onBlur={() => setTimeout(() => setFocusedRequisitoId(null), 200)}
+                    autoComplete="off"
                   />
+                  {focusedRequisitoId === requisito.id && requisito.nome_requisito.length > 0 && (
+                    (() => {
+                      const termoPesquisa = requisito.nome_requisito.toLowerCase();
+                      const sugestoes = REQUISITOS_MOCK.filter(r => 
+                        r.nome.toLowerCase().includes(termoPesquisa) && 
+                        r.nome.toLowerCase() !== termoPesquisa
+                      ).slice(0, 3);
+
+                      if (sugestoes.length === 0) return null;
+
+                      return (
+                        <div 
+                          className="sugestoes-dropdown"
+                          style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            right: 0,
+                            backgroundColor: '#fff',
+                            border: '1px solid #cad5e2',
+                            borderTop: 'none',
+                            borderRadius: '0 0 8px 8px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            zIndex: 10,
+                            overflow: 'hidden'
+                          }}
+                        >
+                          {sugestoes.map((s, idx) => (
+                            <div 
+                              key={s.id}
+                              style={{ 
+                                padding: '10px 14px', 
+                                cursor: 'pointer', 
+                                borderBottom: idx < sugestoes.length - 1 ? '1px solid #f0f4f8' : 'none',
+                                fontSize: '0.85rem',
+                                color: 'var(--fontes)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                              }}
+                              onMouseDown={() => handleNomeRequisitoChange(requisito.id, s.nome)}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f4f8'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+                            >
+                              <i className="fi fi-br-search text-muted" style={{ fontSize: '0.75rem' }}></i>
+                              {s.nome}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()
+                  )}
                 </div>
 
                 <div className="badge-form-group mb-0">

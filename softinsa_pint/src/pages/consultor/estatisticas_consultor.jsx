@@ -9,6 +9,8 @@ import EvolucaoModal from '../../components/EvolucaoModal.jsx';
 import api from '../../services/api.js';
 import BotaoAcao from '../../components/ui/BotaoAcao/BotaoAcao';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import './estatisticas_consultor.css';
 
 /* ── CORES ─────────────────────────────────────────────────── */
@@ -92,6 +94,99 @@ const EstatisticasConsultor = ({ user }) => {
         setMostrarExportar(false);
     };
 
+    const handleExportarPDF = () => {
+        try {
+            const doc = new jsPDF('p', 'pt', 'a4');
+
+            doc.setFontSize(18);
+            doc.setTextColor(0, 86, 179);
+            doc.text("Estatísticas Individuais - Consultor", 40, 40);
+
+            doc.setFontSize(11);
+            doc.setTextColor(80);
+            doc.text(`Lugar Atual: ${kpi?.lugar_atual || '-'}`, 40, 70);
+            doc.text(`Total de Badges: ${kpi?.total_badges || '-'}`, 40, 90);
+            doc.text(`Objetivos Ativos: ${kpi?.objetivos_ativos || '-'}`, 240, 70);
+            doc.text(`Taxa de Aprovação: ${kpi?.taxa_aprovacao || '-'}`, 240, 90);
+
+            let posiçãoY_Atual = 140;
+
+            doc.setFontSize(14);
+            doc.setTextColor(40);
+            doc.text("Evolução de Pontos", 40, posiçãoY_Atual);
+            
+            autoTable(doc, {
+                startY: posiçãoY_Atual + 10,
+                head: [["Período", "Pontos"]],
+                body: dadosBar.length > 0 
+                    ? dadosBar.map(d => [d.label || d.mes || d.semana || "N/A", d.pontos !== undefined ? d.pontos : (d.valor || 0)])
+                    : [["Sem dados", "-"]],
+                theme: 'striped',
+                headStyles: { fillColor: [0, 86, 179] },
+                styles: { fontSize: 10 }
+            });
+
+            posiçãoY_Atual = doc.lastAutoTable.finalY + 40;
+
+            doc.setFontSize(14);
+            doc.text("Badges Conquistados (Por Área)", 40, posiçãoY_Atual);
+            
+            autoTable(doc, {
+                startY: posiçãoY_Atual + 10,
+                head: [["Área", "Total Badges"]],
+                body: dadosPie.length > 0 
+                    ? dadosPie.map(d => [d.Nome_Area || d.nome_area || "N/A", d.total_badges !== undefined ? d.total_badges : (d.valor || 0)])
+                    : [["Sem dados neste mês", "-"]],
+                theme: 'striped',
+                headStyles: { fillColor: [0, 86, 179] },
+                styles: { fontSize: 10 }
+            });
+
+            posiçãoY_Atual = doc.lastAutoTable.finalY + 40;
+
+            if (posiçãoY_Atual > 700) { doc.addPage(); posiçãoY_Atual = 40; }
+
+            doc.setFontSize(14);
+            doc.text("Distribuição por Níveis", 40, posiçãoY_Atual);
+            
+            autoTable(doc, {
+                startY: posiçãoY_Atual + 10,
+                head: [["Nível", "Quantidade"]],
+                body: dadosNiveis.length > 0
+                    ? dadosNiveis.map(d => [d.Nome_Nivel || "N/A", d.total_badges !== undefined ? d.total_badges : (d.valor || 0)])
+                    : [["Sem dados", "-"]],
+                theme: 'striped',
+                headStyles: { fillColor: [0, 86, 179] },
+                styles: { fontSize: 10 }
+            });
+
+            posiçãoY_Atual = doc.lastAutoTable.finalY + 40;
+
+            if (posiçãoY_Atual > 700) { doc.addPage(); posiçãoY_Atual = 40; }
+
+            doc.setFontSize(14);
+            doc.text("Ranking (Top 10)", 40, posiçãoY_Atual);
+            
+            autoTable(doc, {
+                startY: posiçãoY_Atual + 10,
+                head: [["#", "Nome", "Pontos"]],
+                body: classificacao.length > 0
+                    ? classificacao.map((c, index) => [index + 1, c.nome || c.nome_user || "N/A", c.pontos_sempre || c.pontos || 0])
+                    : [["Sem dados", "-", "-"]],
+                theme: 'striped',
+                headStyles: { fillColor: [0, 86, 179] },
+                styles: { fontSize: 10 }
+            });
+
+            doc.save("Estatisticas_Consultor_Export.pdf");
+            setMostrarExportar(false);
+
+        } catch (erro) {
+            console.error("Erro CRÍTICO ao gerar o PDF:", erro);
+            alert("Erro ao gerar o PDF.");
+        }
+    };
+
     // ── Carregar KPIs, conquistados-mês, badges-nível e ranking (uma vez) ──
     useEffect(() => {
         const carregar = async () => {
@@ -157,7 +252,7 @@ const EstatisticasConsultor = ({ user }) => {
                     {mostrarExportar && (
                         <div className="estat-talent-export-menu">
                             <div className="estat-talent-export-item" onClick={handleExportarExcel}>Excel</div>
-                            <div className="estat-talent-export-item">PDF</div>
+                            <div className="estat-talent-export-item" onClick={handleExportarPDF}>PDF</div>
                         </div>
                     )}
                 </div>

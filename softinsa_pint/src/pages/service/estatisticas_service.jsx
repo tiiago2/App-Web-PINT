@@ -11,6 +11,8 @@ import BadgesPorNivel from '../../components/BadgesPorNivel/BadgesPorNivel.jsx';
 import api from '../../services/api.js';
 import BotaoAcao from '../../components/ui/BotaoAcao/BotaoAcao';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import './estatisticas_service.css';
 
 const periodos = [
@@ -136,6 +138,99 @@ const EstatisticasService = ({ user }) => {
         setShowExport(false);
     };
 
+    const handleExportarPDF = () => {
+        try {
+            const doc = new jsPDF('p', 'pt', 'a4');
+
+            doc.setFontSize(18);
+            doc.setTextColor(0, 86, 179);
+            doc.text("Estatísticas da Service Line", 40, 40);
+
+            doc.setFontSize(11);
+            doc.setTextColor(80);
+            doc.text(`Total de Badges: ${kpis?.total_badges || 0}`, 40, 70);
+            doc.text(`Total de Utilizadores: ${kpis?.total_utilizadores || 0}`, 40, 90);
+            doc.text(`Média por Utilizador: ${kpis?.badges_por_utilizador || 0}`, 240, 70);
+            doc.text(`Taxa de Aprovação: ${kpis?.taxa_aprovacao || '0%'}`, 240, 90);
+
+            let posiçãoY_Atual = 140;
+
+            doc.setFontSize(14);
+            doc.setTextColor(40);
+            doc.text("Atividade por Período", 40, posiçãoY_Atual);
+            
+            autoTable(doc, {
+                startY: posiçãoY_Atual + 10,
+                head: [["Período", "Atribuídos"]],
+                body: dadosSemana.length > 0 
+                    ? dadosSemana.map(d => [d.label || d.mes || d.semana || d.dia || "N/A", d.total_badges !== undefined ? d.total_badges : (d.quantidade || d.valor || d.pontos || 0)])
+                    : [["Sem dados", "-"]],
+                theme: 'striped',
+                headStyles: { fillColor: [0, 86, 179] },
+                styles: { fontSize: 10 }
+            });
+
+            posiçãoY_Atual = doc.lastAutoTable.finalY + 40;
+
+            doc.setFontSize(14);
+            doc.text("Distribuição por Níveis", 40, posiçãoY_Atual);
+            
+            autoTable(doc, {
+                startY: posiçãoY_Atual + 10,
+                head: [["Nível", "Quantidade (%)"]],
+                body: dadosNiveis.length > 0
+                    ? dadosNiveis.map(d => [d.Nome_Nivel || "N/A", d.valor !== undefined ? `${d.valor}%` : "0%"])
+                    : [["Sem dados", "-"]],
+                theme: 'striped',
+                headStyles: { fillColor: [0, 86, 179] },
+                styles: { fontSize: 10 }
+            });
+
+            posiçãoY_Atual = doc.lastAutoTable.finalY + 40;
+
+            if (posiçãoY_Atual > 700) { doc.addPage(); posiçãoY_Atual = 40; }
+
+            doc.setFontSize(14);
+            doc.text("Status das Candidaturas", 40, posiçãoY_Atual);
+            
+            autoTable(doc, {
+                startY: posiçãoY_Atual + 10,
+                head: [["Status", "Quantidade"]],
+                body: statusCandidaturas.length > 0
+                    ? statusCandidaturas.map(s => [s.status || "N/A", s.quantidade !== undefined ? s.quantidade : (s.valor || 0)])
+                    : [["Sem dados", "-"]],
+                theme: 'striped',
+                headStyles: { fillColor: [0, 86, 179] },
+                styles: { fontSize: 10 }
+            });
+
+            posiçãoY_Atual = doc.lastAutoTable.finalY + 40;
+
+            if (posiçãoY_Atual > 700) { doc.addPage(); posiçãoY_Atual = 40; }
+
+            doc.setFontSize(14);
+            doc.text("Ranking Service Line", 40, posiçãoY_Atual);
+            
+            autoTable(doc, {
+                startY: posiçãoY_Atual + 10,
+                head: [["#", "Nome", "Pontos"]],
+                body: classificacao.length > 0
+                    ? classificacao.map((c, index) => [index + 1, c.nome || c.nome_user || "N/A", c.pontos_sempre || c.pontos || 0])
+                    : [["Sem dados", "-", "-"]],
+                theme: 'striped',
+                headStyles: { fillColor: [0, 86, 179] },
+                styles: { fontSize: 10 }
+            });
+
+            doc.save("Estatisticas_Service_Export.pdf");
+            setShowExport(false);
+
+        } catch (erro) {
+            console.error("Erro CRÍTICO ao gerar o PDF:", erro);
+            alert("Erro ao gerar o PDF.");
+        }
+    };
+
     return (
         <div className="estat-service-page">
 
@@ -160,7 +255,7 @@ const EstatisticasService = ({ user }) => {
                         {showExport && (
                             <div className="estat-talent-export-menu">
                                 <div className="estat-talent-export-item" onClick={handleExportarExcel}>Excel</div>
-                                <div className="estat-talent-export-item">PDF</div>
+                                <div className="estat-talent-export-item" onClick={handleExportarPDF}>PDF</div>
                             </div>
                         )}
                     </div>

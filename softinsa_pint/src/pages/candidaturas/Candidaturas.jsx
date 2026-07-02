@@ -1,10 +1,11 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
 import BarraPesquisa from "../../components/ui/BarraPesquisa/BarraPesquisa";
 import BotaoDropdown from "../../components/ui/BotaoDropdown/BotaoDropdown";
 import ToggleSwitch from "../../components/ui/ToggleSwitch/ToggleSwitch";
 import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
+import * as XLSX from 'xlsx';
 import "./candidaturas.css";
 
 // MOCK DATABASE & DATA SCHEMA
@@ -340,6 +341,18 @@ export default function Candidaturas() {
   const [pesquisa, setPesquisa] = useState("");
   const [toastMessage, setToastMessage] = useState(null);
   const [mostrarExportar, setMostrarExportar] = useState(false);
+  const exportRef = useRef(null);
+
+  // Close export menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+        if (exportRef.current && !exportRef.current.contains(e.target)) {
+            setMostrarExportar(false);
+        }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Set timeout to automatically hide success toast
   useEffect(() => {
@@ -417,8 +430,29 @@ export default function Candidaturas() {
     setCandidaturas((prev) =>
       prev.map((c) => (c.id === id ? { ...c, status: "Recusada" } : c))
     );
-    setSelectedCandidaturaId(null);
     setToastMessage(t("candidatura_rejeitada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
+  };
+
+  const handleExportarExcel = () => {
+    const livro = XLSX.utils.book_new();
+
+    const dadosExportar = candidaturasFiltradas.map(c => ({
+        "ID": c.id,
+        "Candidato": c.user ? c.user.nome : "Desconhecido",
+        "Área": c.user ? c.user.area : "-",
+        "Service Line": c.user ? c.user.serviceLine : "-",
+        "Badge": c.badge ? c.badge.titulo : "-",
+        "Pontos": c.badge ? c.badge.pontos : 0,
+        "Data Submissão": new Date(c.submetido).toLocaleDateString(),
+        "Estado": c.status,
+        "Progresso (%)": c.progresso
+    }));
+
+    const folhaCandidaturas = XLSX.utils.json_to_sheet(dadosExportar);
+    XLSX.utils.book_append_sheet(livro, folhaCandidaturas, "Candidaturas");
+
+    XLSX.writeFile(livro, "Candidaturas_Export.xlsx");
+    setMostrarExportar(false);
   };
 
 
@@ -484,7 +518,7 @@ export default function Candidaturas() {
             <span className="fw-medium text-secondary" style={{ fontSize: "0.85rem" }}>{t("minha_service_line")}</span>
           </div>
 
-          <div className="position-relative">
+          <div className="estat-talent-export-wrap" ref={exportRef}>
             <BotaoAcao
               variante="primario"
               icone="fi-br-download"
@@ -493,9 +527,9 @@ export default function Candidaturas() {
               {t("exportar")}
             </BotaoAcao>
             {mostrarExportar && (
-              <div className="estat-admin-export-menu">
-                <div className="estat-admin-export-item">Excel</div>
-                <div className="estat-admin-export-item">PDF</div>
+              <div className="estat-talent-export-menu">
+                <div className="estat-talent-export-item" onClick={handleExportarExcel}>Excel</div>
+                <div className="estat-talent-export-item">PDF</div>
               </div>
             )}
           </div>

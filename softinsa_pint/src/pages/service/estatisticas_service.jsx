@@ -10,6 +10,7 @@ import StatusCandidaturas from '../../components/StatusCandidaturas/StatusCandid
 import BadgesPorNivel from '../../components/BadgesPorNivel/BadgesPorNivel.jsx';
 import api from '../../services/api.js';
 import BotaoAcao from '../../components/ui/BotaoAcao/BotaoAcao';
+import * as XLSX from 'xlsx';
 import './estatisticas_service.css';
 
 const periodos = [
@@ -110,6 +111,31 @@ const EstatisticasService = ({ user }) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const handleExportarExcel = () => {
+        const livro = XLSX.utils.book_new();
+
+        const folhaKPIs = XLSX.utils.json_to_sheet([{
+            "Badges por Utilizador": kpis.badges_por_utilizador,
+            "Total Badges": kpis.total_badges,
+            "Total Utilizadores": kpis.total_utilizadores,
+            "Taxa de Aprovação": kpis.taxa_aprovacao
+        }]);
+
+        const folhaNiveis = XLSX.utils.json_to_sheet(dadosNiveis);
+        const folhaSemana = XLSX.utils.json_to_sheet(dadosSemana);
+        const folhaStatus = XLSX.utils.json_to_sheet(statusCandidaturas);
+        const folhaRanking = XLSX.utils.json_to_sheet(classificacao);
+
+        XLSX.utils.book_append_sheet(livro, folhaKPIs, "KPIs");
+        XLSX.utils.book_append_sheet(livro, folhaSemana, "Atribuídos por Período");
+        XLSX.utils.book_append_sheet(livro, folhaNiveis, "Badges por Nível");
+        XLSX.utils.book_append_sheet(livro, folhaStatus, "Status Candidaturas");
+        XLSX.utils.book_append_sheet(livro, folhaRanking, "Ranking");
+
+        XLSX.writeFile(livro, "Estatisticas_Service_Export.xlsx");
+        setShowExport(false);
+    };
+
     return (
         <div className="estat-service-page">
 
@@ -123,7 +149,7 @@ const EstatisticasService = ({ user }) => {
                     >
                         {t('historico_atribuidos')}
                     </button>
-                    <div className="estat-service-export-wrap" ref={exportRef}>
+                    <div className="estat-talent-export-wrap" ref={exportRef}>
                         <BotaoAcao
                             variante="primario"
                             icone="fi-br-download"
@@ -132,9 +158,9 @@ const EstatisticasService = ({ user }) => {
                             {t('exportar')}
                         </BotaoAcao>
                         {showExport && (
-                            <div className="estat-admin-export-menu">
-                                <div className="estat-admin-export-item">Excel</div>
-                                <div className="estat-admin-export-item">PDF</div>
+                            <div className="estat-talent-export-menu">
+                                <div className="estat-talent-export-item" onClick={handleExportarExcel}>Excel</div>
+                                <div className="estat-talent-export-item">PDF</div>
                             </div>
                         )}
                     </div>

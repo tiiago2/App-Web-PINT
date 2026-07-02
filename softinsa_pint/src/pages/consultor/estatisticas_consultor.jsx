@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import {
     BarChart, Bar,
     PieChart, Pie, Cell,
@@ -8,19 +8,10 @@ import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import EvolucaoModal from '../../components/EvolucaoModal.jsx';
 import api from '../../services/api.js';
 import BotaoAcao from '../../components/ui/BotaoAcao/BotaoAcao';
+import * as XLSX from 'xlsx';
 import './estatisticas_consultor.css';
 
 /* ── CORES ─────────────────────────────────────────────────── */
-const CORES_AREAS = ['#4CAF50', '#39639C', '#F44336', '#FF9800', '#9C27B0', '#00BCD4', '#795548', '#607D8B'];
-const mapaCoresAreas = {};
-let idxCorArea = 0;
-function corArea(id_area) {
-    if (!mapaCoresAreas[id_area]) {
-        mapaCoresAreas[id_area] = CORES_AREAS[idxCorArea % CORES_AREAS.length];
-        idxCorArea++;
-    }
-    return mapaCoresAreas[id_area];
-}
 
 /* Badges por nível — gradiente de azuis claros a escuros (Júnior → Líder) */
 const NIVEIS_CORES = ['#b3cde8', '#7fafd4', '#4d90bf', '#2d6da3', '#1a4d7a', '#4d90bf'];
@@ -49,11 +40,57 @@ const EstatisticasConsultor = ({ user }) => {
         taxa_aprovacao: '-'
     });
     const [dadosPie, setDadosPie] = useState([]);
+
+    const dadosPieComCores = useMemo(() => {
+        return dadosPie.map((item, i) => {
+            const hue = (i * (360 / (dadosPie.length || 1))) % 360;
+            return {
+                ...item,
+                cor: `hsl(${hue}, 70%, 55%)`
+            };
+        });
+    }, [dadosPie]);
     const [dadosNiveis, setDadosNiveis] = useState([]);
     const [classificacao, setClassificacao] = useState([]);
     const [showEvolucao, setShowEvolucao] = useState(false);
     const [carregando, setCarregando] = useState(true);
     const [mostrarExportar, setMostrarExportar] = useState(false);
+    const exportRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (exportRef.current && !exportRef.current.contains(e.target)) {
+                setMostrarExportar(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleExportarExcel = () => {
+        const livro = XLSX.utils.book_new();
+
+        const folhaKPIs = XLSX.utils.json_to_sheet([{
+            "Lugar Atual": kpi.lugar_atual,
+            "Total Badges": kpi.total_badges,
+            "Objetivos Ativos": kpi.objetivos_ativos,
+            "Taxa de Aprovação": kpi.taxa_aprovacao
+        }]);
+
+        const folhaEvolucao = XLSX.utils.json_to_sheet(dadosBar);
+        const folhaPie = XLSX.utils.json_to_sheet(dadosPie);
+        const folhaNiveis = XLSX.utils.json_to_sheet(dadosNiveis);
+        const folhaRanking = XLSX.utils.json_to_sheet(classificacao);
+
+        XLSX.utils.book_append_sheet(livro, folhaKPIs, "KPIs");
+        XLSX.utils.book_append_sheet(livro, folhaEvolucao, "Evolução");
+        XLSX.utils.book_append_sheet(livro, folhaPie, "Conquistados Mês");
+        XLSX.utils.book_append_sheet(livro, folhaNiveis, "Badges por Nível");
+        XLSX.utils.book_append_sheet(livro, folhaRanking, "Ranking");
+
+        XLSX.writeFile(livro, "Estatisticas_Consultor_Export.xlsx");
+        setMostrarExportar(false);
+    };
 
     // ── Carregar KPIs, conquistados-mês, badges-nível e ranking (uma vez) ──
     useEffect(() => {
@@ -67,7 +104,7 @@ const EstatisticasConsultor = ({ user }) => {
                 ]);
 
                 setKpi(resKpi.data || {});
-                setDadosPie((resPie.data || []).map(a => ({ ...a, cor: corArea(a.ID_Area) })));
+                setDadosPie(resPie.data || []);
                 setDadosNiveis((resNiveis.data || []).map(n => ({ ...n, cor: corNivel(n.ID_Nivel) })));
                 setClassificacao(resRanking.data || []);
             } catch (erro) {
@@ -109,7 +146,7 @@ const EstatisticasConsultor = ({ user }) => {
             {/* ── CABEÇALHO ── */}
             <div className="estat-header">
                 <h1 className="texto-titulo-principal m-0">Estatísticas</h1>
-                <div className="position-relative">
+                <div className="estat-talent-export-wrap" ref={exportRef}>
                     <BotaoAcao
                         variante="primario"
                         icone="fi-br-download"
@@ -118,9 +155,9 @@ const EstatisticasConsultor = ({ user }) => {
                         Exportar
                     </BotaoAcao>
                     {mostrarExportar && (
-                        <div className="estat-admin-export-menu">
-                            <div className="estat-admin-export-item">Excel</div>
-                            <div className="estat-admin-export-item">PDF</div>
+                        <div className="estat-talent-export-menu">
+                            <div className="estat-talent-export-item" onClick={handleExportarExcel}>Excel</div>
+                            <div className="estat-talent-export-item">PDF</div>
                         </div>
                     )}
                 </div>
@@ -197,10 +234,10 @@ const EstatisticasConsultor = ({ user }) => {
                                     {/* Donut com total no centro */}
                                     <div className="estat-donut-container">
                                         <PieChart width={160} height={160}>
-                                            <Pie data={dadosPie} cx="50%" cy="50%"
+                                            <Pie data={dadosPieComCores} cx="50%" cy="50%"
                                                 innerRadius={48} outerRadius={72}
                                                 dataKey="total_badges" strokeWidth={2} stroke="#fff" paddingAngle={2}>
-                                                {dadosPie.map((e, i) => <Cell key={i} fill={e.cor} />)}
+                                                {dadosPieComCores.map((e, i) => <Cell key={i} fill={e.cor} />)}
                                             </Pie>
                                             <Tooltip contentStyle={TIP} formatter={(v, n) => [`${v}`, n]} />
                                         </PieChart>
@@ -212,7 +249,7 @@ const EstatisticasConsultor = ({ user }) => {
                                     </div>
                                     {/* Legenda com nº de badges */}
                                     <div className="estat-legenda" style={{ flex: 1, minWidth: 0 }}>
-                                        {dadosPie.map((e, i) => (
+                                        {dadosPieComCores.map((e, i) => (
                                             <div key={i} className="estat-legenda-item" style={{ justifyContent: 'space-between' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                                                     <span className="estat-legenda-dot" style={{ backgroundColor: e.cor, flexShrink: 0 }} />
@@ -221,7 +258,7 @@ const EstatisticasConsultor = ({ user }) => {
                                                 <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--fontes)', marginLeft: '8px', flexShrink: 0 }}>{e.total_badges}</span>
                                             </div>
                                         ))}
-                                        {dadosPie.length === 0 && (
+                                        {dadosPieComCores.length === 0 && (
                                             <span style={{ fontSize: '11px', color: '#8fa3b8' }}>Sem conquistas neste mês.</span>
                                         )}
                                     </div>

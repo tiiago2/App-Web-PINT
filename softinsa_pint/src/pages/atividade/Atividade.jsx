@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
+import * as XLSX from 'xlsx';
 import BarraPesquisa from "../../components/ui/BarraPesquisa/BarraPesquisa";
 import "./Atividade.css";
 import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
@@ -155,7 +156,26 @@ export default function Atividade() {
   const orderOfGroups = ["hoje", "ontem", "esta_semana", "mais_antigo"];
   const sortedGroupKeys = Object.keys(groupedActivities).sort(
     (a, b) => orderOfGroups.indexOf(a) - orderOfGroups.indexOf(b)
-  );  return (
+  );
+
+  const handleExportarExcel = () => {
+    const livro = XLSX.utils.book_new();
+
+    const dadosExportar = filteredActivities.map(a => ({
+      "Utilizador": a.user,
+      "Item": a.item,
+      "Ação": a.action,
+      "Tipo": a.type,
+      "Data": a.timestamp.toLocaleString()
+    }));
+
+    const folha = XLSX.utils.json_to_sheet(dadosExportar);
+    XLSX.utils.book_append_sheet(livro, folha, "Atividades");
+    XLSX.writeFile(livro, "Atividades_Export.xlsx");
+    setMostrarExportar(false);
+  };
+
+  return (
     <div className="atividade-container w-100">
       <h1 className="texto-titulo-principal mb-4">{t("Atividades") || "Atividades"}</h1>
       
@@ -232,7 +252,7 @@ export default function Atividade() {
           </BotaoAcao>
           {mostrarExportar && (
             <div className="estat-talent-export-menu">
-              <div className="estat-talent-export-item">Excel</div>
+              <div className="estat-talent-export-item" onClick={handleExportarExcel}>Excel</div>
               <div className="estat-talent-export-item">PDF</div>
             </div>
           )}

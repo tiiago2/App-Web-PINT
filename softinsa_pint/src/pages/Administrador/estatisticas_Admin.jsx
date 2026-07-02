@@ -8,6 +8,7 @@ import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import BadgesPorNivel from '../../components/BadgesPorNivel/BadgesPorNivel.jsx';
 import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
 import api from '../../services/api.js';
+import * as XLSX from 'xlsx';
 import './estatisticas_Admin.css';
 
 const TIP = {
@@ -92,6 +93,38 @@ const EstatisticasAdmin = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const handleExportarExcel = () => {
+            // 1. Criar um novo livro de Excel vazio
+            const livro = XLSX.utils.book_new();
+    
+            // 2. Transformar os nossos arrays do React em Folhas de Excel
+            const folhaRanking = XLSX.utils.json_to_sheet(classificacao);
+            const folhaLearningPaths = XLSX.utils.json_to_sheet(learningPaths);
+            const folhaAtribuidos = XLSX.utils.json_to_sheet(dadosPie);
+            const folhaDistribuicao = XLSX.utils.json_to_sheet(dadosNiveis);
+    
+            // Para os KPIs (como são um objeto e não um array, transformamos num array de 1 item)
+            const folhaKPIs = XLSX.utils.json_to_sheet([{
+                "Total de Badges": kpis.total_badges,
+                "Total de Utilizadores": kpis.total_utilizadores,
+                "Badges por Utilizador": kpis.badges_por_utilizador,
+                "Taxa de Aprovação": kpis.taxa_aprovacao
+            }]);
+    
+            // 3. Adicionar as folhas ao livro (dando o nome a cada aba)
+            XLSX.utils.book_append_sheet(livro, folhaKPIs, "Resumo KPIs");
+            XLSX.utils.book_append_sheet(livro, folhaRanking, "Ranking");
+            XLSX.utils.book_append_sheet(livro, folhaLearningPaths, "Learnig Paths");
+            XLSX.utils.book_append_sheet(livro, folhaAtribuidos, "Atribuídos este mês");
+            XLSX.utils.book_append_sheet(livro, folhaDistribuicao, "Distribuição de níveis");
+    
+            // 4. Guardar e forçar download
+            XLSX.writeFile(livro, "Estatisticas_Softinsa_Julho_2026.xlsx");
+    
+            // Fecha o menu de exportação
+            setShowExport(false);
+        };
+
     const totalAtribuidos = dadosPieComCores.reduce((s, x) => s + x.total_badges, 0);
 
     return (
@@ -117,7 +150,7 @@ const EstatisticasAdmin = () => {
                         </BotaoAcao>
                         {showExport && (
                             <div className="estat-admin-export-menu">
-                                <div className="estat-admin-export-item">Excel</div>
+                                <div className="estat-admin-export-item" onClick={handleExportarExcel}>Excel</div>
                                 <div className="estat-admin-export-item">PDF</div>
                             </div>
                         )}

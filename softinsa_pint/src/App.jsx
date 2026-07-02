@@ -29,6 +29,7 @@ import Atividade from "./pages/atividade/Atividade.jsx";
 import Candidaturas from "./pages/candidaturas/Candidaturas.jsx";
 import ModalConfirmacao from "./components/ui/ModalConfirmacao/ModalConfirmacao";
 import LoginPage from "./pages/auth/LoginPage.jsx";
+import EsqueciPasswordPage from "./pages/auth/EsqueciPasswordPage.jsx";
 import Utilizadores from "./pages/utilizadores/Utilizadores.jsx";
 import LanguageSelector from "./components/ui/LanguageSelector/LanguageSelector.jsx";
 import BadgePublico from "./pages/public/BadgePublico.jsx";
@@ -38,10 +39,11 @@ import softinsa_logo from "./assets/logotipo_softinsa.png";
 import user_logo from "./assets/utilizador.png";
 
 function App() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const isRotaPublicaBadge = location.pathname.startsWith("/badges/");
+  const isRotaPublicaAuth = location.pathname === "/login" || location.pathname === "/esqueci-password";
 
   // === ESTADOS GLOBAIS DA APP ===
   const [loading, setLoading] = useState(true);
@@ -58,12 +60,12 @@ function App() {
     if (
       !loading &&
       !user.cargo &&
-      location.pathname !== "/login" &&
+      !isRotaPublicaAuth &&
       !isRotaPublicaBadge
     ) {
       navigate("/login", { replace: true });
     }
-  }, [loading, user.cargo, location.pathname, isRotaPublicaBadge, navigate]);
+  }, [loading, user.cargo, location.pathname, isRotaPublicaAuth, isRotaPublicaBadge, navigate]);
 
   // === REFS E ESTADOS PARA MENUS, NOTIFICAÇÕES E AVISOS ===
   const bellRef = useRef(null);
@@ -322,6 +324,11 @@ function App() {
         ultimoLogin: new Date()
       });
     }} />
+  }
+
+  if (location.pathname === "/esqueci-password") {
+    if (user.cargo) return <Navigate to="/home" replace />;
+    return <EsqueciPasswordPage />;
   }
 
   // === ESTRUTURA PRINCIPAL (LAYOUT) ===

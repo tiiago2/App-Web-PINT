@@ -13,6 +13,7 @@ const rotas_estatisticas_talent = require('./estatisticas_talent_routes');
 const rotas_estatisticas_admin = require('./estatisticas_admin_routes');
 const rotas_atividade = require('./atividade_routes');
 const rotas_home_admin = require('./homeadmin_routes');
+const rotas_home_service = require('./homeservice_routes');
 const rotas_utilizadores = require('./utilizador_routes');
 const rotas_profile = require('./profile_routes');
 
@@ -25,8 +26,10 @@ router.use("/estatisticasadmin", rotas_estatisticas_admin);
 router.use("/atividade", rotas_atividade);
 router.use("/profile", rotas_profile);
 router.use("/homeadmin", rotas_home_admin);
+router.use("/homeservice", rotas_home_service);
 router.use("/utilizadores", rotas_utilizadores);
 router.post("/login", controller_login.login);
+router.post("/esqueci-password", controller_login.esqueciPassword);
 router.get("/getuser", controller_login.getUser);
 router.use("/commun", rotas_comuns);
 

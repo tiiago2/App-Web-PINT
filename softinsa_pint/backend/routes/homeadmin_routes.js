@@ -4,5 +4,6 @@ const authMiddleware = require('../middleware/auth_middleware');
 const Controller = require('../controllers/homeadmin_controller');
 
 router.get("/stats", authMiddleware, Controller.getStats);
+router.get("/ranking", authMiddleware, Controller.getRanking);
 
 module.exports = router;

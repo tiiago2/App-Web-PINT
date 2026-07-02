@@ -68,34 +68,7 @@ const dados_atividade = [
   },
 ];
 
-const lista_classificacao = [
-  {
-    pos: 1,
-    nome: "João Silva",
-    area: "Hybrid Systems",
-    pontos: "374 957",
-    cor: "#FFD700",
-    classe: "ouro",
-  },
-  {
-    pos: 2,
-    nome: "Maria Ana",
-    area: "Mobile Solutions",
-    pontos: "310 500",
-    cor: "#C0C0C0",
-    classe: "prata",
-  },
-  {
-    pos: 3,
-    nome: "Rui Sousa",
-    area: "Enterprise Apps",
-    pontos: "295 000",
-    cor: "#CD7F32",
-    classe: "bronze",
-  },
-  { pos: 4, nome: "Afonso Moreira", area: "Hybrid System", pontos: "37 455" },
-  { pos: 5, nome: "Ana Beatriz", area: "Cloud", pontos: "35 200" },
-];
+
 
 function AcaoRapida({ cor, icone, texto, onClick }) {
   return (
@@ -160,6 +133,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
     badgesPorUtilizador: 0,
     badgesAtribuidos: 0
   });
+  const [classificacao, setClassificacao] = useState([]);
 
   useEffect(() => {
     const carregarStats = async () => {
@@ -170,6 +144,21 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
         }
       } catch (error) {
         console.error("Erro ao carregar estatísticas do admin:", error);
+      }
+    };
+
+    const carregarRanking = async () => {
+      if (!localStorage.getItem('token_softinsa')) {
+        setClassificacao([]);
+        return;
+      }
+
+      try {
+        const res = await api.get("/homeadmin/ranking");
+        setClassificacao(Array.isArray(res.data) ? res.data : []);
+      } catch (error) {
+        console.error("Erro ao carregar ranking do admin:", error);
+        setClassificacao([]);
       }
     };
     const getGrafCandidaturas = async () => {
@@ -201,6 +190,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
 
     getGrafCandidaturas();
     carregarStats();
+    carregarRanking();
   }, []);
 
   return (
@@ -385,7 +375,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
             className="flex-grow-1"
             style={{ overflow: "hidden", minHeight: 0 }}
           >
-            <ClassificacaoModal classificacao={lista_classificacao} fullHeight={true} />
+            <ClassificacaoModal classificacao={classificacao} fullHeight={true} />
           </div>
         </div>
 

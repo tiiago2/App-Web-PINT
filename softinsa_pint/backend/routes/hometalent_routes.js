@@ -6,5 +6,6 @@ const Controller = require('../controllers/hometalent_controller.js');
 
 router.get("/candidaturas", authMiddleware, Controller.getCandidaturas);
 router.get("/dados4month", authMiddleware, Controller.getDados4Month);
+router.get("/ranking", authMiddleware, Controller.getRanking);
 
 module.exports = router;

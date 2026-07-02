@@ -39,6 +39,7 @@ const HomeTalent = ({ user, saudacao }) => {
         { periodo: null, media_badges: null, pontos: null, atribuicoes: null },
         { periodo: null, media_badges: null, pontos: null, atribuicoes: null }
     ]);
+    const [classificacao, setClassificacao] = useState([]);
 
     useEffect(() => {
         const buscarCandidaturas = async () => {
@@ -106,12 +107,28 @@ const HomeTalent = ({ user, saudacao }) => {
             }
         }
 
+        const carregarRanking = async () => {
+            if (!localStorage.getItem('token_softinsa')) {
+                setClassificacao([]);
+                return;
+            }
+
+            try {
+                const res = await api.get('/hometalent/ranking');
+                setClassificacao(Array.isArray(res.data) ? res.data : []);
+            } catch (erro) {
+                console.error('Erro ao buscar ranking do talent:', erro);
+                setClassificacao([]);
+            }
+        }
+
         const carregarDados = async () => {
             setLoadingGraficos(true);
             await Promise.all([
                 buscarCandidaturas(),
                 getGrafCandidaturas(),
-                getDados_Linhas()
+                getDados_Linhas(),
+                carregarRanking()
             ]);
             setLoadingGraficos(false);
         };
@@ -287,7 +304,7 @@ const HomeTalent = ({ user, saudacao }) => {
                     </div>
                     <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
                         <div style={{ height: '100%', overflow: 'hidden' }}>
-                            <ClassificacaoGeral user={user} />
+                            <ClassificacaoGeral user={user} classificacao={classificacao} />
                         </div>
                     </div>
                     <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>

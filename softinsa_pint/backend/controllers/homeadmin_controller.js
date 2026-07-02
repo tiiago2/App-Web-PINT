@@ -1,5 +1,6 @@
 const { Utilizador, RegistoBadges, Badges } = require("../models");
 const { Op, fn, col, literal } = require("sequelize");
+const { calcularRanking } = require("../helpers/rankingHelper");
 
 module.exports = {
   /**
@@ -47,6 +48,20 @@ module.exports = {
     } catch (error) {
       console.error("Erro ao obter stats do admin:", error);
       return res.status(500).json({ error: "Erro ao obter estatísticas." });
+    }
+  },
+
+  /**
+   * GET /api/homeadmin/ranking
+   * Devolve a classificação geral dos consultores.
+   */
+  async getRanking(req, res) {
+    try {
+      const ranking = await calcularRanking();
+      return res.status(200).json(ranking);
+    } catch (error) {
+      console.error("Erro ao buscar ranking do admin:", error);
+      return res.status(500).json({ error: "Erro ao buscar ranking." });
     }
   },
 };

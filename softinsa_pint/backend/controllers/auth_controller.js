@@ -44,6 +44,42 @@ module.exports = {
             return res.status(500).json({ error: "Erro no servidor." });
         }
     },
+    async esqueciPassword(req, res) {
+        try {
+            const { email, password, confirmPassword } = req.body;
+
+            if (!email || !password || !confirmPassword) {
+                return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+            }
+
+            const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#^~_\-+=])[A-Za-z\d@$!%*?&.#^~_\-+=]{8,}$/;
+            if (!regexPassword.test(password)) {
+                return res.status(400).json({ error: "A palavra-passe não cumpre os requisitos mínimos." });
+            }
+
+            if (password !== confirmPassword) {
+                return res.status(400).json({ error: "As palavras-passe não coincidem." });
+            }
+
+            const user = await Utilizador.findOne({ where: { email: email } });
+            if (!user) {
+                return res.status(404).json({ error: "Email não encontrado." });
+            }
+
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            await user.update({
+                password: hashedPassword,
+                update_user: new Date()
+            });
+
+            return res.status(200).json({ message: "Palavra-passe alterada com sucesso." });
+        } catch (error) {
+            console.error("Erro ao recuperar password:", error);
+            return res.status(500).json({ error: "Erro no servidor." });
+        }
+    },
+
     async getUser(req, res) {
         try {
             const { id } = req.query;

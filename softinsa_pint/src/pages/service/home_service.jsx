@@ -32,10 +32,12 @@ const HomeService = ({ user, saudacao }) => {
     
     const [infoCandidaturas, setInfoCandidaturas] = useState([]);
     const [dados_grafico_candidaturas, setDados_grafico_candidaturas] = useState([
-        { nome: 'aceites', quantidade: null, cor: '#3bb413' },    
+        { nome: 'aceites', quantidade: null, cor: '#3bb413' },
         { nome: 'rejeitadas', quantidade: null, cor: '#de2121' }
     ]);
-    
+    const [classificacaoGeral, setClassificacaoGeral] = useState([]);
+    const [classificacaoServiceLine, setClassificacaoServiceLine] = useState([]);
+
         useEffect(() => {
             const buscarCandidaturas = async () => {
                 if (!localStorage.getItem('token_softinsa')) {
@@ -81,8 +83,33 @@ const HomeService = ({ user, saudacao }) => {
                 }
             }
     
+        const carregarRankings = async () => {
+            if (!localStorage.getItem('token_softinsa')) {
+                setClassificacaoGeral([]);
+                setClassificacaoServiceLine([]);
+                return;
+            }
+
+            try {
+                const resGeral = await api.get('/homeservice/ranking-geral');
+                setClassificacaoGeral(Array.isArray(resGeral.data) ? resGeral.data : []);
+            } catch (erro) {
+                console.error('Erro ao buscar ranking geral do service line leader:', erro);
+                setClassificacaoGeral([]);
+            }
+
+            try {
+                const resServiceLine = await api.get('/homeservice/ranking-service-line');
+                setClassificacaoServiceLine(Array.isArray(resServiceLine.data) ? resServiceLine.data : []);
+            } catch (erro) {
+                console.error('Erro ao buscar ranking da service line:', erro);
+                setClassificacaoServiceLine([]);
+            }
+        }
+
             buscarCandidaturas();
             getGrafCandidaturas();
+            carregarRankings();
         }, []);
 
     const RenderCandidaturas = () => {
@@ -168,15 +195,14 @@ const HomeService = ({ user, saudacao }) => {
                     </div>
                     <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
                         <div style={{ height: '100%', overflow: 'hidden' }}>
-                            <ClassificacaoGeral user={user}/>
+                            <ClassificacaoGeral user={user} classificacao={classificacaoGeral}/>
                         </div>
                     </div>
                     <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
                         <div style={{ height: '100%', overflow: 'hidden' }}>
-                            <ClassificacaoGeral 
+                            <ClassificacaoGeral
                                 user={user}
-                                filtroInicial="service_line"
-                                filtroValorInicial="Hybrid Systems"
+                                classificacao={classificacaoServiceLine}
                                 titulo={t('service_line')}
                             />
                         </div>

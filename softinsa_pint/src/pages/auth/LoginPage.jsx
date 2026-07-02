@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
 import api from '../../services/api.js';
 import AuthTopBar from "../../components/Auth/AuthTopBar/AuthTopBar.jsx";
 import AuthArtPanel from "../../components/Auth/AuthArtPanel/AuthArtPanel.jsx";
@@ -7,6 +8,9 @@ import "./LoginPage.css";
 
 function LoginPage({ onLoginSuccess }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const passwordResetSuccess = location.state?.passwordResetSuccess || false;
 
   const [etapa, setEtapa] = useState("login");
   const [email, setEmail] = useState("");
@@ -87,6 +91,13 @@ function LoginPage({ onLoginSuccess }) {
               <p className="texto-auth-subtitulo login-page-descricao">{t("auth_login_subtitulo")}</p>
             </div>
 
+            {passwordResetSuccess && (
+              <div className="login-feedback login-feedback-sucesso">
+                <i className="fi fi-br-check"></i>
+                <span className="texto-auth-feedback">{t("auth_login_sucesso_password_reset")}</span>
+              </div>
+            )}
+
             <form className="login-form" onSubmit={handleSubmit}>
               <div className="login-form-grupo">
                 <label className="texto-auth-label login-form-label">{t("auth_login_email")}</label>
@@ -131,7 +142,13 @@ function LoginPage({ onLoginSuccess }) {
                   {estadoLogin === "loading" && <span className="login-botao-spinner" />}
                   <span>{estadoLogin === "loading" ? t("auth_login_loading") : t("auth_login_entrar")}</span>
                 </button>
-                <button type="button" className="login-link-secundario texto-auth-link">{t("auth_login_esqueci_password")}</button>
+                <button
+                  type="button"
+                  className="login-link-secundario texto-auth-link"
+                  onClick={() => navigate("/esqueci-password")}
+                >
+                  {t("auth_login_esqueci_password")}
+                </button>
               </div>
             </form>
           </section>

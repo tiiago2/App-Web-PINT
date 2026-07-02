@@ -9,6 +9,7 @@ const {
 } = require("../models");
 const registo_badges = require("../models/registo_badges");
 const { Op } = require('sequelize');
+const { calcularRanking } = require("../helpers/rankingHelper");
 
 module.exports = {
     async getCandidaturas(req, res) {
@@ -124,6 +125,16 @@ module.exports = {
     } catch (error) {
         console.error("Erro ao gerar gráfico de linhas:", error);
         return res.status(500).json({ error: "Ocorreu um erro ao processar os dados do gráfico." });
+    }
+},
+
+async getRanking(req, res) {
+    try {
+        const ranking = await calcularRanking();
+        return res.status(200).json(ranking);
+    } catch (error) {
+        console.error("Erro ao buscar ranking do talent:", error);
+        return res.status(500).json({ error: "Erro ao buscar ranking." });
     }
 }
 };

@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
-const AtividadeController = require('../controllers/atividade.controller');
+const AtividadeController = require('../controllers/atividade_controller');
 
 // Definição da rota para obter atividades
-router.get("/", AtividadeController.getAtividade);
+router.get("/get", AtividadeController.getAtividade);
 
 module.exports = router;

@@ -10,15 +10,12 @@ import { BotaoVerMais, BotaoAceitar, BotaoRejeitar, GraficoCandidaturas } from '
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, Label, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 const atividadeRecente = [
-    { icone: "fi-br-check", cor: "text-success", texto: "Low code concluído", tempo: "Há 2 horas", expirado: false },
-    { icone: "fi-br-badge", cor: "text-warning", textoNegrito: "Administrador1", texto: "atualizou Low Code", tempo: "Há 2 horas", expirado: false },
-    { icone: "fi-br-document", cor: "text-primary", textoNegrito: "Candidataste-te ao Low Code", tempo: "Há 2 horas", expirado: false },
-    { icone: "fi-br-cross", cor: "text-danger", texto: "Low Code expirado", tempo: "Há 2 horas", expirado: true },
-    { icone: "fi-br-check", cor: "text-success", texto: "Low Code concluído", tempo: "Há 2 horas", expirado: false },
-    { icone: "fi-br-cross", cor: "text-danger", texto: "Low Code expirado", tempo: "Há 2 horas", expirado: true },
-    { icone: "fi-br-document", cor: "text-primary", textoNegrito: "Candidataste-te ao Low Code", tempo: "Há 2 horas", expirado: false },
-    { icone: "fi-br-check", cor: "text-success", texto: "Low Code concluído", tempo: "Há 2 horas", expirado: false },
-    { icone: "fi-br-badge", cor: "text-warning", textoNegrito: "Administrador1", texto: "atualizou Low Code", tempo: "Há 2 horas", expirado: false }
+    { tipo_notificacao: 1, texto: "Low code concluído", tempo: new Date(Date.now() - 30000).toISOString() }, // 30s atrás -> Agora mesmo
+    { tipo_notificacao: 2, textoNegrito: "Administrador1", texto: "atualizou Low Code", tempo: new Date(Date.now() - 15 * 60000).toISOString() }, // Há 15 min
+    { tipo_notificacao: 3, textoNegrito: "Candidataste-te ao Low Code", tempo: new Date(Date.now() - 3 * 3600000).toISOString() }, // Há 3 horas
+    { tipo_notificacao: 4, texto: "Candidatura rejeitada", tempo: new Date(Date.now() - 2 * 86400000).toISOString() }, // Há 2 dias
+    { tipo_notificacao: 5, texto: "Bem-vindo à plataforma", tempo: new Date(Date.now() - 40 * 86400000).toISOString() }, // Há 1 mês
+    { tipo_notificacao: 1, texto: "React Fundamentals concluído", tempo: new Date(Date.now() - 400 * 86400000).toISOString() } // Há 1 ano
 ];
 //---------------------------------------------------------------------------------------------------------------------------------
 

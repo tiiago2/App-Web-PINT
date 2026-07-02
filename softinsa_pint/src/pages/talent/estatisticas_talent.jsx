@@ -147,11 +147,11 @@ const EstatisticasTalent = () => {
             doc.setFontSize(14);
             doc.setTextColor(40);
             doc.text("Atribuídos do Mês (Por Área)", 40, posiçãoY_Atual);
-            
+
             autoTable(doc, {
                 startY: posiçãoY_Atual + 10,
                 head: [["Área", "Total Badges"]],
-                body: dadosPie.length > 0 
+                body: dadosPie.length > 0
                     ? dadosPie.map(d => [d.Nome_Area || "N/A", d.total_badges || 0])
                     : [["Sem dados neste mês", "-"]],
                 theme: 'striped',
@@ -163,7 +163,7 @@ const EstatisticasTalent = () => {
 
             doc.setFontSize(14);
             doc.text("Distribuição por Níveis", 40, posiçãoY_Atual);
-            
+
             autoTable(doc, {
                 startY: posiçãoY_Atual + 10,
                 head: [["Nível", "Quantidade (%)"]],
@@ -181,7 +181,7 @@ const EstatisticasTalent = () => {
 
             doc.setFontSize(14);
             doc.text("Learning Paths Ativos", 40, posiçãoY_Atual);
-            
+
             autoTable(doc, {
                 startY: posiçãoY_Atual + 10,
                 head: [["Nome da Learning Path", "Total Badges"]],
@@ -199,7 +199,7 @@ const EstatisticasTalent = () => {
 
             doc.setFontSize(14);
             doc.text("Ranking Geral de Utilizadores", 40, posiçãoY_Atual);
-            
+
             autoTable(doc, {
                 startY: posiçãoY_Atual + 10,
                 head: [["#", "Nome", "Total Pontos"]],
@@ -217,6 +217,24 @@ const EstatisticasTalent = () => {
         } catch (erro) {
             console.error("Erro CRÍTICO ao gerar o PDF:", erro);
             alert("Erro ao gerar o PDF. Vê a consola para detalhes.");
+        }
+    };
+
+    const handleAbrirMenuExportacao = async () => {
+        try {
+            // Verifica permissão de exportação
+            const temPermissao = await api.get('/estatisticastalent/permissons');
+
+            if (temPermissao.data.toggle) {
+                setShowExport(estadoAtual => !estadoAtual);
+            } else {
+                setShowExport(false);
+                alert("Não tens permissões para exportar estes dados.");
+            }
+        } catch (erro) {
+            console.error("Erro ao verificar permissão:", erro);
+            // Fallback
+            setShowExport(estadoAtual => !estadoAtual);
         }
     };
 
@@ -239,7 +257,7 @@ const EstatisticasTalent = () => {
                         <BotaoAcao
                             variante="primario"
                             icone="fi-br-download"
-                            onClick={() => setShowExport(o => !o)}
+                            onClick={handleAbrirMenuExportacao}
                         >
                             {t('exportar')}
                         </BotaoAcao>

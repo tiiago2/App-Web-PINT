@@ -9,5 +9,6 @@ router.get("/badges-por-nivel", authMiddleware, Controller.getBadgesPorNivel);
 router.get("/badges-atribuidos/:periodo", authMiddleware, Controller.getBadgesAtribuidos);
 router.get("/status-candidaturas", authMiddleware, Controller.getStatusCandidaturas);
 router.get("/ranking", authMiddleware, Controller.getRankingServiceLine);
+router.get("/permissons", authMiddleware, Controller.getPermissao);
 
 module.exports = router;

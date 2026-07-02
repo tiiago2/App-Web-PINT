@@ -5,7 +5,8 @@ const {
   Submissoes,
   RegistoBadges,
   Objetivos,
-  Nivel
+  Nivel,
+  Permissoes
 } = require("../models");
 
 const { Op } = require("sequelize");
@@ -317,6 +318,22 @@ module.exports = {
     } catch (error) {
       console.error("Erro ao buscar badges por nível:", error);
       return res.status(500).json({ error: "Erro ao buscar badges por nível." });
+    }
+  },
+
+  async getPermissao(req, res) {
+    try {
+      const permissao = await Permissoes.findOne({
+        where: { descricao_permissao: "Download de PDFs" },
+        attributes: ['toggle']
+      });
+      if (!permissao) {
+        return res.status(404).json({ error: "Permissão não encontrada." });
+      }
+      return res.status(200).json(permissao);
+    } catch (error) {
+      console.error("Erro ao buscar permissões:", error);
+      return res.status(500).json({ error: "Erro ao buscar permissões." });
     }
   }
 };

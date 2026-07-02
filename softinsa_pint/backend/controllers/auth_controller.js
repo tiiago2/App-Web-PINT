@@ -1,5 +1,6 @@
 const { Utilizador, Role } = require('../models');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 module.exports = {
     // auth_controller.js (No Backend)
@@ -14,7 +15,12 @@ module.exports = {
             });
 
             // 2. Verifica a password (idealmente com bcrypt)
-            if (!user || user.password !== password) {
+            if (!user) {
+                return res.status(401).json({ error: "Email ou password incorretos!" });
+            }
+
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
                 return res.status(401).json({ error: "Email ou password incorretos!" });
             }
 

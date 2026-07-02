@@ -6,11 +6,13 @@ const {
   Badges,
   Nivel,
   RegistoBadges,
-  Submissoes
+  Submissoes,
+  Permissoes
 } = require("../models");
 
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const { calcularRanking } = require("../helpers/rankingHelper");
+const permissoes = require("../models/permissoes");
 
 // ── Helpers de data ─────────────────────────────────────────────
 function inicioMes() {
@@ -224,6 +226,21 @@ module.exports = {
     } catch (error) {
       console.error("Erro ao buscar ranking do talent manager:", error);
       return res.status(500).json({ error: "Erro ao buscar ranking do talent manager." });
+    }
+  },
+  async getPermissao(req, res) {
+    try {
+      const permissao = await Permissoes.findOne({ 
+        where: { descricao_permissao: "Exportação de Dados" },
+        attributes: ['toggle'] 
+      });
+      if (!permissao) {
+        return res.status(404).json({ error: "Permissão não encontrada." });
+      }
+      return res.status(200).json(permissao);
+    } catch (error) {
+      console.error("Erro ao buscar permissões:", error);
+      return res.status(500).json({ error: "Erro ao buscar permissões." });
     }
   }
 };

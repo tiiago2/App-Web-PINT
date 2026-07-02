@@ -160,6 +160,24 @@ export default function Atividade() {
     (a, b) => orderOfGroups.indexOf(a) - orderOfGroups.indexOf(b)
   );
 
+  const handleAbrirMenuExportacao = async () => {
+    try {
+        // FAZER_API_PARA_RECEBER_TOGGLE
+        const response = await api.get('/api/permissoes/exportar'); 
+        
+        if (response.data.toggle) {
+            setMostrarExportar(estadoAtual => !estadoAtual);
+        } else {
+            setMostrarExportar(false);
+            alert("Não tens permissões para exportar estes dados.");
+        }
+    } catch (erro) {
+        console.error("Erro ao verificar permissão:", erro);
+        // Fallback
+        setMostrarExportar(estadoAtual => !estadoAtual);
+    }
+  };
+
   const handleExportarExcel = () => {
     const livro = XLSX.utils.book_new();
 
@@ -288,7 +306,7 @@ export default function Atividade() {
           <BotaoAcao
             variante="primario"
             icone="fi-br-download"
-            onClick={() => setMostrarExportar(o => !o)}
+            onClick={handleAbrirMenuExportacao}
           >
             {t("exportar")}
           </BotaoAcao>

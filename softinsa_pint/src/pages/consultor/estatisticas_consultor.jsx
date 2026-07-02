@@ -69,6 +69,24 @@ const EstatisticasConsultor = ({ user }) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const handleAbrirMenuExportacao = async () => {
+        try {
+            // Verifica permissão de exportação
+            const response = await api.get('/estatisticasconsultor/permissons'); 
+            
+            if (response.data.toggle) {
+                setMostrarExportar(estadoAtual => !estadoAtual);
+            } else {
+                setMostrarExportar(false);
+                alert("Não tens permissões para exportar estes dados.");
+            }
+        } catch (erro) {
+            console.error("Erro ao verificar permissão:", erro);
+            // Fallback
+            setMostrarExportar(estadoAtual => !estadoAtual);
+        }
+    };
+
     const handleExportarExcel = () => {
         const livro = XLSX.utils.book_new();
 
@@ -245,7 +263,7 @@ const EstatisticasConsultor = ({ user }) => {
                     <BotaoAcao
                         variante="primario"
                         icone="fi-br-download"
-                        onClick={() => setMostrarExportar(o => !o)}
+                        onClick={handleAbrirMenuExportacao}
                     >
                         Exportar
                     </BotaoAcao>

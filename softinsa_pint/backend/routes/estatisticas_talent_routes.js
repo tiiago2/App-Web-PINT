@@ -9,5 +9,6 @@ router.get("/badges-por-nivel", authMiddleware, Controller.getBadgesPorNivel);
 router.get("/atribuidos-mes", authMiddleware, Controller.getAtribuidosMes);
 router.get("/learning-paths", authMiddleware, Controller.getLearningPaths);
 router.get("/ranking", authMiddleware, Controller.getRanking);
+router.get("/permissons", authMiddleware, Controller.getPermissao);
 
 module.exports = router;

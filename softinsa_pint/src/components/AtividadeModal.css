@@ -91,10 +91,14 @@
 .ativ-icon-wrap.danger  { background-color: #FEE8E8; color: #dc3545; }
 .ativ-icon-wrap.primary { background-color: #E8EFF8; color: #39639C; }
 .ativ-icon-wrap.warning { background-color: #FFF8E1; color: #E6A817; }
+.ativ-icon-wrap.info    { background-color: #f8f9fa; color: #17a2b8; }
+.ativ-icon-wrap.fontes  { background-color: #f0f4f8; color: var(--fontes); }
+
+/* Classes utilitárias de texto customizadas caso existam aplicadas noutros locais */
+.text-fontes { color: var(--fontes) !important; }
 
 /* Texto + tempo */
 .ativ-texto { flex: 1; font-size: 0.88rem; color: #374957; }
-.ativ-texto.expirado { text-decoration: line-through; color: #aaa; }
 
 .ativ-tempo {
     font-size: 0.72rem;
@@ -128,11 +132,6 @@
 
 .ativ-widget-item:hover {
     background-color: rgba(57, 99, 156, 0.04);
-}
-
-.ativ-widget-item.expirado .texto {
-    text-decoration: line-through;
-    color: #aab7c4;
 }
 
 .ativ-widget-texto {

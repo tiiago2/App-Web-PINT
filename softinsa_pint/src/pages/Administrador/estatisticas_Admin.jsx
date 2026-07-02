@@ -95,6 +95,7 @@ const EstatisticasAdmin = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+
     const handleExportarExcel = () => {
         // 1. Criar um novo livro de Excel vazio
         const livro = XLSX.utils.book_new();

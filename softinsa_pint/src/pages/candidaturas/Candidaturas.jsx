@@ -435,6 +435,24 @@ export default function Candidaturas() {
     setToastMessage(t("candidatura_rejeitada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
   };
 
+  const handleAbrirMenuExportacao = async () => {
+    try {
+        // FAZER_API_PARA_RECEBER_TOGGLE
+        const response = await api.get('/api/permissoes/exportar'); 
+        
+        if (response.data.toggle) {
+            setMostrarExportar(estadoAtual => !estadoAtual);
+        } else {
+            setMostrarExportar(false);
+            alert("Não tens permissões para exportar estes dados.");
+        }
+    } catch (erro) {
+        console.error("Erro ao verificar permissão:", erro);
+        // Fallback
+        setMostrarExportar(estadoAtual => !estadoAtual);
+    }
+  };
+
   const handleExportarExcel = () => {
     const livro = XLSX.utils.book_new();
 
@@ -564,7 +582,7 @@ export default function Candidaturas() {
             <BotaoAcao
               variante="primario"
               icone="fi-br-download"
-              onClick={() => setMostrarExportar(o => !o)}
+              onClick={handleAbrirMenuExportacao}
             >
               {t("exportar")}
             </BotaoAcao>

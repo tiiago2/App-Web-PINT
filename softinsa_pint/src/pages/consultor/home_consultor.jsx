@@ -74,7 +74,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                     api.get('/homeconsultor/objetivos'),
                     api.get('/homeconsultor/progresso'),
                     api.get('/homeconsultor/ranking'),
-                    api.get('/atividade')
+                    api.get('/atividade/get')
                 ]);
 
                 setBadgesProgresso(resBadges.data || []);

@@ -39,27 +39,7 @@ export function formatarValidade(dias) {
         return "1 dia";
     }
 
-    if (diasNumericos < 30) {
-        return `${diasNumericos} dias`;
-    }
-
-    if (diasNumericos === 30) {
-        return "1 mês";
-    }
-
-    if (diasNumericos < 365) {
-        const meses = Math.round(diasNumericos / 30);
-
-        return meses === 1 ? "1 mês" : `${meses} meses`;
-    }
-
-    if (diasNumericos === 365) {
-        return "1 ano";
-    }
-
-    const anos = Math.round(diasNumericos / 365);
-
-    return anos === 1 ? "1 ano" : `${anos} anos`;
+    return `${diasNumericos} dias`;
 }
 
 export function obterUrlPublicaBadge(idBadge) {

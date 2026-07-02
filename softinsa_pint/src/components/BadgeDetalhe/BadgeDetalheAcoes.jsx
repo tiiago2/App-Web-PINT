@@ -6,6 +6,7 @@ function SecaoPaginaPublica({
     isConquistado = false,
     onVerPaginaPublica,
     onCopiarLinkPublico,
+    onPartilharLinkedIn,
 }) {
     return (
         <section className="badge-detalhe-acoes badge-detalhe-acoes--partilha">
@@ -41,6 +42,17 @@ function SecaoPaginaPublica({
                     <i className="fi fi-br-copy"></i>
                     Copiar link público
                 </button>
+
+                {isConquistado && (
+                    <button
+                        type="button"
+                        className="badge-detalhe-botao badge-detalhe-botao--linkedin"
+                        onClick={() => onPartilharLinkedIn?.(detalhe)}
+                    >
+                        <i className="fi fi-br-link-alt"></i>
+                        Partilhar no LinkedIn
+                    </button>
+                )}
             </div>
         </section>
     );
@@ -106,6 +118,7 @@ function BadgeDetalheAcoes({
     onSubmeterCandidatura,
     onVerPaginaPublica,
     onCopiarLinkPublico,
+    onPartilharLinkedIn,
 }) {
     if (!detalhe) {
         return null;
@@ -130,6 +143,7 @@ function BadgeDetalheAcoes({
                 isConquistado={isConquistado}
                 onVerPaginaPublica={onVerPaginaPublica}
                 onCopiarLinkPublico={onCopiarLinkPublico}
+                onPartilharLinkedIn={onPartilharLinkedIn}
             />
         </div>
     );

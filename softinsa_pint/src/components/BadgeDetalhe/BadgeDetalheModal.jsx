@@ -11,6 +11,7 @@ function BadgeDetalheModal({
     onSubmeterCandidatura,
     onVerPaginaPublica,
     onCopiarLinkPublico,
+    onPartilharLinkedIn,
 }) {
     if (!isOpen) {
         return null;
@@ -60,6 +61,7 @@ function BadgeDetalheModal({
                         onSubmeterCandidatura={onSubmeterCandidatura}
                         onVerPaginaPublica={onVerPaginaPublica}
                         onCopiarLinkPublico={onCopiarLinkPublico}
+                        onPartilharLinkedIn={onPartilharLinkedIn}
                     />
                 </div>
             </section>

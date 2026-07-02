@@ -18,6 +18,7 @@ const rotas_utilizadores = require('./utilizador_routes');
 const rotas_profile = require('./profile_routes');
 const rotas_defs_permissoes = require('./permissoes_def.routes');
 const rotas_rgpd = require('./rgpd.routes');
+const rotas_permissoes = require('./permissoes_routes');
 
 router.use("/hometalent", rotas_home_talent);
 router.use("/homeconsultor", rotas_home_consultor);
@@ -36,5 +37,6 @@ router.post("/login", controller_login.login);
 router.post("/esqueci-password", controller_login.esqueciPassword);
 router.get("/getuser", controller_login.getUser);
 router.use("/commun", rotas_comuns);
+router.use("/permissoes", rotas_permissoes);
 
 module.exports = router;

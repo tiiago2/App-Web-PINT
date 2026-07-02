@@ -12,8 +12,10 @@ import {
     anexarRequisitoAoBadge,
     submeterCandidaturaBadge,
     obterUrlPublicaDoBadge,
+    obterUrlPartilhaLinkedInDoBadge,
 } from "../../../services/badgeDetalheService";
 import "./GaleriaBadges.css";
+import { verificarPermissaoPartilhaLinkedIn } from "../../../services/permissoesService";
 
 function normalizarTexto(texto = "") {
     return String(texto)
@@ -156,6 +158,7 @@ function GaleriaBadges({ modo = "consultor" }) {
     const [detalheBadge, setDetalheBadge] = useState(null);
     const [isLoadingDetalheBadge, setIsLoadingDetalheBadge] = useState(false);
     const [anexoPendente, setAnexoPendente] = useState(null);
+    const [avisoPermissaoLinkedIn, setAvisoPermissaoLinkedIn] = useState(false);
 
     const opcoesFiltro = useMemo(() => {
         return {
@@ -370,6 +373,25 @@ function GaleriaBadges({ modo = "consultor" }) {
         }
     };
 
+    const handlePartilharLinkedIn = async (badgeDetalhe) => {
+        const idBadge = obterIdBadge(badgeDetalhe);
+
+        if (!idBadge) {
+            return;
+        }
+
+        const temPermissao = await verificarPermissaoPartilhaLinkedIn();
+
+        if (!temPermissao) {
+            setAvisoPermissaoLinkedIn(true);
+            return;
+        }
+
+        const urlLinkedIn = obterUrlPartilhaLinkedInDoBadge(idBadge);
+
+        window.open(urlLinkedIn, "_blank", "noopener,noreferrer");
+    };
+
     return (
         <main className="galeria-badges-page">
             <div className="galeria-badges-topo">
@@ -458,6 +480,18 @@ function GaleriaBadges({ modo = "consultor" }) {
                 onSubmeterCandidatura={handleSubmeterCandidatura}
                 onVerPaginaPublica={handleVerPaginaPublicaBadge}
                 onCopiarLinkPublico={handleCopiarLinkPublicoBadge}
+                onPartilharLinkedIn={handlePartilharLinkedIn}
+            />
+
+            <ModalConfirmacao
+                isOpen={avisoPermissaoLinkedIn}
+                onClose={() => setAvisoPermissaoLinkedIn(false)}
+                onConfirm={() => setAvisoPermissaoLinkedIn(false)}
+                titulo="Sem autorização"
+                mensagem="Não tens autorização para partilhar badges no LinkedIn. Esta permissão pode ser ativada nas definições pelo Administrador."
+                textoConfirmar="Compreendido"
+                textoCancelar="Fechar"
+                isDanger={false}
             />
 
             <ModalConfirmacao

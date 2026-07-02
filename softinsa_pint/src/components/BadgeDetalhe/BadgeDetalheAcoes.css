@@ -108,3 +108,12 @@
         width: 100%;
     }
 }
+
+.badge-detalhe-botao--linkedin {
+    background-color: #0a66c2;
+    color: #ffffff;
+}
+
+.badge-detalhe-botao--linkedin:hover:not(:disabled) {
+    background-color: #084f96;
+}

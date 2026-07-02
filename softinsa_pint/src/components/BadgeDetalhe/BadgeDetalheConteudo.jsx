@@ -35,6 +35,7 @@ function BadgeDetalheConteudo({
     onSubmeterCandidatura,
     onVerPaginaPublica,
     onCopiarLinkPublico,
+    onPartilharLinkedIn,
 }) {
     if (isLoading) {
         return (
@@ -150,6 +151,7 @@ function BadgeDetalheConteudo({
                 onSubmeterCandidatura={onSubmeterCandidatura}
                 onVerPaginaPublica={onVerPaginaPublica}
                 onCopiarLinkPublico={onCopiarLinkPublico}
+                onPartilharLinkedIn={onPartilharLinkedIn}
             />
         </div>
     );

@@ -306,3 +306,12 @@ export function resetBadgeDetalheMocks() {
     registoBadgesMockLocal = clonar(badgeDetalheConsultorMock.registoBadges);
     estadoOverridePorBadge.clear();
 }
+
+export function obterUrlPartilhaLinkedInDoBadge(idBadge) {
+    const urlPublica = obterUrlPublicaDoBadge(idBadge);
+    const urlAbsoluta = `${window.location.origin}${urlPublica}`;
+
+    return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+        urlAbsoluta
+    )}`;
+}

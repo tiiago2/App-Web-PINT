@@ -11,6 +11,11 @@ import GaleriaToolbar from "../../components/Galeria/GaleriaToolbar/GaleriaToolb
 import { obterBadgesCatalogoNormalizados } from "../../services/badgesService";
 import { normalizarBadgeCatalogo } from "../../utils/badgesNormalizadores";
 import "./Galeria.css";
+import BadgeDetalheModal from "../../components/BadgeDetalhe/BadgeDetalheModal";
+import {
+  obterBadgeDetalheCatalogo,
+  obterUrlPublicaDoBadge,
+} from "../../services/badgeDetalheService";
 
 const mapaCategoriaParaFiltro = {
   "Hybrid Systems": {
@@ -167,6 +172,9 @@ function Galeria() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [badgeToEdit, setBadgeToEdit] = useState(null);
   const [badgeAEliminar, setBadgeAEliminar] = useState(null);
+  const [isDetalheBadgeOpen, setIsDetalheBadgeOpen] = useState(false);
+  const [detalheBadge, setDetalheBadge] = useState(null);
+  const [isLoadingDetalheBadge, setIsLoadingDetalheBadge] = useState(false);
 
   const badgesComCamposFiltro = useMemo(() => {
     return badges.map(prepararBadgeAdminParaFiltro);
@@ -342,6 +350,73 @@ function Galeria() {
     };
   }, []);
 
+  const handleOpenDetalheBadgeCatalogo = async (badge) => {
+    const idBadge = obterIdBadge(badge);
+
+    if (!idBadge) {
+      return;
+    }
+
+    setIsDetalheBadgeOpen(true);
+    setDetalheBadge(null);
+    setIsLoadingDetalheBadge(true);
+
+    try {
+      const detalhe = await obterBadgeDetalheCatalogo(idBadge);
+      setDetalheBadge(detalhe);
+    } catch (error) {
+      console.error("Erro ao carregar detalhe do badge:", error);
+      setDetalheBadge(null);
+    } finally {
+      setIsLoadingDetalheBadge(false);
+    }
+  };
+
+  const handleCloseDetalheBadge = () => {
+    setIsDetalheBadgeOpen(false);
+    setDetalheBadge(null);
+  };
+
+  const handleVerPaginaPublicaBadge = (badgeDetalhe) => {
+    const idBadge =
+      badgeDetalhe?.id_badge ??
+      badgeDetalhe?.idBadge ??
+      badgeDetalhe?.id;
+
+    if (!idBadge) {
+      return;
+    }
+
+    const urlPublica =
+      badgeDetalhe?.urlPublica ?? obterUrlPublicaDoBadge(idBadge);
+
+    window.open(urlPublica, "_blank", "noopener,noreferrer");
+  };
+
+  const handleCopiarLinkPublicoBadge = async (badgeDetalhe) => {
+    const idBadge =
+      badgeDetalhe?.id_badge ??
+      badgeDetalhe?.idBadge ??
+      badgeDetalhe?.id;
+
+    if (!idBadge) {
+      return;
+    }
+
+    const urlPublica =
+      badgeDetalhe?.urlPublica ?? obterUrlPublicaDoBadge(idBadge);
+
+    const urlAbsoluta = `${window.location.origin}${urlPublica}`;
+
+    try {
+      await navigator.clipboard.writeText(urlAbsoluta);
+      alert("Link público copiado.");
+    } catch (error) {
+      console.error("Erro ao copiar link público:", error);
+      window.prompt("Copia o link público:", urlAbsoluta);
+    }
+  };
+
   return (
     <div className="galeria-container">
       
@@ -426,17 +501,13 @@ function Galeria() {
               badges={badgesVisiveis}
               aplicarFiltros={false}
               mostrarEstado={false}
-              onBadgeClick={(badge) => {
-                console.log("Abrir detalhe do badge:", badge);
-              }}
+              onBadgeClick={handleOpenDetalheBadgeCatalogo}
               renderBadge={(badge) => (
                 <BadgeItemAdmin
                   badge={badge}
                   onEdit={handleOpenEditModal}
                   onDelete={setBadgeAEliminar}
-                  onBadgeClick={(badge) => {
-                    console.log("Abrir detalhe do badge:", badge);
-                  }}
+                  onBadgeClick={handleOpenDetalheBadgeCatalogo}
                 />
               )}
             />
@@ -446,6 +517,7 @@ function Galeria() {
               isLoading={isLoadingBadges}
               onEdit={handleOpenEditModal}
               onDelete={(badge) => handleDeleteBadge(obterIdBadge(badge))}
+              onBadgeClick={handleOpenDetalheBadgeCatalogo}
             />
           )}
         </div>
@@ -462,6 +534,16 @@ function Galeria() {
         textoConfirmar="Eliminar"
         textoCancelar="Cancelar"
         isDanger={true}
+      />
+
+      <BadgeDetalheModal
+        isOpen={isDetalheBadgeOpen}
+        onClose={handleCloseDetalheBadge}
+        modo="catalogo"
+        detalhe={detalheBadge}
+        isLoading={isLoadingDetalheBadge}
+        onVerPaginaPublica={handleVerPaginaPublicaBadge}
+        onCopiarLinkPublico={handleCopiarLinkPublicoBadge}
       />
 
       <BadgeModal 

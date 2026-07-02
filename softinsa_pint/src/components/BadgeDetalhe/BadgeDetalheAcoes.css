@@ -1,0 +1,110 @@
+.badge-detalhe-acoes-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.badge-detalhe-acoes {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 18px;
+    background-color: var(--fundo);
+    border: var(--borda-principal) solid var(--contorno);
+    box-sizing: border-box;
+}
+
+.badge-detalhe-acoes--catalogo,
+.badge-detalhe-acoes--partilha {
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.badge-detalhe-partilha-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.badge-detalhe-partilha-info strong {
+    color: var(--fontes);
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+.badge-detalhe-partilha-info span {
+    color: var(--fontes);
+    opacity: 0.68;
+    font-size: 0.84rem;
+}
+
+.badge-detalhe-partilha-botoes {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.badge-detalhe-botao {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    border-radius: 14px;
+    border: var(--borda-principal) solid transparent;
+    font-size: 0.86rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s,
+        opacity 0.2s;
+}
+
+.badge-detalhe-botao i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.badge-detalhe-botao--primario {
+    background-color: var(--barra_lateral);
+    color: var(--fundo);
+}
+
+.badge-detalhe-botao--primario:hover:not(:disabled) {
+    background-color: var(--barra_lateral_hover);
+}
+
+.badge-detalhe-botao--secundario {
+    background-color: var(--fundo);
+    color: var(--barra_lateral);
+    border-color: var(--barra_lateral);
+}
+
+.badge-detalhe-botao--secundario:hover:not(:disabled) {
+    background-color: var(--barra_lateral);
+    color: var(--fundo);
+}
+
+.badge-detalhe-botao:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+@media (max-width: 620px) {
+    .badge-detalhe-acoes,
+    .badge-detalhe-partilha-botoes {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .badge-detalhe-botao {
+        width: 100%;
+    }
+}

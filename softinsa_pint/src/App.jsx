@@ -31,6 +31,7 @@ import ModalConfirmacao from "./components/ui/ModalConfirmacao/ModalConfirmacao"
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import Utilizadores from "./pages/utilizadores/Utilizadores.jsx";
 import LanguageSelector from "./components/ui/LanguageSelector/LanguageSelector.jsx";
+import BadgePublico from "./pages/public/BadgePublico.jsx";
 
 // Imagens
 import softinsa_logo from "./assets/logotipo_softinsa.png";
@@ -40,6 +41,7 @@ function App() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const isRotaPublicaBadge = location.pathname.startsWith("/badges/");
 
   // === ESTADOS GLOBAIS DA APP ===
   const [loading, setLoading] = useState(true);
@@ -53,10 +55,15 @@ function App() {
 
   // Redirecionar para /login se não autenticado (após terminar o carregamento)
   useEffect(() => {
-    if (!loading && !user.cargo && location.pathname !== "/login") {
+    if (
+      !loading &&
+      !user.cargo &&
+      location.pathname !== "/login" &&
+      !isRotaPublicaBadge
+    ) {
       navigate("/login", { replace: true });
     }
-  }, [loading, user.cargo, location.pathname, navigate]);
+  }, [loading, user.cargo, location.pathname, isRotaPublicaBadge, navigate]);
 
   // === REFS E ESTADOS PARA MENUS, NOTIFICAÇÕES E AVISOS ===
   const bellRef = useRef(null);
@@ -293,7 +300,16 @@ function App() {
 
   // === RENDERIZAÇÃO CONDICIONAL ===
   if (loading) return <div className="vh-100 d-flex justify-content-center align-items-center text-secondary">A carregar...</div>;
-
+  
+  if (isRotaPublicaBadge) {
+    return (
+      <Routes>
+        <Route path="/badges/:idBadge" element={<BadgePublico />} />
+        <Route path="*" element={<Navigate to="/badges/1" replace />} />
+      </Routes>
+    );
+  }
+  
   if (location.pathname === "/login") {
     if (user.cargo) return <Navigate to="/home" replace />;
 

@@ -53,6 +53,7 @@ function VistaTabelaBadges({
     badges = [],
     onEdit,
     onDelete,
+    onBadgeClick,
     isLoading = false,
     emptyMessage = "Não existem badges para apresentar.",
 }) {
@@ -126,6 +127,7 @@ function VistaTabelaBadges({
             colunas={colunas}
             onEdit={onEdit}
             onDelete={onDelete}
+            onRowClick={onBadgeClick}
             getRowKey={obterIdBadge}
             getItemLabel={obterNomeBadge}
             isLoading={isLoading}

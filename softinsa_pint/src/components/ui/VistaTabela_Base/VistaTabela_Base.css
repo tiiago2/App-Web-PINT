@@ -77,6 +77,10 @@
     background-color: var(--fundo2);
 }
 
+.vtb-linha-clicavel {
+    cursor: pointer;
+}
+
 .vtb-col-centro {
     text-align: center;
 }
@@ -143,3 +147,4 @@
     border-color: var(--vermelho_eliminar, #dc3545);
     color: var(--vermelho_eliminar, #dc3545);
 }
+

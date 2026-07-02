@@ -1,8 +1,72 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import api from "../../../services/api.js";
 
 export default function TabRGPD() {
   const { t } = useTranslation();
+
+  const [textoConsentimento, setTextoConsentimento] = useState("");
+  const [dataAlteracao, setDataAlteracao] = useState(null);
+  const [nomeAutor, setNomeAutor] = useState("");
+  const [estatisticas, setEstatisticas] = useState({
+    aceites: 0,
+    pendentes: 0,
+    taxaAdesao: 0
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  // Carregar os dados dinâmicos do backend
+  useEffect(() => {
+    async function carregarRGPD() {
+      try {
+        const response = await api.get("/rgpd");
+        setTextoConsentimento(response.data.textoConsentimento || "");
+        setDataAlteracao(response.data.dataAlteracao);
+        setNomeAutor(response.data.nomeAutor || "Sistema");
+        setEstatisticas(response.data.estatisticas || { aceites: 0, pendentes: 0, taxaAdesao: 0 });
+      } catch (error) {
+        console.error("Erro ao carregar políticas RGPD:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    carregarRGPD();
+  }, []);
+
+  const handleGuardar = async () => {
+    try {
+      if (!textoConsentimento.trim()) {
+        alert("O texto de consentimento não pode estar vazio.");
+        return;
+      }
+
+      await api.put("/rgpd", { textoConsentimento });
+      
+      // Recarregar os dados para atualizar as estatísticas e última revisão legal
+      const response = await api.get("/rgpd");
+      setTextoConsentimento(response.data.textoConsentimento || "");
+      setDataAlteracao(response.data.dataAlteracao);
+      setNomeAutor(response.data.nomeAutor || "Sistema");
+      setEstatisticas(response.data.estatisticas || { aceites: 0, pendentes: 0, taxaAdesao: 0 });
+
+      alert(t("rgpd_guardado_sucesso", "Políticas RGPD guardadas e consentimentos repostos com sucesso!"));
+    } catch (error) {
+      console.error("Erro ao guardar políticas RGPD:", error);
+      alert(t("erro_guardar_rgpd", "Ocorreu um erro ao guardar as políticas RGPD."));
+    }
+  };
+
+  // Formatar a data para o ecrã
+  const formatarData = (dataStr) => {
+    if (!dataStr) return "-";
+    const data = new Date(dataStr);
+    return data.toLocaleDateString("pt-PT") + " às " + data.toLocaleTimeString("pt-PT", { hour: '2-digit', minute: '2-digit' });
+  };
+
+  if (loading) {
+    return <div className="text-center py-5">{t("a_carregar", "A carregar...")}</div>;
+  }
 
   return (
     <div className="d-flex flex-column gap-4 pb-4">
@@ -36,7 +100,7 @@ export default function TabRGPD() {
                   lineHeight: "1",
                 }}
               >
-                94%
+                {estatisticas.taxaAdesao}%
               </span>
               <span
                 className="text-muted pb-1 fw-bold"
@@ -49,13 +113,13 @@ export default function TabRGPD() {
               <div style={{ fontSize: "0.85rem" }}>
                 <span className="badge bg-success-subtle text-success border border-success-subtle me-1">
                   <i className="fi fi-br-check me-1"></i>
-                  {t("aceites_count", { count: 412 })}
+                  {t("aceites_count", { count: estatisticas.aceites })}
                 </span>
               </div>
               <div style={{ fontSize: "0.85rem" }}>
                 <span className="badge bg-warning-subtle text-warning border border-warning-subtle me-1">
                   <i className="fi fi-br-time-past me-1"></i>
-                  {t("pendentes_count", { count: 136 })}
+                  {t("pendentes_count", { count: estatisticas.pendentes })}
                 </span>
               </div>
             </div>
@@ -86,16 +150,16 @@ export default function TabRGPD() {
               </div>
               <div>
                 <div
-                  className="fw-bold fs-5"
-                  style={{ color: "var(--fontes)" }}
+                  className="fw-bold fs-6"
+                  style={{ color: "var(--fontes)", wordBreak: "break-all" }}
                 >
-                  {t("data_ultima_revisao")}
+                  {formatarData(dataAlteracao)}
                 </div>
                 <div
                   className="text-muted mt-1"
                   style={{ fontSize: "0.85rem" }}
                 >
-                  {t("revisao_por", { hora: "14h30", autor: "Gonçalo" })}
+                  {t("revisao_por_autor", `Revisão por: ${nomeAutor}`)}
                 </div>
               </div>
             </div>
@@ -125,12 +189,14 @@ export default function TabRGPD() {
               border: "1px solid #CAD5E2",
               backgroundColor: "#FFFFFF",
             }}
-            defaultValue="1. Âmbito de Aplicação&#10;Estes termos aplicam-se à utilização da plataforma de atribuição de badges da Softinsa...&#10;&#10;2. Recolha e Tratamento de Dados (RGPD)&#10;A Softinsa compromete-se a proteger a privacidade dos seus colaboradores. Os dados recolhidos (nome, área, badges) destinam-se exclusivamente a fins de gamificação interna e evolução de carreira.&#10;&#10;3. Partilha Externa&#10;Ao ativar a partilha para plataformas externas (ex: LinkedIn), o colaborador consente..."
+            value={textoConsentimento}
+            onChange={(e) => setTextoConsentimento(e.target.value)}
           ></textarea>
         </div>
 
         <div className="text-end">
           <button
+            onClick={handleGuardar}
             className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white"
             style={{
               backgroundColor: "var(--barra_lateral)",

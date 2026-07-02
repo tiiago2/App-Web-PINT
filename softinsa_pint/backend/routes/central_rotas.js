@@ -16,6 +16,8 @@ const rotas_home_admin = require('./homeadmin_routes');
 const rotas_home_service = require('./homeservice_routes');
 const rotas_utilizadores = require('./utilizador_routes');
 const rotas_profile = require('./profile_routes');
+const rotas_defs_permissoes = require('./permissoes_def.routes');
+const rotas_rgpd = require('./rgpd.routes');
 
 router.use("/hometalent", rotas_home_talent);
 router.use("/homeconsultor", rotas_home_consultor);
@@ -28,6 +30,8 @@ router.use("/profile", rotas_profile);
 router.use("/homeadmin", rotas_home_admin);
 router.use("/homeservice", rotas_home_service);
 router.use("/utilizadores", rotas_utilizadores);
+router.use("/defs-permissoes", rotas_defs_permissoes);
+router.use("/rgpd", rotas_rgpd);
 router.post("/login", controller_login.login);
 router.post("/esqueci-password", controller_login.esqueciPassword);
 router.get("/getuser", controller_login.getUser);

@@ -1,13 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import BotaoDropdown from "../../../components/ui/BotaoDropdown/BotaoDropdown";
 import ToggleSwitch from "../../../components/ui/ToggleSwitch/ToggleSwitch";
+import api from "../../../services/api.js";
+
+const DB_MAPPING = {
+  1: "cons_2",
+  2: "cons_3",
+  3: "cons_4",
+  4: "tal_1",
+  5: "tal_3",
+  6: "serv_1",
+  7: "serv_3"
+};
+
+const FRONTEND_TO_DB_ID = {
+  "cons_2": 1,
+  "cons_3": 2,
+  "cons_4": 3,
+  "tal_1": 4,
+  "tal_3": 5,
+  "serv_1": 6,
+  "serv_3": 7
+};
 
 export default function TabUtilizadores() {
   const { t } = useTranslation();
 
   const [roleSelecionada, setRoleSelecionada] = useState("");
   const [permissoesAtivas, setPermissoesAtivas] = useState({});
+  const [estadoOriginal, setEstadoOriginal] = useState({});
 
   const roles = ["consultor", "talent", "service"];
 
@@ -55,11 +77,57 @@ export default function TabUtilizadores() {
     ],
   };
 
+  useEffect(() => {
+    async function carregarPermissoes() {
+      try {
+        const response = await api.get("/defs-permissoes");
+        const novoEstado = {};
+        response.data.forEach((perm) => {
+          const key = DB_MAPPING[perm.id_permissao];
+          if (key) {
+            novoEstado[key] = perm.toggle;
+          }
+        });
+        setPermissoesAtivas(novoEstado);
+        setEstadoOriginal(novoEstado);
+      } catch (error) {
+        console.error("Erro ao carregar permissões:", error);
+      }
+    }
+    carregarPermissoes();
+  }, []);
+
   const togglePermissao = (id) => {
     setPermissoesAtivas((prev) => ({
       ...prev,
       [id]: !prev[id],
     }));
+  };
+
+  const handleGuardar = async () => {
+    try {
+      const alteracoes = [];
+      Object.keys(permissoesAtivas).forEach((key) => {
+        if (permissoesAtivas[key] !== estadoOriginal[key]) {
+          alteracoes.push({
+            id_permissao: FRONTEND_TO_DB_ID[key],
+            toggle: permissoesAtivas[key],
+          });
+        }
+      });
+
+      if (alteracoes.length === 0) {
+        alert(t("sem_alteracoes", "Não existem alterações para guardar."));
+        return;
+      }
+
+      await api.put("/defs-permissoes", { alteracoes });
+      setEstadoOriginal({ ...permissoesAtivas });
+      alert(t("permissoes_guardadas_sucesso", "Configurações de permissões guardadas com sucesso!"));
+    } catch (error) {
+      console.error("Erro ao guardar permissões:", error);
+      alert(t("erro_guardar_permissoes", "Ocorreu um erro ao guardar as permissões."));
+    }
   };
 
   return (
@@ -123,6 +191,7 @@ export default function TabUtilizadores() {
 
           <div className="mt-4 text-end">
             <button
+              onClick={handleGuardar}
               className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white"
               style={{
                 backgroundColor: "var(--barra_lateral)",

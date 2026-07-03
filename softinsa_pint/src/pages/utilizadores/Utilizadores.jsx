@@ -19,7 +19,7 @@ export default function Utilizadores({ userRole }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
 
-  const isAdmin = userRole === "administrador";
+  const isAdmin = userRole?.toLowerCase() === "administrador" || userRole?.toLowerCase() === "admin";
 
   useEffect(() => {
     carregarUtilizadores();

@@ -1007,6 +1007,23 @@
     border-color: var(--barra_lateral);
 }
 
+.obj-btn-cancelar {
+    background: var(--fundo);
+    border: var(--borda-principal) solid #ced4da;
+    color: #495057;
+    border-radius: var(--border-radius-pequeno);
+    padding: 9px 22px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--fonte-principal);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.obj-btn-cancelar:hover {
+    background: #e9ecef;
+}
+
 .obj-btn-confirmar {
     background-color: var(--barra_lateral);
     color: var(--fundo);
@@ -1170,6 +1187,8 @@
 
 .obj-dp-dia {
     height: 36px;
+    width: 36px;
+    margin: auto;
     display: flex;
     align-items: center;
     justify-content: center;

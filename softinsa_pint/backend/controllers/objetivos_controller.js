@@ -13,9 +13,10 @@ const {
 const { Op } = require("sequelize");
 
 // Include comum para trazer toda a hierarquia do Badge (Nível, Área, Service Line e Learning Path)
+// 1. O teu objeto (mantém-se igual, pois estava muito bem estruturado)
 const includeBadgesCompleto = {
   model: Badges,
-  attributes: ["id_badge", "nome_badge", "descricao_badge", "imagem", "pontos_badge", "especial", "id_nivel", "id_area"],
+  attributes: ["id_badge", "nome_badge", "descricao_badge", "imagem", "pontos_badge", "especial", "id_nivel", "id_area", "validade"],
   include: [
     {
       model: Nivel,
@@ -40,6 +41,8 @@ const includeBadgesCompleto = {
   ]
 };
 
+
+
 function formatarBadgePayload(badge) {
   if (!badge) return null;
 
@@ -54,6 +57,7 @@ function formatarBadgePayload(badge) {
     descricao_badge: badge.descricao_badge,
     imagem: badge.imagem,
     pontos_badge: badge.pontos_badge,
+    validade: badge.validade ?? null,
     especial: badge.especial ?? false,
     id_nivel: nivel?.id_nivel ?? badge.id_nivel ?? null,
     nome_nivel: nivel?.nome_nivel ?? null,

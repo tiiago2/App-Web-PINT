@@ -34,7 +34,14 @@ function obterBadgeCatalogoPorId(idBadge, badgeData = null) {
             id_badge: Number(idBadge),
             nome_badge: badgeData.nome_badge ?? badgeData.Nome_Badge ?? badgeData.titulo ?? "Badge",
             nome_area: badgeData.nome_area ?? badgeData.Nome_Area ?? "Geral",
+            id_service_line: badgeData.id_service_line ?? badgeData.ID_Service_Line ?? null,
+            nome_service_line: badgeData.nome_service_line ?? badgeData.Nome_Service_Line ?? "Sem Service Line",
+            id_learning_path: badgeData.id_learning_path ?? badgeData.ID_Learning_Path ?? null,
+            nome_learning_path: badgeData.nome_learning_path ?? badgeData.Nome_Learning_Path ?? "Sem Learning Path",
+            id_nivel: badgeData.id_nivel ?? badgeData.ID_Nivel ?? null,
+            nome_nivel: badgeData.nome_nivel ?? badgeData.Nome_Nivel ?? "Sem Nível",
             pontos_badge: badgeData.pontos_badge ?? badgeData.Pontos_Badge ?? 100,
+            validade: badgeData.validade ?? badgeData.Validade ?? 365,
             imagem: badgeData.imagem ?? badgeData.imagemBadge ?? null,
             descricao_badge: badgeData.descricao_badge ?? badgeData.descricao ?? ""
         };

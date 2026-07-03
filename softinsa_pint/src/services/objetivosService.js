@@ -37,6 +37,7 @@ function normalizarBadge(b = {}) {
 
         Pontos_Badge: b.pontos_badge ?? b.Pontos_Badge ?? 100,
         pontos_badge: b.pontos_badge ?? b.Pontos_Badge ?? 100,
+        validade: b.validade ?? b.Validade ?? 365,
         Especial: b.especial ?? b.Especial ?? false,
         especial: b.especial ?? b.Especial ?? false,
         imagemBadge: b.imagem ?? b.imagemBadge ?? null,

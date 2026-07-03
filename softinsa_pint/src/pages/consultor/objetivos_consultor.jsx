@@ -33,29 +33,7 @@ import badgeImg5 from '../../assets/badges/Low Code 5.png';
                      Data_inicial, Data_Objetivo,
                      Deleted_Objetivo, Data_Conclusao
    ───────────────────────────────────────────────────────────────────── */
-const badgesMock = [
-    { ID_Badge: 10, Nome_Badge: 'Low Code Junior',    ID_Area: 2, Nome_Area: 'Low Code',         Pontos_Badge: 150, imagemBadge: badgeImg1, icone: 'fi fi-br-coffee'          },
-    { ID_Badge: 11, Nome_Badge: 'Low Code Intermédio',ID_Area: 2, Nome_Area: 'Low Code',         Pontos_Badge: 200, imagemBadge: badgeImg2, icone: 'fi fi-br-database'        },
-    { ID_Badge: 12, Nome_Badge: 'Cloud Foundations',  ID_Area: 3, Nome_Area: 'Cloud',            Pontos_Badge: 180, imagemBadge: badgeImg3, icone: 'fi fi-br-cloud'           },
-    { ID_Badge: 13, Nome_Badge: 'API Master',         ID_Area: 4, Nome_Area: 'Backend',          Pontos_Badge: 220, imagemBadge: badgeImg4, icone: 'fi fi-br-target'          },
-    { ID_Badge: 14, Nome_Badge: 'DevOps Basics',      ID_Area: 5, Nome_Area: 'DevOps',           Pontos_Badge: 150, imagemBadge: badgeImg5, icone: 'fi fi-br-mobile'          },
-    { ID_Badge: 20, Nome_Badge: 'Data Analytics',     ID_Area: 6, Nome_Area: 'Data & AI',        Pontos_Badge: 200, imagemBadge: badgeImg1, icone: 'fi fi-br-chart-histogram' },
-    { ID_Badge: 21, Nome_Badge: 'Cyber Awareness',    ID_Area: 7, Nome_Area: 'Cybersecurity',    Pontos_Badge: 130, imagemBadge: badgeImg2, icone: 'fi fi-br-server'          },
-    { ID_Badge: 22, Nome_Badge: 'Agile Foundations',  ID_Area: 8, Nome_Area: 'Project Management',Pontos_Badge: 120, imagemBadge: badgeImg3, icone: 'fi fi-br-shield'          },
-    { ID_Badge: 23, Nome_Badge: 'UX Research',        ID_Area: 9, Nome_Area: 'Design',           Pontos_Badge: 160, imagemBadge: badgeImg4, icone: 'fi fi-br-code'           },
-];
 
-const objetivosMock = [
-    { ID_Objetivo: 1, ID_Badge: 10, ID_Utilizador: 1, Data_inicial: '2026-01-01T00:00:00', Data_Objetivo: '2026-06-15T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 98, badge: badgesMock[0] },
-    { ID_Objetivo: 2, ID_Badge: 11, ID_Utilizador: 1, Data_inicial: '2026-02-01T00:00:00', Data_Objetivo: '2026-06-28T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 57, badge: badgesMock[1] },
-    { ID_Objetivo: 3, ID_Badge: 12, ID_Utilizador: 1, Data_inicial: '2026-03-01T00:00:00', Data_Objetivo: '2026-07-11T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 23, badge: badgesMock[2] },
-    { ID_Objetivo: 4, ID_Badge: 13, ID_Utilizador: 1, Data_inicial: '2026-03-15T00:00:00', Data_Objetivo: '2026-07-11T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 11, badge: badgesMock[3] },
-    { ID_Objetivo: 5, ID_Badge: 14, ID_Utilizador: 1, Data_inicial: '2026-04-01T00:00:00', Data_Objetivo: '2026-08-05T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 65, badge: badgesMock[4] },
-    // Mock History
-    { ID_Objetivo: 6, ID_Badge: 20, ID_Utilizador: 1, Data_inicial: '2025-10-01T00:00:00', Data_Objetivo: '2026-01-15T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: '2026-01-10T14:20:00', progresso: 100, badge: badgesMock[5] },
-    { ID_Objetivo: 7, ID_Badge: 21, ID_Utilizador: 1, Data_inicial: '2025-11-01T00:00:00', Data_Objetivo: '2026-02-28T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: '2026-02-28T10:00:00', progresso: 100, badge: badgesMock[6] },
-    { ID_Objetivo: 8, ID_Badge: 22, ID_Utilizador: 1, Data_inicial: '2025-12-01T00:00:00', Data_Objetivo: '2026-03-15T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 85, badge: badgesMock[7] },
-];
 
 /* ─────────────────────────────────────────────────────────────────────
    HELPERS
@@ -425,13 +403,13 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
                     if (badges && badges.length > 0) {
                         setListaBadges(badges);
                     } else {
-                        setListaBadges(badgesMock);
+                        setListaBadges([]);
                     }
                 }
             })
             .catch(err => {
                 console.error("Erro ao carregar badges:", err);
-                if (active) setListaBadges(badgesMock);
+                if (active) setListaBadges([]);
             })
             .finally(() => {
                 if (active) setCarregando(false);
@@ -564,7 +542,11 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
                                         />
                                     </div>
                                     <div className="obj-badge-grid-nome">{badge.Nome_Badge}</div>
-                                    <div className="obj-badge-grid-area">{badge.Nome_Area}</div>
+                                    <div className="obj-badge-grid-area">
+                                        {badge.Nome_Area}
+                                        {` • ${badge.Nome_Service_Line || 'Sem Service Line'}`}
+                                        {` • ${badge.Nome_Learning_Path || 'Sem Learning Path'}`}
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -1085,7 +1067,11 @@ const ObjetivosConsultor = ({ user }) => {
 
                                             <div className="obj-item-info">
                                                 <div className="obj-item-titulo">{obj.badge.Nome_Badge}</div>
-                                                <div className="obj-item-area">{obj.badge.Nome_Area}</div>
+                                                <div className="obj-item-area">
+                                                    {obj.badge.Nome_Area}
+                                                    {` • ${obj.badge.Nome_Service_Line || 'Sem Service Line'}`}
+                                                    {` • ${obj.badge.Nome_Learning_Path || 'Sem Learning Path'}`}
+                                                </div>
                                                 <div className="obj-progress-wrap">
                                                     <div
                                                         className="obj-progress-fill"

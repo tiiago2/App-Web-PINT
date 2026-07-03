@@ -34,6 +34,8 @@ function LoginPage({ onLoginSuccess }) {
       role: roleEscolhida.nome,
       foto: userApi.imagem_perfil
     });
+
+    window.location.reload();
   };
 
   const handleSubmit = async (event) => {

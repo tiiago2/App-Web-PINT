@@ -190,7 +190,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                                             </div>
                                             <div className="objetivo-corpo-v3">
                                                 <div className="objetivo-topo-v3">
-                                                    <span className="objetivo-titulo-v3">{obj.titulo}</span>
+                                                    <span className="objetivo-titulo-v3">{obj.titulo || obj.badge?.nome_badge || 'Objetivo'}</span>
                                                     <span className="objetivo-pct-v3" style={{ color: cor.principal }}>{pct}%</span>
                                                 </div>
                                                 <div className="objetivo-barra-wrap-v3">
@@ -199,9 +199,9 @@ const HomeConsultor = ({ user, saudacao }) => {
                                                 <div className="objetivo-rodape-v3">
                                                     <span className="objetivo-data-v3">
                                                         <i className="fi fi-br-calendar"></i>
-                                                        {new Date(obj.data).toLocaleDateString('pt-PT')}
+                                                        {new Date(obj.data_final || obj.data || new Date()).toLocaleDateString('pt-PT')}
                                                     </span>
-                                                    <span className="objetivo-prazo-v3" style={{ color: cor.principal }}>{calcularTempoRestante(obj.data)}</span>
+                                                    <span className="objetivo-prazo-v3" style={{ color: cor.principal }}>{calcularTempoRestante(obj.data_final || obj.data)}</span>
                                                 </div>
                                             </div>
                                         </div>

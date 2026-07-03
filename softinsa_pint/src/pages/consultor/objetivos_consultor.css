@@ -15,6 +15,8 @@
      --fundo / --fundo2             → fundos branco / cinza claro
    ══════════════════════════════════════════════════════════════════ */
 
+@import "../../components/Galeria/CardBadgeSugerido/CardBadgeSugerido.css";
+
 /* ── WRAPPER DA PÁGINA ─────────────────────────────────────────── */
 .obj-page {
     padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo) var(--margem-inferior-conteudo);
@@ -182,37 +184,20 @@
 }
 
 /* Tabs: Em Progresso / Histórico */
-.obj-tabs-wrapper {
-    display: flex;
-    align-items: center;
-    background: var(--fundo2);
-    border-radius: var(--border-radius-pequeno);
-    padding: 3px;
-    gap: 2px;
+.obj-tabs-container {
+    width: 210px;
+    height: 32px;
+    flex-shrink: 0;
 }
 
-.obj-tab-btn {
-    background: transparent;
-    border: none;
-    padding: 6px 14px;
-    font-size: 13px;
-    font-weight: 500;
-    font-family: var(--fonte-principal);
-    color: #8fa3b8;
-    border-radius: var(--border-radius-pequeno);
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+/* Overrides para tornar o componente SeletorAbas mais compacto nesta página */
+.obj-tabs-container .seletor-abas {
+    height: 100% !important;
+    padding: 2px !important;
 }
 
-.obj-tab-btn:hover {
-    color: var(--fontes);
-}
-
-.obj-tab-btn.active {
-    background: var(--fundo);
-    color: var(--barra_lateral);
-    font-weight: 600;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+.obj-tabs-container .seletor-abas-botao {
+    font-size: 11px !important;
 }
 
 /* Submenu Histórico */
@@ -313,10 +298,11 @@
     background: var(--fundo);
     border: var(--borda-principal) solid var(--contorno);
     border-radius: var(--border-radius-grande);
-    padding: 14px 16px;
+    padding: 14px 40px 14px 16px;
     display: flex;
-    align-items: center;
-    gap: 14px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
     transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
     box-sizing: border-box;
     flex-shrink: 0;
@@ -338,17 +324,27 @@
     animation: fadeInSlide 0.3s ease forwards;
 }
 
+@keyframes spinRot {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spinner-animado {
+    display: inline-block;
+    animation: spinRot 1s linear infinite;
+}
+
 .obj-item-card:hover {
-    box-shadow: 0 4px 18px rgba(57, 99, 156, 0.1);
-    border-color: var(--barra_lateral);
+    box-shadow: 0 14px 28px -16px rgba(57, 99, 156, 0.2);
+    border-color: var(--barra_azul_2);
     transform: translateY(-1px);
 }
 
 /* Botão remover — aparece no hover do card */
 .obj-item-remover {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 14px;
+    right: 12px;
     width: 22px;
     height: 22px;
     border-radius: 50%;
@@ -451,6 +447,82 @@
     gap: 6px;
     flex-shrink: 0;
     min-width: 80px;
+}
+/* Linha Principal do Item */
+.obj-item-main-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+}
+
+/* Estrutura Expansível */
+.obj-item-expansor {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: 
+        grid-template-rows 0.22s cubic-bezier(0.22, 1, 0.36, 1), 
+        opacity 0.2s ease,
+        margin-top 0.22s ease;
+    overflow: hidden;
+}
+
+.obj-item-card:hover .obj-item-expansor {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    margin-top: 12px;
+}
+
+.obj-item-expansor-inner {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Divisor */
+.obj-item-divider {
+    height: 1px;
+    background: var(--contorno);
+    width: 100%;
+}
+
+/* Conteúdo da Expansão */
+.obj-item-expansor-content {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.obj-item-descricao-wrap {
+    flex: 1;
+    min-width: 0;
+}
+
+.obj-item-descricao-titulo {
+    display: block;
+    color: var(--barra_azul_2);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.obj-item-descricao-texto {
+    margin: 0;
+    color: var(--fontes);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.obj-btn-continuar-hover {
+    height: 32px;
+    padding: 0 16px;
+    font-size: 12px;
+    flex-shrink: 0;
 }
 
 .obj-prazo-label {
@@ -786,31 +858,19 @@
 
 .obj-picker-controls {
     display: flex;
-    gap: 10px;
-    align-items: center;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
 }
 
-.obj-picker-btn-ctrl {
-    border: var(--borda-principal) solid var(--contorno);
-    border-radius: var(--border-radius-pequeno);
-    background: var(--fundo);
-    color: var(--fontes);
-    font-size: 13px;
-    font-weight: 500;
-    font-family: var(--fonte-principal);
-    padding: 8px 14px;
+.obj-picker-actions-row {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.15s, border-color 0.15s;
+    gap: 10px;
 }
 
-.obj-picker-btn-ctrl:hover {
-    background: var(--fundo2);
-    border-color: var(--barra_lateral);
-}
+
 
 .obj-picker-search-wrap {
     flex: 1;

@@ -2,6 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import BadgeCirculo from '../../components/Galeria/BadgeCirculo/BadgeCirculo';
+import SeletorAbas from '../../components/ui/SeletorAbas/SeletorAbas_Galeria';
+import BotaoDropdown from '../../components/ui/BotaoDropdown/BotaoDropdown';
+import GaleriaFiltroDropdown from '../../components/Galeria/GaleriaFiltroDropdown/GaleriaFiltroDropdown';
+import ModalConfirmacao from '../../components/ui/ModalConfirmacao/ModalConfirmacao';
+import BadgeDetalheModal from '../../components/BadgeDetalhe/BadgeDetalheModal';
+import {
+    obterBadgeDetalheConsultor,
+    anexarRequisitoAoBadge,
+    submeterCandidaturaBadge,
+    obterUrlPublicaDoBadge,
+    obterUrlPartilhaLinkedInDoBadge
+} from '../../services/badgeDetalheService';
+import { verificarPermissaoPartilhaLinkedIn } from '../../services/permissoesService';
+import { obterObjetivosConsultor, criarObjetivoConsultor, obterBadgesParaPropor, removerObjetivoConsultor } from '../../services/objetivosService';
 import './objetivos_consultor.css';
 
 /* ── Imagens de badges (mock — na BD vêm da API) ── */
@@ -20,30 +34,27 @@ import badgeImg5 from '../../assets/badges/Low Code 5.png';
                      Deleted_Objetivo, Data_Conclusao
    ───────────────────────────────────────────────────────────────────── */
 const badgesMock = [
-    { ID_Badge: 1,  Nome_Badge: 'Low Code',        ID_Area: 1, Nome_Area: 'Hybrid Systems',   Pontos_Badge: 100, imagemBadge: badgeImg1, icone: 'fi fi-br-coffee'          },
-    { ID_Badge: 2,  Nome_Badge: 'Bases de Dados',  ID_Area: 1, Nome_Area: 'Hybrid Systems',   Pontos_Badge: 120, imagemBadge: badgeImg2, icone: 'fi fi-br-database'        },
-    { ID_Badge: 3,  Nome_Badge: 'Cloud DevOps',    ID_Area: 2, Nome_Area: 'Cloud & DevOps',   Pontos_Badge: 150, imagemBadge: badgeImg3, icone: 'fi fi-br-cloud'           },
-    { ID_Badge: 4,  Nome_Badge: 'Agile',           ID_Area: 1, Nome_Area: 'Hybrid Systems',   Pontos_Badge: 80,  imagemBadge: badgeImg4, icone: 'fi fi-br-target'          },
-    { ID_Badge: 5,  Nome_Badge: 'React Native',    ID_Area: 3, Nome_Area: 'Mobile Solutions', Pontos_Badge: 130, imagemBadge: badgeImg5, icone: 'fi fi-br-mobile'          },
-    { ID_Badge: 6,  Nome_Badge: 'Data & AI',       ID_Area: 4, Nome_Area: 'Data & AI',        Pontos_Badge: 200, imagemBadge: badgeImg1, icone: 'fi fi-br-chart-histogram' },
-    { ID_Badge: 7,  Nome_Badge: 'Kubernetes',      ID_Area: 2, Nome_Area: 'Cloud & DevOps',   Pontos_Badge: 170, imagemBadge: badgeImg2, icone: 'fi fi-br-server'          },
-    { ID_Badge: 8,  Nome_Badge: 'Cybersecurity',   ID_Area: 5, Nome_Area: 'Cybersecurity',    Pontos_Badge: 190, imagemBadge: badgeImg3, icone: 'fi fi-br-shield'          },
-    { ID_Badge: 9,  Nome_Badge: 'TypeScript',      ID_Area: 1, Nome_Area: 'Hybrid Systems',   Pontos_Badge: 110, imagemBadge: badgeImg4, icone: 'fi fi-br-code'           },
-    { ID_Badge: 10, Nome_Badge: 'Machine Learning',ID_Area: 4, Nome_Area: 'Data & AI',        Pontos_Badge: 220, imagemBadge: badgeImg5, icone: 'fi fi-br-brain'          },
-    { ID_Badge: 11, Nome_Badge: 'Docker',          ID_Area: 2, Nome_Area: 'Cloud & DevOps',   Pontos_Badge: 140, imagemBadge: badgeImg1, icone: 'fi fi-br-layers'         },
-    { ID_Badge: 12, Nome_Badge: 'Ethical Hacking', ID_Area: 5, Nome_Area: 'Cybersecurity',    Pontos_Badge: 210, imagemBadge: badgeImg2, icone: 'fi fi-br-trophy'         },
+    { ID_Badge: 10, Nome_Badge: 'Low Code Junior',    ID_Area: 2, Nome_Area: 'Low Code',         Pontos_Badge: 150, imagemBadge: badgeImg1, icone: 'fi fi-br-coffee'          },
+    { ID_Badge: 11, Nome_Badge: 'Low Code Intermédio',ID_Area: 2, Nome_Area: 'Low Code',         Pontos_Badge: 200, imagemBadge: badgeImg2, icone: 'fi fi-br-database'        },
+    { ID_Badge: 12, Nome_Badge: 'Cloud Foundations',  ID_Area: 3, Nome_Area: 'Cloud',            Pontos_Badge: 180, imagemBadge: badgeImg3, icone: 'fi fi-br-cloud'           },
+    { ID_Badge: 13, Nome_Badge: 'API Master',         ID_Area: 4, Nome_Area: 'Backend',          Pontos_Badge: 220, imagemBadge: badgeImg4, icone: 'fi fi-br-target'          },
+    { ID_Badge: 14, Nome_Badge: 'DevOps Basics',      ID_Area: 5, Nome_Area: 'DevOps',           Pontos_Badge: 150, imagemBadge: badgeImg5, icone: 'fi fi-br-mobile'          },
+    { ID_Badge: 20, Nome_Badge: 'Data Analytics',     ID_Area: 6, Nome_Area: 'Data & AI',        Pontos_Badge: 200, imagemBadge: badgeImg1, icone: 'fi fi-br-chart-histogram' },
+    { ID_Badge: 21, Nome_Badge: 'Cyber Awareness',    ID_Area: 7, Nome_Area: 'Cybersecurity',    Pontos_Badge: 130, imagemBadge: badgeImg2, icone: 'fi fi-br-server'          },
+    { ID_Badge: 22, Nome_Badge: 'Agile Foundations',  ID_Area: 8, Nome_Area: 'Project Management',Pontos_Badge: 120, imagemBadge: badgeImg3, icone: 'fi fi-br-shield'          },
+    { ID_Badge: 23, Nome_Badge: 'UX Research',        ID_Area: 9, Nome_Area: 'Design',           Pontos_Badge: 160, imagemBadge: badgeImg4, icone: 'fi fi-br-code'           },
 ];
 
 const objetivosMock = [
-    { ID_Objetivo: 1, ID_Badge: 1, ID_Utilizador: 1, Data_inicial: '2026-01-01T00:00:00', Data_Objetivo: '2026-06-15T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 98, badge: badgesMock[0] },
-    { ID_Objetivo: 2, ID_Badge: 2, ID_Utilizador: 1, Data_inicial: '2026-02-01T00:00:00', Data_Objetivo: '2026-06-28T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 57, badge: badgesMock[1] },
-    { ID_Objetivo: 3, ID_Badge: 3, ID_Utilizador: 1, Data_inicial: '2026-03-01T00:00:00', Data_Objetivo: '2026-07-11T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 23, badge: badgesMock[2] },
-    { ID_Objetivo: 4, ID_Badge: 4, ID_Utilizador: 1, Data_inicial: '2026-03-15T00:00:00', Data_Objetivo: '2026-07-11T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 11, badge: badgesMock[3] },
-    { ID_Objetivo: 5, ID_Badge: 5, ID_Utilizador: 1, Data_inicial: '2026-04-01T00:00:00', Data_Objetivo: '2026-08-05T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 65, badge: badgesMock[4] },
+    { ID_Objetivo: 1, ID_Badge: 10, ID_Utilizador: 1, Data_inicial: '2026-01-01T00:00:00', Data_Objetivo: '2026-06-15T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 98, badge: badgesMock[0] },
+    { ID_Objetivo: 2, ID_Badge: 11, ID_Utilizador: 1, Data_inicial: '2026-02-01T00:00:00', Data_Objetivo: '2026-06-28T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 57, badge: badgesMock[1] },
+    { ID_Objetivo: 3, ID_Badge: 12, ID_Utilizador: 1, Data_inicial: '2026-03-01T00:00:00', Data_Objetivo: '2026-07-11T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 23, badge: badgesMock[2] },
+    { ID_Objetivo: 4, ID_Badge: 13, ID_Utilizador: 1, Data_inicial: '2026-03-15T00:00:00', Data_Objetivo: '2026-07-11T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 11, badge: badgesMock[3] },
+    { ID_Objetivo: 5, ID_Badge: 14, ID_Utilizador: 1, Data_inicial: '2026-04-01T00:00:00', Data_Objetivo: '2026-08-05T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 65, badge: badgesMock[4] },
     // Mock History
-    { ID_Objetivo: 6, ID_Badge: 6, ID_Utilizador: 1, Data_inicial: '2025-10-01T00:00:00', Data_Objetivo: '2026-01-15T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: '2026-01-10T14:20:00', progresso: 100, badge: badgesMock[5] },
-    { ID_Objetivo: 7, ID_Badge: 7, ID_Utilizador: 1, Data_inicial: '2025-11-01T00:00:00', Data_Objetivo: '2026-02-28T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: '2026-02-28T10:00:00', progresso: 100, badge: badgesMock[6] },
-    { ID_Objetivo: 8, ID_Badge: 8, ID_Utilizador: 1, Data_inicial: '2025-12-01T00:00:00', Data_Objetivo: '2026-03-15T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 85, badge: badgesMock[7] }, // Expirado (não a 100% e passou data)
+    { ID_Objetivo: 6, ID_Badge: 20, ID_Utilizador: 1, Data_inicial: '2025-10-01T00:00:00', Data_Objetivo: '2026-01-15T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: '2026-01-10T14:20:00', progresso: 100, badge: badgesMock[5] },
+    { ID_Objetivo: 7, ID_Badge: 21, ID_Utilizador: 1, Data_inicial: '2025-11-01T00:00:00', Data_Objetivo: '2026-02-28T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: '2026-02-28T10:00:00', progresso: 100, badge: badgesMock[6] },
+    { ID_Objetivo: 8, ID_Badge: 22, ID_Utilizador: 1, Data_inicial: '2025-12-01T00:00:00', Data_Objetivo: '2026-03-15T23:59:59', Deleted_Objetivo: 0, Data_Conclusao: null, progresso: 85, badge: badgesMock[7] },
 ];
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -393,18 +404,100 @@ const DatePickerPopup = ({ value, onChange, min }) => {
    COMPONENTE: MODAL BADGE PICKER
    ───────────────────────────────────────────────────────────────────── */
 const BadgePickerModal = ({ onClose, onConfirm }) => {
-    const [search,   setSearch]   = useState('');
-    const [selected, setSelected] = useState(null);
+    const [listaBadges, setListaBadges] = useState([]);
+    const [carregando, setCarregando] = useState(true);
+    const [search,    setSearch]    = useState('');
+    const [selected,  setSelected]  = useState(null);
+    const [ordenacao, setOrdenacao] = useState('recentes');
+    const [filtro,    setFiltro]    = useState({
+        tipo: 'todos',
+        valor: '',
+        label: 'Todos'
+    });
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
-        return () => { document.body.style.overflow = ''; };
+        let active = true;
+
+        obterBadgesParaPropor()
+            .then(badges => {
+                if (active) {
+                    if (badges && badges.length > 0) {
+                        setListaBadges(badges);
+                    } else {
+                        setListaBadges(badgesMock);
+                    }
+                }
+            })
+            .catch(err => {
+                console.error("Erro ao carregar badges:", err);
+                if (active) setListaBadges(badgesMock);
+            })
+            .finally(() => {
+                if (active) setCarregando(false);
+            });
+
+        return () => {
+            active = false;
+            document.body.style.overflow = '';
+        };
     }, []);
 
-    const filtrados = badgesMock.filter(b =>
-        b.Nome_Badge.toLowerCase().includes(search.toLowerCase()) ||
-        b.Nome_Area.toLowerCase().includes(search.toLowerCase())
-    );
+    // Obter opções únicas para cada filtro a partir dos badges reais da BD
+    const opcoesFiltro = {
+        learningPath: Array.from(new Set(listaBadges.map(b => b.Nome_Learning_Path || b.nome_learning_path).filter(Boolean))).map(lp => ({
+            valor: lp,
+            label: lp
+        })),
+        serviceLine: Array.from(new Set(listaBadges.map(b => b.Nome_Service_Line || b.nome_service_line).filter(Boolean))).map(sl => ({
+            valor: sl,
+            label: sl
+        })),
+        area: Array.from(new Set(listaBadges.map(b => b.Nome_Area || b.nome_area).filter(Boolean))).map(area => ({
+            valor: area,
+            label: area
+        }))
+    };
+
+    const opcoesOrdenacao = [
+        { valor: "recentes", label: "Mais recentes" },
+        { valor: "antigos", label: "Mais antigos" },
+        { valor: "az", label: "A-Z" },
+        { valor: "za", label: "Z-A" },
+    ];
+
+    const filtrados = listaBadges
+        .filter(b => {
+            const nomeBadge = b.Nome_Badge || b.nome_badge || '';
+            const nomeArea = b.Nome_Area || b.nome_area || '';
+            const nomeSL = b.Nome_Service_Line || b.nome_service_line || '';
+            const nomeLP = b.Nome_Learning_Path || b.nome_learning_path || '';
+
+            const matchesSearch = nomeBadge.toLowerCase().includes(search.toLowerCase()) ||
+                                  nomeArea.toLowerCase().includes(search.toLowerCase()) ||
+                                  nomeSL.toLowerCase().includes(search.toLowerCase()) ||
+                                  nomeLP.toLowerCase().includes(search.toLowerCase());
+            
+            const matchesFiltro = filtro.tipo === "todos" || 
+                                  (filtro.tipo === "area" && nomeArea === filtro.valor) ||
+                                  (filtro.tipo === "serviceLine" && nomeSL === filtro.valor) ||
+                                  (filtro.tipo === "learningPath" && nomeLP === filtro.valor);
+            
+            return matchesSearch && matchesFiltro;
+        })
+        .sort((a, b) => {
+            if (ordenacao === "az") {
+                return a.Nome_Badge.localeCompare(b.Nome_Badge);
+            }
+            if (ordenacao === "za") {
+                return b.Nome_Badge.localeCompare(a.Nome_Badge);
+            }
+            if (ordenacao === "antigos") {
+                return a.ID_Badge - b.ID_Badge;
+            }
+            // default 'recentes'
+            return b.ID_Badge - a.ID_Badge;
+        });
 
     return ReactDOM.createPortal(
         <div className="obj-picker-overlay" onClick={onClose}>
@@ -418,9 +511,6 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
                         </button>
                     </div>
                     <div className="obj-picker-controls">
-                        <button className="obj-picker-btn-ctrl">
-                            <i className="fi fi-br-filter" /> Filtrar
-                        </button>
                         <div className="obj-picker-search-wrap">
                             <i className="fi fi-br-search" style={{ color: '#aab7c4', fontSize: '13px', flexShrink: 0 }} />
                             <input
@@ -431,14 +521,29 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
                                 autoFocus
                             />
                         </div>
-                        <button className="obj-picker-btn-ctrl">
-                            Mais recentes <i className="fi fi-br-sort" />
-                        </button>
+                        <div className="obj-picker-actions-row">
+                            <GaleriaFiltroDropdown
+                                valor={filtro}
+                                opcoes={opcoesFiltro}
+                                onChange={setFiltro}
+                            />
+                            <BotaoDropdown
+                                titulo="Ordenar por"
+                                valor={ordenacao}
+                                opcoes={opcoesOrdenacao}
+                                onChange={setOrdenacao}
+                            />
+                        </div>
                     </div>
                 </div>
 
                 <div className="obj-picker-body">
-                    {filtrados.length === 0 ? (
+                    {carregando ? (
+                        <div className="text-center text-muted py-5" style={{ fontSize: '14px' }}>
+                            <i className="fi fi-br-spinner spinner-animado d-block mb-2" style={{ fontSize: '2rem' }} />
+                            A carregar badges da base de dados...
+                        </div>
+                    ) : filtrados.length === 0 ? (
                         <div className="text-center text-muted py-5" style={{ fontSize: '14px' }}>
                             <i className="fi fi-br-search d-block mb-2" style={{ fontSize: '2rem', opacity: 0.3 }} />
                             Nenhum badge encontrado
@@ -484,6 +589,10 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
     );
 };
 
+function obterIdBadge(badge = {}) {
+    return badge.id_badge ?? badge.idBadge ?? badge.id ?? badge.ID_Badge;
+}
+
 /* ─────────────────────────────────────────────────────────────────────
    PÁGINA PRINCIPAL — OBJETIVOS CONSULTOR
    ───────────────────────────────────────────────────────────────────── */
@@ -493,10 +602,37 @@ const ObjetivosConsultor = ({ user }) => {
     const [badgeSelecionado, setBadgeSelecionado] = useState(null);
     const [data,             setData]             = useState('');
     const [showPicker,       setShowPicker]       = useState(false);
-    const [objetivos,        setObjetivos]        = useState(objetivosMock);
+    const [objetivos,        setObjetivos]        = useState([]);
+    const [isLoadingObjetivos, setIsLoadingObjetivos] = useState(true);
+    const [erroAPIObjetivos, setErroAPIObjetivos] = useState(null);
     const [diaSelecionado,   setDiaSelecionado]   = useState(null);
     const [viewMode,         setViewMode]         = useState('progresso');
     const [historicoFiltro,  setHistoricoFiltro]  = useState('todos'); // 'todos' | 'concluidos' | 'expirados'
+    const [objetivoParaRemover, setObjetivoParaRemover] = useState(null);
+
+    const [isDetalheBadgeOpen, setIsDetalheBadgeOpen] = useState(false);
+    const [detalheBadge, setDetalheBadge] = useState(null);
+    const [isLoadingDetalheBadge, setIsLoadingDetalheBadge] = useState(false);
+    const [anexoPendente, setAnexoPendente] = useState(null);
+    const [avisoPermissaoLinkedIn, setAvisoPermissaoLinkedIn] = useState(false);
+
+    const carregarObjetivosAPI = async () => {
+        setIsLoadingObjetivos(true);
+        setErroAPIObjetivos(null);
+        try {
+            const dados = await obterObjetivosConsultor();
+            setObjetivos(dados);
+        } catch (error) {
+            console.error("Erro ao carregar objetivos da API:", error);
+            setErroAPIObjetivos("Não foi possível carregar os teus objetivos.");
+        } finally {
+            setIsLoadingObjetivos(false);
+        }
+    };
+
+    useEffect(() => {
+        carregarObjetivosAPI();
+    }, []);
 
     // Filtra lista pelo dia clicado no calendário e pelo separador ativo
     const hoje = new Date();
@@ -523,33 +659,201 @@ const ObjetivosConsultor = ({ user }) => {
         }
     });
 
-    const handleSubmeter = (e) => {
+    const handleSubmeter = async (e) => {
         e.preventDefault();
         if (!badgeSelecionado || !data) return;
 
-        const novo = {
-            ID_Objetivo:      Date.now(),
-            ID_Badge:         badgeSelecionado.ID_Badge,
-            ID_Utilizador:    user?.id ?? 1,
-            Data_inicial:     new Date().toISOString(),
-            Data_Objetivo:    new Date(data).toISOString(),
-            Deleted_Objetivo: 0,
-            Data_Conclusao:   null,
-            progresso:        0,
-            badge:            badgeSelecionado,
-        };
-        setObjetivos(prev => [novo, ...prev]);
-        setBadgeSelecionado(null);
-        setData('');
-        // Se houver filtro de dia ativo e o novo objetivo não é nesse dia, limpa filtro
-        if (diaSelecionado && !mesmoDia(new Date(novo.Data_Objetivo), diaSelecionado)) {
-            setDiaSelecionado(null);
+        const idBadge = obterIdBadge(badgeSelecionado);
+        if (!idBadge) return;
+
+        try {
+            const novoObj = await criarObjetivoConsultor({
+                idBadge,
+                dataFinal: new Date(data).toISOString()
+            });
+
+            setObjetivos(prev => [novoObj, ...prev]);
+            setBadgeSelecionado(null);
+            setData('');
+
+            if (diaSelecionado && !mesmoDia(new Date(novoObj.Data_Objetivo), diaSelecionado)) {
+                setDiaSelecionado(null);
+            }
+        } catch (error) {
+            console.error("Erro ao criar objetivo:", error);
+            alert("Não foi possível propor o objetivo. Garante que o badge selecionado existe no sistema.");
         }
     };
 
-    // Fase experimental: permite remover objetivos da lista
+    // Fase experimental: abre modal de confirmação para remover objetivo da lista
     const handleRemover = (id) => {
-        setObjetivos(prev => prev.filter(o => o.ID_Objetivo !== id));
+        setObjetivoParaRemover(id);
+    };
+
+    const executarRemover = async (id) => {
+        try {
+            await removerObjetivoConsultor(id);
+            setObjetivos(prev => prev.filter(o => o.ID_Objetivo !== id));
+            if (diaSelecionado) {
+                const restantes = objetivos.filter(o => o.ID_Objetivo !== id);
+                const dataLim = objetivos.find(o => o.ID_Objetivo === id)?.Data_Objetivo;
+                if (dataLim) {
+                    const restDia = restantes.filter(o => mesmoDia(new Date(o.Data_Objetivo), new Date(dataLim)));
+                    if (restDia.length === 0) setDiaSelecionado(null);
+                }
+            }
+        } catch (error) {
+            console.error("Erro ao remover objetivo:", error);
+            alert("Não foi possível remover o objetivo. Tenta novamente.");
+        } finally {
+            setObjetivoParaRemover(null);
+        }
+    };
+
+    // Modal de Detalhes do Badge
+    const handleOpenDetalheBadgeConsultor = async (badgeId, badgeObj = null) => {
+        if (!badgeId) {
+            return;
+        }
+
+        setIsDetalheBadgeOpen(true);
+        setDetalheBadge(null);
+        setIsLoadingDetalheBadge(true);
+
+        try {
+            const detalhe = await obterBadgeDetalheConsultor(badgeId, { badgeData: badgeObj });
+            setDetalheBadge(detalhe);
+        } catch (error) {
+            console.error("Erro ao carregar detalhe do badge:", error);
+            setDetalheBadge(null);
+        } finally {
+            setIsLoadingDetalheBadge(false);
+        }
+    };
+
+    const handleCloseDetalheBadge = () => {
+        setIsDetalheBadgeOpen(false);
+        setDetalheBadge(null);
+        setAnexoPendente(null);
+    };
+
+    const handleSelecionarFicheiroRequisito = ({ requisito, ficheiro }) => {
+        setAnexoPendente({
+            requisito,
+            ficheiro,
+        });
+    };
+
+    const handleConfirmarAnexoRequisito = async () => {
+        if (!anexoPendente || !detalheBadge) {
+            return;
+        }
+
+        const idBadge = obterIdBadge(detalheBadge);
+        const idRequisito =
+            anexoPendente.requisito.id_requisito ??
+            anexoPendente.requisito.idRequisito ??
+            anexoPendente.requisito.id;
+
+        if (!idBadge || !idRequisito) {
+            return;
+        }
+
+        setIsLoadingDetalheBadge(true);
+
+        try {
+            const detalheAtualizado = await anexarRequisitoAoBadge({
+                idBadge,
+                idRequisito,
+                ficheiro: anexoPendente.ficheiro,
+            });
+
+            setDetalheBadge(detalheAtualizado);
+            setObjetivos((prev) =>
+                prev.map((o) => {
+                    if (Number(o.ID_Badge) === Number(idBadge)) {
+                        return {
+                            ...o,
+                            progresso: detalheAtualizado.progresso,
+                            Data_Conclusao: detalheAtualizado.progresso === 100 ? new Date().toISOString() : o.Data_Conclusao
+                        };
+                    }
+                    return o;
+                })
+            );
+        } catch (error) {
+            console.error("Erro ao anexar requisito:", error);
+            alert("Não foi possível anexar o requisito.");
+        } finally {
+            setIsLoadingDetalheBadge(false);
+            setAnexoPendente(null);
+        }
+    };
+
+    const handleSubmeterCandidatura = async (badgeDetalhe) => {
+        const idBadge = obterIdBadge(badgeDetalhe);
+
+        if (!idBadge) {
+            return;
+        }
+
+        setIsLoadingDetalheBadge(true);
+
+        try {
+            const detalheAtualizado = await submeterCandidaturaBadge(idBadge);
+            setDetalheBadge(detalheAtualizado);
+            
+            setObjetivos((prev) =>
+                prev.map((o) => {
+                    if (Number(o.ID_Badge) === Number(idBadge)) {
+                        return {
+                            ...o,
+                            progresso: detalheAtualizado.progresso,
+                            Data_Conclusao: detalheAtualizado.progresso === 100 ? new Date().toISOString() : o.Data_Conclusao
+                        };
+                    }
+                    return o;
+                })
+            );
+        } catch (error) {
+            console.error("Erro ao submeter candidatura:", error);
+            alert("Não foi possível submeter a candidatura.");
+        } finally {
+            setIsLoadingDetalheBadge(false);
+        }
+    };
+
+    const handleVerPaginaPublicaBadge = (badgeDetalhe) => {
+        const idBadge = obterIdBadge(badgeDetalhe);
+        if (!idBadge) return;
+        const urlPublica = badgeDetalhe?.urlPublica ?? obterUrlPublicaDoBadge(idBadge);
+        window.open(urlPublica, "_blank", "noopener,noreferrer");
+    };
+
+    const handleCopiarLinkPublicoBadge = async (badgeDetalhe) => {
+        const idBadge = obterIdBadge(badgeDetalhe);
+        if (!idBadge) return;
+        const urlPublica = badgeDetalhe?.urlPublica ?? obterUrlPublicaDoBadge(idBadge);
+        const urlAbsoluta = `${window.location.origin}${urlPublica}`;
+        try {
+            await navigator.clipboard.writeText(urlAbsoluta);
+            alert("Link público copiado.");
+        } catch (error) {
+            console.error("Erro ao copiar link público:", error);
+            window.prompt("Copia o link público:", urlAbsoluta);
+        }
+    };
+
+    const handlePartilharLinkedIn = async (badgeDetalhe) => {
+        const idBadge = obterIdBadge(badgeDetalhe);
+        if (!idBadge) return;
+        const temPermissao = await verificarPermissaoPartilhaLinkedIn();
+        if (!temPermissao) {
+            setAvisoPermissaoLinkedIn(true);
+            return;
+        }
+        const urlLinkedIn = obterUrlPartilhaLinkedInDoBadge(idBadge);
+        window.open(urlLinkedIn, "_blank", "noopener,noreferrer");
     };
 
     // Quando clica num dia no calendário
@@ -664,19 +968,18 @@ const ObjetivosConsultor = ({ user }) => {
                 {/* ── Painel esquerdo: lista de objetivos ── */}
                 <div className="obj-lista-panel">
                     <div className="obj-painel-header">
-                        <div className="obj-tabs-wrapper">
-                            <button 
-                                className={`obj-tab-btn ${viewMode === 'progresso' ? 'active' : ''}`}
-                                onClick={() => { setViewMode('progresso'); setDiaSelecionado(null); }}
-                            >
-                                Em progresso
-                            </button>
-                            <button 
-                                className={`obj-tab-btn ${viewMode === 'historico' ? 'active' : ''}`}
-                                onClick={() => { setViewMode('historico'); setDiaSelecionado(null); }}
-                            >
-                                Histórico
-                            </button>
+                        <div className="obj-tabs-container">
+                            <SeletorAbas
+                                opcoes={[
+                                    { valor: "progresso", label: "Em progresso" },
+                                    { valor: "historico", label: "Histórico" }
+                                ]}
+                                valorAtivo={viewMode}
+                                onChange={(val) => {
+                                    setViewMode(val);
+                                    setDiaSelecionado(null);
+                                }}
+                            />
                         </div>
                         
                         {viewMode === 'progresso' && diaSelecionado && (
@@ -718,7 +1021,25 @@ const ObjetivosConsultor = ({ user }) => {
 
                     {/* Cards de objetivos */}
                     <div className="obj-lista-scroll">
-                        {objetivosFiltrados.length === 0 ? (
+                        {isLoadingObjetivos ? (
+                            <div className="obj-painel-vazio fade-in">
+                                <i className="fi fi-br-spinner spinner-animado" />
+                                <span>A carregar os teus objetivos...</span>
+                            </div>
+                        ) : erroAPIObjetivos ? (
+                            <div className="obj-painel-vazio fade-in">
+                                <i className="fi fi-br-exclamation" style={{ color: '#e74c3c' }} />
+                                <span>{erroAPIObjetivos}</span>
+                                <button
+                                    type="button"
+                                    className="obj-btn-propor mt-2"
+                                    style={{ padding: '6px 16px', fontSize: '12px' }}
+                                    onClick={carregarObjetivosAPI}
+                                >
+                                    Tentar novamente
+                                </button>
+                            </div>
+                        ) : objetivosFiltrados.length === 0 ? (
                             <div className="obj-painel-vazio fade-in">
                                 <i className={viewMode === 'historico' ? "fi fi-br-time-past" : "fi fi-br-calendar"} />
                                 <span>
@@ -738,51 +1059,76 @@ const ObjetivosConsultor = ({ user }) => {
 
                                 return (
                                     <div key={obj.ID_Objetivo} className="obj-item-card fade-in">
-                                        
-                                        {/* Botão remover — só para progresso */}
-                                        {viewMode === 'progresso' && (
+                                        <div className="obj-item-main-row">
+                                            {/* Botão remover — só para progresso */}
+                                            {viewMode === 'progresso' && (
+                                                <button
+                                                    className="obj-item-remover"
+                                                    onClick={() => handleRemover(obj.ID_Objetivo)}
+                                                    title="Remover objetivo (fase experimental)"
+                                                >
+                                                    <i className="fi fi-br-cross" />
+                                                </button>
+                                            )}
+
                                             <button
-                                                className="obj-item-remover"
-                                                onClick={() => handleRemover(obj.ID_Objetivo)}
-                                                title="Remover objetivo (fase experimental)"
+                                                className="obj-badge-icon-btn"
+                                                onClick={() => navigate('/')}
+                                                title={`Ver badge: ${obj.badge.Nome_Badge}`}
                                             >
-                                                <i className="fi fi-br-cross" />
-                                            </button>
-                                        )}
-
-                                        <button
-                                            className="obj-badge-icon-btn"
-                                            onClick={() => navigate('/')}
-                                            title={`Ver badge: ${obj.badge.Nome_Badge}`}
-                                        >
-                                            <BadgeCirculo
-                                                imagemBadge={obj.badge.imagemBadge || null}
-                                                icone={obj.badge.icone}
-                                                nomeBadge={obj.badge.Nome_Badge}
-                                            />
-                                        </button>
-
-                                        <div className="obj-item-info">
-                                            <div className="obj-item-titulo">{obj.badge.Nome_Badge}</div>
-                                            <div className="obj-item-area">{obj.badge.Nome_Area}</div>
-                                            <div className="obj-progress-wrap">
-                                                <div
-                                                    className="obj-progress-fill"
-                                                    style={{ width: `${obj.progresso}%`, backgroundColor: cor }}
+                                                <BadgeCirculo
+                                                    imagemBadge={obj.badge.imagemBadge || null}
+                                                    icone={obj.badge.icone}
+                                                    nomeBadge={obj.badge.Nome_Badge}
                                                 />
+                                            </button>
+
+                                            <div className="obj-item-info">
+                                                <div className="obj-item-titulo">{obj.badge.Nome_Badge}</div>
+                                                <div className="obj-item-area">{obj.badge.Nome_Area}</div>
+                                                <div className="obj-progress-wrap">
+                                                    <div
+                                                        className="obj-progress-fill"
+                                                        style={{ width: `${obj.progresso}%`, backgroundColor: cor }}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="obj-item-side">
+                                                <div className="obj-prazo-label">
+                                                    <i className="fi fi-br-calendar" style={{ fontSize: '11px' }} />
+                                                    {formatarData(obj.Data_Objetivo)}
+                                                </div>
+                                                <div className="obj-estado-label" style={{ color: cor }}>
+                                                    <div className="obj-estado-dot" style={{ backgroundColor: cor }} />
+                                                    {isConcluido ? 'Concluído' : (isExpirado ? 'Expirado' : `${obj.progresso}%`)}
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <div className="obj-item-side">
-                                            <div className="obj-prazo-label">
-                                                <i className="fi fi-br-calendar" style={{ fontSize: '11px' }} />
-                                                {formatarData(obj.Data_Objetivo)}
+                                        {viewMode === 'progresso' && (
+                                            <div className="obj-item-expansor">
+                                                <div className="obj-item-expansor-inner">
+                                                    <div className="obj-item-divider" />
+                                                    <div className="obj-item-expansor-content">
+                                                        <div className="obj-item-descricao-wrap">
+                                                            <span className="obj-item-descricao-titulo">Sobre este badge</span>
+                                                            <p className="obj-item-descricao-texto">
+                                                                {obj.badge.descricao || obj.badge.Descricao_Badge || "Desenvolva esta competência realizando as submissões e provas necessárias para obter esta certificação."}
+                                                            </p>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            className="card-badge-sugerido-botao card-badge-sugerido-botao-primario obj-btn-continuar-hover"
+                                                            onClick={() => handleOpenDetalheBadgeConsultor(obterIdBadge(obj.badge), obj.badge)}
+                                                            title={`Continuar progresso de: ${obj.badge.Nome_Badge ?? obj.badge.nome_badge ?? 'Badge'}`}
+                                                        >
+                                                            Continuar
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="obj-estado-label" style={{ color: cor }}>
-                                                <div className="obj-estado-dot" style={{ backgroundColor: cor }} />
-                                                {isConcluido ? 'Concluído' : (isExpirado ? 'Expirado' : `${obj.progresso}%`)}
-                                            </div>
-                                        </div>
+                                        )}
                                     </div>
                                 );
                             })
@@ -807,6 +1153,66 @@ const ObjetivosConsultor = ({ user }) => {
                     onConfirm={badge => setBadgeSelecionado(badge)}
                 />
             )}
+
+            {/* ══ MODAL CONFIRMAÇÃO DE REMOÇÃO ═══════════════════════════ */}
+            <ModalConfirmacao
+                isOpen={!!objetivoParaRemover}
+                onClose={() => setObjetivoParaRemover(null)}
+                onConfirm={() => {
+                    if (objetivoParaRemover) {
+                        executarRemover(objetivoParaRemover);
+                    }
+                }}
+                titulo="Remover Objetivo"
+                mensagem="Tens a certeza que desejas remover este objetivo? Esta ação não poderá ser revertida."
+                textoConfirmar="Remover"
+                textoCancelar="Cancelar"
+                isDanger={true}
+            />
+
+            {/* ══ MODAL DETALHE DO BADGE ════════════════════════════════ */}
+            <BadgeDetalheModal
+                isOpen={isDetalheBadgeOpen}
+                onClose={handleCloseDetalheBadge}
+                modo="consultor"
+                detalhe={detalheBadge}
+                isLoading={isLoadingDetalheBadge}
+                onSelecionarFicheiroRequisito={handleSelecionarFicheiroRequisito}
+                onSubmeterCandidatura={handleSubmeterCandidatura}
+                onVerPaginaPublica={handleVerPaginaPublicaBadge}
+                onCopiarLinkPublico={handleCopiarLinkPublicoBadge}
+                onPartilharLinkedIn={handlePartilharLinkedIn}
+            />
+
+            {/* ══ MODAL CONFIRMAÇÃO DO LINKEDIN ══════════════════════════ */}
+            <ModalConfirmacao
+                isOpen={avisoPermissaoLinkedIn}
+                onClose={() => setAvisoPermissaoLinkedIn(false)}
+                onConfirm={() => setAvisoPermissaoLinkedIn(false)}
+                titulo="Sem autorização"
+                mensagem="Não tens autorização para partilhar badges no LinkedIn. Esta permissão pode ser ativada nas definições pelo Administrador."
+                textoConfirmar="Compreendido"
+                textoCancelar="Fechar"
+                isDanger={false}
+            />
+
+            {/* ══ MODAL CONFIRMAÇÃO DE ANEXO ═════════════════════════════ */}
+            <ModalConfirmacao
+                isOpen={!!anexoPendente}
+                onClose={() => setAnexoPendente(null)}
+                onConfirm={handleConfirmarAnexoRequisito}
+                titulo="Confirmar Envio de Requisito"
+                mensagem={`Deseja enviar o ficheiro "${
+                    anexoPendente?.ficheiro?.name ?? ""
+                }" como comprovativo para o requisito "${
+                    anexoPendente?.requisito?.nome_requisito ??
+                    anexoPendente?.requisito?.nome ??
+                    ""
+                }"?`}
+                textoConfirmar="Enviar Comprovativo"
+                textoCancelar="Cancelar"
+                isDanger={false}
+            />
         </div>
     );
 };

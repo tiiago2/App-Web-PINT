@@ -24,10 +24,22 @@ let registoBadgesMockLocal = clonar(badgeDetalheConsultorMock.registoBadges);
 
 const estadoOverridePorBadge = new Map();
 
-function obterBadgeCatalogoPorId(idBadge) {
-    return badgesCatalogoMock.find(
+function obterBadgeCatalogoPorId(idBadge, badgeData = null) {
+    const encontrado = badgesCatalogoMock.find(
         (badge) => Number(badge.id_badge) === Number(idBadge)
     );
+    if (encontrado) return encontrado;
+    if (badgeData) {
+        return {
+            id_badge: Number(idBadge),
+            nome_badge: badgeData.nome_badge ?? badgeData.Nome_Badge ?? badgeData.titulo ?? "Badge",
+            nome_area: badgeData.nome_area ?? badgeData.Nome_Area ?? "Geral",
+            pontos_badge: badgeData.pontos_badge ?? badgeData.Pontos_Badge ?? 100,
+            imagem: badgeData.imagem ?? badgeData.imagemBadge ?? null,
+            descricao_badge: badgeData.descricao_badge ?? badgeData.descricao ?? ""
+        };
+    }
+    return null;
 }
 
 function obterEstadoConsultorPorBadge(idBadge) {
@@ -58,9 +70,16 @@ function obterRequisitosPorBadge(idBadge) {
         .filter((relacao) => Number(relacao.id_badge) === Number(idBadge))
         .map((relacao) => Number(relacao.id_requisito));
 
-    return requisitosMock.filter((requisito) =>
+    const requisitos = requisitosMock.filter((requisito) =>
         idsRequisitosDoBadge.includes(Number(requisito.id_requisito))
     );
+
+    // Se o badge não tiver requisitos estáticos mapeados, devolve os requisitos base por defeito
+    if (requisitos.length === 0) {
+        return requisitosMock.slice(0, 2);
+    }
+
+    return requisitos;
 }
 
 function obterSubmissaoAtivaPorBadge(idBadge, idUtilizador = 1) {
@@ -175,8 +194,9 @@ function criarDocumentoParaRequisito({
     return novoDocumento;
 }
 
-export async function obterBadgeDetalheCatalogo(idBadge) {
-    const badge = obterBadgeCatalogoPorId(idBadge);
+export async function obterBadgeDetalheCatalogo(idBadge, opcoes = {}) {
+    const { badgeData = null } = opcoes;
+    const badge = obterBadgeCatalogoPorId(idBadge, badgeData);
 
     if (!badge) {
         return null;
@@ -191,9 +211,9 @@ export async function obterBadgeDetalheCatalogo(idBadge) {
 }
 
 export async function obterBadgeDetalheConsultor(idBadge, opcoes = {}) {
-    const { idUtilizador = 1 } = opcoes;
+    const { idUtilizador = 1, badgeData = null } = opcoes;
 
-    const badge = obterBadgeCatalogoPorId(idBadge);
+    const badge = obterBadgeCatalogoPorId(idBadge, badgeData);
 
     if (!badge) {
         return null;

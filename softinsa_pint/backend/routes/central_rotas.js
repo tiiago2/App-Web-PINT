@@ -19,9 +19,11 @@ const rotas_profile = require('./profile_routes');
 const rotas_defs_permissoes = require('./permissoes_def.routes');
 const rotas_rgpd = require('./rgpd.routes');
 const rotas_permissoes = require('./permissoes_routes');
+const rotas_objetivos = require('./objetivos_routes');
 
 router.use("/hometalent", rotas_home_talent);
 router.use("/homeconsultor", rotas_home_consultor);
+router.use("/objetivos", rotas_objetivos);
 router.use("/estatisticasconsultor", rotas_estatisticas_consultor);
 router.use("/estatisticasservice", rotas_estatisticas_service);
 router.use("/estatisticastalent", rotas_estatisticas_talent);

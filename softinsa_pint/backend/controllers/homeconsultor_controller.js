@@ -14,6 +14,7 @@ const {
 
 const { Op } = require("sequelize");
 const { calcularRanking } = require("../helpers/rankingHelper");
+const ObjetivosController = require("./objetivos_controller");
 
 module.exports = {
   // 1. Badges em progresso do consultor logado
@@ -75,79 +76,9 @@ module.exports = {
     }
   },
 
-  // 2. Objetivos propostos do consultor logado
-  async getObjetivos(req, res) {
-    try {
-      const id_utilizador = req.utilizadorLogado.id_utilizador;
-
-      const objetivos = await Objetivos.findAll({
-        where: {
-          id_utilizador,
-          deleted_objetivo: false
-        },
-        include: [
-          {
-            model: Badges,
-            attributes: ["id_badge", "nome_badge", "imagem"]
-          }
-        ],
-        order: [["data_final", "ASC"]]
-      });
-
-      const objetivosFormatados = [];
-
-      for (const obj of objetivos) {
-        const badge = obj.Badge;
-        if (!badge) continue;
-
-        let progresso = 0;
-
-        if (obj.data_conclusao) {
-          progresso = 100;
-        } else {
-          const submissao = await Submissoes.findOne({
-            where: {
-              id_utilizador,
-              id_badge: badge.id_badge,
-              status: {
-                [Op.notIn]: ["Aceite", "Concluído"]
-              }
-            }
-          });
-
-          if (submissao) {
-            const totalRequisitos = await RequisitosBadge.count({
-              where: { id_badge: badge.id_badge }
-            });
-
-            const documentosSubmetidos = await Documentos.count({
-              where: {
-                id_submissao: submissao.id_submissao,
-                deleted_file: false
-              }
-            });
-
-            progresso = totalRequisitos > 0
-              ? Math.round((documentosSubmetidos / totalRequisitos) * 100)
-              : 0;
-          }
-        }
-
-        objetivosFormatados.push({
-          id: obj.id_objetivo,
-          titulo: badge.nome_badge,
-          data: obj.data_final,
-          progresso,
-          imagem: badge.imagem
-        });
-      }
-
-      return res.status(200).json(objetivosFormatados);
-    } catch (error) {
-      console.error("Erro ao buscar objetivos:", error);
-      return res.status(500).json({ error: "Erro ao buscar objetivos." });
-    }
-  },
+  // 2. Delegar operações de objetivos para o controlador dedicado de Objetivos
+  getObjetivos: ObjetivosController.getObjetivos,
+  criarObjetivo: ObjetivosController.criarObjetivo,
 
   // 3. Progresso geral agrupado por Service Line
   async getProgresso(req, res) {

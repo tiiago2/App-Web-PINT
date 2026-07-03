@@ -23,7 +23,7 @@ const Render_Badges = ({ badges, edicao, onAdd, assinaturaBadges }) => {
             <span className='badge_nome'>{badge.nome}</span>
             {edicao && !isSelected && (
               <div className="position-absolute top-0 end-0 bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow" style={{ width: '24px', height: '24px', transform: 'translate(25%, -25%)' }}>
-                <i className="fi fi-br-plus" style={{ fontSize: '10px' }}></i>
+                <i className="fi fi-br-plus" style={{ fontSize: '10px', display: 'flex', lineHeight: 1 }}></i>
               </div>
             )}
           </div>
@@ -43,14 +43,16 @@ const Assinatura = ({ badges, edicao, onRemove }) => {
             <div className="position-absolute top-0 end-0 bg-danger text-white rounded-circle d-flex align-items-center justify-content-center shadow"
               style={{ width: '24px', height: '24px', cursor: 'pointer', transform: 'translate(25%, -25%)' }}
               onClick={() => onRemove(badge)}>
-              <i className="fi fi-br-cross" style={{ fontSize: '10px' }}></i>
+              <i className="fi fi-br-cross" style={{ fontSize: '10px', display: 'flex', lineHeight: 1 }}></i>
             </div>
           )}
         </div>
       ))}
       {edicao && badges.length < 4 && (
-        <div className='assinatura_badge d-flex align-items-center flex-column justify-content-center bg-light text-muted' style={{ border: '2px dashed #ccc', borderRadius: '50%', cursor: 'default' }}>
-          <i className="fi fi-br-plus" style={{ fontSize: '24px' }}></i>
+        <div className='assinatura_badge d-flex align-items-center flex-column justify-content-center'>
+          <div className='assinatura_badge_placeholder'>
+            <i className="fi fi-br-plus"></i>
+          </div>
         </div>
       )}
     </>
@@ -70,7 +72,7 @@ const Componente_Editavel = ({ value, onChange, tipo = "text", edicao }) => {
   );
 };
 
-const BotaoLogout_Concluir = ({ edicao, setEdicao }) => {
+const BotaoLogout_Concluir = ({ edicao, onConcluir }) => {
 
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -81,7 +83,7 @@ const BotaoLogout_Concluir = ({ edicao, setEdicao }) => {
       <i className="fi fi-br-exit"></i>
     </button>
   ) : (
-    <button className='btn btn_logout d-flex align-items-center gap-2 px-3 py-2 shadow-sm' onClick={() => setEdicao(!edicao)}>
+    <button className='btn btn_logout d-flex align-items-center gap-2 px-3 py-2 shadow-sm' onClick={onConcluir}>
       <span>{t('concluir')}</span>
     </button>
   );
@@ -187,6 +189,27 @@ const PerfilPessoal = () => {
     setAssinaturaBadges(assinaturaBadges.filter(b => b.id !== badgeToRemove.id));
   };
 
+  const handleConcluir = async () => {
+    try {
+      const idGuardado = localStorage.getItem('utilizador_id');
+      if (!idGuardado) return;
+
+      const badgesParaEnviar = assinaturaBadges.map(b => ({ id_badge: b.id }));
+
+      await api.post('/profile/updateassinatura', {
+        id_utilizador: parseInt(idGuardado),
+        nome: profileData.nome,
+        email: profileData.email,
+        telefone: profileData.telefone,
+        badges: badgesParaEnviar
+      });
+
+      setEdicao(false);
+    } catch (error) {
+      console.error('Erro ao guardar perfil:', error);
+    }
+  };
+
   return (
     <div className='perfil-container w-100'>
       {/* Cabeçalho Superior */}
@@ -199,7 +222,7 @@ const PerfilPessoal = () => {
             ) : null}
           </button>
         </div>
-        <BotaoLogout_Concluir edicao={edicao} setEdicao={setEdicao} />
+        <BotaoLogout_Concluir edicao={edicao} onConcluir={handleConcluir} />
       </div>
 
       <div className='row g-4'>

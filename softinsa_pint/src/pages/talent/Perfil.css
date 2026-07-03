@@ -198,6 +198,39 @@
 /* =============================================
    ASSINATURA PESSOAL
    ============================================= */
+.btn_copiar_assinatura {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--border-radius-pequeno);
+  transition: background-color 0.2s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn_copiar_assinatura i {
+  font-size: 1rem;
+  color: var(--fontes);
+  opacity: 0.45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.btn_copiar_assinatura:hover {
+  background-color: var(--fundo2);
+}
+
+.btn_copiar_assinatura:hover i {
+  opacity: 1;
+}
+
 .assinatura_nome {
   font-size: 0.95rem;
   font-weight: 600;

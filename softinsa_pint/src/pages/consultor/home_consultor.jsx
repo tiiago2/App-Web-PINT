@@ -146,31 +146,34 @@ const HomeConsultor = ({ user, saudacao }) => {
                     </div>
                 </div>
                 <div className="col-12 col-xl-4">
-                    <ClassificacaoGeral user={user} classificacao={classificacao} fullHeight={true} />
+                    <ClassificacaoGeral user={user} classificacao={classificacao} fullHeight={true} isLoading={carregando} />
                 </div>
             </div>
             <div className="row" style={{ minHeight: 0, rowGap: 'var(--gap-default-seccoes)' }}>
                 {/* Atividade Recente */}
                 <div className="col-12 col-lg-4 d-flex flex-column">
-                    <AtividadeRecente atividades={atividades} fullHeight={true} />
+                    <AtividadeRecente atividades={atividades} fullHeight={true} isLoading={carregando} />
                 </div>
                 {/* Objetivos Propostos */}
                 <div className="col-12 col-lg-4 d-flex flex-column">
                     <div className="home-card p-3 h-100">
                         <h5 className="home-card-title mb-3 fw-medium flex-shrink-0">{t('objetivos_propostos')}</h5>
-                        <div className="objetivos-lista-v3 flex-grow-1">
-                            {carregando && objetivos.length === 0 ? (
+                        {carregando && objetivos.length === 0 ? (
+                            <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
                                 <div className="objetivos-estado-vazio">
                                     <i className="fi fi-br-spinner hc-spinner"></i>
                                     <span>{t('a_carregar') || 'A carregar...'}</span>
                                 </div>
-                            ) : objetivos.length === 0 ? (
-                                <div className="objetivos-estado-vazio">
-                                    <i className="fi fi-br-bolt"></i>
+                            </div>
+                        ) : objetivos.length === 0 ? (
+                            <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
+                                <div className="objetivos-estado-vazio" style={{ margin: 0 }}>
                                     <span>{t('sem_objetivos') || 'Sem objetivos propostos.'}</span>
                                 </div>
-                            ) : (
-                                objetivos.slice(0, 3).map((obj, idx) => {
+                            </div>
+                        ) : (
+                            <div className="objetivos-lista-v3 flex-grow-1">
+                                {objetivos.slice(0, 3).map((obj, idx) => {
                                     const pct = Math.max(0, Math.min(100, Number(obj.progresso) || 0));
                                     const cor = corPorProgresso(pct);
                                     return (
@@ -203,28 +206,32 @@ const HomeConsultor = ({ user, saudacao }) => {
                                             </div>
                                         </div>
                                     );
-                                })
-                            )}
-                        </div>
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
                 {/* Progresso */}
                 <div className="col-12 col-lg-4 d-flex flex-column">
                     <div className="home-card p-3 h-100">
                         <h5 className="home-card-title mb-3 fw-medium flex-shrink-0">{t('progresso')}</h5>
-                        <div className="progresso-lista flex-grow-1 overflow-y-auto pe-1">
-                            {carregando && progressoItems.length === 0 ? (
-                                <div className="progresso-estado-vazio">
+                        {carregando && progressoItems.length === 0 ? (
+                            <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
+                                <div className="progresso-estado-vazio" style={{ margin: 0 }}>
                                     <i className="fi fi-br-spinner hc-spinner"></i>
                                     <span>{t('a_carregar') || 'A carregar...'}</span>
                                 </div>
-                            ) : progressoItems.length === 0 ? (
-                                <div className="progresso-estado-vazio">
+                            </div>
+                        ) : progressoItems.length === 0 ? (
+                            <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
+                                <div className="progresso-estado-vazio" style={{ margin: 0 }}>
                                     <i className="fi fi-br-chart-pie-alt"></i>
                                     <span>{t('sem_progresso') || 'Sem dados de progresso.'}</span>
                                 </div>
-                            ) : (
-                                progressoItems.map((prog, i) => {
+                            </div>
+                        ) : (
+                            <div className="progresso-lista flex-grow-1 overflow-y-auto pe-1">
+                                {progressoItems.map((prog, i) => {
                                     const pct = Math.max(0, Math.min(100, Number(prog.pct) || 0));
                                     const cor = corPorProgresso(pct);
                                     return (
@@ -245,9 +252,9 @@ const HomeConsultor = ({ user, saudacao }) => {
                                             </div>
                                         </div>
                                     );
-                                })
-                            )}
-                        </div>
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

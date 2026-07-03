@@ -55,17 +55,25 @@ module.exports = {
             }
 
             // --- ASSINATURAS ---
-            // 6. Consultar Assinaturas (findAll devolve um vetor)
-            const assinaturas = await Assinatura.findAll({
+            // 6. Consultar a Assinatura do utilizador
+            const assinaturaUser = await Assinatura.findOne({
                 where: { id_proprietario: id },
                 attributes: ['id_assinatura'],
                 raw: true
             });
 
-            // Verificamos se o vetor existe e não está vazio
-            if (assinaturas && assinaturas.length > 0) {
-                // Mapeamos o vetor de objetos para um vetor simples de números: [1, 2, 3]
-                utilizadorFinal.assinaturas_ids = assinaturas.map(ass => ass.id_assinatura);
+            // Se tiver assinatura, vamos buscar os badges que lá estão associados
+            if (assinaturaUser) {
+                const badgesDaAssinatura = await BadgesAssinatura.findAll({
+                    where: { id_assinatura: assinaturaUser.id_assinatura },
+                    attributes: ['id_badge'],
+                    raw: true
+                });
+
+                if (badgesDaAssinatura && badgesDaAssinatura.length > 0) {
+                    // Mapear para devolver um array apenas com os IDs dos badges (ex: [14, 25])
+                    utilizadorFinal.assinaturas_ids = badgesDaAssinatura.map(ba => ba.id_badge);
+                }
             }
 
             // --- BADGES --- 

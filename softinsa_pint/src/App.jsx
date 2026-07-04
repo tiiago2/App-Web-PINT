@@ -510,9 +510,10 @@ function App() {
               </div>
             ))}
           </div>
-          <div className="d-flex flex-column mb-3 align-items-center align-items-xl-start ps-xl-4 w-100" style={{ fontSize: '0.8rem', opacity: 0.7 }}>
-            <span className="d-none d-xl-block mb-1" style={{ cursor: "pointer" }} onClick={() => {}}>{t("politicas_rgpd")}</span>
-            <span className="d-none d-xl-block" style={{ cursor: "pointer" }} onClick={() => {}}>{t("quem_somos")}</span>
+          <div className="d-none d-xl-flex mb-3 align-items-center justify-content-center w-100 gap-2">
+            <span className="item_rodape_lateral" onClick={() => {}}>{t("politicas_rgpd")}</span>
+            <span style={{ opacity: 0.5, fontSize: '0.7rem' }}>•</span>
+            <span className="item_rodape_lateral" onClick={() => {}}>{t("quem_somos")}</span>
           </div>
         </div>
 

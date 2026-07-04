@@ -130,6 +130,18 @@
     cursor: pointer;
 }
 
+.item_rodape_lateral {
+    cursor: pointer;
+    font-size: 0.7rem; /* Fica mais pequeno do que o 0.8rem anterior */
+    opacity: 0.6;
+    transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.item_rodape_lateral:hover {
+    color: var(--selecao);
+    opacity: 1;
+}
+
 #pop_up_notification{
     background-color: var(--fundo);
     box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.12);

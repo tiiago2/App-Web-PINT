@@ -15,31 +15,35 @@ export function normalizarBadgeCatalogo(badge) {
 
     const imagem = badge.imagem ?? badge.imagemBadge ?? null;
 
-    const idArea = badge.id_area ?? badge.idArea ?? null;
+    const idArea = badge.id_area ?? badge.idArea ?? badge.Area?.id_area ?? null;
     const nomeArea =
         badge.nome_area ??
         badge.nomeArea ??
+        badge.Area?.nome_area ??
         badge.area ??
         "Sem Área";
 
-    const idServiceLine = badge.id_service_line ?? badge.idServiceLine ?? null;
+    const idServiceLine = badge.id_service_line ?? badge.idServiceLine ?? badge.Area?.ServiceLine?.id_service_line ?? null;
     const nomeServiceLine =
         badge.nome_service_line ??
         badge.nomeServiceLine ??
+        badge.Area?.ServiceLine?.nome_service_line ??
         badge.serviceLine ??
         "Sem Service Line";
 
-    const idLearningPath = badge.id_learning_path ?? badge.idLearningPath ?? null;
+    const idLearningPath = badge.id_learning_path ?? badge.idLearningPath ?? badge.Area?.ServiceLine?.LearningPath?.id_learning_path ?? null;
     const nomeLearningPath =
         badge.nome_learning_path ??
         badge.nomeLearningPath ??
+        badge.Area?.ServiceLine?.LearningPath?.nome_learning_path ??
         badge.learningPath ??
         "Sem Learning Path";
 
-    const idNivel = badge.id_nivel ?? badge.idNivel ?? null;
+    const idNivel = badge.id_nivel ?? badge.idNivel ?? badge.Nivel?.id_nivel ?? null;
     const nomeNivel =
         badge.nome_nivel ??
         badge.nomeNivel ??
+        badge.Nivel?.nome_nivel ??
         badge.nivel ??
         "Sem Nível";
 

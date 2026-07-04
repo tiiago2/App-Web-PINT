@@ -1,4 +1,4 @@
-const { Utilizador } = require('../models');
+const { Utilizador, Consultor } = require('../models');
 const cloudinary = require('cloudinary').v2;
 
 // Configure Cloudinary inline
@@ -54,6 +54,18 @@ module.exports = {
         imagem_perfil,
         update_user: new Date()
       });
+
+      // SINCRONIZAÇÃO: Atualizar também a tabela Consultor se o utilizador existir lá
+      const consultor = await Consultor.findOne({ where: { id_utilizador: id } });
+      if (consultor) {
+        await consultor.update({
+          nome_user: nome_user || consultor.nome_user,
+          email: email || consultor.email,
+          telefone: telefone || consultor.telefone,
+          imagem_perfil,
+          update_user: new Date()
+        });
+      }
 
       return res.status(200).json(user);
     } catch (error) {

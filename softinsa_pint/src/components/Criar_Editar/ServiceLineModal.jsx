@@ -11,28 +11,63 @@ const MOCK_HIERARCHY = [
   },
 ];
 
-export default function ServiceLineModal({ isOpen, onClose, onSave, serviceLineToEdit }) {
+// Mock de utilizadores para seleção quando sem API ligada
+const MOCK_UTILIZADORES_CANDIDATOS = [
+  { id: 1, id_utilizador: 1, nome: "Gonçalo Ferreira", nome_user: "Gonçalo Ferreira", email: "goncalo@softinsa.pt" },
+  { id: 2, id_utilizador: 2, nome: "Ana Silva", nome_user: "Ana Silva", email: "ana.silva@softinsa.pt" },
+  { id: 3, id_utilizador: 3, nome: "Carlos Oliveira", nome_user: "Carlos Oliveira", email: "carlos.o@softinsa.pt" },
+  { id: 4, id_utilizador: 4, nome: "Mariana Costa", nome_user: "Mariana Costa", email: "mariana.costa@softinsa.pt" },
+  { id: 5, id_utilizador: 5, nome: "Pedro Santos", nome_user: "Pedro Santos", email: "pedro.santos@softinsa.pt" },
+];
+
+export default function ServiceLineModal({ 
+  isOpen, 
+  onClose, 
+  onSave, 
+  serviceLineToEdit, 
+  utilizadoresElegiveis = [], 
+  learningPaths = [] 
+}) {
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
   const [learningPathId, setLearningPathId] = useState("");
   const [formErro, setFormErro] = useState("");
 
-  const lpOpcoes = MOCK_HIERARCHY.map((lp) => ({
-    valor: lp.id,
-    label: lp.nome,
+  // Estados para seleção de Líder com pesquisa preditiva
+  const [liderPesquisa, setLiderPesquisa] = useState("");
+  const [idLider, setIdLider] = useState(null);
+  const [nomeLider, setNomeLider] = useState("");
+  const [focusedLider, setFocusedLider] = useState(false);
+
+  const listaCandidatos = utilizadoresElegiveis.length > 0 ? utilizadoresElegiveis : MOCK_UTILIZADORES_CANDIDATOS;
+  const listaLPs = learningPaths.length > 0 ? learningPaths : MOCK_HIERARCHY;
+
+  const lpOpcoes = listaLPs.map((lp) => ({
+    valor: String(lp.id_learning_path ?? lp.idLearningPath ?? lp.id ?? ""),
+    label: lp.nome_learning_path ?? lp.nomeLearningPath ?? lp.nome ?? lp.learningPath ?? "",
   }));
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
       if (serviceLineToEdit) {
-        setNome(serviceLineToEdit.nome || "");
-        setDescricao(serviceLineToEdit.descricao || "");
-        setLearningPathId(serviceLineToEdit.learningPathId || "");
+        setNome(serviceLineToEdit.nome || serviceLineToEdit.nome_service_line || "");
+        setDescricao(serviceLineToEdit.descricao || serviceLineToEdit.descricao_service_line || "");
+        setLearningPathId(serviceLineToEdit.learningPathId || serviceLineToEdit.id_learning_path || "");
+        
+        const liderExistenteNome = serviceLineToEdit.lider || serviceLineToEdit.nome_lider || serviceLineToEdit.liderNome || "";
+        const liderExistenteId = serviceLineToEdit.id_lider || serviceLineToEdit.idLider || serviceLineToEdit.liderId || null;
+
+        setLiderPesquisa(liderExistenteNome);
+        setIdLider(liderExistenteId);
+        setNomeLider(liderExistenteNome);
       } else {
         setNome("");
         setDescricao("");
         setLearningPathId("");
+        setLiderPesquisa("");
+        setIdLider(null);
+        setNomeLider("");
         setFormErro("");
       }
     } else {
@@ -48,6 +83,7 @@ export default function ServiceLineModal({ isOpen, onClose, onSave, serviceLineT
   const handleSave = (e) => {
     e.preventDefault();
     setFormErro("");
+
     if (!nome.trim() || !learningPathId) {
       setFormErro(
         "Por favor, preencha todos os campos obrigatórios (Nome e Learning Path).",
@@ -55,13 +91,39 @@ export default function ServiceLineModal({ isOpen, onClose, onSave, serviceLineT
       return;
     }
 
+    if (!liderPesquisa.trim()) {
+      setFormErro("Por favor, selecione um Líder para a Service Line.");
+      return;
+    }
+
+    // Tenta encontrar um id de líder na lista se não tiver sido selecionado explicitamente
+    let idLiderFinal = idLider;
+    let nomeLiderFinal = nomeLider || liderPesquisa.trim();
+
+    if (!idLiderFinal) {
+      const match = listaCandidatos.find(u => 
+        (u.nome || u.nome_user || "").toLowerCase() === liderPesquisa.trim().toLowerCase()
+      );
+      if (match) {
+        idLiderFinal = match.id || match.id_utilizador;
+        nomeLiderFinal = match.nome || match.nome_user;
+      }
+    }
+
     const newSL = {
-      id: serviceLineToEdit ? serviceLineToEdit.id : Date.now(),
-      nome,
-      descricao,
+      id: serviceLineToEdit ? (serviceLineToEdit.id || serviceLineToEdit.id_service_line) : Date.now(),
+      id_service_line: serviceLineToEdit ? (serviceLineToEdit.id || serviceLineToEdit.id_service_line) : Date.now(),
+      nome: nome.trim(),
+      nome_service_line: nome.trim(),
+      descricao: descricao.trim(),
+      descricao_service_line: descricao.trim(),
       learningPathId,
-      badges: 0, // Mock value
-      elementos: 0, // Mock value
+      id_learning_path: learningPathId,
+      id_lider: idLiderFinal || 1,
+      lider: nomeLiderFinal,
+      nome_lider: nomeLiderFinal,
+      badges: serviceLineToEdit?.badges ?? 0,
+      elementos: serviceLineToEdit?.elementos ?? 0,
       learningPath: MOCK_HIERARCHY.find(lp => lp.id === learningPathId)?.nome || "Desconhecido"
     };
 
@@ -111,6 +173,93 @@ export default function ServiceLineModal({ isOpen, onClose, onSave, serviceLineT
                 required
               />
             </div>
+
+            {/* Campo do Líder da Service Line com Pesquisa Autocompletar */}
+            <div className="col-md-12 area-form-group position-relative">
+              <label className="area-form-label">Líder da Service Line</label>
+              <input
+                type="text"
+                className="area-form-input"
+                placeholder="Pesquise o nome ou email do líder..."
+                value={liderPesquisa}
+                onChange={(e) => {
+                  setLiderPesquisa(e.target.value);
+                  setIdLider(null);
+                  setNomeLider("");
+                  setFormErro("");
+                }}
+                onFocus={() => setFocusedLider(true)}
+                onBlur={() => setTimeout(() => setFocusedLider(false), 200)}
+                autoComplete="off"
+                required
+              />
+
+              {focusedLider && liderPesquisa.trim().length > 0 && (
+                (() => {
+                  const termo = liderPesquisa.toLowerCase();
+                  const sugestoes = listaCandidatos.filter(u =>
+                    ((u.nome || u.nome_user || "").toLowerCase().includes(termo) || 
+                     (u.email || "").toLowerCase().includes(termo)) &&
+                    (u.nome || u.nome_user || "").toLowerCase() !== termo
+                  ).slice(0, 5);
+
+                  if (sugestoes.length === 0) return null;
+
+                  return (
+                    <div
+                      className="sugestoes-dropdown"
+                      style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        backgroundColor: '#fff',
+                        border: '1px solid #cad5e2',
+                        borderTop: 'none',
+                        borderRadius: '0 0 8px 8px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        zIndex: 20,
+                        overflow: 'hidden'
+                      }}
+                    >
+                      {sugestoes.map((user, idx) => (
+                        <div
+                          key={user.id || user.id_utilizador || idx}
+                          style={{
+                            padding: '10px 14px',
+                            cursor: 'pointer',
+                            borderBottom: idx < sugestoes.length - 1 ? '1px solid #f0f4f8' : 'none',
+                            fontSize: '0.85rem',
+                            color: 'var(--fontes)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '8px'
+                          }}
+                          onMouseDown={() => {
+                            const nomeMatch = user.nome || user.nome_user;
+                            const idMatch = user.id || user.id_utilizador;
+                            setLiderPesquisa(nomeMatch);
+                            setIdLider(idMatch);
+                            setNomeLider(nomeMatch);
+                            setFormErro("");
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f4f8'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+                        >
+                          <div className="d-flex align-items-center gap-2">
+                            <i className="fi fi-br-user text-muted" style={{ fontSize: '0.75rem' }}></i>
+                            <span>{user.nome || user.nome_user}</span>
+                          </div>
+                          {user.email && <span className="text-muted" style={{ fontSize: '0.75rem' }}>{user.email}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()
+              )}
+            </div>
+
             <div className="col-md-12 area-form-group mt-2 mb-0">
               <label className="area-form-label">Descrição (Opcional)</label>
               <textarea
@@ -154,3 +303,4 @@ export default function ServiceLineModal({ isOpen, onClose, onSave, serviceLineT
     document.body,
   );
 }
+

@@ -3,7 +3,16 @@
 }
 
 .vt-learning-path-col-nome {
-    min-width: 300px;
+    width: 35%;
+    min-width: 240px;
+}
+
+.vt-learning-path-col-sl,
+.vt-learning-path-col-areas,
+.vt-learning-path-col-badges {
+    width: 18%;
+    min-width: 120px;
+    text-align: center !important;
 }
 
 .vt-learning-path-nome {

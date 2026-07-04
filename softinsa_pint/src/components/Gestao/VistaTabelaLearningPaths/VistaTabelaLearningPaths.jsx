@@ -43,6 +43,8 @@ function VistaTabelaLearningPaths({
             key: "serviceLines",
             titulo: "Service Lines",
             align: "center",
+            className: "vt-learning-path-col-sl",
+            headerClassName: "vt-learning-path-col-sl",
             render: (learningPath) =>
                 learningPath.total_service_lines ??
                 learningPath.totalServiceLines ??
@@ -52,6 +54,8 @@ function VistaTabelaLearningPaths({
             key: "areas",
             titulo: "Áreas",
             align: "center",
+            className: "vt-learning-path-col-areas",
+            headerClassName: "vt-learning-path-col-areas",
             render: (learningPath) =>
                 learningPath.total_areas ?? learningPath.totalAreas ?? 0,
         },
@@ -59,6 +63,8 @@ function VistaTabelaLearningPaths({
             key: "badges",
             titulo: "Badges",
             align: "center",
+            className: "vt-learning-path-col-badges",
+            headerClassName: "vt-learning-path-col-badges",
             render: (learningPath) =>
                 learningPath.total_badges ?? learningPath.totalBadges ?? 0,
         },
@@ -75,7 +81,7 @@ function VistaTabelaLearningPaths({
             isLoading={isLoading}
             emptyMessage={emptyMessage}
             loadingMessage="A carregar learning paths..."
-            larguraMinima="720px"
+            larguraMinima="800px"
             className="vista-tabela-learning-paths"
         />
     );

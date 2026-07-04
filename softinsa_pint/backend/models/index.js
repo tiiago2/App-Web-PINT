@@ -49,6 +49,9 @@ db.ServiceLine.belongsTo(db.LearningPath, { foreignKey: 'id_learning_path' });
 db.ServiceLine.hasMany(db.Area, { foreignKey: 'id_service_line' });
 db.Area.belongsTo(db.ServiceLine, { foreignKey: 'id_service_line' });
 
+db.ServiceLine.belongsTo(db.Utilizador, { foreignKey: 'id_lider', as: 'Lider' });
+db.Utilizador.hasMany(db.ServiceLine, { foreignKey: 'id_lider' });
+
 db.Area.hasMany(db.Consultor, { foreignKey: 'id_area' });
 db.Consultor.belongsTo(db.Area, { foreignKey: 'id_area' });
 

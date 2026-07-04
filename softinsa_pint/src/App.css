@@ -109,6 +109,9 @@
     max-width: 260px; /* Lock da largura máxima (tamanho do portátil). Impede que fique "muito grande" no Monitor. */
     flex-shrink: 0;
     transition: width 0.3s ease; /* Transição suave opcional */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 /* Mal as letras desaparecem (< 1200px devido ao d-xl-block), força a barra para a largura mínima dos ícones */
@@ -125,6 +128,18 @@
 
 #item_lateral{
     cursor: pointer;
+}
+
+.item_rodape_lateral {
+    cursor: pointer;
+    font-size: 0.7rem; /* Fica mais pequeno do que o 0.8rem anterior */
+    opacity: 0.6;
+    transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.item_rodape_lateral:hover {
+    color: var(--selecao);
+    opacity: 1;
 }
 
 #pop_up_notification{

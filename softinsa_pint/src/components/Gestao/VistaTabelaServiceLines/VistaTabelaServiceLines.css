@@ -3,7 +3,15 @@
 }
 
 .vt-service-line-col-nome {
-    min-width: 280px;
+    min-width: 240px;
+}
+
+.vt-service-line-col-lider {
+    min-width: 200px;
+}
+
+.vt-service-line-col-lp {
+    min-width: 200px;
 }
 
 .vt-service-line-nome {

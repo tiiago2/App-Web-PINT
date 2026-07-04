@@ -3,7 +3,16 @@ import GaleriaToolbar from "../../../components/Galeria/GaleriaToolbar/GaleriaTo
 import VistaTabelaBadges from "../../../components/Galeria/VistaTabelaBadges/VistaTabelaBadges";
 import BadgeModal from "../../../components/Criar_Editar/BadgeModal";
 import ModalConfirmacao from "../../../components/ui/ModalConfirmacao/ModalConfirmacao";
-import { obterBadgesCatalogoNormalizados } from "../../../services/badgesService";
+import { 
+  obterBadgesCatalogoNormalizados, 
+  atualizarBadge, 
+  removerBadge 
+} from "../../../services/badgesService";
+import {
+  obterLearningPathsNormalizados,
+  obterServiceLinesNormalizadas,
+  obterAreasNormalizadas
+} from "../../../services/gestaoService";
 import { normalizarBadgeCatalogo } from "../../../utils/badgesNormalizadores";
 import MetricasResumo from "../../../components/ui/MetricasResumo/MetricasResumo";
 
@@ -19,7 +28,13 @@ function obterIdBadge(badge = {}) {
 }
 
 function obterNomeBadge(badge = {}) {
-  return badge.nome_badge ?? badge.nomeBadge ?? badge.nome ?? "badge";
+  return (
+    badge.nome_badge ??
+    badge.nomeBadge ??
+    badge.nome ??
+    badge.badge ??
+    "badge"
+  );
 }
 
 function criarOpcoesUnicas(lista, campo) {
@@ -79,8 +94,8 @@ function ordenarBadgesAdmin(lista, ordenacao) {
 
     case "antigos":
       listaOrdenada.sort((a, b) => {
-        const dataA = new Date(a.dataCriacao || a.data_criacao || 0);
-        const dataB = new Date(b.dataCriacao || b.data_criacao || 0);
+        const dataA = new Date(a.data_criacao || 0);
+        const dataB = new Date(b.data_criacao || 0);
 
         return dataA - dataB;
       });
@@ -89,8 +104,8 @@ function ordenarBadgesAdmin(lista, ordenacao) {
     case "recentes":
     default:
       listaOrdenada.sort((a, b) => {
-        const dataA = new Date(a.dataCriacao || a.data_criacao || 0);
-        const dataB = new Date(b.dataCriacao || b.data_criacao || 0);
+        const dataA = new Date(a.data_criacao || 0);
+        const dataB = new Date(b.data_criacao || 0);
 
         return dataB - dataA;
       });
@@ -110,42 +125,41 @@ function TabBadges({ onRegisterAdicionar }) {
   });
 
   const [badges, setBadges] = useState([]);
+  const [learningPaths, setLearningPaths] = useState([]);
+  const [serviceLines, setServiceLines] = useState([]);
+  const [areas, setAreas] = useState([]);
   const [isLoadingBadges, setIsLoadingBadges] = useState(true);
+  const [badgeAEliminar, setBadgeAEliminar] = useState(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [badgeToEdit, setBadgeToEdit] = useState(null);
-  const [badgeAEliminar, setBadgeAEliminar] = useState(null);
+
+  const carregarBadges = async () => {
+    try {
+      setIsLoadingBadges(true);
+      const [bdgs, lps, sls, ars] = await Promise.all([
+        obterBadgesCatalogoNormalizados(),
+        obterLearningPathsNormalizados(),
+        obterServiceLinesNormalizadas(),
+        obterAreasNormalizadas()
+      ]);
+      setBadges(bdgs);
+      setLearningPaths(lps);
+      setServiceLines(sls);
+      setAreas(ars);
+    } catch (error) {
+      console.error("Erro ao carregar dados do admin de badges:", error);
+      setBadges([]);
+      setLearningPaths([]);
+      setServiceLines([]);
+      setAreas([]);
+    } finally {
+      setIsLoadingBadges(false);
+    }
+  };
 
   useEffect(() => {
-    let ativo = true;
-
-    async function carregarBadges() {
-      try {
-        setIsLoadingBadges(true);
-
-        const badgesCatalogo = await obterBadgesCatalogoNormalizados();
-
-        if (ativo) {
-          setBadges(badgesCatalogo);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar badges:", error);
-
-        if (ativo) {
-          setBadges([]);
-        }
-      } finally {
-        if (ativo) {
-          setIsLoadingBadges(false);
-        }
-      }
-    }
-
     carregarBadges();
-
-    return () => {
-      ativo = false;
-    };
   }, []);
 
   const handleOpenCreateModal = useCallback(() => {
@@ -170,52 +184,37 @@ function TabBadges({ onRegisterAdicionar }) {
     setIsModalOpen(true);
   };
 
-  const handleDeleteBadge = (id) => {
-    setBadges((prev) =>
-      prev.filter((badge) => obterIdBadge(badge) !== id)
-    );
-  };
-
-  const handleConfirmDeleteBadge = () => {
+  const handleConfirmDeleteBadge = async () => {
     if (!badgeAEliminar) {
       return;
     }
 
-    handleDeleteBadge(obterIdBadge(badgeAEliminar));
-    setBadgeAEliminar(null);
+    const idB = obterIdBadge(badgeAEliminar);
+
+    try {
+      await removerBadge(idB);
+      await carregarBadges();
+      setBadgeAEliminar(null);
+    } catch (err) {
+      const mensagemErro = err.response?.data?.error || "Erro ao eliminar o Badge.";
+      alert(mensagemErro);
+      setBadgeAEliminar(null);
+    }
   };
 
-  const handleSaveBadge = (badgeObj) => {
-    const badgeNormalizado = normalizarBadgeCatalogo({
-      ...badgeObj,
-      id_badge:
-        badgeObj.id_badge ??
-        badgeObj.idBadge ??
-        badgeObj.id ??
-        Date.now(),
-      data_criacao:
-        badgeObj.data_criacao ??
-        badgeObj.dataCriacao ??
-        new Date().toISOString(),
-    });
+  const handleSaveBadge = async (badgeObj) => {
+    try {
+      const idExistente = badgeToEdit ? obterIdBadge(badgeToEdit) : null;
 
-    const idBadgeGuardado = obterIdBadge(badgeNormalizado);
-
-    setBadges((prev) => {
-      const exists = prev.some(
-        (badge) => obterIdBadge(badge) === idBadgeGuardado
-      );
-
-      if (exists) {
-        return prev.map((badge) =>
-          obterIdBadge(badge) === idBadgeGuardado
-            ? badgeNormalizado
-            : badge
-        );
+      if (idExistente) {
+        await atualizarBadge(idExistente, badgeObj);
+        await carregarBadges();
+        setIsModalOpen(false);
       }
-
-      return [badgeNormalizado, ...prev];
-    });
+    } catch (err) {
+      const mensagemErro = err.response?.data?.error || "Erro ao guardar o Badge.";
+      alert(mensagemErro);
+    }
   };
 
   const badgesComCamposFiltro = useMemo(() => {
@@ -296,7 +295,7 @@ function TabBadges({ onRegisterAdicionar }) {
       {
         titulo: "Áreas",
         valor: totalAreas,
-        icon: "fi-br-crosshairs",
+        icon: "fi-br-target",
       },
       {
         titulo: "Service Lines",
@@ -349,6 +348,9 @@ function TabBadges({ onRegisterAdicionar }) {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveBadge}
         badgeToEdit={badgeToEdit}
+        learningPaths={learningPaths}
+        serviceLines={serviceLines}
+        areas={areas}
       />
     </>
   );

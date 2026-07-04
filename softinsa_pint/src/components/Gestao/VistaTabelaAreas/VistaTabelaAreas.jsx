@@ -35,6 +35,12 @@ function VistaTabelaAreas({
                 area.nome_service_line ?? area.serviceLine ?? "—",
         },
         {
+            key: "lider",
+            titulo: "Líder SL",
+            render: (area) =>
+                area.nome_lider ?? area.lider ?? area.liderNome ?? "—",
+        },
+        {
             key: "learningPath",
             titulo: "Learning Path",
             render: (area) =>

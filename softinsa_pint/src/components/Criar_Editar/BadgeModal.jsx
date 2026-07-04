@@ -124,7 +124,15 @@ const REQUISITOS_MOCK = [
   { id: 5, nome: "Avaliação de Desempenho", descricao: "Ter avaliação positiva na última revisão semestral." }
 ];
 
-export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
+export default function BadgeModal({ 
+  isOpen, 
+  onClose, 
+  onSave, 
+  badgeToEdit, 
+  learningPaths = [], 
+  serviceLines = [], 
+  areas = [] 
+}) {
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
   const [pontos, setPontos] = useState("");
@@ -144,36 +152,50 @@ export default function BadgeModal({ isOpen, onClose, onSave, badgeToEdit }) {
   const [requisitos, setRequisitos] = useState([]);
   const [focusedRequisitoId, setFocusedRequisitoId] = useState(null);
 
-  const lpOpcoes = LEARNING_PATHS.map((learningPath) => ({
-    valor: learningPath.id,
-    label: learningPath.nome,
+  const listaLPs = learningPaths.length > 0 ? learningPaths : LEARNING_PATHS;
+  const listaSLs = serviceLines.length > 0 ? serviceLines : SERVICE_LINES;
+  const listaAreas = areas.length > 0 ? areas : AREAS;
+
+  const lpOpcoes = listaLPs.map((lp) => ({
+    valor: Number(lp.id_learning_path ?? lp.idLearningPath ?? lp.id),
+    label: lp.nome_learning_path ?? lp.nomeLearningPath ?? lp.nome ?? lp.learningPath ?? "",
   }));
 
   const serviceLinesFiltradas = useMemo(() => {
     if (!learningPathId) return [];
 
-    return SERVICE_LINES.filter(
-      (serviceLine) => serviceLine.idLearningPath === Number(learningPathId)
-    );
-  }, [learningPathId]);
+    return listaSLs.filter((sl) => {
+      const lpId = sl.id_learning_path ?? sl.idLearningPath ?? sl.learningPathId;
+      return Number(lpId) === Number(learningPathId);
+    });
+  }, [learningPathId, listaSLs]);
 
-  const slOpcoes = serviceLinesFiltradas.map((serviceLine) => ({
-    valor: serviceLine.id,
-    label: serviceLine.nome,
-  }));
+  const semServiceLines = Boolean(learningPathId && serviceLinesFiltradas.length === 0);
+
+  const slOpcoes = semServiceLines
+    ? [{ valor: "", label: "Sem Service Lines disponíveis" }]
+    : serviceLinesFiltradas.map((sl) => ({
+        valor: Number(sl.id_service_line ?? sl.idServiceLine ?? sl.id),
+        label: sl.nome_service_line ?? sl.nomeServiceLine ?? sl.nome ?? sl.serviceLine ?? "",
+      }));
 
   const areasFiltradas = useMemo(() => {
     if (!serviceLineId) return [];
 
-    return AREAS.filter(
-      (area) => area.idServiceLine === Number(serviceLineId)
-    );
-  }, [serviceLineId]);
+    return listaAreas.filter((a) => {
+      const slId = a.id_service_line ?? a.idServiceLine ?? a.serviceLineId;
+      return Number(slId) === Number(serviceLineId);
+    });
+  }, [serviceLineId, listaAreas]);
 
-  const areaOpcoes = areasFiltradas.map((area) => ({
-    valor: area.id,
-    label: area.nome,
-  }));
+  const semAreas = Boolean(serviceLineId && areasFiltradas.length === 0);
+
+  const areaOpcoes = semAreas
+    ? [{ valor: "", label: "Sem Áreas disponíveis" }]
+    : areasFiltradas.map((a) => ({
+        valor: Number(a.id_area ?? a.idArea ?? a.id),
+        label: a.nome_area ?? a.nomeArea ?? a.nome ?? a.area ?? "",
+      }));
 
   const nivelOpcoes = NIVEIS.map((nivel) => ({
     valor: nivel.id,

@@ -9,6 +9,11 @@ import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
 import VistaTabelaBadges from "../../components/Galeria/VistaTabelaBadges/VistaTabelaBadges";
 import GaleriaToolbar from "../../components/Galeria/GaleriaToolbar/GaleriaToolbar";
 import { obterBadgesCatalogoNormalizados } from "../../services/badgesService";
+import { 
+  obterLearningPathsNormalizados, 
+  obterServiceLinesNormalizadas, 
+  obterAreasNormalizadas 
+} from "../../services/gestaoService";
 import { normalizarBadgeCatalogo } from "../../utils/badgesNormalizadores";
 import "./Galeria.css";
 import BadgeDetalheModal from "../../components/BadgeDetalhe/BadgeDetalheModal";
@@ -168,6 +173,9 @@ function Galeria() {
   });
   const [viewMode, setViewMode] = useState('galeria'); 
   const [badges, setBadges] = useState([]);
+  const [learningPaths, setLearningPaths] = useState([]);
+  const [serviceLines, setServiceLines] = useState([]);
+  const [areas, setAreas] = useState([]);
   const [isLoadingBadges, setIsLoadingBadges] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [badgeToEdit, setBadgeToEdit] = useState(null);
@@ -250,7 +258,7 @@ function Galeria() {
       {
         titulo: "Áreas",
         valor: totalAreas,
-        icon: "fi-br-crosshairs",
+        icon: "fi-br-target",
       },
       {
         titulo: "Service Lines",
@@ -321,20 +329,31 @@ function Galeria() {
   useEffect(() => {
     let ativo = true;
 
-    async function carregarBadges() {
+    async function carregarDadosGaleria() {
       try {
         setIsLoadingBadges(true);
 
-        const badgesCatalogo = await obterBadgesCatalogoNormalizados();
+        const [badgesCatalogo, lps, sls, ars] = await Promise.all([
+          obterBadgesCatalogoNormalizados(),
+          obterLearningPathsNormalizados(),
+          obterServiceLinesNormalizadas(),
+          obterAreasNormalizadas()
+        ]);
 
         if (ativo) {
           setBadges(badgesCatalogo);
+          setLearningPaths(lps);
+          setServiceLines(sls);
+          setAreas(ars);
         }
       } catch (error) {
-        console.error("Erro ao carregar badges:", error);
+        console.error("Erro ao carregar dados da galeria:", error);
 
         if (ativo) {
           setBadges([]);
+          setLearningPaths([]);
+          setServiceLines([]);
+          setAreas([]);
         }
       } finally {
         if (ativo) {
@@ -343,7 +362,7 @@ function Galeria() {
       }
     }
 
-    carregarBadges();
+    carregarDadosGaleria();
 
     return () => {
       ativo = false;
@@ -551,6 +570,9 @@ function Galeria() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveBadge}
         badgeToEdit={badgeToEdit}
+        learningPaths={learningPaths}
+        serviceLines={serviceLines}
+        areas={areas}
       />
     </div>
   );

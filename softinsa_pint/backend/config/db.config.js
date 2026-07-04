@@ -1,6 +1,8 @@
 const { Sequelize } = require("sequelize");
 require("dotenv").config();
 
+const useSsl = process.env.DB_SSL !== "false";
+
 const sequelize = new Sequelize(
   process.env.DB_DATABASE,
   process.env.DB_USER,
@@ -13,12 +15,14 @@ const sequelize = new Sequelize(
     define: {
       timestamps: false // Impede o Sequelize de procurar colunas createdAt/updatedAt
     },
-    dialectOptions: {
-      ssl: {
-        require: true, 
-        rejectUnauthorized: false // Necessário no Render para aceitar o certificado auto-assinado
-      }
-    }
+    dialectOptions: useSsl
+      ? {
+          ssl: {
+            require: true, 
+            rejectUnauthorized: false // Necessário no Render para aceitar o certificado auto-assinado
+          }
+        }
+      : {}
   }
 );
 

@@ -104,8 +104,25 @@ const PerfilPessoal = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   const fileInputRef = useRef(null);
+  const assinaturaRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
+
+  const copiarAssinatura = async () => {
+    if (!assinaturaRef.current) return;
+
+    try {
+      const htmlParaCopiar = assinaturaRef.current.innerHTML;
+      const blobHtml = new Blob([htmlParaCopiar], { type: "text/html" });
+      const clipboardItem = new ClipboardItem({ "text/html": blobHtml });
+
+      await navigator.clipboard.write([clipboardItem]);
+      alert("Assinatura copiada com sucesso! Faça Ctrl+V no seu email.");
+    } catch (erro) {
+      console.error("Erro ao copiar:", erro);
+      alert("O seu navegador bloqueou a cópia. Tente novamente.");
+    }
+  };
 
   // Estados com valores por defeito vazios (à espera da API)
   const [profileData, setProfileData] = useState({
@@ -318,18 +335,17 @@ const PerfilPessoal = () => {
         <div className='col-lg-6 col-12 d-flex flex-column'>
           <h2 className='subtitulo_perfil mb-3'>{t('assinatura_pessoal')}</h2>
           <div className='perfil-card d-flex flex-column align-items-center justify-content-center flex-grow-1 position-relative'>
-            <button className='btn_copiar_assinatura' onClick={() => {
-              const texto = `${profileData.nome} | ${profileData.cargo}\n${profileData.email} | ${profileData.telefone}`;
-              navigator.clipboard.writeText(texto);
-            }} title={t('copiar')}>
+            <button className='btn_copiar_assinatura' onClick={copiarAssinatura} title={t('copiar')}>
               <i className="fi fi-br-copy"></i>
             </button>
-            <div className='assinatura_texto text-center mb-2'>
-              <h4 className='assinatura_nome m-0'>{profileData.nome} | {profileData.cargo}</h4>
-              <p className='assinatura_contacto m-0 mt-1'>{profileData.email} | {profileData.telefone}</p>
-            </div>
-            <div className='assinatura_badges d-flex gap-3 justify-content-center w-100 flex-wrap'>
-              <Assinatura badges={assinaturaBadges} edicao={edicao} onRemove={handleRemoveBadge} />
+            <div ref={assinaturaRef}>
+              <div className='assinatura_texto text-center mb-2'>
+                <h4 className='assinatura_nome m-0'>{profileData.nome} | {profileData.cargo}</h4>
+                <p className='assinatura_contacto m-0 mt-1'>{profileData.email} | {profileData.telefone}</p>
+              </div>
+              <div className='assinatura_badges d-flex gap-3 justify-content-center w-100 flex-wrap'>
+                <Assinatura badges={assinaturaBadges} edicao={edicao} onRemove={handleRemoveBadge} />
+              </div>
             </div>
           </div>
         </div>

@@ -239,7 +239,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
 
           <AcaoRapida
             cor="#2dc653"
-            icone="fi-br-apps"
+            icone="fi-br-diagram-project"
             texto={t("editar_service_lines")}
             onClick={() => navigate('/editar', { state: { abaAtiva: 'service_line' } })}
           />

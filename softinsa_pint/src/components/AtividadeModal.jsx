@@ -101,11 +101,27 @@ const AtividadeModalContent = ({ atividades, onClose }) => {
 };
 
 /* ── 2. COMPONENTE EXPORTADO: O WIDGET PRINCIPAL ────────── */
-const AtividadeRecente = ({ atividades, fullHeight }) => {
+const AtividadeRecente = ({ atividades, fullHeight, isLoading = false }) => {
     const { t } = useTranslation();
     const [showModal, setShowModal] = useState(false);
 
-    if (!atividades || atividades.length === 0) return null;
+    if (isLoading) {
+        return (
+            <div className={`p-3 d-flex flex-column bg-white justify-content-center align-items-center ${fullHeight ? 'h-100' : ''}`} style={{ border: 'var(--borda-principal) solid var(--contorno)', borderRadius: 'var(--border-radius-grande)', boxSizing: 'border-box', height: fullHeight ? '100%' : '35vh' }}>
+                <i className="fi fi-br-spinner hc-spinner mb-2" style={{ fontSize: '2rem', color: '#aab7c4', animation: 'hc-spin 1s linear infinite' }}></i>
+                <span style={{ color: '#aab7c4', fontSize: '0.9rem' }}>{t('a_carregar') || 'A carregar...'}</span>
+            </div>
+        );
+    }
+
+    if (!atividades || atividades.length === 0) {
+        return (
+            <div className={`p-3 d-flex flex-column bg-white justify-content-center align-items-center ${fullHeight ? 'h-100' : ''}`} style={{ border: 'var(--borda-principal) solid var(--contorno)', borderRadius: 'var(--border-radius-grande)', boxSizing: 'border-box', height: fullHeight ? '100%' : '35vh' }}>
+                <i className="fi fi-br-time-forward mb-2" style={{ fontSize: '2rem', color: '#aab7c4', opacity: 0.5 }}></i>
+                <span style={{ color: '#aab7c4', fontSize: '0.9rem' }}>Sem atividade recente.</span>
+            </div>
+        );
+    }
 
     return (
         <div className={`p-3 d-flex flex-column bg-white ${fullHeight ? 'h-100' : ''}`} style={{ border: 'var(--borda-principal) solid var(--contorno)', borderRadius: 'var(--border-radius-grande)', boxSizing: 'border-box', height: fullHeight ? '100%' : '35vh' }}>

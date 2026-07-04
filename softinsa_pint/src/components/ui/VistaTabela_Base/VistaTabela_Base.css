@@ -81,8 +81,10 @@
     cursor: pointer;
 }
 
+.vista-tabela-base-tabela thead th.vtb-col-centro,
+.vista-tabela-base-tabela tbody td.vtb-col-centro,
 .vtb-col-centro {
-    text-align: center;
+    text-align: center !important;
 }
 
 .vtb-col-acoes {

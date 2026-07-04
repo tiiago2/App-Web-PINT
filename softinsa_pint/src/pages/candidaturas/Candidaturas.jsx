@@ -3,11 +3,11 @@ import { useTranslation } from "react-i18next";
 import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
 import BarraPesquisa from "../../components/ui/BarraPesquisa/BarraPesquisa";
 import BotaoDropdown from "../../components/ui/BotaoDropdown/BotaoDropdown";
-import ToggleSwitch from "../../components/ui/ToggleSwitch/ToggleSwitch";
 import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import api from "../../services/api.js";
 import "./candidaturas.css";
 
 // MOCK DATABASE & DATA SCHEMA
@@ -332,14 +332,51 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
 }
 
 // MAIN PAGE COMPONENT
-export default function Candidaturas() {
+export default function Candidaturas({ loggedUser }) {
   const { t } = useTranslation();
-  const [candidaturas, setCandidaturas] = useState(initialList);
+  const [candidaturas, setCandidaturas] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCandidaturaId, setSelectedCandidaturaId] = useState(null);
   const [filtroStatus, setFiltroStatus] = useState("Pendente");
-  const [toggleServiceLine, setToggleServiceLine] = useState(false);
   const [filtroArea, setFiltroArea] = useState("Todas");
   const [ordenacao, setOrdenacao] = useState("Mais Recentes");
+
+  useEffect(() => {
+    carregarCandidaturas();
+  }, [loggedUser]);
+
+  const carregarCandidaturas = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/candidaturas");
+      
+      const coresTemplate = [
+        { cor: "#c2d992", borderCor: "#5EA500", icon: "fi-br-microchip" },
+        { cor: "#d1e1f0", borderCor: "#45556C", icon: "fi-br-cloud" },
+        { cor: "#e08a90", borderCor: "#AE012F", icon: "fi-br-smartphone" },
+        { cor: "#e9d78e", borderCor: "#E17100", icon: "fi-br-target" }
+      ];
+
+      const mapped = res.data.map((sub, index) => {
+        const template = coresTemplate[index % coresTemplate.length];
+        return {
+          ...sub,
+          badge: {
+            ...sub.badge,
+            cor: template.cor,
+            borderCor: template.borderCor,
+            icon: template.icon
+          }
+        };
+      });
+      
+      setCandidaturas(mapped);
+    } catch (error) {
+      console.error("Erro ao carregar candidaturas:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const [pesquisa, setPesquisa] = useState("");
   const [toastMessage, setToastMessage] = useState(null);
   const [mostrarExportar, setMostrarExportar] = useState(false);
@@ -371,12 +408,7 @@ export default function Candidaturas() {
     // 1. Filter by Status Tab
     result = result.filter((c) => c.status === filtroStatus);
 
-    // 2. Filter by Service Line toggle (logged user's line: Hybrid Systems)
-    if (toggleServiceLine) {
-      result = result.filter((c) => c.user && c.user.serviceLine === "Hybrid Systems");
-    }
-
-    // 3. Filter by Selected Area dropdown
+    // 2. Filter by Selected Area dropdown
     if (filtroArea !== "Todas") {
       result = result.filter((c) => c.user && c.user.area === filtroArea);
     }
@@ -406,7 +438,7 @@ export default function Candidaturas() {
     });
 
     return result;
-  }, [candidaturas, filtroStatus, toggleServiceLine, filtroArea, pesquisa, ordenacao]);
+  }, [candidaturas, filtroStatus, filtroArea, pesquisa, ordenacao]);
 
   // Resolve currently selected candidacy item
   const candidaturaSelecionada = useMemo(() => {
@@ -414,25 +446,38 @@ export default function Candidaturas() {
   }, [candidaturas, selectedCandidaturaId]);
 
   // Handlers for accept/reject actions
-  const handleAccept = (id) => {
+  const handleAccept = async (id) => {
     const item = candidaturas.find((c) => c.id === id);
     if (!item) return;
 
-    setCandidaturas((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, status: "Aceite" } : c))
-    );
-    setSelectedCandidaturaId(null);
-    setToastMessage(t("candidatura_aprovada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
+    try {
+      await api.put(`/candidaturas/${id}/status`, { status: "Aceite" });
+      setCandidaturas((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, status: "Aceite" } : c))
+      );
+      setSelectedCandidaturaId(null);
+      setToastMessage(t("candidatura_aprovada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
+    } catch (error) {
+      console.error("Erro ao aceitar candidatura:", error);
+      alert("Não foi possível aceitar a candidatura.");
+    }
   };
 
-  const handleReject = (id) => {
+  const handleReject = async (id) => {
     const item = candidaturas.find((c) => c.id === id);
     if (!item) return;
 
-    setCandidaturas((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, status: "Recusada" } : c))
-    );
-    setToastMessage(t("candidatura_rejeitada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
+    try {
+      await api.put(`/candidaturas/${id}/status`, { status: "Recusada" });
+      setCandidaturas((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, status: "Recusada" } : c))
+      );
+      setSelectedCandidaturaId(null);
+      setToastMessage(t("candidatura_rejeitada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
+    } catch (error) {
+      console.error("Erro ao rejeitar candidatura:", error);
+      alert("Não foi possível rejeitar a candidatura.");
+    }
   };
 
   const handleAbrirMenuExportacao = async () => {
@@ -567,16 +612,6 @@ export default function Candidaturas() {
 
         {/* Filters Panel right */}
         <div className="d-flex align-items-center gap-3 flex-wrap">
-          <div className="d-flex align-items-center gap-2 bg-white px-3 py-1.5 rounded-3 border border-light-subtle" style={{ height: "44px" }}>
-            <ToggleSwitch 
-              checked={toggleServiceLine}
-              onChange={(e) => {
-                setToggleServiceLine(e.target.checked);
-                setSelectedCandidaturaId(null);
-              }}
-            />
-            <span className="fw-medium text-secondary" style={{ fontSize: "0.85rem" }}>{t("minha_service_line")}</span>
-          </div>
 
           <div className="estat-talent-export-wrap" ref={exportRef}>
             <BotaoAcao
@@ -648,7 +683,11 @@ export default function Candidaturas() {
 
             {/* Scrollable list container */}
             <div className="flex-grow-1 overflow-auto custom-scrollbar pe-1 d-flex flex-column gap-3">
-              {candidaturasFiltradas.length === 0 ? (
+              {loading ? (
+                <div className="text-center py-5 text-secondary d-flex flex-column align-items-center justify-content-center h-100">
+                  <p className="m-0 fs-6 fw-medium text-gray-400">A carregar candidaturas...</p>
+                </div>
+              ) : candidaturasFiltradas.length === 0 ? (
                 <div className="text-center py-5 text-secondary d-flex flex-column align-items-center justify-content-center h-100 bg-gray-50/20 rounded-3">
                   <i className="fi fi-br-document mb-3 text-gray-300" style={{ fontSize: "2.5rem" }}></i>
                   <p className="m-0 fs-6 fw-medium text-gray-400">{t("nenhum_pedido_encontrado")}</p>

@@ -25,7 +25,14 @@ const MOCK_HIERARCHY = [
   },
 ];
 
-export default function AreaModal({ isOpen, onClose, onSave, areaToEdit }) {
+export default function AreaModal({ 
+  isOpen, 
+  onClose, 
+  onSave, 
+  areaToEdit, 
+  learningPaths = [], 
+  serviceLines = [] 
+}) {
   // Estados da Área
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -38,18 +45,27 @@ export default function AreaModal({ isOpen, onClose, onSave, areaToEdit }) {
   const [erroSl, setErroSl] = useState("");
   const [formErro, setFormErro] = useState("");
 
-  // Opções para as dropdowns baseadas nas escolhas do utilizador
-  const lpOpcoes = MOCK_HIERARCHY.map((lp) => ({
-    valor: lp.id,
-    label: lp.nome,
+  const listaLPs = learningPaths.length > 0 ? learningPaths : MOCK_HIERARCHY;
+
+  const lpOpcoes = listaLPs.map((lp) => ({
+    valor: String(lp.id_learning_path ?? lp.idLearningPath ?? lp.id ?? ""),
+    label: lp.nome_learning_path ?? lp.nomeLearningPath ?? lp.nome ?? lp.learningPath ?? "",
   }));
 
-  const selectedLP = MOCK_HIERARCHY.find((lp) => lp.id === learningPathId);
-  const serviceLinesOptions = selectedLP ? selectedLP.serviceLines : [];
-  const slOpcoes = serviceLinesOptions.map((sl) => ({
-    valor: sl.id,
-    label: sl.nome,
-  }));
+  const serviceLinesFiltradas = serviceLines.length > 0
+    ? (learningPathId
+        ? serviceLines.filter(sl => String(sl.id_learning_path ?? sl.learningPathId ?? "") === String(learningPathId))
+        : serviceLines)
+    : (MOCK_HIERARCHY.find((lp) => lp.id === learningPathId)?.serviceLines || []);
+
+  const semServiceLines = Boolean(learningPathId && serviceLinesFiltradas.length === 0);
+
+  const slOpcoes = semServiceLines
+    ? [{ valor: "", label: "Sem Service Lines disponíveis" }]
+    : serviceLinesFiltradas.map((sl) => ({
+        valor: String(sl.id_service_line ?? sl.idServiceLine ?? sl.id ?? ""),
+        label: sl.nome_service_line ?? sl.nomeServiceLine ?? sl.nome ?? sl.serviceLine ?? "",
+      }));
 
   useEffect(() => {
     if (isOpen) {
@@ -81,8 +97,14 @@ export default function AreaModal({ isOpen, onClose, onSave, areaToEdit }) {
   const handleLpChange = (val) => {
     setLearningPathId(val);
     setServiceLineId("");
-    setErroSl(""); // Limpa o erro se o user afinal clicou no correto
-    setFormErro(""); // Limpa erro global
+    setFormErro("");
+
+    const filtradas = serviceLines.filter(sl => String(sl.id_learning_path ?? sl.learningPathId ?? "") === String(val));
+    if (val && filtradas.length === 0) {
+      setErroSl("O Learning Path selecionado não possui nenhuma Service Line criada.");
+    } else {
+      setErroSl("");
+    }
   };
 
   const handleSave = (e) => {
@@ -186,10 +208,11 @@ export default function AreaModal({ isOpen, onClose, onSave, areaToEdit }) {
                 }}
               >
                 <BotaoDropdown
-                  titulo="Selecione..."
+                  titulo={semServiceLines ? "Sem Service Lines..." : "Selecione..."}
                   valor={serviceLineId}
                   opcoes={slOpcoes}
                   onChange={(val) => {
+                    if (!val) return;
                     setServiceLineId(val);
                     setFormErro("");
                   }}

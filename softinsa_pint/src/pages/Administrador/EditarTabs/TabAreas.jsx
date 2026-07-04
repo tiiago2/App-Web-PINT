@@ -4,7 +4,14 @@ import MetricasResumo from "../../../components/ui/MetricasResumo/MetricasResumo
 import VistaTabelaAreas from "../../../components/Gestao/VistaTabelaAreas/VistaTabelaAreas";
 import ModalConfirmacao from "../../../components/ui/ModalConfirmacao/ModalConfirmacao";
 import AreaModal from "../../../components/Criar_Editar/AreaModal";
-import { obterAreasNormalizadas } from "../../../services/gestaoService";
+import { 
+    obterAreasNormalizadas, 
+    obterLearningPathsNormalizados,
+    obterServiceLinesNormalizadas,
+    criarArea, 
+    atualizarArea, 
+    removerArea 
+} from "../../../services/gestaoService";
 import { normalizarArea } from "../../../utils/gestaoNormalizadores";
 
 function normalizarTexto(texto = "") {
@@ -110,43 +117,37 @@ function TabAreas({ onRegisterAdicionar }) {
     });
 
     const [areas, setAreas] = useState([]);
+    const [learningPaths, setLearningPaths] = useState([]);
+    const [serviceLines, setServiceLines] = useState([]);
     const [isLoadingAreas, setIsLoadingAreas] = useState(true);
+    const [areaAEliminar, setAreaAEliminar] = useState(null);
     
     const [isAreaModalOpen, setIsAreaModalOpen] = useState(false);
     const [areaToEdit, setAreaToEdit] = useState(null);
 
-    const [areaAEliminar, setAreaAEliminar] = useState(null);
+    const carregarAreas = async () => {
+        try {
+            setIsLoadingAreas(true);
+            const [ars, lps, sls] = await Promise.all([
+                obterAreasNormalizadas(),
+                obterLearningPathsNormalizados(),
+                obterServiceLinesNormalizadas()
+            ]);
+            setAreas(ars);
+            setLearningPaths(lps);
+            setServiceLines(sls);
+        } catch (error) {
+            console.error("Erro ao carregar dados da aba Áreas:", error);
+            setAreas([]);
+            setLearningPaths([]);
+            setServiceLines([]);
+        } finally {
+            setIsLoadingAreas(false);
+        }
+    };
 
     useEffect(() => {
-        let ativo = true;
-
-        async function carregarAreas() {
-            try {
-                setIsLoadingAreas(true);
-
-                const areasNormalizadas = await obterAreasNormalizadas();
-
-                if (ativo) {
-                    setAreas(areasNormalizadas);
-                }
-            } catch (error) {
-                console.error("Erro ao carregar áreas:", error);
-
-                if (ativo) {
-                    setAreas([]);
-                }
-            } finally {
-                if (ativo) {
-                    setIsLoadingAreas(false);
-                }
-            }
-        }
-
         carregarAreas();
-
-        return () => {
-            ativo = false;
-        };
     }, []);
 
     const handleOpenCreateModal = useCallback(() => {
@@ -169,68 +170,49 @@ function TabAreas({ onRegisterAdicionar }) {
     const handleOpenEditModal = (area) => {
         setAreaToEdit({
             ...area,
+            id: obterIdArea(area),
             nome: area.nome_area ?? area.nomeArea ?? area.nome ?? area.area ?? "",
             descricao: area.descricao_area ?? area.descricao ?? "",
-            learningPathId:
-                area.learningPathId ??
-                area.id_learning_path ??
-                area.idLearningPath ??
-                "",
-            serviceLineId:
-                area.serviceLineId ??
-                area.id_service_line ??
-                area.idServiceLine ??
-                "",
+            learningPathId: area.learningPathId ?? area.id_learning_path ?? "",
+            serviceLineId: area.serviceLineId ?? area.id_service_line ?? "",
         });
 
         setIsAreaModalOpen(true);
     };
 
-    const handleDeleteArea = (id) => {
-        setAreas((prev) =>
-            prev.filter((area) => obterIdArea(area) !== id)
-        );
-    };
-
-    const handleConfirmDeleteArea = () => {
+    const handleConfirmDeleteArea = async () => {
         if (!areaAEliminar) {
             return;
         }
 
-        handleDeleteArea(obterIdArea(areaAEliminar));
-        setAreaAEliminar(null);
+        const idA = obterIdArea(areaAEliminar);
+
+        try {
+            await removerArea(idA);
+            await carregarAreas();
+            setAreaAEliminar(null);
+        } catch (err) {
+            const mensagemErro = err.response?.data?.error || "Erro ao eliminar a Área.";
+            alert(mensagemErro);
+            setAreaAEliminar(null);
+        }
     };
 
-    const handleSaveArea = (areaObj) => {
-        const areaNormalizada = normalizarArea({
-            ...areaObj,
-            id_area:
-                areaObj.id_area ??
-                areaObj.idArea ??
-                areaObj.id ??
-                Date.now(),
-            updated_area:
-                areaObj.updated_area ??
-                new Date().toISOString(),
-        });
+    const handleSaveArea = async (areaObj) => {
+        try {
+            const idExistente = areaToEdit ? obterIdArea(areaToEdit) : null;
 
-        const idAreaGuardada = obterIdArea(areaNormalizada);
-
-        setAreas((prev) => {
-            const exists = prev.some(
-                (area) => obterIdArea(area) === idAreaGuardada
-            );
-
-            if (exists) {
-                return prev.map((area) =>
-                    obterIdArea(area) === idAreaGuardada
-                        ? areaNormalizada
-                        : area
-                );
+            if (idExistente) {
+                await atualizarArea(idExistente, areaObj);
+            } else {
+                await criarArea(areaObj);
             }
 
-            return [areaNormalizada, ...prev];
-        });
+            await carregarAreas();
+        } catch (err) {
+            const mensagemErro = err.response?.data?.error || "Erro ao guardar a Área.";
+            alert(mensagemErro);
+        }
     };
 
     const opcoesFiltroAvancado = useMemo(() => {
@@ -288,7 +270,7 @@ function TabAreas({ onRegisterAdicionar }) {
             {
                 titulo: "Áreas",
                 valor: areas.length,
-                icon: "fi-br-crosshairs",
+                icon: "fi-br-target",
             },
             {
                 titulo: "Learning Paths",
@@ -334,6 +316,8 @@ function TabAreas({ onRegisterAdicionar }) {
                 onClose={() => setIsAreaModalOpen(false)}
                 onSave={handleSaveArea}
                 areaToEdit={areaToEdit}
+                learningPaths={learningPaths}
+                serviceLines={serviceLines}
             />
 
             <ModalConfirmacao

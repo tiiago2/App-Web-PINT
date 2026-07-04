@@ -40,8 +40,21 @@ function VistaTabelaServiceLines({
             ),
         },
         {
+            key: "lider",
+            titulo: "Líder",
+            className: "vt-service-line-col-lider",
+            headerClassName: "vt-service-line-col-lider",
+            render: (serviceLine) =>
+                serviceLine.nome_lider ??
+                serviceLine.lider ??
+                serviceLine.liderNome ??
+                "—",
+        },
+        {
             key: "learningPath",
             titulo: "Learning Path",
+            className: "vt-service-line-col-lp",
+            headerClassName: "vt-service-line-col-lp",
             render: (serviceLine) =>
                 serviceLine.nome_learning_path ??
                 serviceLine.learningPath ??
@@ -74,7 +87,7 @@ function VistaTabelaServiceLines({
             isLoading={isLoading}
             emptyMessage={emptyMessage}
             loadingMessage="A carregar service lines..."
-            larguraMinima="760px"
+            larguraMinima="840px"
             className="vista-tabela-service-lines"
         />
     );

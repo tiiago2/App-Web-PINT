@@ -5,7 +5,14 @@ import VistaTabelaServiceLines from "../../../components/Gestao/VistaTabelaServi
 import ModalConfirmacao from "../../../components/ui/ModalConfirmacao/ModalConfirmacao";
 import ServiceLineModal from "../../../components/Criar_Editar/ServiceLineModal";
 import { normalizarServiceLine } from "../../../utils/gestaoNormalizadores";
-import { obterServiceLinesNormalizadas } from "../../../services/gestaoService";
+import { 
+    obterServiceLinesNormalizadas, 
+    obterLideresElegiveis, 
+    obterLearningPathsNormalizados,
+    criarServiceLine, 
+    atualizarServiceLine, 
+    removerServiceLine 
+} from "../../../services/gestaoService";
 
 function normalizarTexto(texto = "") {
     return String(texto)
@@ -112,47 +119,49 @@ function TabServiceLine({ onRegisterAdicionar }) {
     });
 
     const [serviceLines, setServiceLines] = useState([]);
+    const [learningPaths, setLearningPaths] = useState([]);
     const [isLoadingServiceLines, setIsLoadingServiceLines] = useState(true);
     const [serviceLineAEliminar, setServiceLineAEliminar] = useState(null);
+    const [utilizadoresElegiveis, setUtilizadoresElegiveis] = useState([]);
 
     const [isServiceLineModalOpen, setIsServiceLineModalOpen] = useState(false);
     const [serviceLineToEdit, setServiceLineToEdit] = useState(null);
 
-    useEffect(() => {
-        let ativo = true;
-
-        async function carregarServiceLines() {
-            try {
-                setIsLoadingServiceLines(true);
-
-                const serviceLinesNormalizadas =
-                    await obterServiceLinesNormalizadas();
-
-                if (ativo) {
-                    setServiceLines(serviceLinesNormalizadas);
-                }
-            } catch (error) {
-                console.error("Erro ao carregar service lines:", error);
-
-                if (ativo) {
-                    setServiceLines([]);
-                }
-            } finally {
-                if (ativo) {
-                    setIsLoadingServiceLines(false);
-                }
-            }
+    const carregarServiceLines = async () => {
+        try {
+            setIsLoadingServiceLines(true);
+            const [sls, lps] = await Promise.all([
+                obterServiceLinesNormalizadas(),
+                obterLearningPathsNormalizados()
+            ]);
+            setServiceLines(sls);
+            setLearningPaths(lps);
+        } catch (error) {
+            console.error("Erro ao carregar service lines e learning paths:", error);
+            setServiceLines([]);
+            setLearningPaths([]);
+        } finally {
+            setIsLoadingServiceLines(false);
         }
+    };
 
+    useEffect(() => {
         carregarServiceLines();
-
-        return () => {
-            ativo = false;
-        };
     }, []);
+
+    const carregarLideresElegiveis = async (idSL) => {
+        try {
+            const lista = await obterLideresElegiveis(idSL);
+            setUtilizadoresElegiveis(lista);
+        } catch (err) {
+            console.error("Erro ao carregar líderes elegíveis:", err);
+            setUtilizadoresElegiveis([]);
+        }
+    };
 
     const handleOpenCreateModal = useCallback(() => {
         setServiceLineToEdit(null);
+        carregarLideresElegiveis(null);
         setIsServiceLineModalOpen(true);
     }, []);
 
@@ -169,41 +178,55 @@ function TabServiceLine({ onRegisterAdicionar }) {
     }, [onRegisterAdicionar, handleOpenCreateModal]);
 
     const handleOpenEditModal = (serviceLine) => {
+        const idSL = obterIdServiceLine(serviceLine);
         setServiceLineToEdit({
             ...serviceLine,
-            nome:
-                serviceLine.nome_service_line ??
-                serviceLine.nomeServiceLine ??
-                serviceLine.nome ??
-                serviceLine.serviceLine ??
-                "",
-            descricao:
-                serviceLine.descricao_service_line ??
-                serviceLine.descricao ??
-                "",
-            learningPathId:
-                serviceLine.learningPathId ??
-                serviceLine.id_learning_path ??
-                serviceLine.idLearningPath ??
-                "",
+            id: idSL,
+            id_service_line: idSL,
+            nome: serviceLine.nome_service_line ?? serviceLine.nomeServiceLine ?? serviceLine.nome ?? "",
+            descricao: serviceLine.descricao_service_line ?? serviceLine.descricao ?? "",
+            learningPathId: serviceLine.learningPathId ?? serviceLine.id_learning_path ?? "",
+            id_lider: serviceLine.id_lider ?? serviceLine.idLider ?? null,
+            lider: serviceLine.lider ?? serviceLine.nome_lider ?? ""
         });
 
+        carregarLideresElegiveis(idSL);
         setIsServiceLineModalOpen(true);
     };
 
-    const handleDeleteServiceLine = (id) => {
-        setServiceLines((prev) =>
-            prev.filter((serviceLine) => obterIdServiceLine(serviceLine) !== id)
-        );
-    };
-
-    const handleConfirmDeleteServiceLine = () => {
+    const handleConfirmDeleteServiceLine = async () => {
         if (!serviceLineAEliminar) {
             return;
         }
 
-        handleDeleteServiceLine(obterIdServiceLine(serviceLineAEliminar));
-        setServiceLineAEliminar(null);
+        const idSL = obterIdServiceLine(serviceLineAEliminar);
+
+        try {
+            await removerServiceLine(idSL);
+            await carregarServiceLines();
+            setServiceLineAEliminar(null);
+        } catch (err) {
+            const mensagemErro = err.response?.data?.error || "Erro ao eliminar a Service Line.";
+            alert(mensagemErro);
+            setServiceLineAEliminar(null);
+        }
+    };
+
+    const handleSaveServiceLine = async (serviceLineObj) => {
+        try {
+            const idExistente = serviceLineToEdit ? obterIdServiceLine(serviceLineToEdit) : null;
+
+            if (idExistente) {
+                await atualizarServiceLine(idExistente, serviceLineObj);
+            } else {
+                await criarServiceLine(serviceLineObj);
+            }
+
+            await carregarServiceLines();
+        } catch (err) {
+            const mensagemErro = err.response?.data?.error || "Erro ao guardar a Service Line.";
+            alert(mensagemErro);
+        }
     };
 
     const opcoesFiltroAvancado = useMemo(() => {
@@ -263,7 +286,7 @@ function TabServiceLine({ onRegisterAdicionar }) {
             {
                 titulo: "Áreas",
                 valor: totalAreas,
-                icon: "fi-br-crosshairs",
+                icon: "fi-br-target",
             },
             {
                 titulo: "Learning Paths",
@@ -272,39 +295,6 @@ function TabServiceLine({ onRegisterAdicionar }) {
             },
         ];
     }, [serviceLines]);
-
-    const handleSaveServiceLine = (serviceLineObj) => {
-        const serviceLineNormalizada = normalizarServiceLine({
-            ...serviceLineObj,
-            id_service_line:
-                serviceLineObj.id_service_line ??
-                serviceLineObj.idServiceLine ??
-                serviceLineObj.id ??
-                Date.now(),
-            updated_service:
-                serviceLineObj.updated_service ??
-                new Date().toISOString(),
-        });
-
-        const idServiceLineGuardada = obterIdServiceLine(serviceLineNormalizada);
-
-        setServiceLines((prev) => {
-            const exists = prev.some(
-                (serviceLine) =>
-                    obterIdServiceLine(serviceLine) === idServiceLineGuardada
-            );
-
-            if (exists) {
-                return prev.map((serviceLine) =>
-                    obterIdServiceLine(serviceLine) === idServiceLineGuardada
-                        ? serviceLineNormalizada
-                        : serviceLine
-                );
-            }
-
-            return [serviceLineNormalizada, ...prev];
-        });
-    };
 
     return (
         <>
@@ -337,6 +327,8 @@ function TabServiceLine({ onRegisterAdicionar }) {
                 onClose={() => setIsServiceLineModalOpen(false)}
                 onSave={handleSaveServiceLine}
                 serviceLineToEdit={serviceLineToEdit}
+                utilizadoresElegiveis={utilizadoresElegiveis}
+                learningPaths={learningPaths}
             />
 
             <ModalConfirmacao

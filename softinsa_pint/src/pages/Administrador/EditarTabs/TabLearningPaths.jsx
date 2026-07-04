@@ -3,9 +3,13 @@ import GaleriaToolbar from "../../../components/Galeria/GaleriaToolbar/GaleriaTo
 import MetricasResumo from "../../../components/ui/MetricasResumo/MetricasResumo";
 import VistaTabelaLearningPaths from "../../../components/Gestao/VistaTabelaLearningPaths/VistaTabelaLearningPaths";
 import ModalConfirmacao from "../../../components/ui/ModalConfirmacao/ModalConfirmacao";
-import { obterLearningPathsNormalizados } from "../../../services/gestaoService";
+import { 
+    obterLearningPathsNormalizados, 
+    criarLearningPath, 
+    atualizarLearningPath, 
+    removerLearningPath 
+} from "../../../services/gestaoService";
 import LearningPathModal from "../../../components/Criar_Editar/LearningPathModal";
-import { normalizarLearningPath } from "../../../utils/gestaoNormalizadores";
 
 function normalizarTexto(texto = "") {
     return String(texto)
@@ -124,37 +128,21 @@ function TabLearningPaths({ onRegisterAdicionar }) {
     const [isLearningPathModalOpen, setIsLearningPathModalOpen] = useState(false);
     const [learningPathToEdit, setLearningPathToEdit] = useState(null);
 
-    useEffect(() => {
-        let ativo = true;
-
-        async function carregarLearningPaths() {
-            try {
-                setIsLoadingLearningPaths(true);
-
-                const learningPathsNormalizados =
-                    await obterLearningPathsNormalizados();
-
-                if (ativo) {
-                    setLearningPaths(learningPathsNormalizados);
-                }
-            } catch (error) {
-                console.error("Erro ao carregar learning paths:", error);
-
-                if (ativo) {
-                    setLearningPaths([]);
-                }
-            } finally {
-                if (ativo) {
-                    setIsLoadingLearningPaths(false);
-                }
-            }
+    const carregarLearningPaths = async () => {
+        try {
+            setIsLoadingLearningPaths(true);
+            const learningPathsNormalizados = await obterLearningPathsNormalizados();
+            setLearningPaths(learningPathsNormalizados);
+        } catch (error) {
+            console.error("Erro ao carregar learning paths:", error);
+            setLearningPaths([]);
+        } finally {
+            setIsLoadingLearningPaths(false);
         }
+    };
 
+    useEffect(() => {
         carregarLearningPaths();
-
-        return () => {
-            ativo = false;
-        };
     }, []);
 
     const handleOpenCreateModal = useCallback(() => {
@@ -177,37 +165,30 @@ function TabLearningPaths({ onRegisterAdicionar }) {
     const handleOpenEditModal = (learningPath) => {
         setLearningPathToEdit({
             ...learningPath,
-            nome:
-                learningPath.nome_learning_path ??
-                learningPath.nomeLearningPath ??
-                learningPath.nome ??
-                learningPath.learningPath ??
-                "",
-            descricao:
-                learningPath.descricao_learning_path ??
-                learningPath.descricao_larning_path ??
-                learningPath.descricao ??
-                "",
+            id: obterIdLearningPath(learningPath),
+            nome: learningPath.nome_learning_path ?? learningPath.nomeLearningPath ?? learningPath.nome ?? "",
+            descricao: learningPath.descricao_learning_path ?? learningPath.descricao_larning_path ?? learningPath.descricao ?? ""
         });
 
         setIsLearningPathModalOpen(true);
     };
 
-    const handleDeleteLearningPath = (id) => {
-        setLearningPaths((prev) =>
-            prev.filter(
-                (learningPath) => obterIdLearningPath(learningPath) !== id
-            )
-        );
-    };
-
-    const handleConfirmDeleteLearningPath = () => {
+    const handleConfirmDeleteLearningPath = async () => {
         if (!learningPathAEliminar) {
             return;
         }
 
-        handleDeleteLearningPath(obterIdLearningPath(learningPathAEliminar));
-        setLearningPathAEliminar(null);
+        const idLP = obterIdLearningPath(learningPathAEliminar);
+
+        try {
+            await removerLearningPath(idLP);
+            await carregarLearningPaths();
+            setLearningPathAEliminar(null);
+        } catch (err) {
+            const mensagemErro = err.response?.data?.error || "Erro ao eliminar o Learning Path.";
+            alert(mensagemErro);
+            setLearningPathAEliminar(null);
+        }
     };
 
     const opcoesFiltroAvancado = useMemo(() => {
@@ -266,7 +247,7 @@ function TabLearningPaths({ onRegisterAdicionar }) {
             {
                 titulo: "Áreas",
                 valor: totalAreas,
-                icon: "fi-br-crosshairs",
+                icon: "fi-br-target",
             },
             {
                 titulo: "Service Lines",
@@ -276,37 +257,21 @@ function TabLearningPaths({ onRegisterAdicionar }) {
         ];
     }, [learningPaths]);
 
-    const handleSaveLearningPath = (learningPathObj) => {
-        const learningPathNormalizado = normalizarLearningPath({
-            ...learningPathObj,
-            id_learning_path:
-                learningPathObj.id_learning_path ??
-                learningPathObj.idLearningPath ??
-                learningPathObj.id ??
-                Date.now(),
-            updated_path:
-                learningPathObj.updated_path ??
-                new Date().toISOString(),
-        });
+    const handleSaveLearningPath = async (learningPathObj) => {
+        try {
+            const idExistente = learningPathToEdit ? obterIdLearningPath(learningPathToEdit) : null;
 
-        const idLearningPathGuardado = obterIdLearningPath(learningPathNormalizado);
-
-        setLearningPaths((prev) => {
-            const exists = prev.some(
-                (learningPath) =>
-                    obterIdLearningPath(learningPath) === idLearningPathGuardado
-            );
-
-            if (exists) {
-                return prev.map((learningPath) =>
-                    obterIdLearningPath(learningPath) === idLearningPathGuardado
-                        ? learningPathNormalizado
-                        : learningPath
-                );
+            if (idExistente) {
+                await atualizarLearningPath(idExistente, learningPathObj);
+            } else {
+                await criarLearningPath(learningPathObj);
             }
 
-            return [learningPathNormalizado, ...prev];
-        });
+            await carregarLearningPaths();
+        } catch (err) {
+            const mensagemErro = err.response?.data?.error || "Erro ao guardar o Learning Path.";
+            alert(mensagemErro);
+        }
     };
 
     return (

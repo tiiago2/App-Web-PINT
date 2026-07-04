@@ -510,6 +510,10 @@ function App() {
               </div>
             ))}
           </div>
+          <div className="d-flex flex-column mb-3 align-items-center align-items-xl-start ps-xl-4 w-100" style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+            <span className="d-none d-xl-block mb-1" style={{ cursor: "pointer" }} onClick={() => {}}>{t("politicas_rgpd")}</span>
+            <span className="d-none d-xl-block" style={{ cursor: "pointer" }} onClick={() => {}}>{t("quem_somos")}</span>
+          </div>
         </div>
 
         <div className="h-100 d-flex flex-column flex-grow-1" id="Container" style={{ overflow: "hidden", minWidth: 0 }}>

@@ -85,7 +85,7 @@ db.RegistoBadges.belongsTo(db.Utilizador, { foreignKey: 'id_utilizador' });
 db.Badges.hasMany(db.RegistoBadges, { foreignKey: 'id_badge' });
 db.RegistoBadges.belongsTo(db.Badges, { foreignKey: 'id_badge' });
 
-// --- Notificações, Políticas e SLA ---
+// --- Notificações, Políticas, SLA e Logs ---
 db.Utilizador.hasMany(db.Notificacoes, { foreignKey: 'id_utilizador' }); // Utilizador como Emissor
 db.Notificacoes.belongsTo(db.Utilizador, { foreignKey: 'id_utilizador' });
 

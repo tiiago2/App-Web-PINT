@@ -14,7 +14,7 @@ app.use("/api", rotas);
 
 async function iniciar_bd() {
     try {
-        await db.sequelize.sync({ force: false }); // Sincroniza tabelas
+        await db.sequelize.sync({ force: false }); // Sincroniza e altera tabelas conforme os modelos
         console.log("Base de dados sincronizada.");
 
         app.listen(5000, () => {

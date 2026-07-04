@@ -99,10 +99,10 @@ insert into POLITICAS_RGPD (ID_POLITICA, ID_UTILIZADOR, DESCRICAO, DATA_ALTERACA
 (1, 5, 'Atualização das políticas globais de privacidade RGPD da Softinsa.', current_timestamp - interval '2 hours');
 
 -- 12. LOGS (Atualizados - updated)
--- Sistema atualizou Low Code (Há 2 horas)
+-- Sistema atualizou Low Code (Hǭ 2 horas)
 insert into LOGS (ID_LOG, TABELA, TIPO, ID_ALVO, DATA_LOG) values
 (1, 'BADGES', 2, 1, current_timestamp - interval '2 hours'),
--- Maria Santos atualizou Badge Premium (Há 5 horas)
+-- Maria Santos atualizou Badge Premium (Hǭ 5 horas)
 (2, 'BADGES', 2, 2, current_timestamp - interval '5 hours');
 
 -- 13. USER ROLES

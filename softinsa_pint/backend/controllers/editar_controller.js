@@ -133,6 +133,13 @@ exports.criarLearningPath = async (req, res) => {
             deleted_path: false
         });
 
+        await db.Logs.create({
+            tabela: 'LEARNING_PATH',
+            tipo: 1,
+            id_alvo: novoLP.id_learning_path,
+            data_log: new Date()
+        });
+
         return res.status(201).json(novoLP);
     } catch (error) {
         console.error('Erro ao criar Learning Path:', error);
@@ -157,6 +164,14 @@ exports.atualizarLearningPath = async (req, res) => {
         lp.updated_path = new Date();
 
         await lp.save();
+
+        await db.Logs.create({
+            tabela: 'LEARNING_PATH',
+            tipo: 2,
+            id_alvo: lp.id_learning_path,
+            data_log: new Date()
+        });
+
         return res.status(200).json(lp);
     } catch (error) {
         console.error('Erro ao atualizar Learning Path:', error);
@@ -193,6 +208,13 @@ exports.removerLearningPath = async (req, res) => {
         lp.deleted_path = true;
         lp.updated_path = new Date();
         await lp.save();
+
+        await db.Logs.create({
+            tabela: 'LEARNING_PATH',
+            tipo: 3,
+            id_alvo: lp.id_learning_path,
+            data_log: new Date()
+        });
 
         return res.status(200).json({ message: 'Learning Path removido com sucesso.' });
     } catch (error) {
@@ -365,6 +387,13 @@ exports.criarServiceLine = async (req, res) => {
         // Ponto 1: Atribuição automática da role "Service Line Leader"
         await atribuirRoleLiderServiceLine(liderFinal);
 
+        await db.Logs.create({
+            tabela: 'SERVICE_LINE',
+            tipo: 1,
+            id_alvo: novaSL.id_service_line,
+            data_log: new Date()
+        });
+
         return res.status(201).json(novaSL);
     } catch (error) {
         console.error('Erro ao criar Service Line:', error);
@@ -421,6 +450,13 @@ exports.atualizarServiceLine = async (req, res) => {
             await atribuirRoleLiderServiceLine(liderFinal);
         }
 
+        await db.Logs.create({
+            tabela: 'SERVICE_LINE',
+            tipo: 2,
+            id_alvo: sl.id_service_line,
+            data_log: new Date()
+        });
+
         return res.status(200).json(sl);
     } catch (error) {
         console.error('Erro ao atualizar Service Line:', error);
@@ -457,6 +493,13 @@ exports.removerServiceLine = async (req, res) => {
         sl.deleted_service = true;
         sl.updated_service = new Date();
         await sl.save();
+
+        await db.Logs.create({
+            tabela: 'SERVICE_LINE',
+            tipo: 3,
+            id_alvo: sl.id_service_line,
+            data_log: new Date()
+        });
 
         return res.status(200).json({ message: 'Service Line removida com sucesso.' });
     } catch (error) {
@@ -558,6 +601,13 @@ exports.criarArea = async (req, res) => {
             deleted_area: false
         });
 
+        await db.Logs.create({
+            tabela: 'AREA',
+            tipo: 1,
+            id_alvo: novaArea.id_area,
+            data_log: new Date()
+        });
+
         return res.status(201).json(novaArea);
     } catch (error) {
         console.error('Erro ao criar Área:', error);
@@ -585,6 +635,14 @@ exports.atualizarArea = async (req, res) => {
         area.updated_area = new Date();
 
         await area.save();
+
+        await db.Logs.create({
+            tabela: 'AREA',
+            tipo: 2,
+            id_alvo: area.id_area,
+            data_log: new Date()
+        });
+
         return res.status(200).json(area);
     } catch (error) {
         console.error('Erro ao atualizar Área:', error);
@@ -621,6 +679,13 @@ exports.removerArea = async (req, res) => {
         area.deleted_area = true;
         area.updated_area = new Date();
         await area.save();
+
+        await db.Logs.create({
+            tabela: 'AREA',
+            tipo: 3,
+            id_alvo: area.id_area,
+            data_log: new Date()
+        });
 
         return res.status(200).json({ message: 'Área removida com sucesso.' });
     } catch (error) {

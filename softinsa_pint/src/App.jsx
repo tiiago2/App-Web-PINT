@@ -255,7 +255,7 @@ function App() {
         {/* --- BLOCO ADMINISTRADOR --- */}
         {user.cargo === "Administrador" && (
           <>
-            <Route path="/candidaturas" element={<Candidaturas />} />
+            <Route path="/candidaturas" element={<Candidaturas loggedUser={user} />} />
             <Route path="/estatisticas" element={<EstatisticasAdmin />} />
             <Route path="/galeria" element={<Galeria />} />
             <Route path="/editar" element={<EditarAdmin />} />
@@ -267,7 +267,7 @@ function App() {
         {/* --- BLOCO TALENT MANAGER --- */}
         {user.cargo === "Talent Manager" && (
           <>
-            <Route path="/candidaturas" element={<Candidaturas />} />
+            <Route path="/candidaturas" element={<Candidaturas loggedUser={user} />} />
             <Route path="/estatisticas" element={<EstatisticasTalent />} />
             <Route path="/galeria" element={<Galeria_Talent_ServiceLine />} />
             <Route path="/utilizadores" element={<Utilizadores userRole={user.cargo} />} />
@@ -277,7 +277,7 @@ function App() {
         {/* --- BLOCO SERVICE LINE LEADER --- */}
         {user.cargo === "Service Line Leader" && (
           <>
-            <Route path="/candidaturas" element={<Candidaturas />} />
+            <Route path="/candidaturas" element={<Candidaturas loggedUser={user} />} />
             <Route path="/estatisticas" element={<EstatisticasService user={user} />} />
             <Route path="/galeria" element={<Galeria_Talent_ServiceLine />} />
             <Route path="/utilizadores" element={<Utilizadores userRole={user.cargo} />} />
@@ -287,7 +287,7 @@ function App() {
         {/* --- BLOCO CONSULTOR --- */}
         {user.cargo === "Consultor" && (
           <>
-            <Route path="/candidaturas" element={<Candidaturas />} />
+            <Route path="/candidaturas" element={<Candidaturas loggedUser={user} />} />
             <Route path="/estatisticas" element={<EstatisticasConsultor user={user} />} />
             <Route path="/galeria" element={<GaleriaConsultor />} />
             <Route path="/objetivos" element={<ObjetivosConsultor user={user} />} />

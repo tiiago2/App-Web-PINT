@@ -112,7 +112,6 @@ function App() {
   const [menuNotificacoesAberto, setMenuNotificacoesAberto] = useState(false);
   const [abaNotificacoes, setAbaNotificacoes] = useState("notificacoes");
   const [isAvisoModalOpen, setIsAvisoModalOpen] = useState(false);
-  const [avisoParaEditar, setAvisoParaEditar] = useState(null);
   const [avisoParaVisualizar, setAvisoParaVisualizar] = useState(null);
   const [avisoToDelete, setAvisoToDelete] = useState(null);
   const [abaAvisos, setAbaAvisos] = useState("recebidos");
@@ -165,89 +164,158 @@ function App() {
     return () => document.removeEventListener("mousedown", handleCliqFora);
   }, [menuNotificacoesAberto]);
 
-  // === DADOS DE TESTE E LÓGICA (Avisos e Notificações) ===
-  const [avisos, setAvisos] = useState(() => {
-    const saved = localStorage.getItem("softinsa_avisos");
-    if (saved) {
-      try { return JSON.parse(saved); } catch { return []; }
+  // === CARREGAR NOTIFICAÇÕES E AVISOS DA BD ===
+  const [avisosRecebidos, setAvisosRecebidos] = useState([]);
+  const [avisosEnviados, setAvisosEnviados] = useState([]);
+  const [notificacoes, setNotificacoes] = useState([]);
+
+  const formatarData = (dataStr) => {
+    if (!dataStr) return "";
+    const d = new Date(dataStr);
+    const dia = String(d.getDate()).padStart(2, "0");
+    const mes = String(d.getMonth() + 1).padStart(2, "0");
+    const ano = d.getFullYear();
+    const horas = String(d.getHours()).padStart(2, "0");
+    const minutos = String(d.getMinutes()).padStart(2, "0");
+    return `${dia}/${mes}/${ano} ${horas}:${minutos}`;
+  };
+
+  const carregarNotificacoesEAvisos = async () => {
+    try {
+      if (user.id) {
+        const loginTime = user.ultimoLogin ? new Date(user.ultimoLogin).getTime() : 0;
+
+        // 1. Carregar Notificações
+        const resNotif = await api.get("/notificacoes/getnotificacoes");
+        const formatadas = resNotif.data.map(n => {
+          let tipoFront = 'Sistema';
+          if (n.tipo_notificacao === 'BADGE_EXPIRADO') tipoFront = 'Badge';
+          else if (n.tipo_notificacao === 'Candidatura') tipoFront = 'Candidatura';
+          else if (n.tipo_notificacao === 'Aceite') tipoFront = 'Aceite';
+          else if (n.tipo_notificacao === 'Rejeitada') tipoFront = 'Rejeitada';
+          else if (iconesNotificacao[n.tipo_notificacao]) tipoFront = n.tipo_notificacao;
+
+          const isLida = new Date(n.data_envio).getTime() <= loginTime;
+
+          return {
+            id: n.id_notificacao,
+            id_notificacao: n.id_notificacao,
+            texto: n.descricao_notificacao,
+            tipo: tipoFront,
+            data: formatarData(n.data_envio),
+            remetente: "Sistema",
+            lida: isLida
+          };
+        });
+        setNotificacoes(formatadas);
+
+        // 2. Carregar Avisos (Recebidos e Enviados)
+        const resAvisos = await api.get("/notificacoes/getavisos");
+        
+        const recebidosFormatados = (resAvisos.data.recebidos || []).map(a => {
+          const isLida = new Date(a.data).getTime() <= loginTime;
+          return {
+            ...a,
+            data: formatarData(a.data),
+            lida: isLida
+          };
+        });
+        const enviadosFormatados = (resAvisos.data.enviados || []).map(a => ({
+          ...a,
+          data: formatarData(a.data),
+          lida: true
+        }));
+
+        setAvisosRecebidos(recebidosFormatados);
+        setAvisosEnviados(enviadosFormatados);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar notificações e avisos:", error);
     }
-    return [
-      { id: 1, titulo: "Manutenção do Portal", mensagem: "O portal de badges estará em manutenção no próximo sábado.", tipoDestino: "grupo", destino: "Todos", data: "25/06/2026 10:00", autor: "Admin" },
-      { id: 2, titulo: "Nova Learning Path de DevOps", mensagem: "Lançámos a nova trilha focada em DevOps!", tipoDestino: "grupo", destino: "Todos os Consultores", data: "26/06/2026 14:30", autor: "Admin" },
-      { id: 3, titulo: "Reunião de Alinhamento", mensagem: "Carlos, por favor comparece na sala 1.", tipoDestino: "individual", destino: "Carlos", data: "27/06/2026 09:15", autor: "Gonçalo" },
-    ];
-  });
+  };
 
-  useEffect(() => localStorage.setItem("softinsa_avisos", JSON.stringify(avisos)), [avisos]);
-
-  const [notificacoes, setNotificacoes] = useState([
-    { id: 1, texto: "Submeteu uma nova candidatura para React.", tipo: "Badge", data: "21/08/2025 19:40", remetente: "Ana Silva", lida: false },
-    { id: 2, texto: "A reunião foi alterada para a sala 3.", tipo: "Aceite", data: "21/08/2025 19:40", remetente: "Carlos", lida: false },
-  ]);
+  useEffect(() => {
+    if (user.id && !isRotaPublicaAuth && !isRotaPublicaBadge) {
+      carregarNotificacoesEAvisos();
+    }
+  }, [user.id, location.pathname]);
 
   const notificacoesNaoLidas = notificacoes.filter((n) => !n.lida).length;
   const notificacoesRecentes = notificacoes.slice(0, 30);
 
-  const CliqueSino = () => {
+  const CliqueSino = async () => {
     setMenuNotificacoesAberto(!menuNotificacoesAberto);
     if (!menuNotificacoesAberto) {
-      if (notificacoesNaoLidas > 0) {
-        setNotificacoes(notificacoes.map((n) => ({ ...n, lida: true })));
-      }
-      if (abaNotificacoes === "avisos") {
-        setAvisosNaoLidosCount(0);
-      }
-    }
-  };
-
-  const handleSwitchAba = (aba) => {
-    setAbaNotificacoes(aba);
-    if (aba === "avisos") {
-      setAvisosNaoLidosCount(0);
-    }
-  };
-
-  const avisosFiltrados = useMemo(() => {
-    return avisos.filter((aviso) => {
-      if (aviso.tipoDestino === "grupo") {
-        if (aviso.destino === "Todos") return true;
-        if (aviso.destino === "Todos os Consultores" && user.cargo === "consultor") return true;
-        if (aviso.destino === "Todos os Talent Managers" && user.cargo === "talent manager") return true;
-        if (aviso.destino === "Todos os Service Line Leaders" && user.cargo === "service line leader") return true;
-      } else if (aviso.tipoDestino === "individual") {
-        const target = aviso.destino ? aviso.destino.toLowerCase().trim() : "";
-        const userName = user.nome ? user.nome.toLowerCase().trim() : "";
-        return target === userName;
-      }
-      return false;
-    });
-  }, [avisos, user]);
-
-  const avisosExibidos = useMemo(() => {
-    if (abaAvisos === "recebidos") return avisosFiltrados.filter((a) => a.autor !== user.nome);
-    return avisos.filter((a) => a.autor === user.nome);
-  }, [abaAvisos, avisosFiltrados, avisos, user.nome]);
-
-  const [avisosNaoLidosCount, setAvisosNaoLidosCount] = useState(0);
-
-  useEffect(() => {
-    if (user.ultimoLogin) {
-      const loginTime = new Date(user.ultimoLogin).getTime();
-      const unread = avisosFiltrados.filter((aviso) => {
-        const parts = aviso.data.split(" ");
-        if (parts.length === 2) {
-          const dateParts = parts[0].split("/");
-          const timeParts = parts[1].split(":");
-          if (dateParts.length === 3 && timeParts.length === 2) {
-            const avisoDate = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]), parseInt(timeParts[0]), parseInt(timeParts[1]));
-            return avisoDate.getTime() > loginTime;
+      if (abaNotificacoes === "notificacoes") {
+        const naoLidas = notificacoes.filter(n => !n.lida);
+        for (const n of naoLidas) {
+          try {
+            await api.get(`/notificacoes/updaterecetor?id_notificacao=${n.id_notificacao}`);
+          } catch (e) {
+            console.error(e);
           }
         }
-        return false;
-      }).length;
-      setAvisosNaoLidosCount(unread);
+        setNotificacoes(prev => prev.map(n => ({ ...n, lida: true })));
+      } else if (abaNotificacoes === "avisos" && abaAvisos === "recebidos") {
+        const naoLidos = avisosRecebidos.filter(a => !a.lida);
+        for (const a of naoLidos) {
+          try {
+            await api.get(`/notificacoes/updaterecetor?id_notificacao=${a.id}`);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        setAvisosRecebidos(prev => prev.map(a => ({ ...a, lida: true })));
+      }
     }
-  }, [avisosFiltrados, user.ultimoLogin]);
+  };
+
+  const handleSwitchAba = async (aba) => {
+    setAbaNotificacoes(aba);
+    if (aba === "avisos" && abaAvisos === "recebidos") {
+      const naoLidos = avisosRecebidos.filter(a => !a.lida);
+      for (const a of naoLidos) {
+        try {
+          await api.get(`/notificacoes/updaterecetor?id_notificacao=${a.id}`);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      setAvisosRecebidos(prev => prev.map(a => ({ ...a, lida: true })));
+    } else if (aba === "notificacoes") {
+      const naoLidas = notificacoes.filter(n => !n.lida);
+      for (const n of naoLidas) {
+        try {
+          await api.get(`/notificacoes/updaterecetor?id_notificacao=${n.id_notificacao}`);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      setNotificacoes(prev => prev.map(n => ({ ...n, lida: true })));
+    }
+  };
+
+  const avisosExibidos = useMemo(() => {
+    if (abaAvisos === "recebidos") return avisosRecebidos;
+    return avisosEnviados;
+  }, [abaAvisos, avisosRecebidos, avisosEnviados]);
+
+  const avisosNaoLidosCount = useMemo(() => {
+    return avisosRecebidos.filter(a => !a.lida).length;
+  }, [avisosRecebidos]);
+
+  const visualizarAviso = async (aviso) => {
+    setAvisoParaVisualizar(aviso);
+    setMenuNotificacoesAberto(false);
+    if (!aviso.lida && abaAvisos === "recebidos") {
+      try {
+        await api.get(`/notificacoes/updaterecetor?id_notificacao=${aviso.id}`);
+        setAvisosRecebidos(prev => prev.map(a => a.id === aviso.id ? { ...a, lida: true } : a));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
 
   const getTradDestino = (aviso) => {
     if (aviso.tipoDestino === "individual") return `${t("individual")}: ${aviso.destino}`;
@@ -480,7 +548,7 @@ function App() {
                         type="button"
                         className="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center border-0 text-white"
                         style={{ width: "22px", height: "22px", padding: 0, backgroundColor: "var(--barra_lateral)" }}
-                        onClick={() => { setAvisoParaEditar(null); setIsAvisoModalOpen(true); setMenuNotificacoesAberto(false); }}
+                        onClick={() => { setIsAvisoModalOpen(true); setMenuNotificacoesAberto(false); }}
                         title={t("criar_aviso_btn") || "Criar Aviso"}
                       >
                         <i className="fi fi-br-plus" style={{ fontSize: "9px", lineHeight: "0" }}></i>
@@ -488,27 +556,26 @@ function App() {
                     </div>
                   )}
 
-                  <div className="d-flex flex-column gap-2" id="avisos_list" style={{ maxHeight: "230px", overflowY: "auto" }}>
+                  <div className="d-flex flex-column gap-1" id="notification_list" style={{ maxHeight: "250px", overflowY: "auto" }}>
                     {avisosExibidos.length === 0 ? (
                       <p className="text-center my-3 text-muted">{t("aviso_vazio")}</p>
                     ) : (
                       [...avisosExibidos].reverse().map((aviso) => (
-                        <div key={aviso.id} className="aviso-item p-2 rounded-3 position-relative">
-                          <div className="d-flex justify-content-between align-items-start gap-2">
-                            <span className="fw-bold text-truncate text-dark" style={{ cursor: "pointer", maxWidth: "160px", fontSize: "0.85rem" }} onClick={() => { setAvisoParaVisualizar(aviso); setMenuNotificacoesAberto(false); }}>{aviso.titulo}</span>
-                            <div className="d-flex gap-1 align-items-center flex-shrink-0">
+                        <div key={aviso.id} className="d-flex justify-content-between align-items-center p-2 bg-white" id="notification_option">
+                          <div className="m-0 pe-2" id="notification_esquerda" style={{ cursor: "pointer" }} onClick={() => visualizarAviso(aviso)}>
+                            <span id="nome_notificacao"><b>{aviso.autor}</b></span>
+                            <span id="nome_notificacao">{aviso.mensagem}</span>
+                          </div>
+                          <div className="d-flex flex-column align-items-center justify-content-center" id="notification_direita">
+                            <div className="d-flex align-items-center gap-1 mb-1">
                               <span className={`aviso-tag aviso-tag-${getStyleClass(aviso)}`}>{getTradDestino(aviso)}</span>
                               {aviso.autor === user.nome && (
-                                <div className="d-flex gap-1 ms-2">
-                                  <i className="fi fi-br-pencil text-muted" style={{ cursor: "pointer", fontSize: "11px" }} onClick={() => { setAvisoParaEditar(aviso); setIsAvisoModalOpen(true); setMenuNotificacoesAberto(false); }}></i>
+                                <div className="d-flex gap-1 ms-1">
                                   <i className="fi fi-br-trash text-danger" style={{ cursor: "pointer", fontSize: "11px" }} onClick={() => setAvisoToDelete(aviso)}></i>
                                 </div>
                               )}
                             </div>
-                          </div>
-                          <p className="text-muted mb-1 text-truncate" style={{ fontSize: "0.75rem", cursor: "pointer" }} onClick={() => { setAvisoParaVisualizar(aviso); setMenuNotificacoesAberto(false); }}>{aviso.mensagem}</p>
-                          <div className="d-flex justify-content-between text-muted" style={{ fontSize: "0.65rem" }}>
-                            <span>Por: {aviso.autor}</span><span>{aviso.data}</span>
+                            <span>{aviso.data}</span>
                           </div>
                         </div>
                       ))
@@ -564,12 +631,13 @@ function App() {
 
         {/* MODAIS DE AVISOS */}
         {isAvisoModalOpen && (
-          <AvisoFormModal aviso={avisoParaEditar} onClose={() => setIsAvisoModalOpen(false)} onSave={(dados) => {
-            if (avisoParaEditar) {
-              setAvisos((prev) => prev.map((a) => a.id === avisoParaEditar.id ? { ...a, ...dados } : a));
-            } else {
-              const novo = { id: avisos.length > 0 ? Math.max(...avisos.map((a) => a.id)) + 1 : 1, ...dados, data: new Date().toLocaleDateString("pt-PT") + " " + new Date().toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" }), autor: user.nome || "Admin" };
-              setAvisos((prev) => [...prev, novo]);
+          <AvisoFormModal onClose={() => setIsAvisoModalOpen(false)} onSave={async (dados) => {
+            try {
+              await api.post("/notificacoes/enviaraviso", dados);
+              await carregarNotificacoesEAvisos();
+            } catch (error) {
+              console.error("Erro ao enviar aviso:", error);
+              alert("Erro ao enviar o aviso.");
             }
             setIsAvisoModalOpen(false);
           }} t={t} />
@@ -579,39 +647,34 @@ function App() {
           <AvisoDetailModal aviso={avisoParaVisualizar} onClose={() => setAvisoParaVisualizar(null)} t={t} getTradDestino={getTradDestino} getStyleClass={getStyleClass} />
         )}
 
-        <ModalConfirmacao isOpen={!!avisoToDelete} onClose={() => setAvisoToDelete(null)} onConfirm={() => { setAvisos((prev) => prev.filter((a) => a.id !== avisoToDelete.id)); setAvisoToDelete(null); }} titulo={t("eliminar_aviso")} mensagem={`${t("confirmar_eliminar_aviso")} (${avisoToDelete?.titulo})`} textoConfirmar="Eliminar" />
+        <ModalConfirmacao isOpen={!!avisoToDelete} onClose={() => setAvisoToDelete(null)} onConfirm={() => { setAvisosEnviados((prev) => prev.filter((a) => a.id !== avisoToDelete.id)); setAvisoToDelete(null); }} titulo={t("eliminar_aviso")} mensagem={`${t("confirmar_eliminar_aviso")} (${avisoToDelete?.titulo || (avisoToDelete?.mensagem ? (avisoToDelete.mensagem.substring(0, 30) + '...') : '')})`} textoConfirmar="Eliminar" />
       </div>
     </div>
   );
 }
 
 // === COMPONENTS AUXILIARES PARA AVISOS ===
-function AvisoFormModal({ aviso, onClose, onSave, t }) {
-  const [titulo, setTitulo] = useState(aviso ? aviso.titulo : "");
-  const [mensagem, setMensagem] = useState(aviso ? aviso.mensagem : "");
-  const [tipoDestino, setTipoDestino] = useState(aviso ? aviso.tipoDestino : "grupo");
-  const [destino, setDestino] = useState(aviso ? aviso.destino : "Todos");
+function AvisoFormModal({ onClose, onSave, t }) {
+  const [mensagem, setMensagem] = useState("");
+  const [tipoDestino, setTipoDestino] = useState("grupo");
+  const [destino, setDestino] = useState("Todos");
 
   const handleTipoChange = (e) => { const val = e.target.value; setTipoDestino(val); setDestino(val === "grupo" ? "Todos" : ""); };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!titulo.trim() || !mensagem.trim() || (tipoDestino === "individual" && !destino.trim())) { alert("Por favor preencha todos os campos obrigatórios."); return; }
-    onSave({ titulo, mensagem, tipoDestino, destino });
+    if (!mensagem.trim() || (tipoDestino === "individual" && !destino.trim())) { alert("Por favor preencha todos os campos obrigatórios."); return; }
+    onSave({ titulo: "", mensagem, tipoDestino, destino });
   };
 
   return (
     <div className="aviso-modal-overlay">
       <div className="aviso-modal-content">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h4 className="m-0">{aviso ? t("editar_aviso") : t("criar_aviso")}</h4>
+          <h4 className="m-0">{t("criar_aviso")}</h4>
           <button className="aviso-modal-close-btn" type="button" onClick={onClose}><i className="fi fi-br-cross"></i></button>
         </div>
         <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label className="form-label fw-semibold">{t("titulo")} *</label>
-            <input type="text" className="form-control" value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Ex: Atualização dos Termos de Uso" required />
-          </div>
           <div className="mb-3">
             <label className="form-label fw-semibold">{t("destinatario")} *</label>
             <div className="d-flex gap-3 mb-2">
@@ -670,7 +733,7 @@ function AvisoDetailModal({ aviso, onClose, getTradDestino, getStyleClass }) {
           <span className={`aviso-tag aviso-tag-${getStyleClass(aviso)}`}>{getTradDestino(aviso)}</span>
           <button className="aviso-modal-close-btn" type="button" onClick={onClose}><i className="fi fi-br-cross" style={{ fontSize: "0.9rem" }}></i></button>
         </div>
-        <h4 className="mb-3">{aviso.titulo}</h4>
+        {aviso.titulo && <h4 className="mb-3">{aviso.titulo}</h4>}
         <p className="mb-4 text-muted" style={{ whiteSpace: "pre-line", fontSize: "0.95rem" }}>{aviso.mensagem}</p>
         <hr className="mb-3" style={{ opacity: 0.15 }} />
         <div className="d-flex justify-content-between text-muted" style={{ fontSize: "0.8rem" }}>

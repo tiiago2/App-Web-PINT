@@ -300,9 +300,18 @@ export default function Atividade() {
                   <div className="timeline-card-body">
                     <div className="timeline-card-main">
                       <p className="activity-text">
-                        <strong>{activity.user}</strong>{" "}
-                        <span className="activity-action">{t(config.actionKey)}</span>{" "}
-                        <strong>{activity.item}</strong>
+                        {activity.type === "updated" || activity.type === "policy" ? (
+                          <>
+                            <strong>{activity.user}</strong>{" "}
+                            <span className="activity-action">{activity.item}</span>
+                          </>
+                        ) : (
+                          <>
+                            <strong>{activity.user}</strong>{" "}
+                            <span className="activity-action">{t(config.actionKey)}</span>{" "}
+                            <strong>{activity.item}</strong>
+                          </>
+                        )}
                       </p>
                       <div className="activity-time">
                         <i className="fi fi-br-clock"></i>
@@ -378,19 +387,6 @@ export default function Atividade() {
             onChange={(val) => setSearchQuery(val)}
             placeholder={t("pesquisar_utilizador_item")}
           />
-        </div>
-        <div className="filters-wrapper">
-          {filters.map((filter) => (
-            <button
-              key={filter.id}
-              onClick={() => setActiveFilter(filter.id)}
-              className={`btn filter-tab-btn ${
-                activeFilter === filter.id ? "filter-tab-active" : "filter-tab-inactive"
-              }`}
-            >
-              {t(filter.labelKey)}
-            </button>
-          ))}
         </div>
         <div className="atividade-data-picker">
           <input

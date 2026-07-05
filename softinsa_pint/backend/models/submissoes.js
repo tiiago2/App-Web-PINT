@@ -6,6 +6,7 @@ module.exports = (sequelize) => {
     id_badge: { type: DataTypes.INTEGER, allowNull: false },
     id_utilizador: { type: DataTypes.INTEGER, allowNull: false },
     status: { type: DataTypes.TEXT, allowNull: false },
-    data_submissao: { type: DataTypes.DATE, allowNull: false }
+    data_submissao: { type: DataTypes.DATE, allowNull: false },
+    notificacao_sla: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
   }, { tableName: 'submissoes', timestamps: false });
 };

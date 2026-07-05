@@ -518,7 +518,7 @@ function App() {
           <div className="d-none d-xl-flex mb-3 align-items-center justify-content-center w-100 gap-2">
             <span className="item_rodape_lateral" onClick={() => navigate("/politicas-rgpd")}>{t("politicas_rgpd")}</span>
             <span style={{ opacity: 0.5, fontSize: '0.7rem' }}>•</span>
-            <span className="item_rodape_lateral" onClick={() => {}}>{t("quem_somos")}</span>
+            <span className="item_rodape_lateral" onClick={() => window.open('https://www.softinsa.pt', '_blank', 'noopener,noreferrer')}>{t("quem_somos")}</span>
           </div>
         </div>
 

@@ -19,7 +19,8 @@ module.exports = (sequelize) => {
     data_obtencao: {
       type: DataTypes.DATE,
       allowNull: false
-    }
+    },
+    expirado: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
   }, {
     tableName: 'registo_badges',
     timestamps: false

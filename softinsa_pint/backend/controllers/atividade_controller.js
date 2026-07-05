@@ -339,6 +339,36 @@ exports.getAtividade = async (req, res) => {
         }
       }
 
+      if (tabela !== "registo_badges") {
+        let entidade = "";
+        let acao = "atualizado";
+        
+        if (log.tipo === 1) acao = "criado";
+        if (log.tipo === 3) acao = "removido";
+
+        switch (tabela) {
+          case "area":
+            entidade = "Área";
+            acao = acao === "criado" ? "criada" : acao === "atualizado" ? "atualizada" : "removida";
+            break;
+          case "service_line":
+            entidade = "Service Line";
+            acao = acao === "criado" ? "criada" : acao === "atualizado" ? "atualizada" : "removida";
+            break;
+          case "learning_path":
+            entidade = "Learning Path";
+            break;
+          case "badges":
+            entidade = "Badge";
+            break;
+          default:
+            entidade = "Item";
+        }
+
+        user = `${entidade} "${item}"`;
+        item = `foi ${acao}`;
+      }
+
       return {
         id: `log-${log.id_log}`,
         type,
@@ -356,8 +386,8 @@ exports.getAtividade = async (req, res) => {
     const atividadesPoliticas = politicas.map((p) => ({
       id: `politica-${p.id_politica}`,
       type: "policy",
-      user: "Sistema",
-      item: "Políticas RGPD",
+      user: "Políticas RGPD",
+      item: "foram atualizadas",
       timestamp: p.data_alteracao
     }));
 

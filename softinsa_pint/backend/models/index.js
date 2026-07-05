@@ -121,6 +121,10 @@ db.Badges.belongsToMany(db.Assinatura, { through: db.BadgesAssinatura, foreignKe
 // Utilizador <-> Submissões (Tabela Historico)
 db.Utilizador.belongsToMany(db.Submissoes, { through: db.Historico, foreignKey: 'id_utilizador' });
 db.Submissoes.belongsToMany(db.Utilizador, { through: db.Historico, foreignKey: 'id_submissao' });
+db.Submissoes.hasMany(db.Historico, { foreignKey: 'id_submissao' });
+db.Historico.belongsTo(db.Submissoes, { foreignKey: 'id_submissao' });
+db.Utilizador.hasMany(db.Historico, { foreignKey: 'id_utilizador' });
+db.Historico.belongsTo(db.Utilizador, { foreignKey: 'id_utilizador' });
 
 // Notificações <-> Utilizador (Tabela Recetor)
 db.Notificacoes.belongsToMany(db.Utilizador, { through: db.Recetor, foreignKey: 'id_notificacao' });

@@ -218,14 +218,14 @@ function CandidaturaDetalhes({ candidatura, userRole, onAccept, onReject, onClos
                     <i className="fi fi-br-user" style={{ color: "var(--barra_lateral)" }}></i>
                     <span className="fw-bold fs-6">{user.nome}</span>
                   </div>
-                  <div className="opacity-75">
+                  <div>
                     <strong>{t("area_label")}:</strong> {user.area}
                   </div>
-                  <div className="opacity-75">
+                  <div>
                     <strong>{t("submetido_label")}:</strong> {formatSubmetidoCompleto(candidatura.submetido)}
                   </div>
-                  <div className="opacity-75">
-                    <strong>{t("pontuacao_label")}:</strong> <span className="badge bg-gray-200 text-gray-700 font-bold px-2 py-0.5">{t("pontos_count", { count: badge.pontos })}</span>
+                  <div>
+                    <strong>{t("pontuacao_label")}:</strong> {t("pontos_count", { count: badge.pontos })}
                   </div>
                 </div>
 

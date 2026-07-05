@@ -82,11 +82,7 @@ module.exports = {
 
     async getUser(req, res) {
         try {
-            const { id } = req.query;
-
-            if (!id) {
-                return res.status(400).json({ error: "ID não fornecido no pedido." });
-            }
+            const id = req.utilizadorLogado.id_utilizador;
 
             const user = await Utilizador.findOne({
                 where: { id_utilizador: id },
@@ -107,7 +103,7 @@ module.exports = {
     },
     async postLastLogin(req, res) {
         try {
-            const { id } = req.body;
+            const id = req.utilizadorLogado.id_utilizador;
 
             const user = await Utilizador.findByPk(id);
 

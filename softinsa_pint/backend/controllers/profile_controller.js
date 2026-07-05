@@ -5,11 +5,8 @@ module.exports = {
     async getUserLogin(req, res) {
         try {
             // 1. Receber os parâmetros
-            const { id, cargo } = req.query;
-
-            if (!id) {
-                return res.status(400).json({ error: "ID não fornecido no pedido." });
-            }
+            const cargo = req.query.cargo;
+            const id = req.query.id || req.utilizadorLogado.id_utilizador;
 
             // 2. Criar o objeto Base Normalizado
             const utilizadorFinal = {
@@ -131,11 +128,8 @@ module.exports = {
     },
     async atualizarPerfilCompleto(req, res) {
 
-        const { id_utilizador, nome, email, telefone, badges } = req.body;
-
-        if (!id_utilizador) {
-            return res.status(400).json({ error: "ID de utilizador é obrigatório." });
-        }
+        const { nome, email, telefone, badges } = req.body;
+        const id_utilizador = req.utilizadorLogado.id_utilizador;
 
         const t = await sequelize.transaction();
 

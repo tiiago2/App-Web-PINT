@@ -373,5 +373,11 @@
     "a_carregar": "Loading...",
     "sem_badges_progresso": "No badges in progress.",
     "sem_objetivos": "No proposed objectives.",
-    "sem_progresso": "No progress data."
+    "sem_progresso": "No progress data.",
+    "aceite_pelo_talent": "Accepted by Talent Manager",
+    "ver_candidatura": "View Application",
+    "ver_historico": "View History",
+    "historico_avaliacoes": "Evaluation History",
+    "rejeitada": "Rejected",
+    "sem_historico": "No evaluation history recorded yet."
 }

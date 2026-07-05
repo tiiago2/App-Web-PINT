@@ -56,6 +56,7 @@
   transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   cursor: pointer;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 /* Pseudo-element indicator for active state */
@@ -282,5 +283,19 @@
 .candidatura-detalhes-panel .overflow-auto {
   flex-grow: 1;
   min-height: 0;
+}
+
+/* History view toggle button styled to match app theme colors */
+.candidatura-botao-historico {
+  background-color: transparent !important;
+  border: 1px solid var(--barra_lateral) !important;
+  color: var(--barra_lateral) !important;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+.candidatura-botao-historico:hover {
+  background-color: var(--barra_lateral) !important;
+  color: #ffffff !important;
 }
 

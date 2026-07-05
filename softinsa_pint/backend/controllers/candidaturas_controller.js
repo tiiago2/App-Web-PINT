@@ -5,8 +5,10 @@ const {
   Badges,
   Area,
   ServiceLine,
-  Requisitos
+  Requisitos,
+  Historico
 } = require("../models");
+const { Op } = require("sequelize");
 
 module.exports = {
   // GET /api/candidaturas
@@ -14,26 +16,72 @@ module.exports = {
     try {
       const id_utilizador = req.utilizadorLogado.id_utilizador;
 
-      // 1. Obter as roles do utilizador
+      // 1. Obter as roles do utilizador na base de dados
       const userWithRoles = await Utilizador.findByPk(id_utilizador, {
         include: [{ model: Role, through: { attributes: [] } }]
       });
 
-      const roles = userWithRoles ? userWithRoles.Roles.map(r => r.nome_role.toLowerCase()) : [];
+      const roles = userWithRoles ? userWithRoles.Roles.map(r => r.nome_role ? r.nome_role.toLowerCase() : "") : [];
 
-      const isAdmin = roles.includes('admin') || roles.includes('administrador');
-      const isTalent = roles.includes('talent') || roles.includes('talent manager');
-      const isServiceLeader = roles.includes('service') || roles.includes('service line leader');
-      const isConsultor = roles.includes('consultor');
+      // Ler a role ativa enviada pelo frontend no cabeçalho x-user-role
+      const activeRoleHeader = req.headers['x-user-role'] ? req.headers['x-user-role'].toLowerCase() : null;
 
-      let serviceLine = null;
+      // Segurança: verificar se a role enviada no header pertence ao utilizador
+      const roleAtiva = (activeRoleHeader && roles.includes(activeRoleHeader))
+        ? activeRoleHeader
+        : null;
+
+      const isAdmin = roleAtiva
+        ? (roleAtiva === 'admin' || roleAtiva === 'administrador')
+        : (roles.includes('admin') || roles.includes('administrador'));
+
+      const isTalent = roleAtiva
+        ? (roleAtiva === 'talent' || roleAtiva === 'talent manager')
+        : (roles.includes('talent') || roles.includes('talent manager'));
+
+      const isServiceLeader = roleAtiva
+        ? (roleAtiva === 'service' || roleAtiva === 'service line leader')
+        : (roles.includes('service') || roles.includes('service line leader'));
+
+      const isConsultor = roleAtiva
+        ? (roleAtiva === 'consultor')
+        : (roles.includes('consultor'));
+
+      // Cláusula where principal de submissões
+      let whereClause = {};
+
+      // Se for Service Line Leader e não for Admin/Talent:
       if (isServiceLeader && !isAdmin && !isTalent) {
-        serviceLine = await ServiceLine.findOne({
+        const serviceLine = await ServiceLine.findOne({
           where: { id_lider: id_utilizador, deleted_service: false }
         });
+
+        if (!serviceLine) {
+          // Se for SLL mas não tiver nenhuma Service Line associada, retorna vazio
+          return res.status(200).json([]);
+        }
+
+        // Buscar as áreas pertencentes a esta Service Line
+        const areas = await Area.findAll({
+          where: { id_service_line: serviceLine.id_service_line, deleted_area: false }
+        });
+        const areaIds = areas.map(a => a.id_area);
+
+        // Buscar os badges correspondentes
+        const badges = await Badges.findAll({
+          where: { id_area: areaIds, deleted_badge: false }
+        });
+        const badgeIds = badges.map(b => b.id_badge);
+
+        // Filtrar submissões que pertençam a estes badges e que tenham estado 'aceite talent', 'aceite' ou 'recusada'
+        whereClause.id_badge = { [Op.in]: badgeIds };
+        whereClause.status = { [Op.in]: ['aceite talent', 'aceite', 'recusada'] };
+      } else if (isConsultor && !isAdmin && !isTalent) {
+        // Consultor só vê as suas candidaturas
+        whereClause.id_utilizador = id_utilizador;
       }
 
-      // 2. Definir filtros e relacionamentos
+      // 2. Definir os relacionamentos para a query
       const includeOption = [
         {
           model: Utilizador,
@@ -45,8 +93,6 @@ module.exports = {
           include: [
             {
               model: Area,
-              required: !!(isServiceLeader && !isAdmin && !isTalent && serviceLine),
-              where: (isServiceLeader && !isAdmin && !isTalent && serviceLine) ? { id_service_line: serviceLine.id_service_line } : {},
               include: [
                 {
                   model: ServiceLine,
@@ -60,19 +106,17 @@ module.exports = {
               through: { attributes: [] }
             }
           ]
+        },
+        {
+          model: Historico,
+          include: [
+            {
+              model: Utilizador,
+              attributes: ['id_utilizador', 'nome_user', 'imagem_perfil']
+            }
+          ]
         }
       ];
-
-      // Se for Service Line Leader e não tiver nenhuma Service Line associada, retorna vazio
-      if (isServiceLeader && !isAdmin && !isTalent && !serviceLine) {
-        return res.status(200).json([]);
-      }
-
-      // Cláusula where principal de submissões
-      let whereClause = {};
-      if (isConsultor && !isAdmin && !isTalent && !isServiceLeader) {
-        whereClause.id_utilizador = id_utilizador;
-      }
 
       const submissoes = await Submissoes.findAll({
         where: whereClause,
@@ -83,11 +127,43 @@ module.exports = {
       // 3. Normalizar dados para o formato esperado pelo frontend
       const formatadas = submissoes.map(sub => {
         let mappedStatus = 'Pendente';
-        if (sub.status === 'Aceite') mappedStatus = 'Aceite';
-        if (sub.status === 'Rejeitada') mappedStatus = 'Recusada';
+        const dbStatus = sub.status ? sub.status.toLowerCase() : 'pendente';
+
+        if (isServiceLeader && !isAdmin && !isTalent) {
+          // Para o Service Line Leader: 'aceite talent' é visto como Pendente (para ele aprovar)
+          if (dbStatus === 'aceite talent') mappedStatus = 'Pendente';
+          else if (dbStatus === 'aceite') mappedStatus = 'Aceite';
+          else if (dbStatus === 'recusada' || dbStatus === 'rejeitada') mappedStatus = 'Recusada';
+          else mappedStatus = 'Pendente';
+        } else if (isTalent && !isAdmin) {
+          // Para o Talent Manager: 'pendente' é Pendente. 'aceite talent' (que ele já aceitou) é visto como Aceite
+          if (dbStatus === 'pendente') mappedStatus = 'Pendente';
+          else if (dbStatus === 'aceite talent' || dbStatus === 'aceite') mappedStatus = 'Aceite';
+          else if (dbStatus === 'recusada' || dbStatus === 'rejeitada') mappedStatus = 'Recusada';
+        } else if (isAdmin) {
+          // Para o Admin: vê 'pendente' como Pendente, e 'aceite'/'aceite talent' como Aceite
+          if (dbStatus === 'pendente') mappedStatus = 'Pendente';
+          else if (dbStatus === 'aceite talent' || dbStatus === 'aceite') mappedStatus = 'Aceite';
+          else if (dbStatus === 'recusada' || dbStatus === 'rejeitada') mappedStatus = 'Recusada';
+        } else {
+          // Para Consultor ou outros: 'pendente' e 'aceite talent' aparecem como Pendente
+          if (dbStatus === 'pendente' || dbStatus === 'aceite talent') mappedStatus = 'Pendente';
+          else if (dbStatus === 'aceite') mappedStatus = 'Aceite';
+          else if (dbStatus === 'recusada' || dbStatus === 'rejeitada') mappedStatus = 'Recusada';
+        }
 
         const requisitos = sub.Badge?.Requisitos
           ? sub.Badge.Requisitos.map(r => r.descricao_requisito || r.nome_requisito)
+          : [];
+
+        const historicos = sub.Historicos
+          ? sub.Historicos.map(h => ({
+              idUtilizador: h.id_utilizador,
+              avaliador: h.Utilizador?.nome_user || 'Avaliador',
+              aceite: h.aceite,
+              feedback: h.feedback,
+              dataAvaliacao: h.data_avaliacao
+            }))
           : [];
 
         return {
@@ -96,8 +172,10 @@ module.exports = {
           badgeId: sub.id_badge,
           submetido: sub.data_submissao,
           status: mappedStatus,
-          progresso: sub.status === 'Aceite' ? 100 : 80,
+          dbStatus: dbStatus, // Raw state from database
+          progresso: dbStatus === 'aceite' ? 100 : 80,
           requisitos: requisitos,
+          historico: historicos,
           user: {
             id: sub.Utilizador?.id_utilizador || sub.id_utilizador,
             nome: sub.Utilizador?.nome_user || 'Utilizador',
@@ -131,7 +209,39 @@ module.exports = {
         return res.status(400).json({ error: "Estado inválido." });
       }
 
-      const dbStatus = status === 'Recusada' ? 'Rejeitada' : 'Aceite';
+      const id_utilizador = req.utilizadorLogado.id_utilizador;
+      
+      // Obter as roles do utilizador na base de dados
+      const userWithRoles = await Utilizador.findByPk(id_utilizador, {
+        include: [{ model: Role, through: { attributes: [] } }]
+      });
+      const roles = userWithRoles ? userWithRoles.Roles.map(r => r.nome_role ? r.nome_role.toLowerCase() : "") : [];
+
+      // Ler a role ativa enviada pelo frontend
+      const activeRoleHeader = req.headers['x-user-role'] ? req.headers['x-user-role'].toLowerCase() : null;
+      const roleAtiva = (activeRoleHeader && roles.includes(activeRoleHeader))
+        ? activeRoleHeader
+        : null;
+
+      const isAdmin = roleAtiva
+        ? (roleAtiva === 'admin' || roleAtiva === 'administrador')
+        : (roles.includes('admin') || roles.includes('administrador'));
+
+      const isTalent = roleAtiva
+        ? (roleAtiva === 'talent' || roleAtiva === 'talent manager')
+        : (roles.includes('talent') || roles.includes('talent manager'));
+
+      let dbStatus = '';
+      if (status === 'Recusada') {
+        dbStatus = 'recusada';
+      } else if (status === 'Aceite') {
+        // Se for Talent Manager (e não Admin), passa a 'aceite talent'. Se for Admin ou SLL, passa a 'aceite'
+        if (isTalent && !isAdmin) {
+          dbStatus = 'aceite talent';
+        } else {
+          dbStatus = 'aceite';
+        }
+      }
 
       const submissao = await Submissoes.findByPk(id);
       if (!submissao) {

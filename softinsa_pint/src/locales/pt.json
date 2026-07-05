@@ -368,5 +368,11 @@
     "a_carregar": "A carregar...",
     "sem_badges_progresso": "Sem badges em progresso.",
     "sem_objetivos": "Sem objetivos propostos.",
-    "sem_progresso": "Sem dados de progresso."
+    "sem_progresso": "Sem dados de progresso.",
+    "aceite_pelo_talent": "Aceite pelo Talent Manager",
+    "ver_candidatura": "Ver Candidatura",
+    "ver_historico": "Ver Histórico",
+    "historico_avaliacoes": "Histórico de Avaliações",
+    "rejeitada": "Rejeitada",
+    "sem_historico": "Ainda sem registo de avaliações."
 }

@@ -10,123 +10,15 @@ import autoTable from 'jspdf-autotable';
 import api from "../../services/api.js";
 import "./candidaturas.css";
 
-// MOCK DATABASE & DATA SCHEMA
-const badgesMock = [
-  { 
-    id: 1, 
-    titulo: "Low Code", 
-    pontos: 20, 
-    descricao: "Aqui estará a descrição do badge de Low Code. Este badge foca-se no desenvolvimento rápido utilizando plataformas visuais.", 
-    cor: "#c2d992", 
-    borderCor: "#5EA500", 
-    icon: "fi-br-microchip" 
-  },
-  { 
-    id: 2, 
-    titulo: "Cloud Native", 
-    pontos: 35, 
-    descricao: "Aqui estará a descrição do badge de Cloud Native. Este badge valida competências de deployment e orquestração de containers.", 
-    cor: "#d1e1f0", 
-    borderCor: "#45556C", 
-    icon: "fi-br-cloud" 
-  },
-  { 
-    id: 3, 
-    titulo: "Mobile Developer", 
-    pontos: 25, 
-    descricao: "Aqui estará a descrição do badge de Mobile Developer. Foca-se em desenvolvimento multiplataforma (iOS e Android) com React Native.", 
-    cor: "#e08a90", 
-    borderCor: "#AE012F", 
-    icon: "fi-br-smartphone" 
-  },
-  { 
-    id: 4, 
-    titulo: "UX Designer", 
-    pontos: 15, 
-    descricao: "Aqui estará a descrição do badge de UX Designer. Foca-se na facilidade de uso, arquitetura de informação e fluxos de utilizador.", 
-    cor: "#e9d78e", 
-    borderCor: "#E17100", 
-    icon: "fi-br-target" 
-  }
+// Paleta de cores rotativas para os ícones dos badges (determinística por badge ID)
+const CORES_TEMPLATE = [
+  { cor: "#c2d992", borderCor: "#5EA500", icon: "fi-br-microchip" },
+  { cor: "#d1e1f0", borderCor: "#45556C", icon: "fi-br-cloud" },
+  { cor: "#e08a90", borderCor: "#AE012F", icon: "fi-br-smartphone" },
+  { cor: "#e9d78e", borderCor: "#E17100", icon: "fi-br-target" },
+  { cor: "#b5d8f7", borderCor: "#2979C1", icon: "fi-br-database" },
+  { cor: "#d4b5f7", borderCor: "#7B2FBE", icon: "fi-br-rocket" }
 ];
-
-const usersMock = [
-  { id: 1, nome: "João Silva", area: "Hybrid Systems", serviceLine: "Hybrid Systems" },
-  { id: 2, nome: "Maria Ana", area: "Mobile Solutions", serviceLine: "Mobile Solutions" },
-  { id: 3, nome: "Rui Costa", area: "Cloud & DevOps", serviceLine: "Infrastructure" },
-  { id: 4, nome: "Ana Reis", area: "Hybrid Systems", serviceLine: "Hybrid Systems" }
-];
-
-const initialCandidaturas = [
-  { 
-    id: 1, 
-    userId: 1, 
-    badgeId: 1, 
-    submetido: "2026-06-06T13:30:00Z", 
-    status: "Pendente", 
-    progresso: 100, 
-    requisitos: [
-      "Demonstrar proficiência em ferramentas drag-and-drop", 
-      "Completar o tutorial interativo de criação de fluxos",
-      "dsadsadsadsa", 
-      " o tutorial interativo de criação de fluxos"
-    ] 
-  },
-  { 
-    id: 2, 
-    userId: 2, 
-    badgeId: 3, 
-    submetido: "2026-06-06T11:30:00Z", 
-    status: "Pendente", 
-    progresso: 80, 
-    requisitos: [
-      "Criar uma aplicação funcional em React Native", 
-      "Publicar versão de testes na App Store / Google Play"
-    ] 
-  },
-  { 
-    id: 3, 
-    userId: 3, 
-    badgeId: 2, 
-    submetido: "2026-06-05T15:20:00Z", 
-    status: "Pendente", 
-    progresso: 95, 
-    requisitos: [
-      "Configurar cluster Kubernetes", 
-      "Automatizar pipelines de CI/CD utilizando GitHub Actions"
-    ] 
-  },
-  { 
-    id: 4, 
-    userId: 4, 
-    badgeId: 4, 
-    submetido: "2026-06-04T09:15:00Z", 
-    status: "Aceite", 
-    progresso: 100, 
-    requisitos: [
-      "Apresentar protótipo navegável em Figma", 
-      "Realizar testes de usabilidade com 5 utilizadores reais"
-    ] 
-  },
-  { 
-    id: 5, 
-    userId: 1, 
-    badgeId: 2, 
-    submetido: "2026-06-03T18:40:00Z", 
-    status: "Recusada", 
-    progresso: 100, 
-    requisitos: [
-      "Configurar cluster Kubernetes", 
-      "Automatizar pipelines de CI/CD utilizando GitHub Actions"
-    ] 
-  }
-];
-
-const initialList = initialCandidaturas.map((cand) => {
-  const user = usersMock.find((u) => u.id === cand.userId);
-  const badge = badgesMock.find((b) => b.id === cand.badgeId);
-  return { ...cand, user, badge };
-});
 
 // REUSABLE SUB-COMPONENT: CANDIDATURA CARD
 function CandidaturaCard({ candidatura, isSelected, onClick }) {
@@ -200,10 +92,14 @@ function CandidaturaCard({ candidatura, isSelected, onClick }) {
 }
 
 // REUSABLE SUB-COMPONENT: CANDIDATURA DETALHES
-function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
+function CandidaturaDetalhes({ candidatura, userRole, onAccept, onReject, onClose }) {
   const { t, i18n } = useTranslation();
   const { user, badge } = candidatura;
+  const [mostrarHistorico, setMostrarHistorico] = useState(false);
   
+  const isSll = userRole === 'service line leader' || userRole === 'service';
+  const showTalentApproved = isSll && candidatura.dbStatus === 'aceite talent';
+
   const formatSubmetidoCompleto = (dateStr) => {
     const options = { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
     const localeCode = i18n.language === "gb" ? "en-GB" : i18n.language === "es" ? "es-ES" : "pt-PT";
@@ -214,6 +110,20 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
     <div className="d-flex flex-column h-100" style={{ minHeight: 0 }}>
       <div className="p-3 border-bottom d-flex justify-content-between align-items-center flex-shrink-0" style={{ borderColor: "var(--contorno) !important" }}>
         <h5 className="fw-bold m-0" style={{ fontSize: "1.15rem", color: "var(--fontes)" }}>{t("ficha_candidatura")}</h5>
+        
+        {/* Button to toggle view between details and history */}
+        <div className="d-flex align-items-center gap-2 mx-auto ms-sm-auto me-sm-3">
+          <button 
+            onClick={() => setMostrarHistorico(prev => !prev)}
+            className="btn btn-sm rounded-3 px-3 py-1.5 candidatura-botao-historico"
+          >
+            <i className={`fi ${mostrarHistorico ? "fi-br-document" : "fi-br-history"} me-1.5`} style={{ fontSize: "0.75rem", verticalAlign: "middle" }}></i>
+            <span>
+              {mostrarHistorico ? t("ver_candidatura") : t("ver_historico")}
+            </span>
+          </button>
+        </div>
+
         <button 
           onClick={onClose}
           className="btn btn-link text-gray-400 hover:text-gray-600 p-1 border-0"
@@ -225,107 +135,184 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
       </div>
 
       <div className="overflow-auto p-4 custom-scrollbar bg-gray-50/20" style={{ height: "calc(100% - 60px)" }}>
-        <div className="d-flex flex-column gap-4">
-          
-          <div className="d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-4">
-            <div 
-              className="candidatura-detalhe-icon-circle transition-all hover:scale-105"
-              style={{ 
-                backgroundColor: `${badge.cor}30`,
-                borderColor: badge.borderCor
-              }}
-            >
-              <i className={`fi ${badge.icon}`} style={{ fontSize: "2.2rem", color: badge.borderCor }}></i>
-            </div>
-
-            <div className="flex-grow-1 text-center text-sm-start w-100">
-              <h3 className="fw-bold mb-2" style={{ fontSize: "1.3rem", color: "var(--fontes)" }}>{badge.titulo}</h3>
-              
-              <div className="d-flex flex-column gap-1.5 mb-3" style={{ fontSize: "0.85rem", color: "var(--fontes)" }}>
-                <div className="d-flex align-items-center justify-content-center justify-content-sm-start gap-2">
-                  <i className="fi fi-br-user" style={{ color: "var(--barra_lateral)" }}></i>
-                  <span className="fw-bold fs-6">{user.nome}</span>
-                </div>
-                <div className="opacity-75">
-                  <strong>{t("area_label")}:</strong> {user.area}
-                </div>
-                <div className="opacity-75">
-                  <strong>{t("submetido_label")}:</strong> {formatSubmetidoCompleto(candidatura.submetido)}
-                </div>
-                <div className="opacity-75">
-                  <strong>{t("pontuacao_label")}:</strong> <span className="badge bg-gray-200 text-gray-700 font-bold px-2 py-0.5">{t("pontos_count", { count: badge.pontos })}</span>
-                </div>
-              </div>
-
-              <div className="d-flex align-items-center gap-3">
-                <div className="candidatura-progresso-bar-wrap">
-                  <div className="candidatura-progresso-bar-fill" style={{ width: `${candidatura.progresso}%` }}></div>
-                </div>
-                <span className="fw-bold fs-6" style={{ color: "var(--barra_progresso)" }}>{candidatura.progresso}%</span>
-              </div>
-            </div>
-          </div>
-
-          <hr className="my-0" style={{ color: "var(--contorno)" }} />
-
-          <div>
-            <h6 className="fw-bold mb-2 d-flex align-items-center gap-2" style={{ fontSize: "0.95rem", color: "var(--fontes)" }}>
-              <i className="fi fi-br-align-justify" style={{ color: "var(--barra_lateral)" }}></i>
-              <span>{t("descricao_badge")}</span>
-            </h6>
-            <p className="lh-relaxed p-3 rounded-3 m-0 shadow-xs" style={{ fontSize: "0.85rem", backgroundColor: "var(--fundo)", border: "var(--borda-principal) solid var(--contorno)" }}>
-              {badge.descricao}
-            </p>
-          </div>
-
-          <div>
-            <h6 className="fw-bold mb-2 d-flex align-items-center gap-2" style={{ fontSize: "0.95rem", color: "var(--fontes)" }}>
-              <i className="fi fi-br-list" style={{ color: "var(--barra_lateral)" }}></i>
-              <span>{t("requisitos_comprovados")}</span>
+        {mostrarHistorico ? (
+          // evaluation history view
+          <div className="d-flex flex-column gap-3">
+            <h6 className="fw-bold mb-1 d-flex align-items-center gap-2" style={{ fontSize: "0.95rem", color: "var(--fontes)" }}>
+              <i className="fi fi-br-history" style={{ color: "var(--barra_lateral)" }}></i>
+              <span>{t("historico_avaliacoes") || "Histórico de Avaliações"}</span>
             </h6>
             
-            <div className="d-flex flex-column gap-2">
-              {candidatura.requisitos.map((req, idx) => (
-                <div key={idx} className="requisito-card shadow-xs">
-                  <div className="d-flex align-items-center gap-3 min-w-0">
-                    <span className="fw-bold" style={{ fontSize: "0.95rem", color: "var(--barra_lateral)" }}>{idx + 1}.</span>
-                    <span className="truncate" style={{ fontSize: "0.85rem", color: "var(--fontes)" }}>{req}</span>
-                  </div>
-                  <button 
-                    onClick={() => alert(t("transferindo_documentacao", { req }))}
-                    className="requisito-doc-btn"
-                    title={t("download_comprovativo")}
-                  >
-                    <i className="fi fi-br-document" style={{ fontSize: "0.85rem" }}></i>
-                  </button>
-                </div>
-              ))}
-            </div>
+            {(!candidatura.historico || candidatura.historico.length === 0) ? (
+              <div className="text-center py-5 text-secondary d-flex flex-column align-items-center justify-content-center h-100 bg-gray-50/10 rounded-3 border border-dashed py-5">
+                <i className="fi fi-br-info mb-3 text-gray-300" style={{ fontSize: "2.5rem" }}></i>
+                <p className="m-0 fs-6 fw-medium text-gray-400">{t("sem_historico") || "Ainda sem registo de avaliações."}</p>
+              </div>
+            ) : (
+              <div className="d-flex flex-column gap-3">
+                {candidatura.historico.map((hist, idx) => {
+                  const histStatusClass = hist.aceite ? "aceite" : "recusada";
+                  return (
+                    <div 
+                      key={idx} 
+                      className="p-3 rounded-3 shadow-xs border d-flex flex-column gap-2" 
+                      style={{ 
+                        backgroundColor: "var(--fundo)", 
+                        borderColor: "var(--contorno)"
+                      }}
+                    >
+                      <div className="d-flex justify-content-between align-items-center">
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="fi fi-br-user text-gray-500" style={{ fontSize: "0.9rem" }}></i>
+                          <span className="fw-semibold text-gray-700" style={{ fontSize: "0.85rem" }}>{hist.avaliador}</span>
+                        </div>
+                        <span className={`status-pill ${histStatusClass}`}>
+                          {hist.aceite ? t("aceite") : t("rejeitada")}
+                        </span>
+                      </div>
+                      
+                      {hist.feedback && (
+                        <p 
+                          className="m-0 text-muted p-2 rounded-2" 
+                          style={{ 
+                            fontSize: "0.85rem", 
+                            fontStyle: "italic", 
+                            backgroundColor: "var(--fundo_submenu_hover)",
+                            borderLeft: "3px solid var(--barra_lateral)"
+                          }}
+                        >
+                          "{hist.feedback}"
+                        </p>
+                      )}
+                      
+                      <div className="d-flex justify-content-end align-items-center gap-2 text-gray-400" style={{ fontSize: "0.7rem" }}>
+                        <i className="fi fi-br-calendar"></i>
+                        <span>{new Date(hist.dataAvaliacao).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
+        ) : (
+          // normal details view
+          <div className="d-flex flex-column gap-4">
+            
+            <div className="d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-4">
+              <div 
+                className="candidatura-detalhe-icon-circle transition-all hover:scale-105"
+                style={{ 
+                  backgroundColor: `${badge.cor}30`,
+                  borderColor: badge.borderCor
+                }}
+              >
+                <i className={`fi ${badge.icon}`} style={{ fontSize: "2.2rem", color: badge.borderCor }}></i>
+              </div>
 
-          {candidatura.status === "Pendente" && (
-            <div className="d-flex gap-3 justify-content-end mt-2">
-              <button 
-                onClick={() => onReject(candidatura.id)}
-                className="btn rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 rejeitar_btn font-medium transition-all"
-                style={{ fontSize: "0.9rem", height: "44px" }}
-              >
-                <i className="fi fi-br-cross"></i>
-                <span>Rejeitar</span>
-              </button>
-              
-              <button 
-                onClick={() => onAccept(candidatura.id)}
-                className="btn rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 aceitar_btn font-medium transition-all"
-                style={{ fontSize: "0.9rem", height: "44px" }}
-              >
-                <i className="fi fi-br-check"></i>
-                <span>Aceitar</span>
-              </button>
+              <div className="flex-grow-1 text-center text-sm-start w-100">
+                <h3 className="fw-bold mb-2" style={{ fontSize: "1.3rem", color: "var(--fontes)" }}>{badge.titulo}</h3>
+                
+                <div className="d-flex flex-column gap-1.5 mb-3" style={{ fontSize: "0.85rem", color: "var(--fontes)" }}>
+                  <div className="d-flex align-items-center justify-content-center justify-content-sm-start gap-2">
+                    <i className="fi fi-br-user" style={{ color: "var(--barra_lateral)" }}></i>
+                    <span className="fw-bold fs-6">{user.nome}</span>
+                  </div>
+                  <div className="opacity-75">
+                    <strong>{t("area_label")}:</strong> {user.area}
+                  </div>
+                  <div className="opacity-75">
+                    <strong>{t("submetido_label")}:</strong> {formatSubmetidoCompleto(candidatura.submetido)}
+                  </div>
+                  <div className="opacity-75">
+                    <strong>{t("pontuacao_label")}:</strong> <span className="badge bg-gray-200 text-gray-700 font-bold px-2 py-0.5">{t("pontos_count", { count: badge.pontos })}</span>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center gap-3">
+                  <div className="candidatura-progresso-bar-wrap">
+                    <div className="candidatura-progresso-bar-fill" style={{ width: `${candidatura.progresso}%` }}></div>
+                  </div>
+                  <span className="fw-bold fs-6" style={{ color: "var(--barra_progresso)" }}>{candidatura.progresso}%</span>
+                </div>
+                
+                <div className="mt-3 text-start">
+                  <span className={`status-pill ${
+                    showTalentApproved
+                      ? "aceite" // Green for SLL on details panel
+                      : (candidatura.status === "Pendente" 
+                        ? "pendente" 
+                        : candidatura.status === "Aceite"
+                        ? "aceite"
+                        : "recusada")
+                  }`}>
+                    {showTalentApproved ? t("aceite_pelo_talent") : t(candidatura.status.toLowerCase())}
+                  </span>
+                </div>
+              </div>
             </div>
-          )}
-          
-        </div>
+
+            <hr className="my-0" style={{ color: "var(--contorno)" }} />
+
+            <div>
+              <h6 className="fw-bold mb-2 d-flex align-items-center gap-2" style={{ fontSize: "0.95rem", color: "var(--fontes)" }}>
+                <i className="fi fi-br-align-justify" style={{ color: "var(--barra_lateral)" }}></i>
+                <span>{t("descricao_badge")}</span>
+              </h6>
+              <p className="lh-relaxed p-3 rounded-3 m-0 shadow-xs" style={{ fontSize: "0.85rem", backgroundColor: "var(--fundo)", border: "var(--borda-principal) solid var(--contorno)" }}>
+                {badge.descricao}
+              </p>
+            </div>
+
+            <div>
+              <h6 className="fw-bold mb-2 d-flex align-items-center gap-2" style={{ fontSize: "0.95rem", color: "var(--fontes)" }}>
+                <i className="fi fi-br-list" style={{ color: "var(--barra_lateral)" }}></i>
+                <span>{t("requisitos_comprovados")}</span>
+              </h6>
+              
+              <div className="d-flex flex-column gap-2">
+                {candidatura.requisitos.map((req, idx) => (
+                  <div key={idx} className="requisito-card shadow-xs">
+                    <div className="d-flex align-items-center gap-3 min-w-0">
+                      <span className="fw-bold" style={{ fontSize: "0.95rem", color: "var(--barra_lateral)" }}>{idx + 1}.</span>
+                      <span className="truncate" style={{ fontSize: "0.85rem", color: "var(--fontes)" }}>{req}</span>
+                    </div>
+                    <button 
+                      onClick={() => alert(t("transferindo_documentacao", { req }))}
+                      className="requisito-doc-btn"
+                      title={t("download_comprovativo")}
+                    >
+                      <i className="fi fi-br-document" style={{ fontSize: "0.85rem" }}></i>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {candidatura.status === "Pendente" && userRole !== "consultor" && (
+              <div className="d-flex gap-3 justify-content-end mt-2">
+                <button 
+                  onClick={() => onReject(candidatura.id)}
+                  className="btn rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 rejeitar_btn font-medium transition-all"
+                  style={{ fontSize: "0.9rem", height: "44px" }}
+                >
+                  <i className="fi fi-br-cross"></i>
+                  <span>{t("rejeitar")}</span>
+                </button>
+                
+                <button 
+                  onClick={() => onAccept(candidatura.id)}
+                  className="btn rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 aceitar_btn font-medium transition-all"
+                  style={{ fontSize: "0.9rem", height: "44px" }}
+                >
+                  <i className="fi fi-br-check"></i>
+                  <span>{t("aceitar")}</span>
+                </button>
+              </div>
+            )}
+            
+          </div>
+        )}
       </div>
     </div>
   );
@@ -334,13 +321,44 @@ function CandidaturaDetalhes({ candidatura, onAccept, onReject, onClose }) {
 // MAIN PAGE COMPONENT
 export default function Candidaturas({ loggedUser }) {
   const { t } = useTranslation();
+
+  // --- Todos os useState agrupados no topo ---
   const [candidaturas, setCandidaturas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(null);
   const [selectedCandidaturaId, setSelectedCandidaturaId] = useState(null);
   const [filtroStatus, setFiltroStatus] = useState("Pendente");
   const [filtroArea, setFiltroArea] = useState("Todas");
   const [ordenacao, setOrdenacao] = useState("Mais Recentes");
+  const [pesquisa, setPesquisa] = useState("");
+  const [toastMessage, setToastMessage] = useState(null);
+  const [toastType, setToastType] = useState("success"); // "success" ou "reject"
+  const [mostrarExportar, setMostrarExportar] = useState(false);
+  const exportRef = useRef(null);
+  const [limiteExibicao, setLimiteExibicao] = useState(20);
 
+  // Reset pagination limit when any filter changes
+  useEffect(() => {
+    setLimiteExibicao(20);
+  }, [filtroStatus, filtroArea, pesquisa, ordenacao]);
+
+  // Resolve user role with localStorage fallback
+  const userRole = useMemo(() => {
+    if (loggedUser?.cargo) return loggedUser.cargo.toLowerCase();
+    try {
+      const roleGuardada = localStorage.getItem("role_softinsa");
+      if (roleGuardada) {
+        const roleParseada = JSON.parse(roleGuardada);
+        const cargo = typeof roleParseada === "string" 
+          ? roleParseada 
+          : (roleParseada.nome ? roleParseada.nome : null);
+        if (cargo) return cargo.toLowerCase();
+      }
+    } catch (e) {}
+    return "";
+  }, [loggedUser]);
+
+  // --- Carregar candidaturas da API ---
   useEffect(() => {
     carregarCandidaturas();
   }, [loggedUser]);
@@ -348,17 +366,12 @@ export default function Candidaturas({ loggedUser }) {
   const carregarCandidaturas = async () => {
     try {
       setLoading(true);
+      setErro(null);
       const res = await api.get("/candidaturas");
-      
-      const coresTemplate = [
-        { cor: "#c2d992", borderCor: "#5EA500", icon: "fi-br-microchip" },
-        { cor: "#d1e1f0", borderCor: "#45556C", icon: "fi-br-cloud" },
-        { cor: "#e08a90", borderCor: "#AE012F", icon: "fi-br-smartphone" },
-        { cor: "#e9d78e", borderCor: "#E17100", icon: "fi-br-target" }
-      ];
 
-      const mapped = res.data.map((sub, index) => {
-        const template = coresTemplate[index % coresTemplate.length];
+      const mapped = res.data.map((sub) => {
+        // Cor determinística pelo badge ID para consistência visual
+        const template = CORES_TEMPLATE[(sub.badgeId || 0) % CORES_TEMPLATE.length];
         return {
           ...sub,
           badge: {
@@ -373,14 +386,11 @@ export default function Candidaturas({ loggedUser }) {
       setCandidaturas(mapped);
     } catch (error) {
       console.error("Erro ao carregar candidaturas:", error);
+      setErro("Não foi possível carregar as candidaturas. Verifica a ligação ao servidor.");
     } finally {
       setLoading(false);
     }
   };
-  const [pesquisa, setPesquisa] = useState("");
-  const [toastMessage, setToastMessage] = useState(null);
-  const [mostrarExportar, setMostrarExportar] = useState(false);
-  const exportRef = useRef(null);
 
   // Close export menu when clicking outside
   useEffect(() => {
@@ -401,6 +411,17 @@ export default function Candidaturas({ loggedUser }) {
     }
   }, [toastMessage]);
 
+  // --- Áreas dinâmicas extraídas dos dados reais ---
+  const areasDisponiveis = useMemo(() => {
+    const setAreas = new Set();
+    candidaturas.forEach(c => {
+      if (c.user && c.user.area && c.user.area !== "-") {
+        setAreas.add(c.user.area);
+      }
+    });
+    return Array.from(setAreas).sort();
+  }, [candidaturas]);
+
   // Filtering & Sorting derived state
   const candidaturasFiltradas = useMemo(() => {
     let result = [...candidaturas];
@@ -413,7 +434,7 @@ export default function Candidaturas({ loggedUser }) {
       result = result.filter((c) => c.user && c.user.area === filtroArea);
     }
 
-    // 4. Search Filter (by candidate name or badge title)
+    // 3. Search Filter (by candidate name or badge title)
     if (pesquisa.trim() !== "") {
       const query = pesquisa.toLowerCase();
       result = result.filter(
@@ -423,7 +444,7 @@ export default function Candidaturas({ loggedUser }) {
       );
     }
 
-    // 5. Sorting
+    // 4. Sorting
     result.sort((a, b) => {
       if (ordenacao === "Mais Recentes") {
         return new Date(b.submetido) - new Date(a.submetido);
@@ -439,6 +460,11 @@ export default function Candidaturas({ loggedUser }) {
 
     return result;
   }, [candidaturas, filtroStatus, filtroArea, pesquisa, ordenacao]);
+
+  // Derived state to limit rendered cards
+  const candidaturasExibidas = useMemo(() => {
+    return candidaturasFiltradas.slice(0, limiteExibicao);
+  }, [candidaturasFiltradas, limiteExibicao]);
 
   // Resolve currently selected candidacy item
   const candidaturaSelecionada = useMemo(() => {
@@ -456,6 +482,7 @@ export default function Candidaturas({ loggedUser }) {
         prev.map((c) => (c.id === id ? { ...c, status: "Aceite" } : c))
       );
       setSelectedCandidaturaId(null);
+      setToastType("success");
       setToastMessage(t("candidatura_aprovada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
     } catch (error) {
       console.error("Erro ao aceitar candidatura:", error);
@@ -473,6 +500,7 @@ export default function Candidaturas({ loggedUser }) {
         prev.map((c) => (c.id === id ? { ...c, status: "Recusada" } : c))
       );
       setSelectedCandidaturaId(null);
+      setToastType("reject");
       setToastMessage(t("candidatura_rejeitada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
     } catch (error) {
       console.error("Erro ao rejeitar candidatura:", error);
@@ -482,8 +510,7 @@ export default function Candidaturas({ loggedUser }) {
 
   const handleAbrirMenuExportacao = async () => {
     try {
-        // FAZER_API_PARA_RECEBER_TOGGLE
-        const response = await api.get('/api/permissoes/exportar'); 
+        const response = await api.get('/permissoes/exportar'); 
         
         if (response.data.toggle) {
             setMostrarExportar(estadoAtual => !estadoAtual);
@@ -493,7 +520,7 @@ export default function Candidaturas({ loggedUser }) {
         }
     } catch (erro) {
         console.error("Erro ao verificar permissão:", erro);
-        // Fallback
+        // Fallback — abre na mesma se a rota não existir
         setMostrarExportar(estadoAtual => !estadoAtual);
     }
   };
@@ -572,12 +599,12 @@ export default function Candidaturas({ loggedUser }) {
           role="alert"
           style={{ 
             top: "24px", 
-            backgroundColor: "rgba(0, 153, 102, 0.1)", 
-            borderLeft: "5px solid var(--aceitar)", 
-            color: "var(--aceitar)"
+            backgroundColor: toastType === "reject" ? "rgba(212, 42, 42, 0.1)" : "rgba(0, 153, 102, 0.1)", 
+            borderLeft: toastType === "reject" ? "5px solid var(--vermelho_eliminar)" : "5px solid var(--aceitar)", 
+            color: toastType === "reject" ? "var(--vermelho_eliminar)" : "var(--aceitar)"
           }}
         >
-          <i className="fi fi-br-check-circle fs-5" style={{ color: "var(--aceitar)" }}></i>
+          <i className={`fi ${toastType === "reject" ? "fi-br-cross-circle" : "fi-br-check-circle"} fs-5`} style={{ color: toastType === "reject" ? "var(--vermelho_eliminar)" : "var(--aceitar)" }}></i>
           <span className="fw-medium">{toastMessage}</span>
           <button 
             type="button" 
@@ -653,10 +680,7 @@ export default function Candidaturas({ loggedUser }) {
                     valor={filtroArea}
                     opcoes={[
                       { valor: "Todas", label: t("todas_areas") },
-                      { valor: "Hybrid Systems", label: "Hybrid Systems" },
-                      { valor: "Mobile Solutions", label: "Mobile Solutions" },
-                      { valor: "Cloud & DevOps", label: "Cloud & DevOps" },
-                      { valor: "Cybersecurity", label: "Cybersecurity" }
+                      ...areasDisponiveis.map(area => ({ valor: area, label: area }))
                     ]}
                     onChange={(val) => {
                       setFiltroArea(val);
@@ -685,7 +709,19 @@ export default function Candidaturas({ loggedUser }) {
             <div className="flex-grow-1 overflow-auto custom-scrollbar pe-1 d-flex flex-column gap-3">
               {loading ? (
                 <div className="text-center py-5 text-secondary d-flex flex-column align-items-center justify-content-center h-100">
-                  <p className="m-0 fs-6 fw-medium text-gray-400">A carregar candidaturas...</p>
+                  <p className="m-0 fs-6 fw-medium text-gray-400">{t("a_carregar")}...</p>
+                </div>
+              ) : erro ? (
+                <div className="text-center py-5 text-secondary d-flex flex-column align-items-center justify-content-center h-100 bg-gray-50/20 rounded-3">
+                  <i className="fi fi-br-exclamation mb-3 text-gray-300" style={{ fontSize: "2.5rem" }}></i>
+                  <p className="m-0 fs-6 fw-medium text-gray-400">{erro}</p>
+                  <button 
+                    className="btn btn-link mt-2" 
+                    onClick={carregarCandidaturas}
+                    style={{ fontSize: "0.85rem" }}
+                  >
+                    {t("tentar_novamente") || "Tentar novamente"}
+                  </button>
                 </div>
               ) : candidaturasFiltradas.length === 0 ? (
                 <div className="text-center py-5 text-secondary d-flex flex-column align-items-center justify-content-center h-100 bg-gray-50/20 rounded-3">
@@ -693,14 +729,30 @@ export default function Candidaturas({ loggedUser }) {
                   <p className="m-0 fs-6 fw-medium text-gray-400">{t("nenhum_pedido_encontrado")}</p>
                 </div>
               ) : (
-                candidaturasFiltradas.map((cand) => (
-                  <CandidaturaCard 
-                    key={cand.id} 
-                    candidatura={cand}
-                    isSelected={cand.id === selectedCandidaturaId}
-                    onClick={() => setSelectedCandidaturaId(cand.id)}
-                  />
-                ))
+                <>
+                  {candidaturasExibidas.map((cand) => (
+                    <CandidaturaCard 
+                      key={cand.id} 
+                      candidatura={cand}
+                      isSelected={cand.id === selectedCandidaturaId}
+                      onClick={() => setSelectedCandidaturaId(cand.id)}
+                    />
+                  ))}
+                  {candidaturasFiltradas.length > limiteExibicao && (
+                    <button 
+                      onClick={() => setLimiteExibicao(prev => prev + 20)}
+                      className="btn w-100 rounded-3 py-2 mt-2 font-medium transition-all"
+                      style={{ 
+                        fontSize: "0.85rem", 
+                        border: "1px dashed var(--contorno)",
+                        backgroundColor: "var(--fundo_submenu_hover)",
+                        color: "var(--barra_lateral)"
+                      }}
+                    >
+                      {t("carregar_mais") || "Carregar mais"} ({candidaturasFiltradas.length - limiteExibicao} restantes)
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -712,6 +764,7 @@ export default function Candidaturas({ loggedUser }) {
             {candidaturaSelecionada ? (
               <CandidaturaDetalhes 
                 candidatura={candidaturaSelecionada}
+                userRole={userRole}
                 onAccept={handleAccept}
                 onReject={handleReject}
                 onClose={() => setSelectedCandidaturaId(null)}

@@ -25,13 +25,21 @@ export const ESTADOS_REQUISITO_DETALHE = {
 };
 
 export function formatarValidade(dias) {
-    if (!dias && dias !== 0) {
-        return "Sem validade definida";
+    if (
+        dias === null ||
+        dias === undefined ||
+        (typeof dias === "string" && dias.trim() === "")
+    ) {
+        return "Vitalício";
     }
 
     const diasNumericos = Number(dias);
 
-    if (Number.isNaN(diasNumericos)) {
+    if (
+        Number.isNaN(diasNumericos) ||
+        !Number.isInteger(diasNumericos) ||
+        diasNumericos <= 0
+    ) {
         return "Sem validade definida";
     }
 

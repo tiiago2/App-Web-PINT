@@ -6,11 +6,16 @@ import {
 
 export async function obterBadgesCatalogo() {
     try {
-        const res = await api.get("/editar/badges");
-        return Array.isArray(res.data) ? res.data : [];
+        const res = await api.get("/badges");
+
+        if (!Array.isArray(res.data)) {
+            throw new Error("Resposta inválida ao obter catálogo de badges.");
+        }
+
+        return res.data;
     } catch (error) {
         console.error("Erro ao obter catálogo de badges:", error);
-        return [];
+        throw error;
     }
 }
 
@@ -19,13 +24,23 @@ export async function obterBadgesCatalogoNormalizados() {
     return normalizarBadgesCatalogo(badges);
 }
 
+export async function obterBadge(id) {
+    const res = await api.get(`/badges/${id}`);
+    return res.data;
+}
+
+export async function criarBadge(dados) {
+    const res = await api.post("/badges", dados);
+    return res.data;
+}
+
 export async function atualizarBadge(id, dados) {
-    const res = await api.put(`/editar/badges/${id}`, dados);
+    const res = await api.put(`/badges/${id}`, dados);
     return res.data;
 }
 
 export async function removerBadge(id) {
-    const res = await api.delete(`/editar/badges/${id}`);
+    const res = await api.delete(`/badges/${id}`);
     return res.data;
 }
 

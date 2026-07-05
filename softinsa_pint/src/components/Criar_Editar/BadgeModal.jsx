@@ -4,71 +4,6 @@ import "./BadgeModal.css";
 import BotaoDropdown from "../ui/BotaoDropdown/BotaoDropdown";
 import BadgeCirculo from "../Galeria/BadgeCirculo/BadgeCirculo";
 
-const LEARNING_PATHS = [
-  {
-    id: 1,
-    nome: "Backend Dev",
-  },
-  {
-    id: 2,
-    nome: "Frontend Dev",
-  },
-  {
-    id: 3,
-    nome: "Data & Analytics",
-  },
-  {
-    id: 4,
-    nome: "Cloud & DevOps",
-  },
-];
-
-const SERVICE_LINES = [
-  {
-    id: 1,
-    idLearningPath: 1,
-    nome: "Software Engineering",
-  },
-  {
-    id: 2,
-    idLearningPath: 3,
-    nome: "Data Insights",
-  },
-  {
-    id: 3,
-    idLearningPath: 4,
-    nome: "Cloud Services",
-  },
-];
-
-const AREAS = [
-  {
-    id: 1,
-    idServiceLine: 1,
-    nome: "Java Core",
-  },
-  {
-    id: 2,
-    idServiceLine: 1,
-    nome: "Node.js & TypeScript",
-  },
-  {
-    id: 3,
-    idServiceLine: 1,
-    nome: "React & Web UI",
-  },
-  {
-    id: 4,
-    idServiceLine: 2,
-    nome: "Python Data Science",
-  },
-  {
-    id: 5,
-    idServiceLine: 3,
-    nome: "AWS Architecture",
-  },
-];
-
 const NIVEIS = [
   {
     id: 1,
@@ -92,20 +27,44 @@ const NIVEIS = [
   },
 ];
 
-function encontrarAreaPorNome(nomeArea) {
-  if (!nomeArea) return null;
-
-  return AREAS.find(
-    (area) => area.nome.toLowerCase() === String(nomeArea).toLowerCase()
-  );
+function obterIdLearningPath(learningPath = {}) {
+  return learningPath.id_learning_path ?? learningPath.idLearningPath ?? learningPath.id;
 }
 
-function encontrarNivelPorNome(nomeNivel) {
-  if (!nomeNivel) return null;
+function obterNomeLearningPath(learningPath = {}) {
+  return learningPath.nome_learning_path ?? learningPath.nomeLearningPath ?? learningPath.nome ?? learningPath.learningPath ?? "";
+}
 
-  return NIVEIS.find(
-    (nivel) => nivel.nome.toLowerCase() === String(nomeNivel).toLowerCase()
-  );
+function obterIdServiceLine(serviceLine = {}) {
+  return serviceLine.id_service_line ?? serviceLine.idServiceLine ?? serviceLine.id;
+}
+
+function obterNomeServiceLine(serviceLine = {}) {
+  return serviceLine.nome_service_line ?? serviceLine.nomeServiceLine ?? serviceLine.nome ?? serviceLine.serviceLine ?? "";
+}
+
+function obterIdLearningPathDaServiceLine(serviceLine = {}) {
+  return serviceLine.id_learning_path ?? serviceLine.idLearningPath ?? serviceLine.learningPathId;
+}
+
+function obterIdArea(area = {}) {
+  return area.id_area ?? area.idArea ?? area.id;
+}
+
+function obterNomeArea(area = {}) {
+  return area.nome_area ?? area.nomeArea ?? area.nome ?? area.area ?? "";
+}
+
+function obterIdServiceLineDaArea(area = {}) {
+  return area.id_service_line ?? area.idServiceLine ?? area.serviceLineId;
+}
+
+function obterIdNivel(nivel = {}) {
+  return nivel.id_nivel ?? nivel.idNivel ?? nivel.id;
+}
+
+function obterNomeNivel(nivel = {}) {
+  return nivel.nome_nivel ?? nivel.nomeNivel ?? nivel.nome ?? nivel.nivel ?? "";
 }
 
 function criarRequisitoVazio() {
@@ -116,14 +75,6 @@ function criarRequisitoVazio() {
   };
 }
 
-const REQUISITOS_MOCK = [
-  { id: 1, nome: "Certificação AWS Cloud Practitioner", descricao: "Apresentar certificado válido da AWS." },
-  { id: 2, nome: "Curso de Node.js", descricao: "Conclusão de curso de Node.js com mais de 20 horas." },
-  { id: 3, nome: "Formação React Avançado", descricao: "Certificado de conclusão de React Hooks e Context API." },
-  { id: 4, nome: "Participação em Projeto Interno", descricao: "Ter estado envolvido em pelo menos 1 projeto interno na respetiva área." },
-  { id: 5, nome: "Avaliação de Desempenho", descricao: "Ter avaliação positiva na última revisão semestral." }
-];
-
 export default function BadgeModal({ 
   isOpen, 
   onClose, 
@@ -131,7 +82,8 @@ export default function BadgeModal({
   badgeToEdit, 
   learningPaths = [], 
   serviceLines = [], 
-  areas = [] 
+  areas = [],
+  niveis = []
 }) {
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -150,22 +102,35 @@ export default function BadgeModal({
   const [formErro, setFormErro] = useState("");
 
   const [requisitos, setRequisitos] = useState([]);
-  const [focusedRequisitoId, setFocusedRequisitoId] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const listaLPs = learningPaths.length > 0 ? learningPaths : LEARNING_PATHS;
-  const listaSLs = serviceLines.length > 0 ? serviceLines : SERVICE_LINES;
-  const listaAreas = areas.length > 0 ? areas : AREAS;
+  const listaLPs = useMemo(
+    () => (Array.isArray(learningPaths) ? learningPaths : []),
+    [learningPaths]
+  );
+  const listaSLs = useMemo(
+    () => (Array.isArray(serviceLines) ? serviceLines : []),
+    [serviceLines]
+  );
+  const listaAreas = useMemo(
+    () => (Array.isArray(areas) ? areas : []),
+    [areas]
+  );
+  const listaNiveis = useMemo(
+    () => (Array.isArray(niveis) && niveis.length > 0 ? niveis : NIVEIS),
+    [niveis]
+  );
 
   const lpOpcoes = listaLPs.map((lp) => ({
-    valor: Number(lp.id_learning_path ?? lp.idLearningPath ?? lp.id),
-    label: lp.nome_learning_path ?? lp.nomeLearningPath ?? lp.nome ?? lp.learningPath ?? "",
+    valor: Number(obterIdLearningPath(lp)),
+    label: obterNomeLearningPath(lp),
   }));
 
   const serviceLinesFiltradas = useMemo(() => {
     if (!learningPathId) return [];
 
     return listaSLs.filter((sl) => {
-      const lpId = sl.id_learning_path ?? sl.idLearningPath ?? sl.learningPathId;
+      const lpId = obterIdLearningPathDaServiceLine(sl);
       return Number(lpId) === Number(learningPathId);
     });
   }, [learningPathId, listaSLs]);
@@ -175,15 +140,15 @@ export default function BadgeModal({
   const slOpcoes = semServiceLines
     ? [{ valor: "", label: "Sem Service Lines disponíveis" }]
     : serviceLinesFiltradas.map((sl) => ({
-        valor: Number(sl.id_service_line ?? sl.idServiceLine ?? sl.id),
-        label: sl.nome_service_line ?? sl.nomeServiceLine ?? sl.nome ?? sl.serviceLine ?? "",
+        valor: Number(obterIdServiceLine(sl)),
+        label: obterNomeServiceLine(sl),
       }));
 
   const areasFiltradas = useMemo(() => {
     if (!serviceLineId) return [];
 
     return listaAreas.filter((a) => {
-      const slId = a.id_service_line ?? a.idServiceLine ?? a.serviceLineId;
+      const slId = obterIdServiceLineDaArea(a);
       return Number(slId) === Number(serviceLineId);
     });
   }, [serviceLineId, listaAreas]);
@@ -193,13 +158,13 @@ export default function BadgeModal({
   const areaOpcoes = semAreas
     ? [{ valor: "", label: "Sem Áreas disponíveis" }]
     : areasFiltradas.map((a) => ({
-        valor: Number(a.id_area ?? a.idArea ?? a.id),
-        label: a.nome_area ?? a.nomeArea ?? a.nome ?? a.area ?? "",
+        valor: Number(obterIdArea(a)),
+        label: obterNomeArea(a),
       }));
 
-  const nivelOpcoes = NIVEIS.map((nivel) => ({
-    valor: nivel.id,
-    label: nivel.nome,
+  const nivelOpcoes = listaNiveis.map((nivel) => ({
+    valor: Number(obterIdNivel(nivel)),
+    label: obterNomeNivel(nivel),
   }));
 
   useEffect(() => {
@@ -218,29 +183,32 @@ export default function BadgeModal({
         Number(badgeToEdit.id_area) ||
         Number(badgeToEdit.areaId) ||
         Number(badgeToEdit.idArea) ||
-        encontrarAreaPorNome(
-          badgeToEdit.area ||
-            badgeToEdit.nomeArea ||
-            badgeToEdit.categoria
-        )?.id ||
         "";
 
-      const areaSelecionada = AREAS.find(
-        (area) => area.id === Number(areaExistente)
+      const areaSelecionada = listaAreas.find(
+        (area) => Number(obterIdArea(area)) === Number(areaExistente)
       );
 
-      const serviceLineSelecionada = areaSelecionada
-        ? SERVICE_LINES.find(
-            (serviceLine) =>
-              serviceLine.id === areaSelecionada.idServiceLine
-          )
-        : null;
+      const serviceLineExistente =
+        Number(badgeToEdit.id_service_line) ||
+        Number(badgeToEdit.idServiceLine) ||
+        Number(obterIdServiceLineDaArea(areaSelecionada)) ||
+        "";
+
+      const serviceLineSelecionada = listaSLs.find(
+        (serviceLine) => Number(obterIdServiceLine(serviceLine)) === Number(serviceLineExistente)
+      );
+
+      const learningPathExistente =
+        Number(badgeToEdit.id_learning_path) ||
+        Number(badgeToEdit.idLearningPath) ||
+        Number(obterIdLearningPathDaServiceLine(serviceLineSelecionada)) ||
+        "";
 
       const nivelExistente =
         Number(badgeToEdit.id_nivel) ||
         Number(badgeToEdit.nivelId) ||
         Number(badgeToEdit.idNivel) ||
-        encontrarNivelPorNome(badgeToEdit.nivel || badgeToEdit.nomeNivel)?.id ||
         "";
 
       setNome(badgeToEdit.nome_badge || badgeToEdit.nome || "");
@@ -252,25 +220,33 @@ export default function BadgeModal({
             ? badgeToEdit.pontos
             : ""
       );
-      setValidade(badgeToEdit.validade || "");
+      setValidade(
+        badgeToEdit.validade === null || badgeToEdit.validade === undefined
+          ? ""
+          : badgeToEdit.validade
+      );
       setImagemPreview(badgeToEdit.imagem || null);
       setIsEspecial(Boolean(badgeToEdit.especial));
 
       setAreaId(areaExistente);
-      setServiceLineId(serviceLineSelecionada?.id || "");
-      setLearningPathId(serviceLineSelecionada?.idLearningPath || "");
+      setServiceLineId(serviceLineExistente);
+      setLearningPathId(learningPathExistente);
       setNivelId(nivelExistente);
 
       const requisitosExistentes = Array.isArray(badgeToEdit.requisitos)
         ? badgeToEdit.requisitos
             .filter((req) => typeof req === "object")
-            .map((req) => ({
-              id: req.id || req.id_requisito || `tmp-${Date.now()}-${Math.random()}`,
-              nome_requisito:
-                req.nome_requisito || req.titulo || req.nome || "",
-              descricao_requisito:
-                req.descricao_requisito || req.descricao || "",
-            }))
+            .map((req) => {
+              const idRequisito = req.id_requisito ?? req.idRequisito ?? req.id;
+
+              return {
+                id: idRequisito || `tmp-${Date.now()}-${Math.random()}`,
+                id_requisito: idRequisito,
+                nome_requisito: req.nome_requisito || req.titulo || req.nome || "",
+                descricao_requisito: req.descricao_requisito || req.descricao || "",
+                readOnly: Boolean(idRequisito),
+              };
+            })
         : [];
 
       setRequisitos(requisitosExistentes);
@@ -293,7 +269,7 @@ export default function BadgeModal({
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isOpen, badgeToEdit]);
+  }, [isOpen, badgeToEdit, listaAreas, listaSLs]);
 
   if (!isOpen) return null;
 
@@ -340,14 +316,7 @@ export default function BadgeModal({
   }
 
   function handleNomeRequisitoChange(idReq, novoNome) {
-    // Atualiza o nome escrito pelo utilizador
     handleUpdateRequisito(idReq, "nome_requisito", novoNome);
-
-    // Se houver um match exato (selecionado do autocomplete), auto-preenche a descrição
-    const reqEncontrado = REQUISITOS_MOCK.find(r => r.nome.toLowerCase() === novoNome.toLowerCase());
-    if (reqEncontrado) {
-      handleUpdateRequisito(idReq, "descricao_requisito", reqEncontrado.descricao);
-    }
   }
 
   function handleImageUpload(event) {
@@ -374,14 +343,13 @@ export default function BadgeModal({
     });
   }
 
-  function handleSave(event) {
+  async function handleSave(event) {
     event.preventDefault();
     setFormErro("");
 
     if (
       !nome.trim() ||
       pontos === "" ||
-      validade === "" ||
       !learningPathId ||
       !serviceLineId ||
       !areaId ||
@@ -389,7 +357,7 @@ export default function BadgeModal({
       !imagemPreview
     ) {
       setFormErro(
-        "Preenche todos os campos obrigatórios: nome, hierarquia, nível, pontos, validade e imagem."
+        "Preenche todos os campos obrigatórios: nome, hierarquia, nível, pontos e imagem."
       );
       return;
     }
@@ -401,21 +369,13 @@ export default function BadgeModal({
       return;
     }
 
-    const areaSelecionada = AREAS.find(
-      (area) => area.id === Number(areaId)
-    );
+    const validadeNormalizada =
+      String(validade).trim() === "" ? null : Number(validade);
 
-    const serviceLineSelecionada = SERVICE_LINES.find(
-      (serviceLine) => serviceLine.id === Number(serviceLineId)
-    );
-
-    const learningPathSelecionado = LEARNING_PATHS.find(
-      (learningPath) => learningPath.id === Number(learningPathId)
-    );
-
-    const nivelSelecionado = NIVEIS.find(
-      (nivel) => nivel.id === Number(nivelId)
-    );
+    if (validadeNormalizada !== null && Number.isNaN(validadeNormalizada)) {
+      setFormErro("A validade tem de ser um número válido ou ficar vazia.");
+      return;
+    }
 
     const requisitosValidos = requisitos
       .filter(
@@ -423,43 +383,54 @@ export default function BadgeModal({
           requisito.nome_requisito.trim() &&
           requisito.descricao_requisito.trim()
       )
-      .map((requisito) => ({
-        id: requisito.id,
-        nome_requisito: requisito.nome_requisito.trim(),
-        descricao_requisito: requisito.descricao_requisito.trim(),
-      }));
+      .map((requisito) => {
+        if (requisito.id_requisito) {
+          return {
+            id_requisito: requisito.id_requisito,
+          };
+        }
 
-    const badgeNormalizado = {
-      id: badgeToEdit ? badgeToEdit.id : Date.now(),
+        return {
+          nome_requisito: requisito.nome_requisito.trim(),
+          descricao_requisito: requisito.descricao_requisito.trim(),
+        };
+      });
 
-      id_badge: badgeToEdit?.id_badge,
+    const dadosBadge = {
+      nome_badge: nome.trim(),
+      descricao_badge: descricao.trim(),
+      imagem: imagemPreview,
+      pontos_badge: Number(pontos),
+      validade: validadeNormalizada,
+      especial: Boolean(isEspecial),
       id_area: Number(areaId),
       id_nivel: Number(nivelId),
-      validade: Number(validade),
-      especial: Boolean(isEspecial),
-      pontos_badge: Number(pontos),
-      nome_badge: nome.trim(),
-      imagem: imagemPreview,
-      descricao_badge: descricao.trim(),
-
-      nome: nome.trim(),
-      categoria: areaSelecionada?.nome || "Sem Área",
-      area: areaSelecionada?.nome || "Sem Área",
-      nomeArea: areaSelecionada?.nome || "Sem Área",
-      learningPath: learningPathSelecionado?.nome || "",
-      serviceLine: serviceLineSelecionada?.nome || "",
-      nivel: nivelSelecionado?.nome || "",
-      pontos: Number(pontos),
-
       requisitos: requisitosValidos,
     };
 
-    onSave(badgeNormalizado);
-    onClose();
+    setIsSaving(true);
+
+    try {
+      await onSave(dadosBadge);
+    } catch (error) {
+      setFormErro(
+        error.response?.data?.error ||
+          error.message ||
+          "Erro ao guardar o Badge."
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  function handleCloseSeguro() {
+    if (!isSaving) {
+      onClose();
+    }
   }
 
   return ReactDOM.createPortal(
-    <div className="badge-modal-overlay" onClick={onClose}>
+    <div className="badge-modal-overlay" onClick={handleCloseSeguro}>
       <div
         className="badge-modal-container"
         onClick={(event) => event.stopPropagation()}
@@ -470,7 +441,8 @@ export default function BadgeModal({
           <button
             type="button"
             className="badge-modal-close-btn"
-            onClick={onClose}
+            onClick={handleCloseSeguro}
+            disabled={isSaving}
             aria-label="Fechar"
           >
             <i className="fi fi-br-cross"></i>
@@ -515,7 +487,16 @@ export default function BadgeModal({
             {nivelId && (
               <div className="preview-category">
                 Nível:{" "}
-                {NIVEIS.find((nivel) => nivel.id === Number(nivelId))?.nome}
+                {
+                  listaNiveis.find(
+                    (nivel) => Number(obterIdNivel(nivel)) === Number(nivelId)
+                  ) &&
+                    obterNomeNivel(
+                      listaNiveis.find(
+                        (nivel) => Number(obterIdNivel(nivel)) === Number(nivelId)
+                      )
+                    )
+                }
               </div>
             )}
           </div>
@@ -671,7 +652,6 @@ export default function BadgeModal({
                 min="1"
                 value={validade}
                 onChange={(event) => setValidade(event.target.value)}
-                required
               />
             </div>
           </div>
@@ -739,67 +719,15 @@ export default function BadgeModal({
                   <input
                     type="text"
                     className="badge-form-input"
-                    placeholder="Nome do requisito (Pesquise ou crie um novo)"
+                    placeholder="Nome do requisito"
                     value={requisito.nome_requisito}
                     onChange={(event) =>
                       handleNomeRequisitoChange(requisito.id, event.target.value)
                     }
-                    onFocus={() => setFocusedRequisitoId(requisito.id)}
-                    onBlur={() => setTimeout(() => setFocusedRequisitoId(null), 200)}
+                    readOnly={requisito.readOnly}
+                    disabled={requisito.readOnly}
                     autoComplete="off"
                   />
-                  {focusedRequisitoId === requisito.id && requisito.nome_requisito.length > 0 && (
-                    (() => {
-                      const termoPesquisa = requisito.nome_requisito.toLowerCase();
-                      const sugestoes = REQUISITOS_MOCK.filter(r => 
-                        r.nome.toLowerCase().includes(termoPesquisa) && 
-                        r.nome.toLowerCase() !== termoPesquisa
-                      ).slice(0, 3);
-
-                      if (sugestoes.length === 0) return null;
-
-                      return (
-                        <div 
-                          className="sugestoes-dropdown"
-                          style={{
-                            position: 'absolute',
-                            top: '100%',
-                            left: 0,
-                            right: 0,
-                            backgroundColor: '#fff',
-                            border: '1px solid #cad5e2',
-                            borderTop: 'none',
-                            borderRadius: '0 0 8px 8px',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                            zIndex: 10,
-                            overflow: 'hidden'
-                          }}
-                        >
-                          {sugestoes.map((s, idx) => (
-                            <div 
-                              key={s.id}
-                              style={{ 
-                                padding: '10px 14px', 
-                                cursor: 'pointer', 
-                                borderBottom: idx < sugestoes.length - 1 ? '1px solid #f0f4f8' : 'none',
-                                fontSize: '0.85rem',
-                                color: 'var(--fontes)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px'
-                              }}
-                              onMouseDown={() => handleNomeRequisitoChange(requisito.id, s.nome)}
-                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f4f8'}
-                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
-                            >
-                              <i className="fi fi-br-search text-muted" style={{ fontSize: '0.75rem' }}></i>
-                              {s.nome}
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()
-                  )}
                 </div>
 
                 <div className="badge-form-group mb-0">
@@ -814,6 +742,8 @@ export default function BadgeModal({
                         event.target.value
                       )
                     }
+                    readOnly={requisito.readOnly}
+                    disabled={requisito.readOnly}
                     style={{ minHeight: "80px" }}
                   />
                 </div>
@@ -826,7 +756,8 @@ export default function BadgeModal({
           <button
             type="button"
             className="badge-btn-cancel"
-            onClick={onClose}
+            onClick={handleCloseSeguro}
+            disabled={isSaving}
           >
             Cancelar
           </button>
@@ -835,9 +766,10 @@ export default function BadgeModal({
             type="submit"
             form="badge-form"
             className="badge-btn-save"
+            disabled={isSaving}
           >
             <i className="fi fi-br-disk"></i>
-            Guardar Badge
+            {isSaving ? "A guardar..." : "Guardar Badge"}
           </button>
         </div>
       </div>

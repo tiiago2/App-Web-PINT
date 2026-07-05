@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import GaleriaTodosBadges from "../../components/Galeria/GaleriaTodosBadges/GaleriaTodosBadges";
 import BadgeItemAdmin from "../../components/Galeria/BadgeItemAdmin/BadgeItemAdmin";
@@ -8,19 +8,25 @@ import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
 import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
 import VistaTabelaBadges from "../../components/Galeria/VistaTabelaBadges/VistaTabelaBadges";
 import GaleriaToolbar from "../../components/Galeria/GaleriaToolbar/GaleriaToolbar";
-import { obterBadgesCatalogoNormalizados } from "../../services/badgesService";
+import {
+  obterBadgesCatalogoNormalizados,
+  obterBadge,
+  criarBadge,
+  atualizarBadge,
+  removerBadge,
+} from "../../services/badgesService";
 import { 
   obterLearningPathsNormalizados, 
   obterServiceLinesNormalizadas, 
   obterAreasNormalizadas 
 } from "../../services/gestaoService";
 import { normalizarBadgeCatalogo } from "../../utils/badgesNormalizadores";
+import {
+  normalizarBadgeDetalheCatalogo,
+  obterUrlPublicaBadge,
+} from "../../utils/badgeDetalheNormalizadores";
 import "./Galeria.css";
 import BadgeDetalheModal from "../../components/BadgeDetalhe/BadgeDetalheModal";
-import {
-  obterBadgeDetalheCatalogo,
-  obterUrlPublicaDoBadge,
-} from "../../services/badgeDetalheService";
 
 const mapaCategoriaParaFiltro = {
   "Hybrid Systems": {
@@ -141,12 +147,16 @@ function ordenarBadgesAdmin(lista, ordenacao) {
       break;
 
     case "antigos":
-      listaOrdenada.sort((a, b) => a.id - b.id);
+      listaOrdenada.sort(
+        (a, b) => obterValorOrdenacaoTemporal(a) - obterValorOrdenacaoTemporal(b)
+      );
       break;
 
     case "recentes":
     default:
-      listaOrdenada.sort((a, b) => b.id - a.id);
+      listaOrdenada.sort(
+        (a, b) => obterValorOrdenacaoTemporal(b) - obterValorOrdenacaoTemporal(a)
+      );
       break;
   }
 
@@ -154,11 +164,35 @@ function ordenarBadgesAdmin(lista, ordenacao) {
 }
 
 function obterIdBadge(badge) {
-  return badge.id_badge ?? badge.idBadge ?? badge.id;
+  return badge?.id_badge ?? badge?.idBadge ?? badge?.id;
 }
 
 function obterNomeBadge(badge = {}) {
   return badge.nome_badge ?? badge.nomeBadge ?? badge.nome ?? "badge";
+}
+
+function obterValorOrdenacaoTemporal(badge = {}) {
+  const camposData = [
+    badge.data_criacao,
+    badge.dataCriacao,
+    badge.update_badge,
+    badge.updated_badge,
+  ];
+
+  for (const valor of camposData) {
+    if (!valor) {
+      continue;
+    }
+
+    const timestamp = new Date(valor).getTime();
+
+    if (!Number.isNaN(timestamp)) {
+      return timestamp;
+    }
+  }
+
+  const idBadge = Number(obterIdBadge(badge));
+  return Number.isNaN(idBadge) ? 0 : idBadge;
 }
 
 function Galeria() {
@@ -180,6 +214,9 @@ function Galeria() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [badgeToEdit, setBadgeToEdit] = useState(null);
   const [badgeAEliminar, setBadgeAEliminar] = useState(null);
+  const eliminarBadgeEmProgressoRef = useRef(false);
+  const editarBadgeEmProgressoRef = useRef(false);
+  const detalheBadgeEmProgressoRef = useRef(false);
   const [isDetalheBadgeOpen, setIsDetalheBadgeOpen] = useState(false);
   const [detalheBadge, setDetalheBadge] = useState(null);
   const [isLoadingDetalheBadge, setIsLoadingDetalheBadge] = useState(false);
@@ -222,19 +259,28 @@ function Galeria() {
     return ordenarBadgesAdmin(lista, ordenacao);
   }, [badgesComCamposFiltro, searchTerm, filtro, ordenacao]);
 
+  const niveis = useMemo(() => {
+    const mapaNiveis = new Map();
+
+    badges.forEach((badge) => {
+      const idNivel = badge.id_nivel ?? badge.idNivel;
+      const nomeNivel = badge.nome_nivel ?? badge.nomeNivel ?? badge.nivel;
+
+      if (idNivel && nomeNivel && !mapaNiveis.has(Number(idNivel))) {
+        mapaNiveis.set(Number(idNivel), {
+          id_nivel: Number(idNivel),
+          nome_nivel: nomeNivel,
+        });
+      }
+    });
+
+    return Array.from(mapaNiveis.values()).sort(
+      (a, b) => a.id_nivel - b.id_nivel
+    );
+  }, [badges]);
+
   // Estados para o Pop-Up de Exportação do Colega
   const [mostrarExportar, setMostrarExportar] = useState(false); 
-  const [formatoExport, setFormatoExport] = useState("csv"); 
-  const [opcaoExport, setOpcaoExport] = useState("atual"); 
-  const [intervaloPaginas, setIntervaloPaginas] = useState(""); 
-
-  useEffect(() => {
-    // Check for openCreateModal state from Quick Actions navigation
-    if (location.state?.openCreateModal) {
-      handleOpenCreateModal();
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state]);
 
   const metricas = useMemo(() => {
     const totalAreas = new Set(
@@ -268,126 +314,193 @@ function Galeria() {
     ];
   }, [badgesComCamposFiltro]);
 
-  const handleOpenCreateModal = () => {
+  const carregarDadosGaleria = useCallback(async (deveAplicar = () => true) => {
+    try {
+      setIsLoadingBadges(true);
+
+      const [badgesCatalogo, lps, sls, ars] = await Promise.all([
+        obterBadgesCatalogoNormalizados(),
+        obterLearningPathsNormalizados(),
+        obterServiceLinesNormalizadas(),
+        obterAreasNormalizadas()
+      ]);
+
+      if (deveAplicar()) {
+        setBadges(badgesCatalogo);
+        setLearningPaths(lps);
+        setServiceLines(sls);
+        setAreas(ars);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar dados da galeria:", error);
+      throw error;
+    } finally {
+      if (deveAplicar()) {
+        setIsLoadingBadges(false);
+      }
+    }
+  }, []);
+
+  const handleOpenCreateModal = useCallback(() => {
     setBadgeToEdit(null);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleOpenEditModal = (badge) => {
-    setBadgeToEdit(badge);
-    setIsModalOpen(true);
-  };
+  useEffect(() => {
+    // Check for openCreateModal state from Quick Actions navigation
+    if (location.state?.openCreateModal) {
+      handleOpenCreateModal();
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, handleOpenCreateModal]);
 
-  const handleDeleteBadge = (id) => {
-    setBadges((prev) =>
-      prev.filter((badge) => obterIdBadge(badge) !== id)
-    );
-  };
+  const handleOpenEditModal = async (badge) => {
+    const idBadge = obterIdBadge(badge);
 
-  const handleConfirmDeleteBadge = () => {
-    if (!badgeAEliminar) {
+    if (!idBadge || editarBadgeEmProgressoRef.current) {
       return;
     }
 
-    handleDeleteBadge(obterIdBadge(badgeAEliminar));
-    setBadgeAEliminar(null);
+    editarBadgeEmProgressoRef.current = true;
+
+    try {
+      const detalhe = await obterBadge(idBadge);
+      setBadgeToEdit(normalizarBadgeCatalogo(detalhe));
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Erro ao carregar detalhe do badge para edição:", error);
+      alert(error.response?.data?.error || "Erro ao carregar detalhe do Badge.");
+    } finally {
+      editarBadgeEmProgressoRef.current = false;
+    }
   };
 
-  const handleSaveBadge = (badgeObj) => {
-    const badgeNormalizado = normalizarBadgeCatalogo({
-      ...badgeObj,
-      id_badge:
-        badgeObj.id_badge ??
-        badgeObj.idBadge ??
-        badgeObj.id ??
-        Date.now(),
-      data_criacao:
-        badgeObj.data_criacao ??
-        badgeObj.dataCriacao ??
-        new Date().toISOString(),
-    });
+  const handleCloseConfirmacaoDelete = () => {
+    if (!eliminarBadgeEmProgressoRef.current) {
+      setBadgeAEliminar(null);
+    }
+  };
 
-    const idBadgeGuardado = obterIdBadge(badgeNormalizado);
+  const handleConfirmDeleteBadge = async () => {
+    if (!badgeAEliminar || eliminarBadgeEmProgressoRef.current) {
+      return;
+    }
 
-    setBadges((prev) => {
-      const exists = prev.some(
-        (badge) => obterIdBadge(badge) === idBadgeGuardado
+    const idBadge = obterIdBadge(badgeAEliminar);
+    eliminarBadgeEmProgressoRef.current = true;
+
+    try {
+      await removerBadge(idBadge);
+      setBadges((badgesAtuais) =>
+        badgesAtuais.filter(
+          (badge) => Number(obterIdBadge(badge)) !== Number(idBadge)
+        )
       );
+      setBadgeAEliminar(null);
 
-      if (exists) {
-        return prev.map((badge) =>
-          obterIdBadge(badge) === idBadgeGuardado
+      try {
+        await carregarDadosGaleria();
+      } catch (error) {
+        console.error("Erro ao sincronizar galeria após eliminar badge:", error);
+      }
+    } catch (error) {
+      console.error("Erro ao eliminar badge:", error);
+      alert(error.response?.data?.error || "Erro ao eliminar o Badge.");
+    } finally {
+      eliminarBadgeEmProgressoRef.current = false;
+    }
+  };
+
+  const handleSaveBadge = async (payload) => {
+    const idBadge = badgeToEdit ? obterIdBadge(badgeToEdit) : null;
+
+    const resposta = idBadge
+      ? await atualizarBadge(idBadge, payload)
+      : await criarBadge(payload);
+
+    const badgeNormalizado = normalizarBadgeCatalogo(resposta);
+    const idBadgeNormalizado = obterIdBadge(badgeNormalizado);
+
+    setBadges((badgesAtuais) => {
+      if (idBadge) {
+        return badgesAtuais.map((badge) =>
+          Number(obterIdBadge(badge)) === Number(idBadge)
             ? badgeNormalizado
             : badge
         );
       }
 
-      return [badgeNormalizado, ...prev];
+      const jaExiste = badgesAtuais.some(
+        (badge) =>
+          Number(obterIdBadge(badge)) === Number(idBadgeNormalizado)
+      );
+
+      return jaExiste
+        ? badgesAtuais
+        : [...badgesAtuais, badgeNormalizado];
     });
+
+    setIsModalOpen(false);
+    setBadgeToEdit(null);
+
+    try {
+      await carregarDadosGaleria();
+    } catch (error) {
+      console.error("Erro ao sincronizar galeria após guardar badge:", error);
+    }
+  };
+
+  const handleCloseBadgeModal = () => {
+    setIsModalOpen(false);
+    setBadgeToEdit(null);
   };
 
   useEffect(() => {
     let ativo = true;
 
-    async function carregarDadosGaleria() {
+    async function carregarDadosIniciais() {
       try {
-        setIsLoadingBadges(true);
-
-        const [badgesCatalogo, lps, sls, ars] = await Promise.all([
-          obterBadgesCatalogoNormalizados(),
-          obterLearningPathsNormalizados(),
-          obterServiceLinesNormalizadas(),
-          obterAreasNormalizadas()
-        ]);
-
-        if (ativo) {
-          setBadges(badgesCatalogo);
-          setLearningPaths(lps);
-          setServiceLines(sls);
-          setAreas(ars);
-        }
+        await carregarDadosGaleria(() => ativo);
       } catch (error) {
-        console.error("Erro ao carregar dados da galeria:", error);
-
-        if (ativo) {
-          setBadges([]);
-          setLearningPaths([]);
-          setServiceLines([]);
-          setAreas([]);
-        }
-      } finally {
-        if (ativo) {
-          setIsLoadingBadges(false);
-        }
+        console.error("Erro ao carregar dados iniciais da galeria:", error);
       }
     }
 
-    carregarDadosGaleria();
+    carregarDadosIniciais();
 
     return () => {
       ativo = false;
     };
-  }, []);
+  }, [carregarDadosGaleria]);
 
   const handleOpenDetalheBadgeCatalogo = async (badge) => {
     const idBadge = obterIdBadge(badge);
 
-    if (!idBadge) {
+    if (!idBadge || detalheBadgeEmProgressoRef.current) {
       return;
     }
 
-    setIsDetalheBadgeOpen(true);
-    setDetalheBadge(null);
+    detalheBadgeEmProgressoRef.current = true;
     setIsLoadingDetalheBadge(true);
 
     try {
-      const detalhe = await obterBadgeDetalheCatalogo(idBadge);
-      setDetalheBadge(detalhe);
+      const detalhe = await obterBadge(idBadge);
+      const detalheNormalizado = normalizarBadgeDetalheCatalogo({
+        badge: detalhe,
+        requisitos: Array.isArray(detalhe.requisitos)
+          ? detalhe.requisitos
+          : [],
+      });
+
+      setDetalheBadge(detalheNormalizado);
+      setIsDetalheBadgeOpen(true);
     } catch (error) {
       console.error("Erro ao carregar detalhe do badge:", error);
       setDetalheBadge(null);
+      alert(error.response?.data?.error || "Erro ao carregar detalhe do Badge.");
     } finally {
       setIsLoadingDetalheBadge(false);
+      detalheBadgeEmProgressoRef.current = false;
     }
   };
 
@@ -407,7 +520,7 @@ function Galeria() {
     }
 
     const urlPublica =
-      badgeDetalhe?.urlPublica ?? obterUrlPublicaDoBadge(idBadge);
+      badgeDetalhe?.urlPublica ?? obterUrlPublicaBadge(idBadge);
 
     window.open(urlPublica, "_blank", "noopener,noreferrer");
   };
@@ -423,7 +536,7 @@ function Galeria() {
     }
 
     const urlPublica =
-      badgeDetalhe?.urlPublica ?? obterUrlPublicaDoBadge(idBadge);
+      badgeDetalhe?.urlPublica ?? obterUrlPublicaBadge(idBadge);
 
     const urlAbsoluta = `${window.location.origin}${urlPublica}`;
 
@@ -535,7 +648,7 @@ function Galeria() {
               badges={badgesVisiveis}
               isLoading={isLoadingBadges}
               onEdit={handleOpenEditModal}
-              onDelete={(badge) => handleDeleteBadge(obterIdBadge(badge))}
+              onDelete={setBadgeAEliminar}
               onBadgeClick={handleOpenDetalheBadgeCatalogo}
             />
           )}
@@ -544,7 +657,7 @@ function Galeria() {
 
       <ModalConfirmacao
         isOpen={!!badgeAEliminar}
-        onClose={() => setBadgeAEliminar(null)}
+        onClose={handleCloseConfirmacaoDelete}
         onConfirm={handleConfirmDeleteBadge}
         titulo="Eliminar badge"
         mensagem={`Tem a certeza que pretende eliminar o badge "${obterNomeBadge(
@@ -567,12 +680,13 @@ function Galeria() {
 
       <BadgeModal 
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleCloseBadgeModal}
         onSave={handleSaveBadge}
         badgeToEdit={badgeToEdit}
         learningPaths={learningPaths}
         serviceLines={serviceLines}
         areas={areas}
+        niveis={niveis}
       />
     </div>
   );

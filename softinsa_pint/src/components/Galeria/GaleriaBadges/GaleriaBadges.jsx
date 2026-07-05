@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SeletorAbas from "../../ui/SeletorAbas/SeletorAbas_Galeria";
 import GaleriaSugeridos from "../GaleriaSugeridos/GaleriaSugeridos";
 import GaleriaTodosBadges from "../GaleriaTodosBadges/GaleriaTodosBadges";
@@ -14,6 +14,11 @@ import {
     obterUrlPublicaDoBadge,
     obterUrlPartilhaLinkedInDoBadge,
 } from "../../../services/badgeDetalheService";
+import {
+    obterBadgesCatalogoNormalizados,
+    obterBadge,
+} from "../../../services/badgesService";
+import { normalizarBadgeDetalheCatalogo } from "../../../utils/badgeDetalheNormalizadores";
 import "./GaleriaBadges.css";
 import { verificarPermissaoPartilhaLinkedIn } from "../../../services/permissoesService";
 
@@ -141,7 +146,7 @@ function GaleriaBadges({ modo = "consultor" }) {
     const isConsultor = modo === "consultor";
 
     const [badgesConsultor, setBadgesConsultor] = useState(
-        () => badgesConsultorMock
+        () => (isConsultor ? badgesConsultorMock : [])
     );
 
     const [abaAtiva, setAbaAtiva] = useState("sugeridos");
@@ -157,8 +162,51 @@ function GaleriaBadges({ modo = "consultor" }) {
     const [isDetalheBadgeOpen, setIsDetalheBadgeOpen] = useState(false);
     const [detalheBadge, setDetalheBadge] = useState(null);
     const [isLoadingDetalheBadge, setIsLoadingDetalheBadge] = useState(false);
+    const [isLoadingCatalogo, setIsLoadingCatalogo] = useState(false);
+    const [erroCatalogo, setErroCatalogo] = useState("");
     const [anexoPendente, setAnexoPendente] = useState(null);
     const [avisoPermissaoLinkedIn, setAvisoPermissaoLinkedIn] = useState(false);
+
+    useEffect(() => {
+        if (isConsultor) {
+            setBadgesConsultor(badgesConsultorMock);
+            setErroCatalogo("");
+            setIsLoadingCatalogo(false);
+            return undefined;
+        }
+
+        let ativo = true;
+
+        async function carregarCatalogo() {
+            setBadgesConsultor([]);
+            setIsLoadingCatalogo(true);
+            setErroCatalogo("");
+
+            try {
+                const badgesCatalogo = await obterBadgesCatalogoNormalizados();
+
+                if (ativo) {
+                    setBadgesConsultor(badgesCatalogo);
+                }
+            } catch (error) {
+                console.error("Erro ao carregar catálogo de badges:", error);
+
+                if (ativo) {
+                    setErroCatalogo("Não foi possível carregar o catálogo de badges.");
+                }
+            } finally {
+                if (ativo) {
+                    setIsLoadingCatalogo(false);
+                }
+            }
+        }
+
+        carregarCatalogo();
+
+        return () => {
+            ativo = false;
+        };
+    }, [isConsultor]);
 
     const opcoesFiltro = useMemo(() => {
         return {
@@ -216,6 +264,10 @@ function GaleriaBadges({ modo = "consultor" }) {
         return calcularContagensEstadoBadges(badgesParaContagem);
     }, [badgesParaContagem]);
 
+    const mensagemGaleriaVazia = !isConsultor && isLoadingCatalogo
+        ? "A carregar badges..."
+        : erroCatalogo || undefined;
+
     const atualizarBadgeConsultorNaGaleria = (detalheAtualizado) => {
         const idBadge = obterIdBadge(detalheAtualizado);
 
@@ -247,23 +299,44 @@ function GaleriaBadges({ modo = "consultor" }) {
         );
     };
 
-    const handleOpenDetalheBadgeConsultor = async (badge) => {
+    const handleOpenDetalheBadge = async (badge) => {
         const idBadge = obterIdBadge(badge);
 
         if (!idBadge) {
             return;
         }
 
-        setIsDetalheBadgeOpen(true);
         setDetalheBadge(null);
         setIsLoadingDetalheBadge(true);
 
+        if (isConsultor) {
+            setIsDetalheBadgeOpen(true);
+        }
+
         try {
-            const detalhe = await obterBadgeDetalheConsultor(idBadge);
-            setDetalheBadge(detalhe);
+            if (isConsultor) {
+                const detalhe = await obterBadgeDetalheConsultor(idBadge);
+                setDetalheBadge(detalhe);
+                return;
+            }
+
+            const detalhe = await obterBadge(idBadge);
+            const detalheNormalizado = normalizarBadgeDetalheCatalogo({
+                badge: detalhe,
+                requisitos: Array.isArray(detalhe.requisitos)
+                    ? detalhe.requisitos
+                    : [],
+            });
+
+            setDetalheBadge(detalheNormalizado);
+            setIsDetalheBadgeOpen(true);
         } catch (error) {
             console.error("Erro ao carregar detalhe do badge:", error);
             setDetalheBadge(null);
+
+            if (!isConsultor) {
+                setIsDetalheBadgeOpen(false);
+            }
         } finally {
             setIsLoadingDetalheBadge(false);
         }
@@ -447,7 +520,7 @@ function GaleriaBadges({ modo = "consultor" }) {
                 >
                     {isConsultor && abaAtual === "sugeridos" && (
                         <GaleriaSugeridos
-                            onBadgeClick={handleOpenDetalheBadgeConsultor}
+                            onBadgeClick={handleOpenDetalheBadge}
                         />
                     )}
 
@@ -462,7 +535,8 @@ function GaleriaBadges({ modo = "consultor" }) {
                                 isConsultor ? estadoBadgeAtivo : "todos"
                             }
                             mostrarEstado={isConsultor}
-                            onBadgeClick={handleOpenDetalheBadgeConsultor}
+                            onBadgeClick={handleOpenDetalheBadge}
+                            emptyMessage={mensagemGaleriaVazia}
                         />
                     )}
                 </div>
@@ -471,20 +545,24 @@ function GaleriaBadges({ modo = "consultor" }) {
             <BadgeDetalheModal
                 isOpen={isDetalheBadgeOpen}
                 onClose={handleCloseDetalheBadge}
-                modo="consultor"
+                modo={isConsultor ? "consultor" : "catalogo"}
                 detalhe={detalheBadge}
                 isLoading={isLoadingDetalheBadge}
                 onSelecionarFicheiroRequisito={
-                    handleSelecionarFicheiroRequisito
+                    isConsultor ? handleSelecionarFicheiroRequisito : undefined
                 }
-                onSubmeterCandidatura={handleSubmeterCandidatura}
+                onSubmeterCandidatura={
+                    isConsultor ? handleSubmeterCandidatura : undefined
+                }
                 onVerPaginaPublica={handleVerPaginaPublicaBadge}
                 onCopiarLinkPublico={handleCopiarLinkPublicoBadge}
-                onPartilharLinkedIn={handlePartilharLinkedIn}
+                onPartilharLinkedIn={
+                    isConsultor ? handlePartilharLinkedIn : undefined
+                }
             />
 
             <ModalConfirmacao
-                isOpen={avisoPermissaoLinkedIn}
+                isOpen={isConsultor && avisoPermissaoLinkedIn}
                 onClose={() => setAvisoPermissaoLinkedIn(false)}
                 onConfirm={() => setAvisoPermissaoLinkedIn(false)}
                 titulo="Sem autorização"
@@ -495,7 +573,7 @@ function GaleriaBadges({ modo = "consultor" }) {
             />
 
             <ModalConfirmacao
-                isOpen={!!anexoPendente}
+                isOpen={isConsultor && !!anexoPendente}
                 onClose={() => setAnexoPendente(null)}
                 onConfirm={handleConfirmarAnexoRequisito}
                 titulo="Anexar requisito"

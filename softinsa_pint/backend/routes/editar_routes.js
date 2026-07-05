@@ -3,6 +3,7 @@ const router = express.Router();
 const editarController = require('../controllers/editar_controller');
 const badgesController = require('../controllers/badges_controller');
 const authMiddleware = require('../middleware/auth_middleware');
+const autorizarAdmin = require('../middleware/autorizar_admin');
 
 // Aplicar autenticação a todas as rotas de edição
 router.use(authMiddleware);
@@ -30,7 +31,7 @@ router.delete('/areas/:id', editarController.removerArea);
 
 // --- 5. Badges (Sem POST) ---
 router.get('/badges', badgesController.listarBadgesAdmin);
-router.put('/badges/:id', badgesController.atualizarBadge);
-router.delete('/badges/:id', badgesController.removerBadge);
+router.put('/badges/:id', autorizarAdmin, badgesController.atualizarBadge);
+router.delete('/badges/:id', autorizarAdmin, badgesController.removerBadge);
 
 module.exports = router;

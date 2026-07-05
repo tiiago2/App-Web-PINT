@@ -379,5 +379,10 @@
     "ver_historico": "View History",
     "historico_avaliacoes": "Evaluation History",
     "rejeitada": "Rejected",
-    "sem_historico": "No evaluation history recorded yet."
+    "sem_historico": "No evaluation history recorded yet.",
+    "confirmar": "Confirm",
+    "confirmar_aceitacao": "Confirm Acceptance",
+    "confirmar_rejeicao": "Confirm Rejection",
+    "descricao_aceitar_modal": "Write a comment or reason for accepting the application:",
+    "descricao_rejeitar_modal": "Write the reason for rejecting the application (required):"
 }

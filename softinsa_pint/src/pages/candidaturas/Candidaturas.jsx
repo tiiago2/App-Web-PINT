@@ -336,6 +336,12 @@ export default function Candidaturas({ loggedUser }) {
   const [mostrarExportar, setMostrarExportar] = useState(false);
   const exportRef = useRef(null);
   const [limiteExibicao, setLimiteExibicao] = useState(20);
+  const [modalConfirmacao, setModalConfirmacao] = useState({
+    visible: false,
+    type: "", // "Aceite" ou "Recusada"
+    id: null,
+    motivo: ""
+  });
 
   // Reset pagination limit when any filter changes
   useEffect(() => {
@@ -472,39 +478,50 @@ export default function Candidaturas({ loggedUser }) {
   }, [candidaturas, selectedCandidaturaId]);
 
   // Handlers for accept/reject actions
-  const handleAccept = async (id) => {
-    const item = candidaturas.find((c) => c.id === id);
-    if (!item) return;
-
-    try {
-      await api.put(`/candidaturas/${id}/status`, { status: "Aceite" });
-      setCandidaturas((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, status: "Aceite" } : c))
-      );
-      setSelectedCandidaturaId(null);
-      setToastType("success");
-      setToastMessage(t("candidatura_aprovada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
-    } catch (error) {
-      console.error("Erro ao aceitar candidatura:", error);
-      alert("Não foi possível aceitar a candidatura.");
-    }
+  const handleAccept = (id) => {
+    setModalConfirmacao({
+      visible: true,
+      type: "Aceite",
+      id: id,
+      motivo: "Validado com sucesso."
+    });
   };
 
-  const handleReject = async (id) => {
+  const handleReject = (id) => {
+    setModalConfirmacao({
+      visible: true,
+      type: "Recusada",
+      id: id,
+      motivo: ""
+    });
+  };
+
+  const confirmarAcaoModal = async () => {
+    const { id, type, motivo } = modalConfirmacao;
     const item = candidaturas.find((c) => c.id === id);
     if (!item) return;
 
+    if (type === "Recusada" && (!motivo || motivo.trim() === "")) {
+      alert(t("motivo_obrigatorio") || "O motivo de rejeição é obrigatório!");
+      return;
+    }
+
     try {
-      await api.put(`/candidaturas/${id}/status`, { status: "Recusada" });
-      setCandidaturas((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, status: "Recusada" } : c))
-      );
+      await api.put(`/candidaturas/${id}/status`, { status: type, motivo: motivo });
+      await carregarCandidaturas();
       setSelectedCandidaturaId(null);
-      setToastType("reject");
-      setToastMessage(t("candidatura_rejeitada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
+      setModalConfirmacao({ visible: false, type: "", id: null, motivo: "" });
+      
+      if (type === "Aceite") {
+        setToastType("success");
+        setToastMessage(t("candidatura_aprovada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
+      } else {
+        setToastType("reject");
+        setToastMessage(t("candidatura_rejeitada_sucesso", { nome: item.user.nome, badge: item.badge.titulo }));
+      }
     } catch (error) {
-      console.error("Erro ao rejeitar candidatura:", error);
-      alert("Não foi possível rejeitar a candidatura.");
+      console.error(`Erro ao atualizar candidatura (${type}):`, error);
+      alert(type === "Aceite" ? "Não foi possível aceitar a candidatura." : "Não foi possível rejeitar a candidatura.");
     }
   };
 
@@ -791,6 +808,66 @@ export default function Candidaturas({ loggedUser }) {
           </div>
         </div>
       </div>
+
+      {/* Custom Modal for Validation Motif */}
+      {modalConfirmacao.visible && (
+        <div className="candidatura-modal-overlay" onClick={() => setModalConfirmacao(prev => ({ ...prev, visible: false }))}>
+          <div className="candidatura-modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="candidatura-modal-header">
+              <h4 className="fw-bold m-0 d-flex align-items-center gap-2" style={{ color: "white", fontSize: "1.1rem" }}>
+                <i className={modalConfirmacao.type === "Aceite" ? "fi fi-br-check-circle" : "fi fi-br-cross-circle"} style={{ fontSize: "1.15rem", verticalAlign: "middle" }}></i>
+                <span>
+                  {modalConfirmacao.type === "Aceite" ? t("confirmar_aceitacao") : t("confirmar_rejeicao")}
+                </span>
+              </h4>
+              <button 
+                className="candidatura-modal-close-btn" 
+                onClick={() => setModalConfirmacao(prev => ({ ...prev, visible: false }))}
+                aria-label="Fechar"
+              >
+                <i className="fi fi-br-cross" style={{ fontSize: "0.95rem" }}></i>
+              </button>
+            </div>
+
+            <div className="candidatura-modal-body">
+              <p className="m-0" style={{ fontSize: "0.85rem", color: "var(--fontes)", opacity: 0.9 }}>
+                {modalConfirmacao.type === "Aceite" 
+                  ? t("descricao_aceitar_modal") 
+                  : t("descricao_rejeitar_modal")}
+              </p>
+              <div className="d-flex flex-column gap-2 mt-1">
+                <textarea
+                  className="candidatura-modal-input"
+                  rows="3"
+                  value={modalConfirmacao.motivo}
+                  onChange={(e) => setModalConfirmacao(prev => ({ ...prev, motivo: e.target.value }))}
+                  placeholder={modalConfirmacao.type === "Aceite" ? "Ex: Validado com sucesso." : "Ex: Evidências não comprovam o nível exigido."}
+                  style={{ resize: "none" }}
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="candidatura-modal-footer">
+              <button 
+                className="btn rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 candidatura-modal-btn-cancelar font-medium transition-all"
+                style={{ fontSize: "0.9rem", height: "44px" }}
+                onClick={() => setModalConfirmacao(prev => ({ ...prev, visible: false }))}
+              >
+                <span>{t("cancelar")}</span>
+              </button>
+              <button 
+                className={`btn rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 font-medium transition-all ${modalConfirmacao.type === "Aceite" ? "aceitar_btn" : "rejeitar_btn"}`}
+                style={{ fontSize: "0.9rem", height: "44px" }}
+                onClick={confirmarAcaoModal}
+              >
+                <i className={modalConfirmacao.type === "Aceite" ? "fi fi-br-check" : "fi fi-br-cross"}></i>
+                <span>{modalConfirmacao.type === "Aceite" ? t("confirmar") : t("rejeitar")}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

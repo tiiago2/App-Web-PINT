@@ -6,7 +6,8 @@ const {
   Area,
   ServiceLine,
   Requisitos,
-  Historico
+  Historico,
+  Notificacoes
 } = require("../models");
 const { Op } = require("sequelize");
 
@@ -203,7 +204,7 @@ module.exports = {
   async updateStatus(req, res) {
     try {
       const { id } = req.params;
-      const { status } = req.body; // 'Aceite' ou 'Recusada'
+      const { status, motivo } = req.body; // 'Aceite' ou 'Recusada' e o motivo/feedback
 
       if (!['Aceite', 'Recusada'].includes(status)) {
         return res.status(400).json({ error: "Estado inválido." });
@@ -251,7 +252,47 @@ module.exports = {
       submissao.status = dbStatus;
       await submissao.save();
 
-      return res.status(200).json({ message: "Estado atualizado com sucesso.", submissao });
+      // 1. Atualizar ou Criar registo na tabela de Historico de Avaliações
+      const aceiteBool = status === 'Aceite';
+      const [hist, created] = await Historico.findOrCreate({
+        where: { id_utilizador: id_utilizador, id_submissao: submissao.id_submissao },
+        defaults: {
+          aceite: aceiteBool,
+          feedback: motivo || '',
+          data_avaliacao: new Date()
+        }
+      });
+
+      if (!created) {
+        hist.aceite = aceiteBool;
+        hist.feedback = motivo || '';
+        hist.data_avaliacao = new Date();
+        await hist.save();
+      }
+
+      // 2. Enviar notificação ao consultor/candidato
+      const badgeObj = await Badges.findByPk(submissao.id_badge);
+      const nomeBadge = badgeObj ? badgeObj.nome_badge : 'Badge';
+
+      let msgNotif = '';
+      if (status === 'Recusada') {
+        msgNotif = `O teu pedido de badge '${nomeBadge}' foi recusado. Motivo: ${motivo || 'Nenhum'}`;
+      } else {
+        if (isTalent && !isAdmin) {
+          msgNotif = `O teu pedido de badge '${nomeBadge}' foi pré-aceite pelo Talent Manager e aguarda validação do Líder.`;
+        } else {
+          msgNotif = `Parabéns! O teu pedido de badge '${nomeBadge}' foi totalmente aceite.`;
+        }
+      }
+
+      await Notificacoes.create({
+        id_utilizador: submissao.id_utilizador, // ID do destinatário (consultor)
+        descricao_notificacao: msgNotif,
+        data_envio: new Date(),
+        tipo_notificacao: 'AVALIACAO_STATUS'
+      });
+
+      return res.status(200).json({ message: "Estado e histórico atualizados com sucesso.", submissao });
     } catch (error) {
       console.error("Erro ao atualizar candidatura:", error);
       return res.status(500).json({ error: "Erro ao atualizar candidatura." });

@@ -374,5 +374,10 @@
     "ver_historico": "Ver Histórico",
     "historico_avaliacoes": "Histórico de Avaliações",
     "rejeitada": "Rejeitada",
-    "sem_historico": "Ainda sem registo de avaliações."
+    "sem_historico": "Ainda sem registo de avaliações.",
+    "confirmar": "Confirmar",
+    "confirmar_aceitacao": "Confirmar Aceitação",
+    "confirmar_rejeicao": "Confirmar Rejeição",
+    "descricao_aceitar_modal": "Escreve um comentário ou motivo para a aceitação da candidatura:",
+    "descricao_rejeitar_modal": "Escreve o motivo da rejeição da candidatura (obrigatório):"
 }

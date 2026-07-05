@@ -22,7 +22,7 @@ function LoginPage({ onLoginSuccess }) {
   const [roles, setRoles] = useState(null);
   const [roleSelecionada, setRoleSelecionada] = useState(null);
 
-  const extrairDadosEAvancar = (userApi, roleEscolhida) => {
+  const extrairDadosEAvancar = async (userApi, roleEscolhida) => {
 
     const idParaGuardar = userApi.id;
     localStorage.setItem('utilizador_id', idParaGuardar);

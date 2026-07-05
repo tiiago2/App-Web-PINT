@@ -104,5 +104,23 @@ module.exports = {
             console.error("Erro no get_user:", error);
             return res.status(500).json({ error: "Erro no servidor, get_user." });
         }
+    },
+    async postLastLogin(req, res) {
+        try {
+            const { id } = req.body;
+
+            const user = await Utilizador.findByPk(id);
+
+            if (user) {
+                await user.update({ last_login: new Date(), update_user: new Date() });
+                res.status(200).json({ message: "Last Login adicionado com sucesso" });
+            } else {
+
+                return res.status(404).json({ error: "Utilizador não encontrado na base de dados." });
+            }
+        } catch (error) {
+            console.error("Erro ao colocar o login: ", error);
+            return res.status(500).json({ error: "Erro no servidor, get_user." });
+        }
     }
 }

@@ -46,6 +46,7 @@ function App() {
   const location = useLocation();
   const isRotaPublicaBadge = location.pathname.startsWith("/badges/");
   const isRotaPublicaAuth = location.pathname === "/login" || location.pathname === "/esqueci-password";
+  const isRotaPerfil = location.pathname.startsWith("/perfil");
 
   // === ESTADOS GLOBAIS DA APP ===
   const [loading, setLoading] = useState(true);
@@ -57,6 +58,34 @@ function App() {
     ultimoLogin: null,
   });
 
+  const Saudacao = () => {
+    if (!user.ultimoLogin) {
+      return t("saudacao_1");
+    } else {
+      const data_atual = new Date();
+      const hora_atual = data_atual.getHours();
+
+      const diferencaEmMilissegundos = Math.abs(data_atual - user.ultimoLogin);
+      const milissegundosNumDia = 1000 * 60 * 60 * 24;
+
+      const diasPassados = diferencaEmMilissegundos / milissegundosNumDia;
+
+      if (diasPassados >= 15) {
+        return t("saudacao_15");
+      } else if (hora_atual < 6 || hora_atual > 19) {
+        return t("saudacao_noite");
+      } else if (hora_atual < 12) {
+        return t("saudacao_dia");
+      } else {
+        return t("saudacao_tarde");
+      }
+    }
+  };
+
+  const atualizar_lastLogin = async () => {
+    const idGuardado = localStorage.getItem("utilizador_id");
+    const resposta = await api.put('/putlastlogin', { id: idGuardado });
+  }
   // Redirecionar para /login se não autenticado (após terminar o carregamento)
   useEffect(() => {
     if (
@@ -68,6 +97,13 @@ function App() {
       navigate("/login", { replace: true });
     }
   }, [loading, user.cargo, location.pathname, isRotaPublicaAuth, isRotaPublicaBadge, navigate]);
+
+  // Atualizar último login quando a página carrega/muda (exceto na rota de perfil)
+  useEffect(() => {
+    if (user.id && user.cargo && !isRotaPublicaAuth && !isRotaPublicaBadge && !isRotaPerfil) {
+      atualizar_lastLogin();
+    }
+  }, [location.pathname, user.id, user.cargo, isRotaPublicaAuth, isRotaPublicaBadge, isRotaPerfil]);
 
   // === REFS E ESTADOS PARA MENUS, NOTIFICAÇÕES E AVISOS ===
   const bellRef = useRef(null);
@@ -105,7 +141,7 @@ function App() {
             nome: res.data.nome_user || res.data.nome,
             cargo: cargoFinal,
             foto: res.data.imagem_perfil || res.data.foto || null,
-            ultimoLogin: res.data.last_login || new Date()
+            ultimoLogin: res.data.ultimoLogin ? new Date(res.data.ultimoLogin) : null
           });
         }
       } catch (error) {
@@ -244,10 +280,10 @@ function App() {
       <Routes>
         {/* Rota Home Comum */}
         <Route path="/home" element={
-          user.cargo === "Administrador" ? <HomeAdmin user={user} saudacao={t("saudacao_dia")} onCriarAviso={() => setIsAvisoModalOpen(true)} /> :
-            user.cargo === "Service Line Leader" ? <HomeService user={user} saudacao={t("saudacao_dia")} /> :
-              user.cargo === "Talent Manager" ? <HomeTalent user={user} saudacao={t("saudacao_dia")} /> :
-                <HomeConsultor user={user} saudacao={t("saudacao_dia")} />
+          user.cargo === "Administrador" ? <HomeAdmin user={user} saudacao={Saudacao()} onCriarAviso={() => setIsAvisoModalOpen(true)} /> :
+            user.cargo === "Service Line Leader" ? <HomeService user={user} saudacao={Saudacao()} /> :
+              user.cargo === "Talent Manager" ? <HomeTalent user={user} saudacao={Saudacao()} /> :
+                <HomeConsultor user={user} saudacao={Saudacao()} />
         } />
 
         {/* Atividade (se for comum a todos) */}

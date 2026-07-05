@@ -43,6 +43,7 @@ router.use("/defs-permissoes", rotas_defs_permissoes);
 router.use("/rgpd", rotas_rgpd);
 router.post("/login", controller_login.login);
 router.post("/esqueci-password", controller_login.esqueciPassword);
+router.put("/putlastlogin", controller_login.postLastLogin)
 router.get("/getuser", controller_login.getUser);
 router.use("/commun", rotas_comuns);
 router.use("/permissoes", rotas_permissoes);

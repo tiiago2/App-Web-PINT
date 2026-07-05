@@ -6,24 +6,42 @@ import './Perfil.css';
 import api from '../../services/api.js';
 import { handleLogout } from '../../functions/log_out.js';
 import { obterUrlPublicaBadge } from '../../utils/badgeDetalheNormalizadores';
+import BadgeItem from '../../components/Galeria/BadgeItem/BadgeItem.jsx';
+import BadgeDetalheModal from '../../components/BadgeDetalhe/BadgeDetalheModal.jsx';
+import { obterBadgeDetalheConsultor, obterUrlPublicaDoBadge } from '../../services/badgeDetalheService.js';
 
 import user_logo from "../../assets/utilizador.png";
 import badge_logo from '../../assets/teste_badge.png';
 
-const Render_Badges = ({ badges, edicao, onAdd, assinaturaBadges }) => {
+const Render_Badges = ({ badges, edicao, onAdd, assinaturaBadges, onBadgeClick }) => {
   return (
     <>
       {badges.map((badge) => {
         const isSelected = assinaturaBadges.some(b => b.id === badge.id);
+        
+        const handleBadgeClick = () => {
+          if (edicao) {
+            if (!isSelected) onAdd(badge);
+          } else {
+            onBadgeClick(badge);
+          }
+        };
+
         return (
           <div key={badge.id}
-            className='badge_item d-flex flex-column align-items-center text-center position-relative'
-            style={{ cursor: edicao && !isSelected ? 'pointer' : 'default', opacity: isSelected ? 0.5 : 1 }}
-            onClick={() => { if (edicao && !isSelected) onAdd(badge) }}>
-            <img src={badge.Imagem} alt={badge.nome} />
-            <span className='badge_nome'>{badge.nome}</span>
+            className='position-relative'
+            style={{ opacity: isSelected ? 0.5 : 1 }}>
+            <BadgeItem
+              badge={{
+                nomeBadge: badge.nome,
+                imagemBadge: badge.Imagem,
+                estado: isSelected ? "bloqueados" : undefined,
+              }}
+              mostrarEstado={false}
+              onBadgeClick={handleBadgeClick}
+            />
             {edicao && !isSelected && (
-              <div className="position-absolute top-0 end-0 bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow" style={{ width: '24px', height: '24px', transform: 'translate(25%, -25%)' }}>
+              <div className="position-absolute bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow" style={{ width: '24px', height: '24px', top: '10px', right: '10px', zIndex: 5, pointerEvents: 'none' }}>
                 <i className="fi fi-br-plus" style={{ fontSize: '10px', display: 'flex', lineHeight: 1 }}></i>
               </div>
             )}
@@ -102,6 +120,10 @@ const PerfilPessoal = () => {
   const { t } = useTranslation();
   const [edicao, setEdicao] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const [isDetalheBadgeOpen, setIsDetalheBadgeOpen] = useState(false);
+  const [detalheBadge, setDetalheBadge] = useState(null);
+  const [isLoadingDetalheBadge, setIsLoadingDetalheBadge] = useState(false);
 
   const fileInputRef = useRef(null);
   const assinaturaRef = useRef(null);
@@ -216,6 +238,69 @@ const PerfilPessoal = () => {
 
   const handleRemoveBadge = (badgeToRemove) => {
     setAssinaturaBadges(assinaturaBadges.filter(b => b.id !== badgeToRemove.id));
+  };
+
+  const handleOpenDetalheBadge = async (badge) => {
+    const idBadge = badge.id;
+    if (!idBadge) return;
+
+    setIsDetalheBadgeOpen(true);
+    setDetalheBadge(null);
+    setIsLoadingDetalheBadge(true);
+
+    try {
+      const idGuardado = localStorage.getItem('utilizador_id') || 1;
+      const detalhe = await obterBadgeDetalheConsultor(idBadge, { 
+        idUtilizador: parseInt(idGuardado),
+        badgeData: {
+          id_badge: badge.id,
+          nome_badge: badge.nome,
+          imagem: badge.Imagem,
+          validade: 365,
+          pontos_badge: 100,
+        }
+      });
+
+      if (detalhe) {
+        detalhe.estado = "conquistados";
+        detalhe.estadoLabel = "Conquistado";
+        detalhe.podePartilharConquista = true;
+        detalhe.podeAnexarRequisitos = false;
+        detalhe.podeSubmeterCandidatura = false;
+      }
+
+      setDetalheBadge(detalhe);
+    } catch (error) {
+      console.error("Erro ao carregar detalhe do badge:", error);
+      setDetalheBadge(null);
+    } finally {
+      setIsLoadingDetalheBadge(false);
+    }
+  };
+
+  const handleCloseDetalheBadge = () => {
+    setIsDetalheBadgeOpen(false);
+    setDetalheBadge(null);
+  };
+
+  const handleVerPaginaPublicaBadge = (badgeDetalhe) => {
+    const idBadge = badgeDetalhe?.id_badge ?? badgeDetalhe?.id;
+    if (!idBadge) return;
+    const urlPublica = badgeDetalhe?.urlPublica ?? obterUrlPublicaDoBadge(idBadge);
+    window.open(urlPublica, "_blank", "noopener,noreferrer");
+  };
+
+  const handleCopiarLinkPublicoBadge = async (badgeDetalhe) => {
+    const idBadge = badgeDetalhe?.id_badge ?? badgeDetalhe?.id;
+    if (!idBadge) return;
+    const urlPublica = badgeDetalhe?.urlPublica ?? obterUrlPublicaDoBadge(idBadge);
+    const urlAbsoluta = `${window.location.origin}${urlPublica}`;
+    try {
+      await navigator.clipboard.writeText(urlAbsoluta);
+      alert("Link público copiado.");
+    } catch (error) {
+      console.error("Erro ao copiar link público:", error);
+    }
   };
 
   const handleFileChange = (e) => {
@@ -358,12 +443,22 @@ const PerfilPessoal = () => {
             <h2 className='subtitulo_perfil mb-4'>{t('badges_pessoais')}</h2>
             <div className='badges_scroll_box'>
               <div className='badges_scroll_container'>
-                <Render_Badges badges={badgesObtidos} edicao={edicao} onAdd={handleAddBadge} assinaturaBadges={assinaturaBadges} />
+                <Render_Badges badges={badgesObtidos} edicao={edicao} onAdd={handleAddBadge} assinaturaBadges={assinaturaBadges} onBadgeClick={handleOpenDetalheBadge} />
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <BadgeDetalheModal
+        isOpen={isDetalheBadgeOpen}
+        onClose={handleCloseDetalheBadge}
+        modo="consultor"
+        detalhe={detalheBadge}
+        isLoading={isLoadingDetalheBadge}
+        onVerPaginaPublica={handleVerPaginaPublicaBadge}
+        onCopiarLinkPublico={handleCopiarLinkPublicoBadge}
+      />
     </div>
   );
 };

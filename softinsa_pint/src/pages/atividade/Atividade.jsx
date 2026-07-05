@@ -300,9 +300,18 @@ export default function Atividade() {
                   <div className="timeline-card-body">
                     <div className="timeline-card-main">
                       <p className="activity-text">
-                        <strong>{activity.user}</strong>{" "}
-                        <span className="activity-action">{t(config.actionKey)}</span>{" "}
-                        <strong>{activity.item}</strong>
+                        {activity.type === "updated" || activity.type === "policy" ? (
+                          <>
+                            <strong>{activity.user}</strong>{" "}
+                            <span className="activity-action">{activity.item}</span>
+                          </>
+                        ) : (
+                          <>
+                            <strong>{activity.user}</strong>{" "}
+                            <span className="activity-action">{t(config.actionKey)}</span>{" "}
+                            <strong>{activity.item}</strong>
+                          </>
+                        )}
                       </p>
                       <div className="activity-time">
                         <i className="fi fi-br-clock"></i>

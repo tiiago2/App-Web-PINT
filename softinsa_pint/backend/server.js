@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const rotas = require("./routes/central_rotas");
 const db = require("./models");
+const iniciarCronJobs = require("./cron");
 
 const app = express();
 
@@ -16,6 +17,9 @@ async function iniciar_bd() {
     try {
         await db.sequelize.sync({ force: false }); // Sincroniza e altera tabelas conforme os modelos
         console.log("Base de dados sincronizada.");
+
+        // Iniciar os cron jobs
+        iniciarCronJobs();
 
         app.listen(5000, () => {
             console.log("Servidor a ouvir na porta 5000");

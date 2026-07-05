@@ -5,7 +5,7 @@ module.exports = (sequelize) => {
     id_badge: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     id_area: { type: DataTypes.INTEGER, allowNull: false },
     id_nivel: { type: DataTypes.INTEGER, allowNull: false },
-    validade: { type: DataTypes.BIGINT, allowNull: false },
+    validade: { type: DataTypes.BIGINT, allowNull: true },
     especial: { type: DataTypes.BOOLEAN, allowNull: false },
     pontos_badge: { type: DataTypes.INTEGER, allowNull: false },
     nome_badge: { type: DataTypes.TEXT, allowNull: false },

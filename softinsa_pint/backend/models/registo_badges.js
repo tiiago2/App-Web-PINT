@@ -20,7 +20,7 @@ module.exports = (sequelize) => {
       type: DataTypes.DATE,
       allowNull: false
     },
-    expirado: {type: DataTypes.BOOLEAN, allowNull: false, default:0 }
+    expirado: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
   }, {
     tableName: 'registo_badges',
     timestamps: false

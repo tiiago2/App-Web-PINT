@@ -9,6 +9,6 @@ module.exports = (sequelize) => {
     data_final: { type: DataTypes.DATE, allowNull: false },
     deleted_objetivo: { type: DataTypes.BOOLEAN, allowNull: false },
     data_conclusao: { type: DataTypes.DATE, allowNull: true },
-    notificacao_fim: {type: DataTypes.BOOLEAN, allowNull: false, default:0 }
+    notificacao_fim: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
   }, { tableName: 'objetivos', timestamps: false });
 };

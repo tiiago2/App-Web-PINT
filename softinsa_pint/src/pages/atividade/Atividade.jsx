@@ -388,19 +388,6 @@ export default function Atividade() {
             placeholder={t("pesquisar_utilizador_item")}
           />
         </div>
-        <div className="filters-wrapper">
-          {filters.map((filter) => (
-            <button
-              key={filter.id}
-              onClick={() => setActiveFilter(filter.id)}
-              className={`btn filter-tab-btn ${
-                activeFilter === filter.id ? "filter-tab-active" : "filter-tab-inactive"
-              }`}
-            >
-              {t(filter.labelKey)}
-            </button>
-          ))}
-        </div>
         <div className="atividade-data-picker">
           <input
             type="date"

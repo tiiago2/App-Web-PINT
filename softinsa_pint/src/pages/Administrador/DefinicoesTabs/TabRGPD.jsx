@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import api from "../../../services/api.js";
+import ToastNotificacao from "../../../components/ui/ToastNotificacao/ToastNotificacao.jsx";
 
 export default function TabRGPD() {
   const { t } = useTranslation();
@@ -15,6 +16,10 @@ export default function TabRGPD() {
   });
 
   const [loading, setLoading] = useState(true);
+
+  const [toast, setToast] = useState({ visivel: false, mensagem: "", tipo: "sucesso" });
+  const mostrarToast = (mensagem, tipo = "sucesso") => setToast({ visivel: true, mensagem, tipo });
+  const fecharToast = () => setToast((prev) => ({ ...prev, visivel: false }));
 
   // Carregar os dados dinâmicos do backend
   useEffect(() => {
@@ -37,7 +42,7 @@ export default function TabRGPD() {
   const handleGuardar = async () => {
     try {
       if (!textoConsentimento.trim()) {
-        alert("O texto de consentimento não pode estar vazio.");
+        mostrarToast("O texto de consentimento não pode estar vazio.", "erro");
         return;
       }
 
@@ -50,10 +55,10 @@ export default function TabRGPD() {
       setNomeAutor(response.data.nomeAutor || "Sistema");
       setEstatisticas(response.data.estatisticas || { aceites: 0, pendentes: 0, taxaAdesao: 0 });
 
-      alert(t("rgpd_guardado_sucesso", "Políticas RGPD guardadas e consentimentos repostos com sucesso!"));
+      mostrarToast(t("rgpd_guardado_sucesso", "Políticas RGPD guardadas e consentimentos repostos com sucesso!"), "sucesso");
     } catch (error) {
       console.error("Erro ao guardar políticas RGPD:", error);
-      alert(t("erro_guardar_rgpd", "Ocorreu um erro ao guardar as políticas RGPD."));
+      mostrarToast(t("erro_guardar_rgpd", "Ocorreu um erro ao guardar as políticas RGPD."), "erro");
     }
   };
 
@@ -69,6 +74,7 @@ export default function TabRGPD() {
   }
 
   return (
+    <>
     <div className="d-flex flex-column gap-4 pb-4">
       <div>
         <h3 className="section-title">{t("politicas_rgpd")}</h3>
@@ -211,5 +217,14 @@ export default function TabRGPD() {
         </div>
       </div>
     </div>
+
+      {/* Toast Notificação */}
+      <ToastNotificacao
+        visivel={toast.visivel}
+        mensagem={toast.mensagem}
+        tipo={toast.tipo}
+        onFechar={fecharToast}
+      />
+    </>
   );
 }

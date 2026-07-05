@@ -1,97 +1,232 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import {
+  obterUtilizadores,
+  obterRoles,
+  atualizarUtilizador,
+  eliminarUtilizador,
+} from "../../services/utilizadorService.js";
+import { obterAreas, obterServiceLines } from "../../services/gestaoService.js";
+import EditarUtilizadorModal from "../../components/ui/EditarUtilizadorModal/EditarUtilizadorModal.jsx";
+import ModalConfirmacao from "../../components/ui/ModalConfirmacao/ModalConfirmacao.jsx";
+import ToastNotificacao from "../../components/ui/ToastNotificacao/ToastNotificacao.jsx";
 import defaultAvatar from "../../assets/utilizador.png";
 import "./utilizadores.css";
 
+const ORDEM_NOME = "nome";
+const ORDEM_RECENTE = "recente";
+
+const CARDS_CARGOS = [
+  { key: "consultor", label: "Consultor", icon: "fi-br-user", color: "consultor" },
+  { key: "service line leader", label: "Service Line Leader", icon: "fi-br-chart-line-up", color: "service" },
+  { key: "talent", label: "Talent Manager", icon: "fi-br-briefcase", color: "talent" },
+  { key: "admin", label: "Administrador", icon: "fi-br-shield-check", color: "admin" },
+];
+
 export default function Utilizadores({ userRole }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
   const [utilizadores, setUtilizadores] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [rolesDisponiveis, setRolesDisponiveis] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const [serviceLines, setServiceLines] = useState([]);
+
   const [pesquisa, setPesquisa] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [ordenar, setOrdenar] = useState(ORDEM_NOME);
+  const [mostrarFiltros, setMostrarFiltros] = useState(false);
+  const [filtroRole, setFiltroRole] = useState("");
+  const [filtroArea, setFiltroArea] = useState("");
+  const [filtroServiceLine, setFiltroServiceLine] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState("");
+
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  // Campos do formulário
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [telefone, setTelefone] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState("");
+  const [utilizadorEditar, setUtilizadorEditar] = useState(null);
+  const [utilizadorEliminar, setUtilizadorEliminar] = useState(null);
 
-  const isAdmin = userRole?.toLowerCase() === "administrador" || userRole?.toLowerCase() === "admin";
+  const [toast, setToast] = useState({ visivel: false, mensagem: "", tipo: "sucesso" });
+  const mostrarToast = (mensagem, tipo = "sucesso") => setToast({ visivel: true, mensagem, tipo });
+  const fecharToast = () => setToast((prev) => ({ ...prev, visivel: false }));
+
+  const cargoLocal = (() => {
+    try {
+      const role = localStorage.getItem("role_softinsa");
+      if (!role) return null;
+      const parsed = JSON.parse(role);
+      return typeof parsed === "string" ? parsed : parsed?.nome;
+    } catch {
+      return null;
+    }
+  })();
+
+  const cargoEfetivo = userRole || cargoLocal;
+
+  const isAdmin =
+    cargoEfetivo?.toLowerCase() === "administrador" ||
+    cargoEfetivo?.toLowerCase() === "admin";
 
   useEffect(() => {
-    carregarUtilizadores();
+    carregarDados();
   }, []);
 
-  const carregarUtilizadores = async () => {
+  const carregarDados = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/utilizadores");
-      setUtilizadores(res.data);
+      setLoading(true);
+      const [users, roles, areasRaw, serviceLinesRaw] = await Promise.all([
+        obterUtilizadores(),
+        obterRoles(),
+        obterAreas(),
+        obterServiceLines(),
+      ]);
+      setUtilizadores(users);
+      setRolesDisponiveis(roles);
+      setAreas(areasRaw);
+      setServiceLines(serviceLinesRaw);
     } catch (error) {
-      console.error("Erro ao carregar utilizadores:", error);
+      console.error("Erro ao carregar dados:", error);
+      mostrarToast("Erro ao carregar dados. Verifica se estás autenticado.", "erro");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSelectUser = (user) => {
-    setSelectedUser(user);
-    setNome(user.nome_user);
-    setEmail(user.email);
-    setTelefone(user.telefone);
-    setSelectedFile(null);
-    setPreviewUrl("");
+  const contagemPorCargo = useMemo(() => {
+    const contagem = {};
+    CARDS_CARGOS.forEach((card) => {
+      contagem[card.key] = 0;
+    });
+
+    utilizadores.forEach((u) => {
+      u.roles?.forEach((role) => {
+        const nome = role.nome_role?.toLowerCase() || "";
+        CARDS_CARGOS.forEach((card) => {
+          if (nome.includes(card.key)) {
+            contagem[card.key] += 1;
+          }
+        });
+      });
+    });
+
+    return contagem;
+  }, [utilizadores]);
+
+  const filtrados = useMemo(() => {
+    let lista = [...utilizadores];
+
+    if (pesquisa.trim()) {
+      const termo = pesquisa.toLowerCase();
+      lista = lista.filter(
+        (u) =>
+          u.nome_user?.toLowerCase().includes(termo) ||
+          u.email?.toLowerCase().includes(termo)
+      );
+    }
+
+    if (filtroEstado) {
+      const ativo = filtroEstado === "ativo";
+      lista = lista.filter((u) => u.ativo === ativo);
+    }
+
+    if (filtroRole) {
+      lista = lista.filter((u) =>
+        u.roles?.some((r) => String(r.id_role) === filtroRole)
+      );
+    }
+
+    if (filtroArea) {
+      lista = lista.filter((u) => u.consultor?.id_area === Number(filtroArea));
+    }
+
+    if (filtroServiceLine) {
+      const areaIds = areas
+        .filter((a) => String(a.id_service_line) === filtroServiceLine)
+        .map((a) => a.id_area);
+      lista = lista.filter((u) => areaIds.includes(u.consultor?.id_area));
+    }
+
+    if (ordenar === ORDEM_RECENTE) {
+      lista.sort((a, b) => b.id_utilizador - a.id_utilizador);
+    } else {
+      lista.sort((a, b) =>
+        (a.nome_user || "").localeCompare(b.nome_user || "", "pt")
+      );
+    }
+
+    return lista;
+  }, [
+    utilizadores,
+    pesquisa,
+    ordenar,
+    filtroRole,
+    filtroArea,
+    filtroServiceLine,
+    filtroEstado,
+    areas,
+  ]);
+
+  const handleEditar = (utilizador, e) => {
+    e.stopPropagation();
+    setUtilizadorEditar(utilizador);
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+  const handleEliminar = (utilizador, e) => {
+    e.stopPropagation();
+    setUtilizadorEliminar(utilizador);
+  };
+
+  const handleGuardarEdicao = async (dados) => {
+    setSaving(true);
+    try {
+      const payload = {
+        nome_user: dados.nome_user,
+        email: dados.email,
+        telefone: dados.telefone,
+        ativo: dados.ativo,
+        roles: dados.roles,
+      };
+
+      if (dados.password?.trim()) {
+        payload.password = dados.password;
+      }
+
+      if (dados.imagem instanceof File) {
+        payload.imagem = dados.imagem;
+      }
+
+      const res = await atualizarUtilizador(dados.id_utilizador, payload);
+
+      setUtilizadores((prev) =>
+        prev.map((u) =>
+          u.id_utilizador === dados.id_utilizador ? res : u
+        )
+      );
+      setUtilizadorEditar(null);
+      mostrarToast("Utilizador atualizado com sucesso!", "sucesso");
+    } catch (error) {
+      console.error("Erro ao atualizar:", error);
+      const msg = error.response?.data?.error || "Erro ao atualizar utilizador.";
+      mostrarToast(msg, "erro");
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!selectedUser || !isAdmin) return;
-
-    setSaving(true);
+  const confirmarEliminar = async () => {
+    if (!utilizadorEliminar) return;
     try {
-      const formData = new FormData();
-      formData.append("nome_user", nome);
-      formData.append("email", email);
-      formData.append("telefone", telefone);
-      if (selectedFile) {
-        formData.append("imagem", selectedFile);
-      }
-
-      const res = await axios.put(
-        `http://localhost:5000/api/utilizadores/${selectedUser.id_utilizador}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      // Atualizar lista local
+      await eliminarUtilizador(utilizadorEliminar.id_utilizador);
       setUtilizadores((prev) =>
-        prev.map((u) => (u.id_utilizador === selectedUser.id_utilizador ? res.data : u))
+        prev.filter((u) => u.id_utilizador !== utilizadorEliminar.id_utilizador)
       );
-      
-      // Atualizar utilizador selecionado
-      setSelectedUser(res.data);
-      setSelectedFile(null);
-      setPreviewUrl("");
-      alert("Utilizador atualizado com sucesso!");
+      setUtilizadorEliminar(null);
+      mostrarToast("Utilizador eliminado com sucesso!", "sucesso");
     } catch (error) {
-      console.error("Erro ao guardar utilizador:", error);
-      alert("Erro ao guardar utilizador.");
-    } finally {
-      setSaving(false);
+      console.error("Erro ao eliminar:", error);
+      const msg = error.response?.data?.error || "Erro ao eliminar utilizador.";
+      mostrarToast(msg, "erro");
     }
   };
 
@@ -103,239 +238,305 @@ export default function Utilizadores({ userRole }) {
     return defaultAvatar;
   };
 
-  const filtrados = utilizadores.filter(
-    (u) =>
-      u.nome_user.toLowerCase().includes(pesquisa.toLowerCase()) ||
-      u.email.toLowerCase().includes(pesquisa.toLowerCase())
-  );
+  const getIniciais = (nome) => {
+    if (!nome) return "?";
+    return nome
+      .split(" ")
+      .filter((p) => p)
+      .map((p) => p[0].toUpperCase())
+      .slice(0, 2)
+      .join("");
+  };
+
+  const formatarNomeRole = (nome) => {
+    if (!nome) return "";
+    return nome
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+  };
+
+  const areasFiltradas = filtroServiceLine
+    ? areas.filter((a) => String(a.id_service_line) === filtroServiceLine)
+    : areas;
 
   return (
     <main className="utilizadores-page">
-      <div className="utilizadores-topo d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 className="fw-bold m-0" style={{ fontSize: "1.75rem", color: "var(--fontes)" }}>
-            Gestão de Utilizadores
-          </h2>
-          <p className="text-muted m-0" style={{ fontSize: "0.9rem" }}>
-            {isAdmin 
-              ? "Edite perfis e faça upload de imagens de perfil alojadas diretamente no Cloudinary."
-              : "Visualize perfis e informações de utilizadores registados."}
-          </p>
+      <div className="utilizadores-wrapper">
+        {/* Header */}
+        <div className="utilizadores-header">
+          <h1 className="texto-titulo-principal mb-0">Utilizadores</h1>
+          {isAdmin && (
+            <button
+              className="btn btn-primary-utilizadores"
+              onClick={() => navigate("/utilizadores/criar-utilizador")}
+            >
+              <i className="fi fi-br-plus"></i>
+              Adicionar Utilizador
+            </button>
+          )}
+        </div>
+
+        {/* Cards de cargos */}
+        <div className="utilizadores-cards">
+          {CARDS_CARGOS.map((card) => (
+            <div
+              key={card.key}
+              className={`utilizadores-card cargo ${card.color}`}
+              onClick={() => {
+                const role = rolesDisponiveis.find((r) =>
+                  r.nome_role?.toLowerCase().includes(card.key)
+                );
+                if (role) {
+                  setFiltroRole(String(role.id_role));
+                }
+              }}
+              style={{ cursor: "pointer" }}
+            >
+              <div>
+                <span className="utilizadores-card-label">{card.label}</span>
+                <strong className="utilizadores-card-value">
+                  {contagemPorCargo[card.key] || 0}
+                </strong>
+              </div>
+              <div className={`utilizadores-card-icon ${card.color}`}>
+                <i className={`fi ${card.icon}`}></i>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Controles */}
+        <div className="utilizadores-controles">
+          <div className="utilizadores-search">
+            <i className="fi fi-br-search"></i>
+            <input
+              type="text"
+              placeholder="Pesquisar utilizador..."
+              value={pesquisa}
+              onChange={(e) => setPesquisa(e.target.value)}
+            />
+          </div>
+
+          <div className="utilizadores-controles-direita">
+            <div className="utilizadores-select-wrapper">
+              <span className="utilizadores-select-label">Ordenar por:</span>
+              <div className="utilizadores-select">
+                <select
+                  value={ordenar}
+                  onChange={(e) => setOrdenar(e.target.value)}
+                >
+                  <option value={ORDEM_NOME}>Nome (A-Z)</option>
+                  <option value={ORDEM_RECENTE}>Mais recente</option>
+                </select>
+              </div>
+            </div>
+
+            <button
+              className="btn btn-outline-utilizadores"
+              onClick={() => setMostrarFiltros(!mostrarFiltros)}
+            >
+              <i className="fi fi-br-settings-sliders"></i>
+              Filtros
+            </button>
+          </div>
+        </div>
+
+        {/* Filtros avançados */}
+        {mostrarFiltros && (
+          <div className="utilizadores-filtros-avancados">
+            <div className="row g-3">
+              <div className="col-md-3">
+                <label className="utilizadores-filtro-label">Estado</label>
+                <select
+                  className="form-select"
+                  value={filtroEstado}
+                  onChange={(e) => setFiltroEstado(e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  <option value="ativo">Ativo</option>
+                  <option value="inativo">Inativo</option>
+                </select>
+              </div>
+              <div className="col-md-3">
+                <label className="utilizadores-filtro-label">Role</label>
+                <select
+                  className="form-select"
+                  value={filtroRole}
+                  onChange={(e) => setFiltroRole(e.target.value)}
+                >
+                  <option value="">Todas</option>
+                  {rolesDisponiveis.map((role) => (
+                    <option key={role.id_role} value={role.id_role}>
+                      {formatarNomeRole(role.nome_role)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-md-3">
+                <label className="utilizadores-filtro-label">Service Line</label>
+                <select
+                  className="form-select"
+                  value={filtroServiceLine}
+                  onChange={(e) => {
+                    setFiltroServiceLine(e.target.value);
+                    setFiltroArea("");
+                  }}
+                >
+                  <option value="">Todas</option>
+                  {serviceLines.map((sl) => (
+                    <option key={sl.id_service_line} value={sl.id_service_line}>
+                      {sl.nome_service_line}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-md-3">
+                <label className="utilizadores-filtro-label">Área</label>
+                <select
+                  className="form-select"
+                  value={filtroArea}
+                  onChange={(e) => setFiltroArea(e.target.value)}
+                >
+                  <option value="">Todas</option>
+                  {areasFiltradas.map((area) => (
+                    <option key={area.id_area} value={area.id_area}>
+                      {area.nome_area}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tabela */}
+        <div className="utilizadores-tabela-wrapper">
+          {loading ? (
+            <div className="utilizadores-loading">A carregar utilizadores...</div>
+          ) : (
+            <table className="utilizadores-tabela">
+              <thead>
+                <tr>
+                  <th>Utilizador</th>
+                  <th>Email</th>
+                  <th>Telefone</th>
+                  <th>Roles</th>
+                  <th>Estado</th>
+                  <th className="text-end">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtrados.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="utilizadores-vazio">
+                      Nenhum utilizador encontrado.
+                    </td>
+                  </tr>
+                ) : (
+                  filtrados.map((u) => (
+                    <tr
+                      key={u.id_utilizador}
+                      onClick={() => navigate(`/perfil/${u.id_utilizador}`)}
+                      className="utilizadores-linha"
+                    >
+                      <td>
+                        <div className="utilizadores-user-cell">
+                          {u.imagem_perfil &&
+                          (u.imagem_perfil.startsWith("http://") ||
+                            u.imagem_perfil.startsWith("https://")) ? (
+                            <img
+                              src={getFotoUrl(u.imagem_perfil)}
+                              alt={u.nome_user}
+                              className="utilizadores-avatar"
+                            />
+                          ) : (
+                            <div className="utilizadores-avatar-iniciais">
+                              {getIniciais(u.nome_user)}
+                            </div>
+                          )}
+                          <span className="utilizadores-nome">{u.nome_user}</span>
+                        </div>
+                      </td>
+                      <td>{u.email}</td>
+                      <td>{u.telefone}</td>
+                      <td>
+                        <div className="utilizadores-roles-cell">
+                          {u.roles?.map((role) => (
+                            <span
+                              key={role.id_role}
+                              className="utilizadores-role-badge"
+                            >
+                              {formatarNomeRole(role.nome_role)}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td>
+                        <span
+                          className={`utilizadores-estado-badge ${
+                            u.ativo ? "ativo" : "inativo"
+                          }`}
+                        >
+                          <span className="utilizadores-estado-dot"></span>
+                          {u.ativo ? "Ativo" : "Inativo"}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="utilizadores-acoes">
+                          <button
+                            className="utilizadores-acao editar"
+                            onClick={(e) => handleEditar(u, e)}
+                            title="Editar"
+                          >
+                            <i className="fi fi-br-pencil"></i>
+                          </button>
+                          <button
+                            className="utilizadores-acao eliminar"
+                            onClick={(e) => handleEliminar(u, e)}
+                            title="Eliminar"
+                          >
+                            <i className="fi fi-br-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
-      {loading ? (
-        <div className="d-flex justify-content-center align-items-center flex-grow-1 py-5 text-secondary">
-          A carregar utilizadores...
-        </div>
-      ) : (
-        <div className="utilizadores-conteudo row flex-grow-1 overflow-hidden" style={{ minHeight: 0 }}>
-          {/* Coluna da Esquerda: Lista de Utilizadores */}
-          <div className="col-12 col-md-6 d-flex flex-column overflow-hidden utilizadores-col-lista" style={{ minHeight: 0 }}>
-            <div className="rounded-4 p-3 flex-grow-1 d-flex flex-column overflow-hidden shadow-xs" style={{ minHeight: 0, backgroundColor: "var(--fundo)", border: "var(--borda-principal) solid var(--contorno)" }}>
-              <div className="mb-3">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Pesquisar utilizador por nome ou email..."
-                  value={pesquisa}
-                  onChange={(e) => setPesquisa(e.target.value)}
-                  style={{ borderRadius: "8px", borderColor: "var(--contorno)" }}
-                />
-              </div>
+      {/* Modal Editar */}
+      <EditarUtilizadorModal
+        isOpen={!!utilizadorEditar}
+        onClose={() => setUtilizadorEditar(null)}
+        utilizador={utilizadorEditar}
+        rolesDisponiveis={rolesDisponiveis}
+        onGuardar={handleGuardarEdicao}
+        saving={saving}
+      />
 
-              <div className="flex-grow-1 overflow-auto custom-scrollbar pe-1 d-flex flex-column gap-2">
-                {filtrados.length === 0 ? (
-                  <div className="text-center py-5 text-secondary">
-                    Nenhum utilizador encontrado.
-                  </div>
-                ) : (
-                  filtrados.map((u) => (
-                    <div
-                      key={u.id_utilizador}
-                      onClick={() => handleSelectUser(u)}
-                      className={`user-row-card p-3 rounded-3 d-flex align-items-center justify-content-between cursor-pointer border ${
-                        selectedUser?.id_utilizador === u.id_utilizador ? "active-row" : ""
-                      }`}
-                      style={{ transition: "all 0.2s" }}
-                    >
-                      <div className="d-flex align-items-center gap-3">
-                        <img
-                          src={getFotoUrl(u.imagem_perfil)}
-                          alt={u.nome_user}
-                          className="rounded-circle object-fit-cover border"
-                          width="48"
-                          height="48"
-                        />
-                        <div>
-                          <h6 className="m-0 fw-bold" style={{ color: "var(--fontes)" }}>
-                            {u.nome_user}
-                          </h6>
-                          <span className="text-muted" style={{ fontSize: "0.8rem" }}>
-                            {u.email}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="d-flex flex-column align-items-end">
-                        <span className="badge bg-light text-secondary border px-2 py-1" style={{ fontSize: "0.75rem" }}>
-                          Tlf: {u.telefone}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
+      {/* Modal Eliminar */}
+      <ModalConfirmacao
+        isOpen={!!utilizadorEliminar}
+        onClose={() => setUtilizadorEliminar(null)}
+        onConfirm={confirmarEliminar}
+        titulo="Eliminar utilizador"
+        mensagem={`Tem a certeza que pretende eliminar o utilizador "${utilizadorEliminar?.nome_user}"? Esta ação não pode ser desfeita.`}
+        textoConfirmar="Eliminar"
+        textoCancelar="Cancelar"
+        isDanger={true}
+      />
 
-          {/* Coluna da Direita: Painel de Edição */}
-          <div className="col-12 col-md-6 d-flex flex-column overflow-hidden utilizadores-col-detalhes" style={{ minHeight: 0 }}>
-            <div className="utilizadores-detalhes-panel rounded-4 p-4 d-flex flex-column overflow-hidden shadow-xs" style={{ minHeight: 0, backgroundColor: "var(--fundo)", border: "var(--borda-principal) solid var(--contorno)", height: "100%" }}>
-              {selectedUser ? (
-                <form onSubmit={handleSubmit} className="d-flex flex-column h-100 justify-content-between overflow-auto custom-scrollbar">
-                  <div className="d-flex flex-column gap-3">
-                    <h4 className="fw-bold mb-1" style={{ color: "var(--fontes)" }}>
-                      {isAdmin ? "Editar Perfil" : "Visualizar Perfil"}
-                    </h4>
-                    <p className="text-muted m-0" style={{ fontSize: "0.85rem" }}>
-                      {isAdmin
-                        ? "Modifique as credenciais do utilizador e a respetiva foto de perfil."
-                        : "Consulte as credenciais do utilizador e a respetiva foto de perfil."}
-                    </p>
-                    <hr className="my-1" style={{ color: "var(--contorno)" }} />
-
-                    {/* Foto de Perfil Preview */}
-                    <div className="d-flex align-items-center gap-4 py-2">
-                      <img
-                        src={previewUrl || getFotoUrl(selectedUser.imagem_perfil)}
-                        alt="Avatar Preview"
-                        className="rounded-circle object-fit-cover border"
-                        width="80"
-                        height="80"
-                      />
-                      <div className="flex-grow-1">
-                        <label className="form-label fw-bold mb-1" style={{ fontSize: "0.85rem", color: "var(--fontes)" }}>
-                          Foto de Perfil
-                        </label>
-                        {!isAdmin ? (
-                          <div className="text-muted" style={{ fontSize: "0.85rem" }}>
-                            Apenas editável por administradores.
-                          </div>
-                        ) : (
-                          <input
-                            type="file"
-                            className="form-control"
-                            accept="image/*"
-                            onChange={handleFileChange}
-                            style={{ fontSize: "0.8rem", borderRadius: "6px" }}
-                          />
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Input Nome */}
-                    <div className="form-group">
-                      <label className="fw-semibold mb-1" style={{ fontSize: "0.85rem", color: "var(--fontes)" }}>
-                        Nome do Utilizador
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={nome}
-                        onChange={(e) => setNome(e.target.value)}
-                        required
-                        disabled={!isAdmin}
-                        style={{ borderRadius: "6px", borderColor: "var(--contorno)" }}
-                      />
-                    </div>
-
-                    {/* Input Email */}
-                    <div className="form-group">
-                      <label className="fw-semibold mb-1" style={{ fontSize: "0.85rem", color: "var(--fontes)" }}>
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        className="form-control"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        disabled={!isAdmin}
-                        style={{ borderRadius: "6px", borderColor: "var(--contorno)" }}
-                      />
-                    </div>
-
-                    {/* Input Telefone */}
-                    <div className="form-group">
-                      <label className="fw-semibold mb-1" style={{ fontSize: "0.85rem", color: "var(--fontes)" }}>
-                        Telefone
-                      </label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        value={telefone}
-                        onChange={(e) => setTelefone(e.target.value)}
-                        required
-                        disabled={!isAdmin}
-                        style={{ borderRadius: "6px", borderColor: "var(--contorno)" }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="d-flex gap-3 justify-content-end mt-4 pt-3 border-top" style={{ borderColor: "var(--contorno)" }}>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedUser(null)}
-                      className="btn btn-light px-4"
-                      style={{ height: "42px", fontWeight: 500, fontSize: "0.9rem", borderRadius: "8px" }}
-                    >
-                      {isAdmin ? "Cancelar" : "Fechar"}
-                    </button>
-                    {isAdmin && (
-                      <button
-                        type="submit"
-                        disabled={saving}
-                        className="btn text-white px-4"
-                        style={{
-                          backgroundColor: "var(--barra_lateral)",
-                          height: "42px",
-                          fontWeight: 500,
-                          fontSize: "0.9rem",
-                          borderRadius: "8px",
-                        }}
-                      >
-                        {saving ? "A guardar..." : "Guardar Alterações"}
-                      </button>
-                    )}
-                  </div>
-                </form>
-              ) : (
-                <div className="d-flex flex-column align-items-center justify-content-center h-100 p-4 text-center">
-                  <div
-                    className="d-flex align-items-center justify-content-center rounded-circle mb-3"
-                    style={{
-                      width: "80px",
-                      height: "80px",
-                      backgroundColor: "var(--fundo_submenu_hover)",
-                      border: "var(--borda-principal) solid var(--contorno)",
-                    }}
-                  >
-                    <i className="fi fi-br-users" style={{ fontSize: "2rem", color: "var(--barra_lateral)" }}></i>
-                  </div>
-                  <h5 className="fw-bold mb-1" style={{ fontSize: "1.1rem", color: "var(--fontes)" }}>
-                    {isAdmin ? "Editar Utilizadores" : "Visualizar Utilizadores"}
-                  </h5>
-                  <p className="m-0 text-muted" style={{ maxWidth: "320px", fontSize: "0.85rem" }}>
-                    {isAdmin 
-                      ? "Selecione um utilizador da lista na esquerda para começar a editar as suas informações e foto."
-                      : "Selecione um utilizador da lista na esquerda para consultar as suas informações."}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Toast Notificação */}
+      <ToastNotificacao
+        visivel={toast.visivel}
+        mensagem={toast.mensagem}
+        tipo={toast.tipo}
+        onFechar={fecharToast}
+      />
     </main>
   );
 }

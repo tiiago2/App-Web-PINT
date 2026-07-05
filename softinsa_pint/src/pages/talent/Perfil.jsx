@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import '../../App.css';
 import './Perfil.css';
@@ -99,7 +99,12 @@ const BotaoLogout_Concluir = ({ edicao, onConcluir, isSaving }) => {
 const PerfilPessoal = () => {
 
   const navigate = useNavigate();
+  const { id } = useParams();
   const { t } = useTranslation();
+
+  const idLogado = localStorage.getItem('utilizador_id');
+  const idPerfil = id || idLogado;
+  const isProprioPerfil = String(idPerfil) === String(idLogado);
   const [edicao, setEdicao] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -139,31 +144,23 @@ const PerfilPessoal = () => {
   // A função que faz a magia acontecer
   const carregarDados = async () => {
     try {
-      // Vai buscar o ID que guardaste no login
-      const idGuardado = localStorage.getItem('utilizador_id');
-
-      if (!idGuardado) return;
+      if (!idPerfil) return;
 
       const roleString = localStorage.getItem('role_softinsa');
 
       let cargoGuardado = "";
 
-      // 2. Descodificar o JSON do cargo, se ele existir
       if (roleString) {
         try {
-          // Transforma a string '{"nome":"Talent...", "icone..."}' num objeto JavaScript
           const roleObjeto = JSON.parse(roleString);
-          // Agora já podemos extrair apenas o nome!
           cargoGuardado = roleObjeto.nome || "";
         } catch (error) {
           console.error("Erro ao descodificar o cargo do localStorage:", error);
-          // Se der erro, o cargoGuardado continua a ser a string vazia
         }
       }
 
-      // Usa a tua instância 'api' configurada (não precisa de axios solto)
       const res = await api.get('/profile/getuser', {
-        params: { id: idGuardado, cargo: cargoGuardado }
+        params: { id: idPerfil, cargo: cargoGuardado }
       });
 
       const data = res.data;
@@ -205,7 +202,14 @@ const PerfilPessoal = () => {
   // O useEffect chama a função carregarDados mal a página arranca!
   useEffect(() => {
     carregarDados();
-  }, []);
+  }, [idPerfil]);
+
+  // Se não for o próprio perfil, desativa a edição
+  useEffect(() => {
+    if (!isProprioPerfil) {
+      setEdicao(false);
+    }
+  }, [isProprioPerfil]);
 
 
   const handleAddBadge = (badge) => {
@@ -229,8 +233,7 @@ const PerfilPessoal = () => {
   const handleConcluir = async () => {
     try {
       setIsSaving(true);
-      const idGuardado = localStorage.getItem('utilizador_id');
-      if (!idGuardado) {
+      if (!idPerfil) {
         setIsSaving(false);
         return;
       }
@@ -243,7 +246,7 @@ const PerfilPessoal = () => {
         formData.append("telefone", profileData.telefone);
         formData.append("imagem", selectedFile);
         
-        await api.put(`/utilizadores/${idGuardado}`, formData, {
+        await api.put(`/utilizadores/${idPerfil}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         
@@ -255,7 +258,7 @@ const PerfilPessoal = () => {
       const badgesParaEnviar = assinaturaBadges.map(b => ({ id_badge: b.id }));
 
       await api.post('/profile/updateassinatura', {
-        id_utilizador: parseInt(idGuardado),
+        id_utilizador: parseInt(idPerfil),
         nome: profileData.nome,
         email: profileData.email,
         telefone: profileData.telefone,
@@ -278,13 +281,17 @@ const PerfilPessoal = () => {
       <div className='d-flex justify-content-between align-items-center'>
         <div className='d-flex align-items-center gap-3'>
           <h1 className='texto-titulo-principal mb-0'>{t('perfil_pessoal')}</h1>
-          <button className='btn_edit_assinatura p-1 border-0 bg-transparent d-flex align-items-center justify-content-center'>
-            {edicao === false ? (
-              <i className="fi fi-br-pencil edit_icon" onClick={() => setEdicao(!edicao)}></i>
-            ) : null}
-          </button>
+          {isProprioPerfil && (
+            <button className='btn_edit_assinatura p-1 border-0 bg-transparent d-flex align-items-center justify-content-center'>
+              {edicao === false ? (
+                <i className="fi fi-br-pencil edit_icon" onClick={() => setEdicao(!edicao)}></i>
+              ) : null}
+            </button>
+          )}
         </div>
-        <BotaoLogout_Concluir edicao={edicao} onConcluir={handleConcluir} isSaving={isSaving} />
+        {isProprioPerfil && (
+          <BotaoLogout_Concluir edicao={edicao} onConcluir={handleConcluir} isSaving={isSaving} />
+        )}
       </div>
 
       <div className='row g-4'>

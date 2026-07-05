@@ -31,8 +31,10 @@ import ModalConfirmacao from "./components/ui/ModalConfirmacao/ModalConfirmacao"
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import EsqueciPasswordPage from "./pages/auth/EsqueciPasswordPage.jsx";
 import Utilizadores from "./pages/utilizadores/Utilizadores.jsx";
+import CriarUtilizador from "./pages/utilizadores/CriarUtilizador.jsx";
 import LanguageSelector from "./components/ui/LanguageSelector/LanguageSelector.jsx";
 import BadgePublico from "./pages/public/BadgePublico.jsx";
+import PoliticasRGPD from "./pages/rgpd/PoliticasRGPD.jsx";
 
 // Imagens
 import softinsa_logo from "./assets/logotipo_softinsa.png";
@@ -261,6 +263,7 @@ function App() {
             <Route path="/editar" element={<EditarAdmin />} />
             <Route path="/definicoes" element={<DefinicoesAdmin />} />
             <Route path="/utilizadores" element={<Utilizadores userRole={user.cargo} />} />
+            <Route path="/utilizadores/criar-utilizador" element={<CriarUtilizador />} />
           </>
         )}
 
@@ -293,6 +296,8 @@ function App() {
             <Route path="/objetivos" element={<ObjetivosConsultor user={user} />} />
           </>
         )}
+
+        <Route path="/politicas-rgpd" element={<PoliticasRGPD />} />
 
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="*" element={<Navigate to="/home" replace />} />
@@ -511,7 +516,7 @@ function App() {
             ))}
           </div>
           <div className="d-none d-xl-flex mb-3 align-items-center justify-content-center w-100 gap-2">
-            <span className="item_rodape_lateral" onClick={() => {}}>{t("politicas_rgpd")}</span>
+            <span className="item_rodape_lateral" onClick={() => navigate("/politicas-rgpd")}>{t("politicas_rgpd")}</span>
             <span style={{ opacity: 0.5, fontSize: '0.7rem' }}>•</span>
             <span className="item_rodape_lateral" onClick={() => {}}>{t("quem_somos")}</span>
           </div>

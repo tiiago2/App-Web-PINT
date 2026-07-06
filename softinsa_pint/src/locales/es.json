@@ -218,6 +218,8 @@
     "badge": "Insignia",
     "ordenar_recentes": "Más recientes",
     "ordenar_antigos": "Más antiguos",
+    "aceites_recentemente": "Aceptadas recientemente",
+    "recusadas_recently": "Rechazadas recientemente",
     "ordenar_az": "A-Z",
     "ordenar_za": "Z-A",
     "pesquisar_item_placeholder": "Buscar {{nome}}...",

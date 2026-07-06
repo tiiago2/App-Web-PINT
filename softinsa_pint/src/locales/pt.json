@@ -217,6 +217,8 @@
     "badge": "Badge",
     "ordenar_recentes": "Mais recentes",
     "ordenar_antigos": "Mais antigos",
+    "aceites_recentemente": "Aceites recentemente",
+    "recusadas_recently": "Recusadas recentemente",
     "ordenar_az": "A-Z",
     "ordenar_za": "Z-A",
     "pesquisar_item_placeholder": "Pesquisar {{nome}}...",

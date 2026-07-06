@@ -162,9 +162,9 @@ const HomeService = ({ user, saudacao }) => {
                         <div className="text-muted mb-2" style={{ fontSize: '0.7rem' }}>{candidatura?.data_submissao || '—'}</div>
             
                         <div className="d-flex justify-content-center gap-1">
-                            <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.7}/>
-                            <BotaoAceitar onClick={() => navigate('/candidaturas')} tamanho={0.7}/>
-                            <BotaoRejeitar onClick={() => navigate('/candidaturas')} tamanho={0.7}/>
+                            <BotaoVerMais onClick={() => navigate('/candidaturas', { state: { selectedCandidaturaId: candidatura?.id_submissao } })} tamanho={0.7}/>
+                            <BotaoAceitar onClick={() => navigate('/candidaturas', { state: { selectedCandidaturaId: candidatura?.id_submissao } })} tamanho={0.7}/>
+                            <BotaoRejeitar onClick={() => navigate('/candidaturas', { state: { selectedCandidaturaId: candidatura?.id_submissao } })} tamanho={0.7}/>
                         </div>
                     </div>
                 </div>

@@ -55,11 +55,16 @@ function CandidaturaCard({ candidatura, isSelected, onClick }) {
       <div 
         className="candidatura-card-icon-circle"
         style={{ 
-          backgroundColor: `${badge.cor}25`, 
-          borderColor: badge.borderCor
+          backgroundColor: badge.imagem ? "transparent" : `${badge.cor}25`, 
+          borderColor: badge.imagem ? "transparent" : badge.borderCor,
+          border: badge.imagem ? "none" : undefined
         }}
       >
-        <i className={`fi ${badge.icon}`} style={{ fontSize: "1.2rem", color: badge.borderCor }}></i>
+        {badge.imagem ? (
+          <img src={badge.imagem} alt={badge.titulo} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+        ) : (
+          <i className={`fi ${badge.icon}`} style={{ fontSize: "1.2rem", color: badge.borderCor }}></i>
+        )}
       </div>
 
       <div className="flex-grow-1 min-w-0">
@@ -200,11 +205,16 @@ function CandidaturaDetalhes({ candidatura, userRole, onAccept, onReject, onClos
               <div 
                 className="candidatura-detalhe-icon-circle transition-all hover:scale-105"
                 style={{ 
-                  backgroundColor: `${badge.cor}30`,
-                  borderColor: badge.borderCor
+                  backgroundColor: badge.imagem ? "transparent" : `${badge.cor}30`,
+                  borderColor: badge.imagem ? "transparent" : badge.borderCor,
+                  border: badge.imagem ? "none" : undefined
                 }}
               >
-                <i className={`fi ${badge.icon}`} style={{ fontSize: "2.2rem", color: badge.borderCor }}></i>
+                {badge.imagem ? (
+                  <img src={badge.imagem} alt={badge.titulo} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+                ) : (
+                  <i className={`fi ${badge.icon}`} style={{ fontSize: "2.2rem", color: badge.borderCor }}></i>
+                )}
               </div>
 
               <div className="flex-grow-1 text-center text-sm-start w-100">
@@ -326,12 +336,25 @@ export default function Candidaturas({ loggedUser }) {
       const match = candidaturas.find(c => c.id === location.state.selectedCandidaturaId);
       if (match) {
         setFiltroStatus(match.status);
+        setFiltroArea("Todas");
+        setPesquisa("");
         setSelectedCandidaturaId(match.id);
         // Clean navigation state
         window.history.replaceState({}, document.title);
       }
     }
   }, [location.state, candidaturas]);
+
+  // Predefine sorting options when tab changes
+  useEffect(() => {
+    if (filtroStatus === "Pendente") {
+      setOrdenacao("Mais Recentes");
+    } else if (filtroStatus === "Aceite") {
+      setOrdenacao("Aceites Recentemente");
+    } else if (filtroStatus === "Recusada") {
+      setOrdenacao("Recusadas Recentemente");
+    }
+  }, [filtroStatus]);
   const [filtroArea, setFiltroArea] = useState("Todas");
   const [ordenacao, setOrdenacao] = useState("Mais Recentes");
   const [pesquisa, setPesquisa] = useState("");
@@ -454,12 +477,22 @@ export default function Candidaturas({ loggedUser }) {
       );
     }
 
+    const getEvaluationDate = (cand) => {
+      if (cand.historico && cand.historico.length > 0) {
+        const dates = cand.historico.map(h => new Date(h.dataAvaliacao).getTime());
+        return Math.max(...dates);
+      }
+      return new Date(cand.submetido).getTime();
+    };
+
     // 4. Sorting
     result.sort((a, b) => {
       if (ordenacao === "Mais Recentes") {
         return new Date(b.submetido) - new Date(a.submetido);
       } else if (ordenacao === "Mais Antigas") {
         return new Date(a.submetido) - new Date(b.submetido);
+      } else if (ordenacao === "Aceites Recentemente" || ordenacao === "Recusadas Recentemente") {
+        return getEvaluationDate(b) - getEvaluationDate(a);
       } else if (ordenacao === "Pontos (Decrescente)") {
         return (b.badge ? b.badge.pontos : 0) - (a.badge ? a.badge.pontos : 0);
       } else if (ordenacao === "Pontos (Crescente)") {
@@ -717,12 +750,30 @@ export default function Candidaturas({ loggedUser }) {
                   <BotaoDropdown
                     titulo={t("ordenar_por")}
                     valor={ordenacao}
-                    opcoes={[
-                      { valor: "Mais Recentes", label: t("ordenar_recentes") },
-                      { valor: "Mais Antigas", label: t("ordenar_antigos") },
-                      { valor: "Pontos (Decrescente)", label: t("mais_pontos") },
-                      { valor: "Pontos (Crescente)", label: t("menos_pontos") }
-                    ]}
+                    opcoes={
+                      filtroStatus === "Aceite"
+                        ? [
+                            { valor: "Aceites Recentemente", label: t("aceites_recentemente") || "Aceites recentemente" },
+                            { valor: "Mais Recentes", label: t("ordenar_recentes") },
+                            { valor: "Mais Antigas", label: t("ordenar_antigos") },
+                            { valor: "Pontos (Decrescente)", label: t("mais_pontos") },
+                            { valor: "Pontos (Crescente)", label: t("menos_pontos") }
+                          ]
+                        : filtroStatus === "Recusada"
+                        ? [
+                            { valor: "Recusadas Recentemente", label: t("recusadas_recently") || "Recusadas recentemente" },
+                            { valor: "Mais Recentes", label: t("ordenar_recentes") },
+                            { valor: "Mais Antigas", label: t("ordenar_antigos") },
+                            { valor: "Pontos (Decrescente)", label: t("mais_pontos") },
+                            { valor: "Pontos (Crescente)", label: t("menos_pontos") }
+                          ]
+                        : [
+                            { valor: "Mais Recentes", label: t("ordenar_recentes") },
+                            { valor: "Mais Antigas", label: t("ordenar_antigos") },
+                            { valor: "Pontos (Decrescente)", label: t("mais_pontos") },
+                            { valor: "Pontos (Crescente)", label: t("menos_pontos") }
+                          ]
+                    }
                     onChange={setOrdenacao}
                   />
                 </div>

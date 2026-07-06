@@ -18,7 +18,8 @@ module.exports = {
                 where: {
                     status: 'pendente'
                 },
-                attributes: ['data_submissao'],
+                attributes: ['id_submissao', 'data_submissao', 'status', 'id_utilizador', 'id_badge'],
+                order: [['data_submissao', 'DESC']],
                 include: [
                     {
                         model: Utilizador,

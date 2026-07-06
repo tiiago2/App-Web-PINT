@@ -10,7 +10,8 @@ const {
   Notificacoes,
   Objetivos,
   RegistoBadges,
-  Logs
+  Logs,
+  Permissoes
 } = require("../models");
 const { Op } = require("sequelize");
 
@@ -235,18 +236,6 @@ module.exports = {
         ? (roleAtiva === 'talent' || roleAtiva === 'talent manager')
         : (roles.includes('talent') || roles.includes('talent manager'));
 
-      let dbStatus = '';
-      if (status === 'Recusada') {
-        dbStatus = 'recusada';
-      } else if (status === 'Aceite') {
-        // Se for Talent Manager (e não Admin), passa a 'aceite talent'. Se for Admin ou SLL, passa a 'aceite'
-        if (isTalent && !isAdmin) {
-          dbStatus = 'aceite talent';
-        } else {
-          dbStatus = 'aceite';
-        }
-      }
-
       const submissao = await Submissoes.findByPk(id);
       if (!submissao) {
         return res.status(404).json({ error: "Candidatura não encontrada." });
@@ -257,7 +246,62 @@ module.exports = {
         return res.status(400).json({ error: "Esta candidatura já foi finalizada." });
       }
 
+      // Buscar as permissões ativas associadas às roles do utilizador
+      const rolesParaVerificar = roleAtiva ? [roleAtiva] : roles;
+      const rolesComPermissoes = await Role.findAll({
+        where: {
+          nome_role: { [Op.or]: rolesParaVerificar.map(r => ({ [Op.iLike]: r })) }
+        },
+        include: [{
+          model: Permissoes,
+          where: { toggle: true }, // apenas permissões ativas (toggle = true)
+          through: { attributes: [] }
+        }]
+      });
+
+      const permissoesAtivas = [];
+      for (const r of rolesComPermissoes) {
+        if (r.Permissoes) {
+          for (const p of r.Permissoes) {
+            if (!permissoesAtivas.includes(p.id_permissao)) {
+              permissoesAtivas.push(p.id_permissao);
+            }
+          }
+        }
+      }
+
+      let dbStatus = '';
+      if (status === 'Aceite') {
+        if (isTalent && !isAdmin) {
+          // Talent Manager faz validação inicial (precisa de id_permissao: 4 -> "Validar Evidências")
+          if (!permissoesAtivas.includes(4)) {
+            return res.status(403).json({ error: "Não tens permissões para validar evidências (Validação Inicial)." });
+          }
+          dbStatus = 'aceite talent';
+        } else {
+          // Admin ou SLL faz validação final (precisa de id_permissao: 6 -> "Validação Final")
+          if (!permissoesAtivas.includes(6)) {
+            return res.status(403).json({ error: "Não tens permissões para realizar a Validação Final desta candidatura." });
+          }
+          dbStatus = 'aceite';
+        }
+      } else if (status === 'Recusada') {
+        dbStatus = 'recusada';
+        // Se a candidatura já foi pré-aceite pelo TM ('aceite talent'), apenas quem tem permissão de Validação Final (6) pode recusar
+        if (submissao.status === 'aceite talent') {
+          if (!permissoesAtivas.includes(6)) {
+            return res.status(403).json({ error: "Apenas utilizadores com permissão de Validação Final podem recusar esta candidatura." });
+          }
+        } else {
+          // Se está pendente, quem tem permissão 4 (Validar Evidências) ou 6 (Validação Final) pode recusar
+          if (!permissoesAtivas.includes(4) && !permissoesAtivas.includes(6)) {
+            return res.status(403).json({ error: "Não tens permissões para rejeitar esta candidatura." });
+          }
+        }
+      }
+
       submissao.status = dbStatus;
+      submissao.notificacao_sla = false;
       await submissao.save();
 
       // 1. Atualizar ou Criar registo na tabela de Historico de Avaliações
@@ -313,7 +357,6 @@ module.exports = {
 
         for (const obj of objetivosRelacionados) {
           obj.data_conclusao = new Date();
-          obj.notificacao_fim = false;
           await obj.save();
         }
 

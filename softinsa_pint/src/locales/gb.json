@@ -218,6 +218,8 @@
     "badge": "Badge",
     "ordenar_recentes": "Most recent",
     "ordenar_antigos": "Oldest",
+    "aceites_recentemente": "Recently accepted",
+    "recusadas_recently": "Recently rejected",
     "ordenar_az": "A-Z",
     "ordenar_za": "Z-A",
     "pesquisar_item_placeholder": "Search {{nome}}...",

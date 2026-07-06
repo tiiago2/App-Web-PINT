@@ -32,7 +32,12 @@ function BadgeDetalheConteudo({
     detalhe,
     isLoading = false,
     onSelecionarFicheiroRequisito,
+    onRemoverFicheiroRequisito,
+    requisitosEmProcessamento,
+    onCriarOuObterRascunho,
     onSubmeterCandidatura,
+    isProcessandoRascunho,
+    isSubmetendoCandidatura,
     onVerPaginaPublica,
     onCopiarLinkPublico,
     onPartilharLinkedIn,
@@ -143,12 +148,17 @@ function BadgeDetalheConteudo({
                 detalhe={detalhe}
                 requisitos={detalhe.requisitos ?? []}
                 onSelecionarFicheiroRequisito={onSelecionarFicheiroRequisito}
+                onRemoverFicheiroRequisito={onRemoverFicheiroRequisito}
+                requisitosEmProcessamento={requisitosEmProcessamento}
             />
 
             <BadgeDetalheAcoes
                 modo={modo}
                 detalhe={detalhe}
+                onCriarOuObterRascunho={onCriarOuObterRascunho}
                 onSubmeterCandidatura={onSubmeterCandidatura}
+                isProcessandoRascunho={isProcessandoRascunho}
+                isSubmetendoCandidatura={isSubmetendoCandidatura}
                 onVerPaginaPublica={onVerPaginaPublica}
                 onCopiarLinkPublico={onCopiarLinkPublico}
                 onPartilharLinkedIn={onPartilharLinkedIn}

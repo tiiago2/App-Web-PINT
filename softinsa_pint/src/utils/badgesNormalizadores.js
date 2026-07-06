@@ -2,15 +2,25 @@ function isObject(valor) {
     return valor !== null && typeof valor === "object" && !Array.isArray(valor);
 }
 
+function normalizarId(valor) {
+    if (valor === undefined || valor === null || valor === "") {
+        return null;
+    }
+
+    const numero = Number(valor);
+    return Number.isFinite(numero) ? numero : valor;
+}
+
 function normalizarRequisitoBadge(requisito = {}) {
     if (!isObject(requisito)) {
         return null;
     }
 
-    const id =
+    const id = normalizarId(
         requisito.id_requisito ??
         requisito.idRequisito ??
-        requisito.id;
+        requisito.id
+    );
 
     const nome =
         requisito.nome_requisito ??
@@ -73,7 +83,7 @@ export function normalizarBadgeCatalogo(badgeOriginal = {}) {
                     ? serviceLineObj.LearningPath
                     : null;
 
-    const id = badge.id_badge ?? badge.idBadge ?? badge.id;
+    const id = normalizarId(badge.id_badge ?? badge.idBadge ?? badge.id);
 
     const nome =
         badge.nome_badge ??
@@ -89,13 +99,14 @@ export function normalizarBadgeCatalogo(badgeOriginal = {}) {
 
     const imagem = badge.imagem ?? badge.imagemBadge ?? null;
 
-    const idArea =
+    const idArea = normalizarId(
         badge.id_area ??
         badge.idArea ??
         areaObj?.id_area ??
         areaObj?.idArea ??
         areaObj?.id ??
-        null;
+        null
+    );
     const nomeArea =
         badge.nome_area ??
         badge.nomeArea ??
@@ -105,13 +116,14 @@ export function normalizarBadgeCatalogo(badgeOriginal = {}) {
         (typeof badge.area === "string" ? badge.area : undefined) ??
         "Sem Área";
 
-    const idServiceLine =
+    const idServiceLine = normalizarId(
         badge.id_service_line ??
         badge.idServiceLine ??
         serviceLineObj?.id_service_line ??
         serviceLineObj?.idServiceLine ??
         serviceLineObj?.id ??
-        null;
+        null
+    );
     const nomeServiceLine =
         badge.nome_service_line ??
         badge.nomeServiceLine ??
@@ -121,13 +133,14 @@ export function normalizarBadgeCatalogo(badgeOriginal = {}) {
         (typeof badge.serviceLine === "string" ? badge.serviceLine : undefined) ??
         "Sem Service Line";
 
-    const idLearningPath =
+    const idLearningPath = normalizarId(
         badge.id_learning_path ??
         badge.idLearningPath ??
         learningPathObj?.id_learning_path ??
         learningPathObj?.idLearningPath ??
         learningPathObj?.id ??
-        null;
+        null
+    );
     const nomeLearningPath =
         badge.nome_learning_path ??
         badge.nomeLearningPath ??
@@ -137,13 +150,14 @@ export function normalizarBadgeCatalogo(badgeOriginal = {}) {
         (typeof badge.learningPath === "string" ? badge.learningPath : undefined) ??
         "Sem Learning Path";
 
-    const idNivel =
+    const idNivel = normalizarId(
         badge.id_nivel ??
         badge.idNivel ??
         nivelObj?.id_nivel ??
         nivelObj?.idNivel ??
         nivelObj?.id ??
-        null;
+        null
+    );
     const nomeNivel =
         badge.nome_nivel ??
         badge.nomeNivel ??
@@ -240,17 +254,40 @@ export function juntarCatalogoComEstadoConsultor(
     estadosConsultor = [],
     opcoes = {}
 ) {
-    const { idAreaConsultor = 2 } = opcoes;
+    const idAreaConsultor = opcoes.idAreaConsultor ?? null;
+    const idAreaConsultorNormalizado =
+        idAreaConsultor === null ? null : Number(idAreaConsultor);
 
     const mapaEstados = new Map();
 
-    estadosConsultor.forEach((estado) => {
-        mapaEstados.set(estado.id_badge, estado);
+    estadosConsultor.forEach((estadoOriginal) => {
+        if (!isObject(estadoOriginal)) {
+            return;
+        }
+
+        const idBadge = Number(
+            estadoOriginal.id_badge ??
+            estadoOriginal.idBadge ??
+            estadoOriginal.id
+        );
+
+        if (!Number.isFinite(idBadge)) {
+            return;
+        }
+
+        mapaEstados.set(idBadge, {
+            ...estadoOriginal,
+            id_badge: idBadge,
+            idBadge: idBadge,
+            id: idBadge,
+        });
     });
 
     return badgesCatalogo.map((badgeOriginal) => {
         const badge = normalizarBadgeCatalogo(badgeOriginal);
-        const estadoConsultor = mapaEstados.get(badge.id_badge);
+        const idBadge = Number(badge.id_badge ?? badge.idBadge ?? badge.id);
+        const idAreaBadge = Number(badge.id_area ?? badge.idArea);
+        const estadoConsultor = mapaEstados.get(idBadge);
 
         const estado = estadoConsultor?.estado ?? "bloqueados";
         const progresso = estadoConsultor?.progresso ?? 0;
@@ -259,7 +296,11 @@ export function juntarCatalogoComEstadoConsultor(
 
         if (badge.especial) {
             grupo = "badgesEspeciais";
-        } else if (badge.id_area === idAreaConsultor) {
+        } else if (
+            idAreaConsultorNormalizado !== null &&
+            Number.isFinite(idAreaBadge) &&
+            idAreaBadge === idAreaConsultorNormalizado
+        ) {
             grupo = "minhaArea";
         }
 

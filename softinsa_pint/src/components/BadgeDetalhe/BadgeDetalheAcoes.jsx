@@ -14,13 +14,13 @@ function SecaoPaginaPublica({
                 <strong>
                     {isConquistado
                         ? "Partilhar a tua conquista"
-                        : "Página pública do badge"}
+                        : "Pagina publica do badge"}
                 </strong>
 
                 <span>
                     {isConquistado
-                        ? "Partilha a página pública deste badge, sem dados pessoais."
-                        : "Consulta ou copia o link público deste badge. Esta página mostra apenas informação geral, sem dados pessoais."}
+                        ? "Partilha a pagina publica deste badge, sem dados pessoais."
+                        : "Consulta ou copia o link publico deste badge. Esta pagina mostra apenas informacao geral, sem dados pessoais."}
                 </span>
             </div>
 
@@ -31,7 +31,7 @@ function SecaoPaginaPublica({
                     onClick={() => onVerPaginaPublica?.(detalhe)}
                 >
                     <i className="fi fi-br-link-alt"></i>
-                    Ver página pública
+                    Ver pagina publica
                 </button>
 
                 <button
@@ -40,7 +40,7 @@ function SecaoPaginaPublica({
                     onClick={() => onCopiarLinkPublico?.(detalhe)}
                 >
                     <i className="fi fi-br-copy"></i>
-                    Copiar link público
+                    Copiar link publico
                 </button>
 
                 {isConquistado && (
@@ -60,50 +60,60 @@ function SecaoPaginaPublica({
 
 function AcaoEstadoConsultor({
     detalhe,
+    onCriarOuObterRascunho,
     onSubmeterCandidatura,
+    isProcessandoRascunho = false,
+    isSubmetendoCandidatura = false,
 }) {
     const estado = detalhe.estado;
 
     if (estado === ESTADOS_BADGE_CONSULTOR.EM_PROGRESSO) {
+        const podeSubmeter = Number(detalhe.progresso) === 100;
+        const textoBotao = isSubmetendoCandidatura
+            ? "A submeter..."
+            : podeSubmeter
+              ? "Submeter candidatura"
+              : "Completa todos os requisitos";
+
         return (
             <section className="badge-detalhe-acoes">
                 <button
                     type="button"
                     className="badge-detalhe-botao badge-detalhe-botao--primario"
-                    disabled={!detalhe.podeSubmeterCandidatura}
+                    disabled={!podeSubmeter || isSubmetendoCandidatura}
                     onClick={() => onSubmeterCandidatura?.(detalhe)}
                 >
-                    <i className="fi fi-br-paper-plane"></i>
-                    Submeter candidatura
+                    <i
+                        className={`fi ${
+                            podeSubmeter ? "fi-br-paper-plane" : "fi-br-lock"
+                        }`}
+                    ></i>
+                    {textoBotao}
                 </button>
             </section>
         );
     }
 
-    if (estado === ESTADOS_BADGE_CONSULTOR.RECUSADO) {
-        return (
-            <section className="badge-detalhe-acoes">
-                <button
-                    type="button"
-                    className="badge-detalhe-botao badge-detalhe-botao--primario"
-                    onClick={() => onSubmeterCandidatura?.(detalhe)}
-                >
-                    <i className="fi fi-br-refresh"></i>
-                    Submeter novamente
-                </button>
-            </section>
-        );
-    }
+    if (
+        estado === ESTADOS_BADGE_CONSULTOR.BLOQUEADO ||
+        estado === ESTADOS_BADGE_CONSULTOR.RECUSADO ||
+        estado === ESTADOS_BADGE_CONSULTOR.EXPIRADO
+    ) {
+        const texto =
+            estado === ESTADOS_BADGE_CONSULTOR.BLOQUEADO
+                ? "Iniciar candidatura"
+                : "Criar rascunho";
 
-    if (estado === ESTADOS_BADGE_CONSULTOR.EXPIRADO) {
         return (
             <section className="badge-detalhe-acoes">
                 <button
                     type="button"
                     className="badge-detalhe-botao badge-detalhe-botao--primario"
+                    disabled={isProcessandoRascunho}
+                    onClick={() => onCriarOuObterRascunho?.(detalhe)}
                 >
                     <i className="fi fi-br-refresh"></i>
-                    Renovar este Badge
+                    {isProcessandoRascunho ? "A preparar..." : texto}
                 </button>
             </section>
         );
@@ -115,7 +125,10 @@ function AcaoEstadoConsultor({
 function BadgeDetalheAcoes({
     modo = "catalogo",
     detalhe,
+    onCriarOuObterRascunho,
     onSubmeterCandidatura,
+    isProcessandoRascunho = false,
+    isSubmetendoCandidatura = false,
     onVerPaginaPublica,
     onCopiarLinkPublico,
     onPartilharLinkedIn,
@@ -134,7 +147,10 @@ function BadgeDetalheAcoes({
             {isConsultor && !isConquistado && (
                 <AcaoEstadoConsultor
                     detalhe={detalhe}
+                    onCriarOuObterRascunho={onCriarOuObterRascunho}
                     onSubmeterCandidatura={onSubmeterCandidatura}
+                    isProcessandoRascunho={isProcessandoRascunho}
+                    isSubmetendoCandidatura={isSubmetendoCandidatura}
                 />
             )}
 

@@ -26,11 +26,13 @@ const badgesRoutes = require('./badges_routes');
 const rotas_editar = require('./editar_routes');
 const rotas_sla = require('./sla_routes');
 const rotas_notificacoes = require('./notificacoes_routes');
+const rotasMe = require('./me_routes');
 
 router.use("/hometalent", rotas_home_talent);
 router.use("/homeconsultor", rotas_home_consultor);
 router.use("/objetivos", rotas_objetivos);
 router.use("/badges", badgesRoutes);
+router.use("/me", rotasMe);
 router.use("/editar", rotas_editar);
 router.use("/estatisticasconsultor", rotas_estatisticas_consultor);
 router.use("/estatisticasservice", rotas_estatisticas_service);

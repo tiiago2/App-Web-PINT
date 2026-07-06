@@ -45,12 +45,35 @@ export async function removerBadge(id) {
 }
 
 export async function obterEstadoBadgesConsultor() {
-    return [];
+    const res = await api.get("/me/badges");
+    const dados = res.data;
+
+    if (!dados || !Array.isArray(dados.badges)) {
+        throw new Error("Resposta invalida ao obter estado pessoal dos badges.");
+    }
+
+    if (dados.id_area_consultor === undefined || dados.id_area_consultor === null) {
+        throw new Error("Resposta invalida ao obter area do consultor.");
+    }
+
+    return {
+        idAreaConsultor: dados.id_area_consultor,
+        badges: dados.badges,
+    };
 }
 
 export async function obterBadgesConsultorNormalizados(opcoes = {}) {
-    const badges = await obterBadgesCatalogo();
-    const estados = await obterEstadoBadgesConsultor();
+    const [catalogo, estadoPessoal] = await Promise.all([
+        obterBadgesCatalogo(),
+        obterEstadoBadgesConsultor(),
+    ]);
 
-    return juntarCatalogoComEstadoConsultor(badges, estados, opcoes);
+    return juntarCatalogoComEstadoConsultor(
+        catalogo,
+        estadoPessoal.badges,
+        {
+            ...opcoes,
+            idAreaConsultor: estadoPessoal.idAreaConsultor,
+        }
+    );
 }

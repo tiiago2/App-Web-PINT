@@ -1,5 +1,4 @@
 import CardBadgeSugerido from "../CardBadgeSugerido/CardBadgeSugerido";
-import badgesConsultorMock from "../../../data/badgesConsultorMock";
 import "./GaleriaSugeridos.css";
 
 const sugestoesBackendMock = [
@@ -58,9 +57,15 @@ const sugestoesBackendMock = [
   },
 ];
 
-function enriquecerSugestao(sugestao) {
+function obterIdBadge(badge = {}) {
+  return badge.id_badge ?? badge.idBadge ?? badge.id;
+}
+
+function enriquecerSugestao(sugestao, badges) {
   const idBadge = sugestao.idBadge ?? sugestao.ID_BADGE;
-  const badge = badgesConsultorMock.find((item) => item.idBadge === idBadge);
+  const badge = badges.find(
+    (item) => Number(obterIdBadge(item)) === Number(idBadge)
+  );
 
   if (!badge) {
     return null;
@@ -76,9 +81,14 @@ function enriquecerSugestao(sugestao) {
   };
 }
 
-function GaleriaSugeridos({ sugestoes = sugestoesBackendMock, onBadgeClick }) {
+function GaleriaSugeridos({
+  badges = [],
+  sugestoes = sugestoesBackendMock,
+  onBadgeClick,
+}) {
+  const badgesReais = Array.isArray(badges) ? badges : [];
   const badgesSugeridos = sugestoes
-    .map(enriquecerSugestao)
+    .map((sugestao) => enriquecerSugestao(sugestao, badgesReais))
     .filter(Boolean)
     .slice(0, 8);
 

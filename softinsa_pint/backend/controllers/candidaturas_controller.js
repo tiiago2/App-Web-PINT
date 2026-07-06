@@ -7,7 +7,8 @@ const {
   ServiceLine,
   Requisitos,
   Historico,
-  Notificacoes
+  Notificacoes,
+  Objetivos
 } = require("../models");
 const { Op } = require("sequelize");
 
@@ -292,7 +293,25 @@ module.exports = {
         tipo_notificacao: 'AVALIACAO_STATUS'
       });
 
-      return res.status(200).json({ message: "Estado e histórico atualizados com sucesso.", submissao });
+      // 3. Verificar e concluir objetivos relacionados com este badge
+      if (dbStatus === 'aceite') {
+        const objetivosRelacionados = await Objetivos.findAll({
+          where: {
+            id_utilizador: submissao.id_utilizador,
+            id_badge: submissao.id_badge,
+            deleted_objetivo: false,
+            data_conclusao: null
+          }
+        });
+
+        for (const obj of objetivosRelacionados) {
+          obj.data_conclusao = new Date();
+          obj.notificacao_fim = false;
+          await obj.save();
+        }
+      }
+
+      return res.status(200).json({ message: "Estado, histórico e objetivos atualizados com sucesso.", submissao });
     } catch (error) {
       console.error("Erro ao atualizar candidatura:", error);
       return res.status(500).json({ error: "Erro ao atualizar candidatura." });

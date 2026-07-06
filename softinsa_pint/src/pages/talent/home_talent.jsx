@@ -5,19 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import './home_talent.css';
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import AtividadeRecente from '../../components/AtividadeModal.jsx';
+import { mapearAtividadeParaModal } from '../../utils/atividadeUtils.js';
 import badge_logo from '../../assets/teste_badge.png';
 import { BotaoVerMais, BotaoAceitar, BotaoRejeitar, GraficoCandidaturas } from '../../components/components.jsx'
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, Label, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
-
-const atividadeRecente = [
-    { tipo_notificacao: 1, texto: "Low code concluído", tempo: new Date(Date.now() - 30000).toISOString() }, // 30s atrás -> Agora mesmo
-    { tipo_notificacao: 2, textoNegrito: "Administrador1", texto: "atualizou Low Code", tempo: new Date(Date.now() - 15 * 60000).toISOString() }, // Há 15 min
-    { tipo_notificacao: 3, textoNegrito: "Candidataste-te ao Low Code", tempo: new Date(Date.now() - 3 * 3600000).toISOString() }, // Há 3 horas
-    { tipo_notificacao: 4, texto: "Candidatura rejeitada", tempo: new Date(Date.now() - 2 * 86400000).toISOString() }, // Há 2 dias
-    { tipo_notificacao: 5, texto: "Bem-vindo à plataforma", tempo: new Date(Date.now() - 40 * 86400000).toISOString() }, // Há 1 mês
-    { tipo_notificacao: 1, texto: "React Fundamentals concluído", tempo: new Date(Date.now() - 400 * 86400000).toISOString() } // Há 1 ano
-];
-//---------------------------------------------------------------------------------------------------------------------------------
 
 const HomeTalent = ({ user, saudacao }) => {
 
@@ -40,6 +31,8 @@ const HomeTalent = ({ user, saudacao }) => {
         { periodo: null, media_badges: null, pontos: null, atribuicoes: null }
     ]);
     const [classificacao, setClassificacao] = useState([]);
+    const [atividadeRecente, setAtividadeRecente] = useState([]);
+    const [carregandoAtividade, setCarregandoAtividade] = useState(true);
 
     useEffect(() => {
         const buscarCandidaturas = async () => {
@@ -122,13 +115,36 @@ const HomeTalent = ({ user, saudacao }) => {
             }
         }
 
+        const carregarAtividade = async () => {
+            if (!localStorage.getItem('token_softinsa')) {
+                setAtividadeRecente([]);
+                setCarregandoAtividade(false);
+                return;
+            }
+
+            try {
+                setCarregandoAtividade(true);
+                const res = await api.get('/atividade/get', {
+                    params: { perfil: 'Talent Manager', limit: 6 }
+                });
+                const atividades = res.data.data || [];
+                setAtividadeRecente(atividades.map(mapearAtividadeParaModal).filter(Boolean));
+            } catch (erro) {
+                console.error('Erro ao buscar atividade recente do talent:', erro);
+                setAtividadeRecente([]);
+            } finally {
+                setCarregandoAtividade(false);
+            }
+        }
+
         const carregarDados = async () => {
             setLoadingGraficos(true);
             await Promise.all([
                 buscarCandidaturas(),
                 getGrafCandidaturas(),
                 getDados_Linhas(),
-                carregarRanking()
+                carregarRanking(),
+                carregarAtividade()
             ]);
             setLoadingGraficos(false);
         };
@@ -299,7 +315,7 @@ const HomeTalent = ({ user, saudacao }) => {
                 <div className="row g-2 g-md-3 segunda-linha-home">
                     <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
                         <div style={{ height: '100%', overflow: 'hidden' }}>
-                            <AtividadeRecente atividades={atividadeRecente} />
+                            <AtividadeRecente atividades={atividadeRecente} isLoading={carregandoAtividade} />
                         </div>
                     </div>
                     <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>

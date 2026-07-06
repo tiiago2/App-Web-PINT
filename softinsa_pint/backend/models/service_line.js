@@ -8,6 +8,6 @@ module.exports = (sequelize) => {
     nome_service_line: { type: DataTypes.TEXT, allowNull: false },
     updated_service: { type: DataTypes.DATE, allowNull: false },
     deleted_service: { type: DataTypes.BOOLEAN, allowNull: false },
-    id_lider: { type: DataTypes.INTEGER, allowNull: false }
+    id_lider: { type: DataTypes.INTEGER, allowNull: true }
   }, { tableName: 'service_line', timestamps: false });
 };

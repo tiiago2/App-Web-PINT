@@ -5,37 +5,9 @@ import './home_consultor.css';
 import api from '../../services/api.js';
 import { BotaoVerMais } from '../../components/components.jsx';
 import { calcularTempoRestante } from '../../utils/dateUtils.js';
+import { mapearAtividadeParaModal } from '../../utils/atividadeUtils.js';
 import AtividadeRecente from '../../components/AtividadeModal.jsx';
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
-
-function formatarTempoAtras(data) {
-    const agora = new Date();
-    const diffMs = agora - new Date(data);
-    const diffHoras = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffHoras < 1) return 'Há menos de uma hora';
-    if (diffHoras < 24) return `Há ${diffHoras} hora${diffHoras > 1 ? 's' : ''}`;
-    if (diffDias === 1) return 'Ontem';
-    return `Há ${diffDias} dias`;
-}
-
-function mapearAtividade(item) {
-    const tempo = formatarTempoAtras(item.timestamp);
-
-    switch (item.type) {
-        case 'received':
-            return { icone: 'fi-br-check', cor: 'text-success', texto: `${item.item} concluído`, tempo, expirado: false };
-        case 'rejected':
-            return { icone: 'fi-br-cross', cor: 'text-danger', texto: `${item.item} rejeitado`, tempo, expirado: false };
-        case 'updated':
-            return { icone: 'fi-br-badge', cor: 'text-warning', textoNegrito: item.user, texto: item.item, tempo, expirado: false };
-        case 'policy':
-            return { icone: 'fi-br-document', cor: 'text-primary', textoNegrito: item.user, texto: item.item, tempo, expirado: false };
-        default:
-            return { icone: 'fi-br-info', cor: 'text-muted', texto: `${item.user} - ${item.item}`, tempo, expirado: false };
-    }
-}
 
 function corPorProgresso(progresso) {
     const pct = Math.max(0, Math.min(100, Number(progresso) || 0));
@@ -74,14 +46,14 @@ const HomeConsultor = ({ user, saudacao }) => {
                     api.get('/homeconsultor/objetivos'),
                     api.get('/homeconsultor/progresso'),
                     api.get('/homeconsultor/ranking'),
-                    api.get('/atividade/get')
+                    api.get('/atividade/get', { params: { perfil: 'consultor', limit: 6 } })
                 ]);
 
                 setBadgesProgresso(resBadges.data || []);
                 setObjetivos(resObjetivos.data || []);
                 setProgressoItems(resProgresso.data || []);
                 setClassificacao(resRanking.data || []);
-                setAtividades((resAtividade.data || []).map(mapearAtividade));
+                setAtividades((resAtividade.data.data || []).map(mapearAtividadeParaModal).filter(Boolean));
             } catch (erro) {
                 console.error('Erro ao carregar dados da homepage do consultor:', erro);
             } finally {

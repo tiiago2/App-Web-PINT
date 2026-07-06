@@ -5,7 +5,8 @@ import "./home_Admin.css";
 import api from "../../services/api.js";
 
 import { BotaoVerMais, GraficoCandidaturas } from "../../components/components.jsx";
-import AtividadeModal from "../../components/AtividadeModal.jsx";
+import AtividadeRecente from "../../components/AtividadeModal.jsx";
+import { mapearAtividadeParaModal } from "../../utils/atividadeUtils.js";
 import ClassificacaoModal from "../../components/ClassificacaoModal.jsx";
 import {
   PieChart,
@@ -15,60 +16,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-
-// --- DADOS FALSOS --
-
-const dados_atividade = [
-  {
-    icone: "fi-br-check",
-    cor: "text-success",
-    texto: "aceitou o badge Low Code",
-    textoNegrito: "João Silva",
-    tempo: "Há 2 horas",
-    expirado: false,
-  },
-  {
-    icone: "fi-br-document",
-    cor: "text-primary",
-    texto: "Nova candidatura de João Silva",
-    tempo: "Há 2 horas",
-    expirado: false,
-  },
-  {
-    icone: "fi-br-cross",
-    cor: "text-danger",
-    texto: "foi rejeitado em Low Code",
-    textoNegrito: "João Silva",
-    tempo: "Há 5 horas",
-    expirado: false,
-  },
-  {
-    icone: "fi-br-check",
-    cor: "text-success",
-    texto: "aceitou o badge Cloud",
-    textoNegrito: "Maria Ana",
-    tempo: "Há 1 dia",
-    expirado: false,
-  },
-  {
-    icone: "fi-br-badge",
-    cor: "text-warning",
-    texto: "atualizou os requisitos",
-    textoNegrito: "Administrador2",
-    tempo: "Há 1 dia",
-    expirado: false,
-  },
-  {
-    icone: "fi-br-badge",
-    cor: "text-warning",
-    texto: "atualizou os requisitos",
-    textoNegrito: "Administrador2",
-    tempo: "Há 1 dia",
-    expirado: false,
-  },
-];
-
-
 
 function AcaoRapida({ cor, icone, texto, onClick }) {
   return (
@@ -134,6 +81,8 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
     badgesAtribuidos: 0
   });
   const [classificacao, setClassificacao] = useState([]);
+  const [dadosAtividade, setDadosAtividade] = useState([]);
+  const [carregandoAtividade, setCarregandoAtividade] = useState(true);
 
   useEffect(() => {
     const carregarStats = async () => {
@@ -188,9 +137,32 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
       }
     };
 
+    const carregarAtividade = async () => {
+      if (!localStorage.getItem('token_softinsa')) {
+        setDadosAtividade([]);
+        setCarregandoAtividade(false);
+        return;
+      }
+
+      try {
+        setCarregandoAtividade(true);
+        const res = await api.get('/atividade/get', {
+          params: { perfil: 'Administrador', limit: 6 }
+        });
+        const atividades = res.data.data || [];
+        setDadosAtividade(atividades.map(mapearAtividadeParaModal).filter(Boolean));
+      } catch (erro) {
+        console.error('Erro ao buscar atividade recente do administrador:', erro);
+        setDadosAtividade([]);
+      } finally {
+        setCarregandoAtividade(false);
+      }
+    };
+
     getGrafCandidaturas();
     carregarStats();
     carregarRanking();
+    carregarAtividade();
   }, []);
 
   return (
@@ -363,7 +335,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
             className="flex-grow-1"
             style={{ overflow: "hidden", minHeight: 0 }}
           >
-            <AtividadeModal atividades={dados_atividade} fullHeight={true} />
+            <AtividadeRecente atividades={dadosAtividade} fullHeight={true} isLoading={carregandoAtividade} />
           </div>
         </div>
 

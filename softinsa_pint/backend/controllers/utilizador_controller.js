@@ -3,6 +3,7 @@ const { Op, Sequelize } = require('sequelize');
 const sequelize = require('../config/db.config');
 const cloudinary = require('cloudinary').v2;
 const bcrypt = require('bcrypt');
+const { enviarEmail } = require('../helpers/emailHelper');
 
 // Configure Cloudinary inline
 cloudinary.config({
@@ -23,28 +24,6 @@ async function uploadImagemCloudinary(file) {
     ]
   });
   return uploadResult.secure_url;
-}
-
-// Helper para sincronizar dados com a tabela Consultor
-async function sincronizarConsultor(id, dados) {
-  const consultor = await Consultor.findOne({ where: { id_utilizador: id } });
-  if (consultor) {
-    const updateObj = {
-      nome_user: dados.nome_user ?? consultor.nome_user,
-      email: dados.email ?? consultor.email,
-      telefone: dados.telefone ?? consultor.telefone,
-      imagem_perfil: dados.imagem_perfil ?? consultor.imagem_perfil,
-      ativo: dados.ativo ?? consultor.ativo,
-      update_user: new Date()
-    };
-    if (dados.primeiro_login !== undefined) {
-      updateObj.primeiro_login = dados.primeiro_login;
-    }
-    if (dados.password !== undefined) {
-      updateObj.password = dados.password;
-    }
-    await consultor.update(updateObj);
-  }
 }
 
 module.exports = {
@@ -272,6 +251,29 @@ module.exports = {
 
       await transaction.commit();
 
+      // Enviar email de boas-vindas com as credenciais (assíncrono, não bloqueia a resposta)
+      if (email) {
+        enviarEmail({
+          to: email,
+          subject: 'Bem-vindo à plataforma Softinsa',
+          html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+              <h2 style="color: #39639C;">Bem-vindo, ${nome_user}!</h2>
+              <p>A tua conta na plataforma Softinsa foi criada com sucesso.</p>
+              <p>Estas são as tuas credenciais de acesso:</p>
+              <ul>
+                <li><strong>Email:</strong> ${email}</li>
+                <li><strong>Palavra-passe temporária:</strong> ${passwordFinal}</li>
+              </ul>
+              <p>Recomendamos que alteres a palavra-passe no teu primeiro acesso.</p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+              <p style="font-size: 0.9em; color: #666;">Se não solicitaste a criação desta conta, por favor contacta o administrador.</p>
+            </div>
+          `,
+          text: `Bem-vindo, ${nome_user}!\n\nA tua conta na plataforma Softinsa foi criada com sucesso.\n\nCredenciais de acesso:\nEmail: ${email}\nPalavra-passe temporária: ${passwordFinal}\n\nRecomendamos que alteres a palavra-passe no teu primeiro acesso.\n\nSe não solicitaste a criação desta conta, por favor contacta o administrador.`
+        });
+      }
+
       const utilizadorCompleto = await Utilizador.findByPk(novoUtilizador.id_utilizador, {
         include: [
           {
@@ -303,7 +305,9 @@ module.exports = {
         telefone,
         ativo,
         password,
-        roles
+        roles,
+        id_area,
+        id_service_line
       } = req.body;
 
       const user = await Utilizador.findByPk(id);
@@ -311,6 +315,9 @@ module.exports = {
         await transaction.rollback();
         return res.status(404).json({ error: "Utilizador não encontrado." });
       }
+
+      const rolesAtuais = await user.getRoles({ transaction });
+      const idsRolesAtuais = rolesAtuais.map(r => r.id_role);
 
       if (email && email !== user.email) {
         const existente = await Utilizador.findOne({
@@ -351,8 +358,8 @@ module.exports = {
 
       await user.update(updateData, { transaction });
 
+      let rolesArray = idsRolesAtuais;
       if (roles !== undefined) {
-        let rolesArray = [];
         try {
           rolesArray = roles ? JSON.parse(roles) : [];
         } catch {
@@ -376,13 +383,77 @@ module.exports = {
         }
       }
 
-      await sincronizarConsultor(id, {
-        nome_user: updateData.nome_user,
-        email: updateData.email,
-        telefone: updateData.telefone,
-        imagem_perfil,
-        ativo: updateData.ativo
+      const roleConsultor = await Role.findOne({
+        where: { nome_role: { [Op.iLike]: '%consultor%' } },
+        transaction
       });
+      const roleServiceLineLeader = await Role.findOne({
+        where: { nome_role: { [Op.iLike]: '%service line leader%' } },
+        transaction
+      });
+
+      const temRoleConsultor = roleConsultor && rolesArray.includes(roleConsultor.id_role);
+      const temRoleServiceLineLeader = roleServiceLineLeader && rolesArray.includes(roleServiceLineLeader.id_role);
+
+      if (temRoleConsultor) {
+        const areaId = id_area ? Number(id_area) : null;
+        const consultorExistente = await Consultor.findOne({ where: { id_utilizador: id }, transaction });
+
+        if (consultorExistente) {
+          const updateConsultor = {
+            nome_user: updateData.nome_user,
+            email: updateData.email,
+            telefone: updateData.telefone,
+            imagem_perfil,
+            ativo: updateData.ativo,
+            update_user: new Date()
+          };
+          if (areaId) {
+            updateConsultor.id_area = areaId;
+          }
+          await consultorExistente.update(updateConsultor, { transaction });
+        } else if (areaId) {
+          const agora = new Date();
+          await Consultor.create({
+            id_utilizador: Number(id),
+            id_area: areaId,
+            nome_user: updateData.nome_user,
+            email: updateData.email,
+            telefone: updateData.telefone,
+            password: updateData.password ?? user.password,
+            lingua: user.lingua,
+            last_login: user.last_login,
+            update_user: agora,
+            aceitacao_politicas: user.aceitacao_politicas,
+            aceitacao_sla: user.aceitacao_sla,
+            ativo: updateData.ativo,
+            imagem_perfil,
+            pontos_totais: 0,
+            primeiro_login: user.primeiro_login
+          }, { transaction });
+        }
+      } else {
+        await Consultor.destroy({ where: { id_utilizador: id }, transaction });
+      }
+
+      if (temRoleServiceLineLeader) {
+        const serviceLineId = id_service_line ? Number(id_service_line) : null;
+        if (serviceLineId) {
+          await ServiceLine.update(
+            { id_lider: null, updated_service: new Date() },
+            { where: { id_lider: id }, transaction }
+          );
+          await ServiceLine.update(
+            { id_lider: Number(id), updated_service: new Date() },
+            { where: { id_service_line: serviceLineId }, transaction }
+          );
+        }
+      } else {
+        await ServiceLine.update(
+          { id_lider: null, updated_service: new Date() },
+          { where: { id_lider: id }, transaction }
+        );
+      }
 
       await transaction.commit();
 
@@ -392,48 +463,24 @@ module.exports = {
             model: Role,
             attributes: ['id_role', 'nome_role', 'icone_role'],
             through: { attributes: [] }
+          },
+          {
+            model: Consultor,
+            attributes: ['id_area'],
+            required: false
           }
         ]
       });
 
       return res.status(200).json({
         ...utilizadorAtualizado.toJSON(),
-        roles: utilizadorAtualizado.Roles || []
+        roles: utilizadorAtualizado.Roles || [],
+        consultor: utilizadorAtualizado.Consultor || null
       });
     } catch (error) {
       await transaction.rollback();
       console.error("Erro ao atualizar utilizador:", error);
       return res.status(500).json({ error: "Erro ao atualizar utilizador." });
-    }
-  },
-
-  async deleteUtilizador(req, res) {
-    const transaction = await sequelize.transaction();
-    try {
-      const { id } = req.params;
-      const idLogado = req.utilizadorLogado?.id_utilizador;
-
-      if (Number(id) === Number(idLogado)) {
-        await transaction.rollback();
-        return res.status(400).json({ error: "Não podes eliminar o teu próprio utilizador." });
-      }
-
-      const user = await Utilizador.findByPk(id);
-      if (!user) {
-        await transaction.rollback();
-        return res.status(404).json({ error: "Utilizador não encontrado." });
-      }
-
-      await UtilizadorRoles.destroy({ where: { id_utilizador: id }, transaction });
-      await Consultor.destroy({ where: { id_utilizador: id }, transaction });
-      await user.destroy({ transaction });
-
-      await transaction.commit();
-      return res.status(200).json({ message: "Utilizador eliminado com sucesso." });
-    } catch (error) {
-      await transaction.rollback();
-      console.error("Erro ao eliminar utilizador:", error);
-      return res.status(500).json({ error: "Erro ao eliminar utilizador." });
     }
   }
 };

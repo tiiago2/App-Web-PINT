@@ -8,6 +8,8 @@ export default function EditarUtilizadorModal({
   onClose,
   utilizador,
   rolesDisponiveis,
+  areas = [],
+  serviceLines = [],
   onGuardar,
   saving = false,
 }) {
@@ -19,6 +21,9 @@ export default function EditarUtilizadorModal({
   const [rolesSelecionadas, setRolesSelecionadas] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
+  const [idArea, setIdArea] = useState("");
+  const [idServiceLineConsultor, setIdServiceLineConsultor] = useState("");
+  const [idServiceLineLider, setIdServiceLineLider] = useState("");
 
   useEffect(() => {
     if (isOpen && utilizador) {
@@ -34,8 +39,23 @@ export default function EditarUtilizadorModal({
           typeof r === "object" ? r.id_role : Number(r)
         ) || []
       );
+
+      const areaAtual = utilizador.consultor?.id_area;
+      const serviceLineLiderAtual = serviceLines.find(
+        (sl) => sl.id_lider === utilizador.id_utilizador
+      )?.id_service_line;
+
+      setIdArea(areaAtual ? String(areaAtual) : "");
+      setIdServiceLineLider(serviceLineLiderAtual ? String(serviceLineLiderAtual) : "");
+
+      if (areaAtual) {
+        const area = areas.find((a) => a.id_area === Number(areaAtual));
+        setIdServiceLineConsultor(area ? String(area.id_service_line) : "");
+      } else {
+        setIdServiceLineConsultor("");
+      }
     }
-  }, [isOpen, utilizador]);
+  }, [isOpen, utilizador, areas, serviceLines]);
 
   useEffect(() => {
     if (isOpen) {
@@ -91,9 +111,24 @@ export default function EditarUtilizadorModal({
       .replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
+  const getRoleByNome = (nome) =>
+    rolesDisponiveis.find((r) => r.nome_role?.toLowerCase() === nome);
+
+  const isConsultorSelecionado = () =>
+    rolesSelecionadas.includes(getRoleByNome("consultor")?.id_role);
+
+  const isServiceLineLeaderSelecionado = () =>
+    rolesSelecionadas.includes(getRoleByNome("service line leader")?.id_role);
+
+  const areasFiltradas = idServiceLineConsultor
+    ? areas.filter(
+        (a) => String(a.id_service_line) === String(idServiceLineConsultor)
+      )
+    : areas;
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    onGuardar({
+    const payload = {
       id_utilizador: utilizador.id_utilizador,
       nome_user: nome,
       email,
@@ -102,7 +137,17 @@ export default function EditarUtilizadorModal({
       roles: rolesSelecionadas,
       password,
       imagem: selectedFile,
-    });
+    };
+
+    if (isConsultorSelecionado() && idArea) {
+      payload.id_area = Number(idArea);
+    }
+
+    if (isServiceLineLeaderSelecionado() && idServiceLineLider) {
+      payload.id_service_line = Number(idServiceLineLider);
+    }
+
+    onGuardar(payload);
   };
 
   return ReactDOM.createPortal(
@@ -246,6 +291,77 @@ export default function EditarUtilizadorModal({
               ))}
             </div>
           </div>
+
+          {isConsultorSelecionado() && (
+            <div className="editar-user-modal-roles">
+              <label className="editar-user-modal-roles-label">
+                Área do Consultor
+              </label>
+              <div className="row g-3">
+                <div className="col-12 col-md-6">
+                  <label className="editar-user-modal-field-label">Service Line</label>
+                  <select
+                    className="form-select"
+                    value={idServiceLineConsultor}
+                    onChange={(e) => {
+                      setIdServiceLineConsultor(e.target.value);
+                      setIdArea("");
+                    }}
+                    style={{ borderRadius: "10px" }}
+                  >
+                    <option value="">Todas as Service Lines</option>
+                    {serviceLines.map((sl) => (
+                      <option key={sl.id_service_line} value={sl.id_service_line}>
+                        {sl.nome_service_line}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-12 col-md-6">
+                  <label className="editar-user-modal-field-label">Área *</label>
+                  <select
+                    className="form-select"
+                    value={idArea}
+                    onChange={(e) => setIdArea(e.target.value)}
+                    required={isConsultorSelecionado()}
+                    style={{ borderRadius: "10px" }}
+                  >
+                    <option value="">Seleciona uma área</option>
+                    {areasFiltradas.map((area) => (
+                      <option key={area.id_area} value={area.id_area}>
+                        {area.nome_area}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isServiceLineLeaderSelecionado() && (
+            <div className="editar-user-modal-roles">
+              <label className="editar-user-modal-roles-label">
+                Service Line a Liderar
+              </label>
+              <div className="editar-user-modal-field">
+                <label>Service Line *</label>
+                <select
+                  className="form-select"
+                  value={idServiceLineLider}
+                  onChange={(e) => setIdServiceLineLider(e.target.value)}
+                  required={isServiceLineLeaderSelecionado()}
+                  style={{ borderRadius: "10px" }}
+                >
+                  <option value="">Seleciona uma service line</option>
+                  {serviceLines.map((sl) => (
+                    <option key={sl.id_service_line} value={sl.id_service_line}>
+                      {sl.nome_service_line}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
         </form>
 
         {/* Footer */}

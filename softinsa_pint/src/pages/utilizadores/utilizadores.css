@@ -465,6 +465,11 @@
   color: #dc3545;
 }
 
+.utilizadores-acao.ativar:hover {
+  border-color: #198754;
+  color: #198754;
+}
+
 .utilizadores-loading,
 .utilizadores-vazio {
   text-align: center;

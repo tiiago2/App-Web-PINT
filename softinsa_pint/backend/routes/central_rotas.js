@@ -23,6 +23,7 @@ const rotas_permissoes = require('./permissoes_routes');
 const rotas_objetivos = require('./objetivos_routes');
 const badgesRoutes = require('./badges_routes');
 const rotas_editar = require('./editar_routes');
+const rotas_sla = require('./sla_routes');
 
 router.use("/hometalent", rotas_home_talent);
 router.use("/homeconsultor", rotas_home_consultor);
@@ -43,9 +44,11 @@ router.use("/defs-permissoes", rotas_defs_permissoes);
 router.use("/rgpd", rotas_rgpd);
 router.post("/login", controller_login.login);
 router.post("/esqueci-password", controller_login.esqueciPassword);
+router.post("/primeiro-acesso", controller_login.primeiroAcesso);
 router.put("/putlastlogin", controller_login.postLastLogin)
 router.get("/getuser", controller_login.getUser);
 router.use("/commun", rotas_comuns);
 router.use("/permissoes", rotas_permissoes);
+router.use("/sla", rotas_sla);
 
 module.exports = router;

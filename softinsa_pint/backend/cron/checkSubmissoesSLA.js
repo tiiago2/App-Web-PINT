@@ -1,4 +1,4 @@
-const { Submissoes, Sla, Historico, Consultor, Area, ServiceLine, Utilizador, Role, Notificacoes } = require('../models');
+const { Submissoes, Sla, Historico, Consultor, Area, ServiceLine, Utilizador, Role, Notificacoes, Recetor, Defs_notificacao } = require('../models');
 const { Op } = require('sequelize');
 const nodemailer = require('nodemailer');
 
@@ -10,8 +10,32 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+/**
+ * Cria uma notificação e o respetivo registo na tabela recetor.
+ */
+async function criarNotificacaoComRecetor(idUtilizador, descricao, tipo) {
+    const notificacao = await Notificacoes.create({
+        id_utilizador: idUtilizador,
+        descricao_notificacao: descricao,
+        data_envio: new Date(),
+        tipo_notificacao: tipo
+    });
+
+    await Recetor.create({
+        id_notificacao: notificacao.id_notificacao,
+        id_utilizador: idUtilizador,
+        lida: false
+    });
+
+    return notificacao;
+}
+
 const checkSubmissoesSla = async () => {
     try {
+        // Verificar se as notificações push internas estão ativadas
+        const defPush = await Defs_notificacao.findByPk(1);
+        const pushAtiva = defPush ? defPush.estado : true;
+
         const slaTM = await Sla.findOne({ where: { descricao_sla: 'AVALIACAO_TM' } });
         const slaSL = await Sla.findOne({ where: { descricao_sla: 'AVALIACAO_SL' } });
         const hoje = new Date();
@@ -19,7 +43,7 @@ const checkSubmissoesSla = async () => {
         const submissoesEmEspera = await Submissoes.findAll({
             where: {
                 notificacao_sla: false,
-                status: { [Op.in]: ['pendente', 'aceite talent manager'] }
+                status: { [Op.in]: ['pendente', 'aceite talent'] }
             },
             include: [
                 { model: Historico, required: false },
@@ -49,7 +73,7 @@ const checkSubmissoesSla = async () => {
 
                 if (hoje > limite) {
                     const talentManagers = await Utilizador.findAll({
-                        include: [{ model: Role, where: { nome_role: { [Op.in]: ['talent', 'Talent Manager', 'talent manager'] } } }]
+                        include: [{ model: Role, where: { nome_role: { [Op.iLike]: '%talent%' } } }]
                     });
 
                     for (const tm of talentManagers) {
@@ -64,17 +88,19 @@ const checkSubmissoesSla = async () => {
                             console.error(`Erro ao enviar email para Talent Manager ${tm.email}:`, mailError.message);
                         }
 
-                        await Notificacoes.create({
-                            id_utilizador: tm.id_utilizador,
-                            descricao_notificacao: `A submissão #${submissao.id_submissao} ultrapassou o tempo máximo de avaliação do Talent Manager.`,
-                            data_envio: hoje,
-                            tipo_notificacao: 'AVISO_SLA'
-                        });
+                        // Criar notificação + recetor apenas se o toggle estiver ativo
+                        if (pushAtiva) {
+                            await criarNotificacaoComRecetor(
+                                tm.id_utilizador,
+                                `A submissão #${submissao.id_submissao} ultrapassou o tempo máximo de avaliação do Talent Manager.`,
+                                'AVISO_SLA'
+                            );
+                        }
                     }
                     await submissao.update({ notificacao_sla: true });
                 }
             }
-            else if (submissao.status === 'aceite talent manager' && slaSL) {
+            else if (submissao.status === 'aceite talent' && slaSL) {
                 const limite = new Date(dataRef);
                 limite.setDate(limite.getDate() + slaSL.tempo_max);
 
@@ -96,12 +122,14 @@ const checkSubmissoesSla = async () => {
                                 }
                             }
 
-                            await Notificacoes.create({
-                                id_utilizador: lider.id_utilizador,
-                                descricao_notificacao: `A submissão #${submissao.id_submissao} aguarda a tua avaliação final.`,
-                                data_envio: hoje,
-                                tipo_notificacao: 'AVISO_SLA'
-                            });
+                            // Criar notificação + recetor apenas se o toggle estiver ativo
+                            if (pushAtiva) {
+                                await criarNotificacaoComRecetor(
+                                    lider.id_utilizador,
+                                    `A submissão #${submissao.id_submissao} aguarda a tua avaliação final.`,
+                                    'AVISO_SLA'
+                                );
+                            }
                         }
                     }
                     await submissao.update({ notificacao_sla: true });

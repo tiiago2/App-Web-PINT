@@ -13,6 +13,7 @@ module.exports = (sequelize) => {
     update_user: { type: DataTypes.DATE, allowNull: false },
     ativo: { type: DataTypes.BOOLEAN, allowNull: false },
     imagem_perfil: { type: DataTypes.TEXT, allowNull: false },
-    nome_user: { type: DataTypes.TEXT, allowNull: false }
+    nome_user: { type: DataTypes.TEXT, allowNull: false },
+    primeiro_login: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true }
   }, { tableName: 'utilizador', timestamps: false });
 };

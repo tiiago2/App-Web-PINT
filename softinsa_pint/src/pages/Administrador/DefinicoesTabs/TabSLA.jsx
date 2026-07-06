@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ToggleSwitch from "../../../components/ui/ToggleSwitch/ToggleSwitch";
 import { useTranslation } from "react-i18next";
+import { obterConfigSla, guardarConfigSla } from "../../../services/slaService";
 
 export default function TabSLA() {
   const { t } = useTranslation();
@@ -8,19 +9,80 @@ export default function TabSLA() {
   const [slaConfig, setSlaConfig] = useState({
     fase1_dias: 5,
     fase2_dias: 3,
+    aviso_objetivo_dias: 7,
     push_interna: true,
-    aviso_email: true,
-    escalada_horas: 24,
   });
+
+  const [metricasSLA, setMetricasSLA] = useState({
+    risco: 0,
+    foraPrazo: 0,
+    mediaDias: 0,
+  });
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+
+  useEffect(() => {
+    let ativo = true;
+
+    async function carregarConfig() {
+      try {
+        setIsLoading(true);
+        const data = await obterConfigSla();
+
+        if (ativo) {
+          setSlaConfig({
+            fase1_dias: data.fase1_dias ?? 5,
+            fase2_dias: data.fase2_dias ?? 3,
+            aviso_objetivo_dias: data.aviso_objetivo_dias ?? 7,
+            push_interna: data.push_interna ?? true,
+          });
+
+          if (data.metricas) {
+            setMetricasSLA({
+              risco: data.metricas.risco ?? 0,
+              foraPrazo: data.metricas.foraPrazo ?? 0,
+              mediaDias: data.metricas.mediaDias ?? 0,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao carregar configuração SLA:", error);
+      } finally {
+        if (ativo) setIsLoading(false);
+      }
+    }
+
+    carregarConfig();
+    return () => { ativo = false; };
+  }, []);
 
   const toggleSla = (key) => {
     setSlaConfig((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const metricasSLA = {
-    risco: 0,
-    foraPrazo: 3,
-    mediaDias: 2.4,
+  const handleGuardar = async () => {
+    try {
+      setIsSaving(true);
+      setFeedback(null);
+
+      await guardarConfigSla({
+        fase1_dias: Number(slaConfig.fase1_dias),
+        fase2_dias: Number(slaConfig.fase2_dias),
+        aviso_objetivo_dias: Number(slaConfig.aviso_objetivo_dias),
+        push_interna: slaConfig.push_interna,
+      });
+
+      setFeedback({ tipo: "sucesso", mensagem: t("sla_guardado_sucesso") });
+
+      setTimeout(() => setFeedback(null), 3000);
+    } catch (error) {
+      console.error("Erro ao guardar SLA:", error);
+      setFeedback({ tipo: "erro", mensagem: t("sla_guardado_erro") });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const getRiscoConfig = (val) => {
@@ -44,6 +106,16 @@ export default function TabSLA() {
   const configRisco = getRiscoConfig(metricasSLA.risco);
   const configForaPrazo = getForaPrazoConfig(metricasSLA.foraPrazo);
   const configMedia = getMediaConfig(metricasSLA.mediaDias);
+
+  if (isLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center py-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">A carregar...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="d-flex flex-column gap-4 pb-4">
@@ -281,6 +353,40 @@ export default function TabSLA() {
               </div>
             </div>
           </div>
+
+          <div className="d-flex align-items-center bg-white p-3 rounded-3 border">
+            <div className="pe-3 flex-grow-1">
+              <label className="form-check-label fw-semibold mb-1">
+                {t("sla_aviso_objetivo")}
+              </label>
+              <p
+                className="text-muted mb-0"
+                style={{ fontSize: "0.85rem" }}
+              >
+                {t("sla_aviso_objetivo_desc")}
+              </p>
+            </div>
+            <div style={{ width: "130px" }}>
+              <div className="input-group">
+                <input
+                  type="number"
+                  className="form-control text-center px-1"
+                  value={slaConfig.aviso_objetivo_dias}
+                  onChange={(e) =>
+                    setSlaConfig({
+                      ...slaConfig,
+                      aviso_objetivo_dias: e.target.value,
+                    })
+                  }
+                  min="1"
+                  max="99"
+                />
+                <span className="input-group-text bg-light text-muted px-2">
+                  {t("dias_lowercase")}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -313,64 +419,30 @@ export default function TabSLA() {
               />
             </div>
           </div>
-
-          <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
-            <div className="pe-3">
-              <label className="form-check-label fw-semibold mb-1">
-                {t("aviso_email_automatico")}
-              </label>
-              <p
-                className="text-muted mb-0"
-                style={{ fontSize: "0.85rem" }}
-              >
-                {t("aviso_email_automatico_desc")}
-              </p>
-            </div>
-            <div className="mb-0">
-              <ToggleSwitch
-                checked={slaConfig.aviso_email}
-                onChange={() => toggleSla("aviso_email")}
-              />
-            </div>
-          </div>
-
-          <div className="d-flex align-items-center bg-white p-3 rounded-3 border">
-            <div className="pe-3 flex-grow-1">
-              <label className="form-check-label fw-semibold mb-1">
-                {t("escalada_alerta")}
-              </label>
-              <p
-                className="text-muted mb-0"
-                style={{ fontSize: "0.85rem" }}
-              >
-                {t("escalada_alerta_desc")}
-              </p>
-            </div>
-            <div style={{ width: "130px" }}>
-              <div className="input-group">
-                <input
-                  type="number"
-                  className="form-control text-center px-1"
-                  value={slaConfig.escalada_horas}
-                  onChange={(e) =>
-                    setSlaConfig({
-                      ...slaConfig,
-                      escalada_horas: e.target.value,
-                    })
-                  }
-                  min="1"
-                  max="72"
-                />
-                <span className="input-group-text bg-light text-muted px-2">
-                  {t("horas_lowercase")}
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
-      <div className="mt-2 text-end">
+      {/* Feedback + Botão Guardar */}
+      <div className="mt-2 d-flex justify-content-between align-items-center">
+        <div>
+          {feedback && (
+            <span
+              className={`fw-medium ${
+                feedback.tipo === "sucesso" ? "text-success" : "text-danger"
+              }`}
+              style={{ fontSize: "0.9rem" }}
+            >
+              <i
+                className={`fi ${
+                  feedback.tipo === "sucesso"
+                    ? "fi-br-check-circle"
+                    : "fi-br-cross-circle"
+                } me-1`}
+              ></i>
+              {feedback.mensagem}
+            </span>
+          )}
+        </div>
         <button
           className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white"
           style={{
@@ -378,10 +450,22 @@ export default function TabSLA() {
             height: "44px",
             fontWeight: 500,
             fontSize: "16px",
-            borderRadius: "var(--border-radius-pequeno)"
+            borderRadius: "var(--border-radius-pequeno)",
+            opacity: isSaving ? 0.7 : 1,
           }}
+          onClick={handleGuardar}
+          disabled={isSaving}
         >
-          <i className="fi fi-br-disk me-2"></i> {t("guardar_prazos_sla")}
+          {isSaving ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+              {t("a_guardar")}
+            </>
+          ) : (
+            <>
+              <i className="fi fi-br-disk me-2"></i> {t("guardar_prazos_sla")}
+            </>
+          )}
         </button>
       </div>
     </div>

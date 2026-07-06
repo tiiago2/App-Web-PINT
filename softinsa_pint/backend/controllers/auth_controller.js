@@ -1,4 +1,4 @@
-const { Utilizador, Role } = require('../models');
+const { Utilizador, Role, Consultor } = require('../models');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
@@ -37,6 +37,8 @@ module.exports = {
                 utilizador: {
                     nome: user.nome_user,
                     id: user.id_utilizador,
+                    email: user.email,
+                    primeiro_login: user.primeiro_login ?? false,
                     roles: listaRoles
                 }
             });
@@ -121,6 +123,58 @@ module.exports = {
         } catch (error) {
             console.error("Erro ao colocar o login: ", error);
             return res.status(500).json({ error: "Erro no servidor, get_user." });
+        }
+    },
+
+    async primeiroAcesso(req, res) {
+        try {
+            const { email, password, confirmPassword } = req.body;
+
+            if (!email || !password || !confirmPassword) {
+                return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+            }
+
+            const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#^~_\-+=])[A-Za-z\d@$!%*?&.#^~_\-+=]{8,}$/;
+            if (!regexPassword.test(password)) {
+                return res.status(400).json({ error: "A palavra-passe não cumpre os requisitos mínimos." });
+            }
+
+            if (password !== confirmPassword) {
+                return res.status(400).json({ error: "As palavras-passe não coincidem." });
+            }
+
+            const user = await Utilizador.findOne({ where: { email: email } });
+            if (!user) {
+                return res.status(404).json({ error: "Utilizador não encontrado." });
+            }
+
+            if (!user.primeiro_login) {
+                return res.status(400).json({ error: "Este utilizador já concluiu a alteração de palavra-passe no primeiro acesso." });
+            }
+
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const agora = new Date();
+
+            await user.update({
+                password: hashedPassword,
+                primeiro_login: false,
+                update_user: agora
+            });
+
+            // Sincronizar com a tabela Consultor se for um consultor
+            const consultor = await Consultor.findOne({ where: { id_utilizador: user.id_utilizador } });
+            if (consultor) {
+                await consultor.update({
+                    password: hashedPassword,
+                    primeiro_login: false,
+                    update_user: agora
+                });
+            }
+
+            return res.status(200).json({ message: "Palavra-passe definida com sucesso. Já pode iniciar sessão." });
+        } catch (error) {
+            console.error("Erro no primeiro acesso:", error);
+            return res.status(500).json({ error: "Erro ao atualizar palavra-passe de primeiro acesso." });
         }
     }
 }

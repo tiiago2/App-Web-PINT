@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import GaleriaTodosBadges from "../../components/Galeria/GaleriaTodosBadges/GaleriaTodosBadges";
 import BadgeItemAdmin from "../../components/Galeria/BadgeItemAdmin/BadgeItemAdmin";
 import ModalConfirmacao from "../../components/ui/ModalConfirmacao/ModalConfirmacao";
@@ -279,8 +282,74 @@ function Galeria() {
     );
   }, [badges]);
 
-  // Estados para o Pop-Up de Exportação do Colega
-  const [mostrarExportar, setMostrarExportar] = useState(false); 
+  const [mostrarExportar, setMostrarExportar] = useState(false);
+  const exportRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (exportRef.current && !exportRef.current.contains(e.target)) {
+        setMostrarExportar(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleExportarExcel = () => {
+    const livro = XLSX.utils.book_new();
+    const dadosExportar = badgesFiltradosAdmin.map((b) => ({
+      "Nome Badge": b.nome,
+      "Categoria": b.categoria || "-",
+      "Learning Path": b.learningPath || "-",
+      "Service Line": b.serviceLine || "-",
+      "Área": b.area || "-",
+      "Nível": b.nivel || "-",
+      "Pontos": b.pontos
+    }));
+
+    const folha = XLSX.utils.json_to_sheet(dadosExportar);
+    XLSX.utils.book_append_sheet(livro, folha, "Badges");
+    XLSX.writeFile(livro, "Galeria_Badges_Export.xlsx");
+    setMostrarExportar(false);
+  };
+
+  const handleExportarPDF = () => {
+    try {
+      const doc = new jsPDF('p', 'pt', 'a4');
+
+      doc.setFontSize(18);
+      doc.setTextColor(0, 86, 179);
+      doc.text("Galeria de Badges - Catálogo", 40, 40);
+
+      doc.setFontSize(11);
+      doc.setTextColor(80);
+      doc.text(`Total de Badges Exportados: ${badgesFiltradosAdmin.length}`, 40, 70);
+
+      const dadosExportar = badgesFiltradosAdmin.map((b) => [
+        b.nome || "-",
+        b.learningPath || "-",
+        b.serviceLine || "-",
+        b.area || "-",
+        b.nivel || "-",
+        String(b.pontos || 0)
+      ]);
+
+      autoTable(doc, {
+        startY: 100,
+        head: [["Nome Badge", "Learning Path", "Service Line", "Área", "Nível", "Pontos"]],
+        body: dadosExportar.length > 0 ? dadosExportar : [["Sem dados", "-", "-", "-", "-", "-"]],
+        theme: 'striped',
+        headStyles: { fillColor: [0, 86, 179] },
+        styles: { fontSize: 9 }
+      });
+
+      doc.save("Galeria_Badges_Export.pdf");
+      setMostrarExportar(false);
+    } catch (erro) {
+      console.error("Erro ao gerar PDF da Galeria:", erro);
+      alert("Erro ao gerar o PDF.");
+    }
+  };
 
   const metricas = useMemo(() => {
     const totalAreas = new Set(
@@ -579,7 +648,7 @@ function Galeria() {
             Adicionar Badge
           </BotaoAcao>
 
-          <div className="position-relative">
+          <div className="estat-admin-export-wrap" ref={exportRef}>
             <BotaoAcao
               variante="primario"
               icone="fi-br-download"
@@ -589,8 +658,8 @@ function Galeria() {
             </BotaoAcao>
             {mostrarExportar && (
               <div className="estat-admin-export-menu">
-                <div className="estat-admin-export-item">Excel</div>
-                <div className="estat-admin-export-item">PDF</div>
+                <div className="estat-admin-export-item" onClick={handleExportarExcel}>Excel</div>
+                <div className="estat-admin-export-item" onClick={handleExportarPDF}>PDF</div>
               </div>
             )}
           </div>

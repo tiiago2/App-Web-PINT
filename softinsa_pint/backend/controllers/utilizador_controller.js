@@ -29,14 +29,21 @@ async function uploadImagemCloudinary(file) {
 async function sincronizarConsultor(id, dados) {
   const consultor = await Consultor.findOne({ where: { id_utilizador: id } });
   if (consultor) {
-    await consultor.update({
+    const updateObj = {
       nome_user: dados.nome_user ?? consultor.nome_user,
       email: dados.email ?? consultor.email,
       telefone: dados.telefone ?? consultor.telefone,
       imagem_perfil: dados.imagem_perfil ?? consultor.imagem_perfil,
       ativo: dados.ativo ?? consultor.ativo,
       update_user: new Date()
-    });
+    };
+    if (dados.primeiro_login !== undefined) {
+      updateObj.primeiro_login = dados.primeiro_login;
+    }
+    if (dados.password !== undefined) {
+      updateObj.password = dados.password;
+    }
+    await consultor.update(updateObj);
   }
 }
 
@@ -204,7 +211,8 @@ module.exports = {
         aceitacao_politicas: false,
         aceitacao_sla: false,
         ativo: true,
-        imagem_perfil
+        imagem_perfil,
+        primeiro_login: true
       }, { transaction });
 
       let rolesArray = [];
@@ -243,7 +251,8 @@ module.exports = {
           aceitacao_sla: false,
           ativo: true,
           imagem_perfil,
-          pontos_totais: 0
+          pontos_totais: 0,
+          primeiro_login: true
         }, { transaction });
       }
 
@@ -337,6 +346,7 @@ module.exports = {
           return res.status(400).json({ error: "A palavra-passe não cumpre os requisitos mínimos." });
         }
         updateData.password = await bcrypt.hash(password, 10);
+        updateData.primeiro_login = true;
       }
 
       await user.update(updateData, { transaction });

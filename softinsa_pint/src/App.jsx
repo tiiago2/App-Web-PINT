@@ -30,6 +30,7 @@ import Candidaturas from "./pages/candidaturas/Candidaturas.jsx";
 import ModalConfirmacao from "./components/ui/ModalConfirmacao/ModalConfirmacao";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import EsqueciPasswordPage from "./pages/auth/EsqueciPasswordPage.jsx";
+import PrimeiroAcessoPage from "./pages/auth/PrimeiroAcessoPage.jsx";
 import Utilizadores from "./pages/utilizadores/Utilizadores.jsx";
 import CriarUtilizador from "./pages/utilizadores/CriarUtilizador.jsx";
 import LanguageSelector from "./components/ui/LanguageSelector/LanguageSelector.jsx";
@@ -45,7 +46,7 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const isRotaPublicaBadge = location.pathname.startsWith("/badges/");
-  const isRotaPublicaAuth = location.pathname === "/login" || location.pathname === "/esqueci-password";
+  const isRotaPublicaAuth = location.pathname === "/login" || location.pathname === "/esqueci-password" || location.pathname === "/primeiro-acesso";
   const isRotaPerfil = location.pathname.startsWith("/perfil");
 
   // === ESTADOS GLOBAIS DA APP ===
@@ -370,6 +371,11 @@ function App() {
   if (location.pathname === "/esqueci-password") {
     if (user.cargo) return <Navigate to="/home" replace />;
     return <EsqueciPasswordPage />;
+  }
+
+  if (location.pathname === "/primeiro-acesso") {
+    if (user.cargo) return <Navigate to="/home" replace />;
+    return <PrimeiroAcessoPage />;
   }
 
   // === ESTRUTURA PRINCIPAL (LAYOUT) ===

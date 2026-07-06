@@ -11,6 +11,7 @@ function LoginPage({ onLoginSuccess }) {
   const navigate = useNavigate();
   const location = useLocation();
   const passwordResetSuccess = location.state?.passwordResetSuccess || false;
+  const primeiroAcessoSuccess = location.state?.primeiroAcessoSuccess || false;
 
   const [etapa, setEtapa] = useState("login");
   const [email, setEmail] = useState("");
@@ -45,6 +46,13 @@ function LoginPage({ onLoginSuccess }) {
     try {
       const resposta = await api.post('/login', { email, password });
       const { token, utilizador } = resposta.data;
+
+      // Se for o primeiro login, redireciona obrigatoriamente para a alteração de password
+      if (utilizador && utilizador.primeiro_login === true) {
+        setEstadoLogin("normal");
+        navigate("/primeiro-acesso", { state: { email: email } });
+        return;
+      }
 
       localStorage.setItem('token_softinsa', token);
       setUtilizadorValidado(utilizador);
@@ -97,6 +105,13 @@ function LoginPage({ onLoginSuccess }) {
               <div className="login-feedback login-feedback-sucesso">
                 <i className="fi fi-br-check"></i>
                 <span className="texto-auth-feedback">{t("auth_login_sucesso_password_reset")}</span>
+              </div>
+            )}
+
+            {primeiroAcessoSuccess && (
+              <div className="login-feedback login-feedback-sucesso">
+                <i className="fi fi-br-check"></i>
+                <span className="texto-auth-feedback">{t("auth_primeiro_sucesso")}</span>
               </div>
             )}
 

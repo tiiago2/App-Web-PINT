@@ -1,8 +1,14 @@
-const { RegistoBadges, Badges, Notificacoes } = require('../models');
+const { RegistoBadges, Badges, Notificacoes, Recetor, Defs_notificacao } = require('../models');
 const { Op } = require('sequelize');
 
 const checkBadgesExpirados = async () => {
     try {
+        // Verificar se as notificações push internas estão ativadas
+        const defPush = await Defs_notificacao.findByPk(1);
+        const pushAtiva = defPush ? defPush.estado : true;
+
+        if (!pushAtiva) return;
+
         const registosAtivos = await RegistoBadges.findAll({
             where: { expirado: false },
             include: [{
@@ -18,12 +24,19 @@ const checkBadgesExpirados = async () => {
             dataExpiracao.setDate(dataExpiracao.getDate() + Number(registo.Badge.validade));
 
             if (hoje > dataExpiracao) {
-                await Notificacoes.create({
+                const notificacao = await Notificacoes.create({
                     id_utilizador: registo.id_utilizador,
                     descricao_notificacao: `O badge '${registo.Badge.nome_badge}' expirou.`,
                     data_envio: hoje,
                     tipo_notificacao: 'BADGE_EXPIRADO'
                 });
+
+                await Recetor.create({
+                    id_notificacao: notificacao.id_notificacao,
+                    id_utilizador: registo.id_utilizador,
+                    lida: false
+                });
+
                 await registo.update({ expirado: true });
             }
         }

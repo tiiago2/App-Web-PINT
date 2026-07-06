@@ -5,6 +5,6 @@ const authMiddleware = require('../middleware/auth_middleware');
 const Controller = require('../controllers/profile_controller.js');
 
 router.get("/getuser", authMiddleware, Controller.getUserLogin);
-router.post("/updateassinatura", Controller.atualizarPerfilCompleto);
+router.post("/updateassinatura", authMiddleware, Controller.atualizarPerfilCompleto);
 
 module.exports = router;

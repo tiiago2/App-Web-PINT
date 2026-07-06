@@ -299,3 +299,99 @@
   color: #ffffff !important;
 }
 
+/* Modal de Confirmação */
+.candidatura-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+
+.candidatura-modal-container {
+  background: var(--fundo);
+  width: 100%;
+  max-width: 480px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.candidatura-modal-header {
+  background-color: var(--barra_lateral);
+  color: white;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.candidatura-modal-close-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  opacity: 0.85;
+  font-size: 1.15rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.candidatura-modal-close-btn:hover {
+  opacity: 1;
+}
+
+.candidatura-modal-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.candidatura-modal-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--contorno);
+  border-radius: 10px;
+  background-color: var(--fundo_submenu_hover);
+  font-size: 0.9rem;
+  color: var(--fontes);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.candidatura-modal-input:focus {
+  border-color: var(--barra_lateral);
+  box-shadow: 0 0 0 3px rgba(59, 110, 153, 0.15);
+}
+
+.candidatura-modal-footer {
+  padding: 1rem 1.5rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.candidatura-modal-btn-cancelar {
+  background-color: var(--fundo) !important;
+  color: var(--fontes) !important;
+  border: 1px solid var(--contorno) !important;
+  transition: all 0.2s ease;
+}
+
+.candidatura-modal-btn-cancelar:hover {
+  background-color: var(--fundo_submenu_hover) !important;
+  border-color: var(--barra_lateral) !important;
+  color: var(--barra_lateral) !important;
+}
+

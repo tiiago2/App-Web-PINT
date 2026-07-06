@@ -385,5 +385,10 @@
     "ver_historico": "Ver Histórico",
     "historico_avaliacoes": "Historial de Evaluaciones",
     "rejeitada": "Rechazada",
-    "sem_historico": "Aún no hay registro de evaluaciones."
+    "sem_historico": "Aún no hay registro de evaluaciones.",
+    "confirmar": "Confirmar",
+    "confirmar_aceitacao": "Confirmar Aceptación",
+    "confirmar_rejeicao": "Confirmar Rechazo",
+    "descricao_aceitar_modal": "Escribe un comentario o motivo para la aceptación de la candidatura:",
+    "descricao_rejeitar_modal": "Escribe el motivo del rechazo de la candidatura (obligatorio):"
 }

@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import BadgeSeccao from "../BadgeSeccao/BadgeSeccao";
-import badgesConsultorMock from "../../../data/badgesConsultorMock";
 import "./GaleriaTodosBadges.css";
 
 function normalizarTexto(texto = "") {
@@ -107,9 +106,7 @@ function GaleriaTodosBadges({
   const isConsultor = modo === "consultor";
 
   const badgesFiltrados = useMemo(() => {
-    let lista = Array.isArray(badges)
-      ? [...badges]
-      : [...badgesConsultorMock];
+    let lista = Array.isArray(badges) ? [...badges] : [];
 
     if (!aplicarFiltros) {
       return lista;

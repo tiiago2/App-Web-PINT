@@ -5,21 +5,10 @@ import api from '../../services/api';
 import './home_service.css';
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import AtividadeRecente from '../../components/AtividadeModal.jsx';
+import { mapearAtividadeParaModal } from '../../utils/atividadeUtils.js';
 import CandidaturaModal from '../../components/CandidaturaModal.jsx';
 import badge_logo from '../../assets/teste_badge.png';
 import {BotaoVerMais, BotaoAceitar, BotaoRejeitar, GraficoCandidaturas} from '../../components/components.jsx'
-
-const atividadeRecente = [
-    { icone: "fi-br-check", cor: "text-success", texto: "Low code concluído", tempo: "Há 2 horas", expirado: false },
-    { icone: "fi-br-badge", cor: "text-warning", textoNegrito: "Administrador1", texto: "atualizou Low Code", tempo: "Há 2 horas", expirado: false },
-    { icone: "fi-br-document", cor: "text-primary", textoNegrito: "Candidataste-te ao Low Code", tempo: "Há 2 horas", expirado: false },
-    { icone: "fi-br-cross", cor: "text-danger", texto: "Low Code expirado", tempo: "Há 2 horas", expirado: true },
-    { icone: "fi-br-check", cor: "text-success", texto: "Low Code concluído", tempo: "Há 2 horas", expirado: false },
-    { icone: "fi-br-cross", cor: "text-danger", texto: "Low Code expirado", tempo: "Há 2 horas", expirado: true },
-    { icone: "fi-br-document", cor: "text-primary", textoNegrito: "Candidataste-te ao Low Code", tempo: "Há 2 horas", expirado: false },
-    { icone: "fi-br-check", cor: "text-success", texto: "Low Code concluído", tempo: "Há 2 horas", expirado: false },
-    { icone: "fi-br-badge", cor: "text-warning", textoNegrito: "Administrador1", texto: "atualizou Low Code", tempo: "Há 2 horas", expirado: false }
-];
 
 const HomeService = ({ user, saudacao }) => {
     const { t } = useTranslation();
@@ -37,6 +26,8 @@ const HomeService = ({ user, saudacao }) => {
     ]);
     const [classificacaoGeral, setClassificacaoGeral] = useState([]);
     const [classificacaoServiceLine, setClassificacaoServiceLine] = useState([]);
+    const [atividadeRecente, setAtividadeRecente] = useState([]);
+    const [carregandoAtividade, setCarregandoAtividade] = useState(true);
 
         useEffect(() => {
             const buscarCandidaturas = async () => {
@@ -107,9 +98,32 @@ const HomeService = ({ user, saudacao }) => {
             }
         }
 
+        const carregarAtividade = async () => {
+            if (!localStorage.getItem('token_softinsa')) {
+                setAtividadeRecente([]);
+                setCarregandoAtividade(false);
+                return;
+            }
+
+            try {
+                setCarregandoAtividade(true);
+                const res = await api.get('/atividade/get', {
+                    params: { perfil: 'Service Line Leader', limit: 6 }
+                });
+                const atividades = res.data.data || [];
+                setAtividadeRecente(atividades.map(mapearAtividadeParaModal).filter(Boolean));
+            } catch (erro) {
+                console.error('Erro ao buscar atividade recente do service line leader:', erro);
+                setAtividadeRecente([]);
+            } finally {
+                setCarregandoAtividade(false);
+            }
+        }
+
             buscarCandidaturas();
             getGrafCandidaturas();
             carregarRankings();
+            carregarAtividade();
         }, []);
 
     const RenderCandidaturas = () => {
@@ -190,7 +204,7 @@ const HomeService = ({ user, saudacao }) => {
                 <div className="row g-2 g-md-3 segunda-linha-home">
                     <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
                         <div style={{ height: '100%', overflow: 'hidden' }}>
-                            <AtividadeRecente atividades={atividadeRecente} />
+                            <AtividadeRecente atividades={atividadeRecente} isLoading={carregandoAtividade} />
                         </div>
                     </div>
                     <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>

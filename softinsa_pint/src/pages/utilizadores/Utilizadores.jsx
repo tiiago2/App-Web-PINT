@@ -5,7 +5,6 @@ import {
   obterUtilizadores,
   obterRoles,
   atualizarUtilizador,
-  eliminarUtilizador,
 } from "../../services/utilizadorService.js";
 import { obterAreas, obterServiceLines } from "../../services/gestaoService.js";
 import EditarUtilizadorModal from "../../components/ui/EditarUtilizadorModal/EditarUtilizadorModal.jsx";
@@ -45,7 +44,7 @@ export default function Utilizadores({ userRole }) {
   const [saving, setSaving] = useState(false);
 
   const [utilizadorEditar, setUtilizadorEditar] = useState(null);
-  const [utilizadorEliminar, setUtilizadorEliminar] = useState(null);
+  const [utilizadorAtivarDesativar, setUtilizadorAtivarDesativar] = useState(null);
 
   const [toast, setToast] = useState({ visivel: false, mensagem: "", tipo: "sucesso" });
   const mostrarToast = (mensagem, tipo = "sucesso") => setToast({ visivel: true, mensagem, tipo });
@@ -100,6 +99,7 @@ export default function Utilizadores({ userRole }) {
     });
 
     utilizadores.forEach((u) => {
+      if (!u.ativo) return;
       u.roles?.forEach((role) => {
         const nome = role.nome_role?.toLowerCase() || "";
         CARDS_CARGOS.forEach((card) => {
@@ -172,9 +172,9 @@ export default function Utilizadores({ userRole }) {
     setUtilizadorEditar(utilizador);
   };
 
-  const handleEliminar = (utilizador, e) => {
+  const handleAtivarDesativar = (utilizador, e) => {
     e.stopPropagation();
-    setUtilizadorEliminar(utilizador);
+    setUtilizadorAtivarDesativar(utilizador);
   };
 
   const handleGuardarEdicao = async (dados) => {
@@ -196,6 +196,14 @@ export default function Utilizadores({ userRole }) {
         payload.imagem = dados.imagem;
       }
 
+      if (dados.id_area) {
+        payload.id_area = Number(dados.id_area);
+      }
+
+      if (dados.id_service_line) {
+        payload.id_service_line = Number(dados.id_service_line);
+      }
+
       const res = await atualizarUtilizador(dados.id_utilizador, payload);
 
       setUtilizadores((prev) =>
@@ -214,18 +222,26 @@ export default function Utilizadores({ userRole }) {
     }
   };
 
-  const confirmarEliminar = async () => {
-    if (!utilizadorEliminar) return;
+  const confirmarAtivarDesativar = async () => {
+    if (!utilizadorAtivarDesativar) return;
     try {
-      await eliminarUtilizador(utilizadorEliminar.id_utilizador);
+      const novoEstado = !utilizadorAtivarDesativar.ativo;
+      const res = await atualizarUtilizador(utilizadorAtivarDesativar.id_utilizador, {
+        ativo: novoEstado,
+      });
       setUtilizadores((prev) =>
-        prev.filter((u) => u.id_utilizador !== utilizadorEliminar.id_utilizador)
+        prev.map((u) =>
+          u.id_utilizador === utilizadorAtivarDesativar.id_utilizador ? res : u
+        )
       );
-      setUtilizadorEliminar(null);
-      mostrarToast("Utilizador eliminado com sucesso!", "sucesso");
+      setUtilizadorAtivarDesativar(null);
+      mostrarToast(
+        novoEstado ? "Utilizador ativado com sucesso!" : "Utilizador desativado com sucesso!",
+        "sucesso"
+      );
     } catch (error) {
-      console.error("Erro ao eliminar:", error);
-      const msg = error.response?.data?.error || "Erro ao eliminar utilizador.";
+      console.error("Erro ao alterar estado:", error);
+      const msg = error.response?.data?.error || "Erro ao alterar estado do utilizador.";
       mostrarToast(msg, "erro");
     }
   };
@@ -490,13 +506,23 @@ export default function Utilizadores({ userRole }) {
                           >
                             <i className="fi fi-br-pencil"></i>
                           </button>
-                          <button
-                            className="utilizadores-acao eliminar"
-                            onClick={(e) => handleEliminar(u, e)}
-                            title="Eliminar"
-                          >
-                            <i className="fi fi-br-trash"></i>
-                          </button>
+                          {u.ativo ? (
+                            <button
+                              className="utilizadores-acao eliminar"
+                              onClick={(e) => handleAtivarDesativar(u, e)}
+                              title="Desativar"
+                            >
+                              <i className="fi fi-br-trash"></i>
+                            </button>
+                          ) : (
+                            <button
+                              className="utilizadores-acao ativar"
+                              onClick={(e) => handleAtivarDesativar(u, e)}
+                              title="Ativar"
+                            >
+                              <i className="fi fi-br-power"></i>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -514,20 +540,28 @@ export default function Utilizadores({ userRole }) {
         onClose={() => setUtilizadorEditar(null)}
         utilizador={utilizadorEditar}
         rolesDisponiveis={rolesDisponiveis}
+        areas={areas}
+        serviceLines={serviceLines}
         onGuardar={handleGuardarEdicao}
         saving={saving}
       />
 
-      {/* Modal Eliminar */}
+      {/* Modal Ativar/Desativar */}
       <ModalConfirmacao
-        isOpen={!!utilizadorEliminar}
-        onClose={() => setUtilizadorEliminar(null)}
-        onConfirm={confirmarEliminar}
-        titulo="Eliminar utilizador"
-        mensagem={`Tem a certeza que pretende eliminar o utilizador "${utilizadorEliminar?.nome_user}"? Esta ação não pode ser desfeita.`}
-        textoConfirmar="Eliminar"
+        isOpen={!!utilizadorAtivarDesativar}
+        onClose={() => setUtilizadorAtivarDesativar(null)}
+        onConfirm={confirmarAtivarDesativar}
+        titulo={
+          utilizadorAtivarDesativar?.ativo
+            ? "Desativar utilizador"
+            : "Ativar utilizador"
+        }
+        mensagem={`Tem a certeza que pretende ${
+          utilizadorAtivarDesativar?.ativo ? "desativar" : "ativar"
+        } o utilizador "${utilizadorAtivarDesativar?.nome_user}"?`}
+        textoConfirmar={utilizadorAtivarDesativar?.ativo ? "Desativar" : "Ativar"}
         textoCancelar="Cancelar"
-        isDanger={true}
+        isDanger={!!utilizadorAtivarDesativar?.ativo}
       />
 
       {/* Toast Notificação */}

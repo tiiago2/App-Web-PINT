@@ -5,17 +5,20 @@ import GaleriaTodosBadges from "../GaleriaTodosBadges/GaleriaTodosBadges";
 import GaleriaToolbar from "../GaleriaToolbar/GaleriaToolbar";
 import FiltroEstadoBadges from "../FiltroEstadoBadges/FiltroEstadoBadges";
 import ModalConfirmacao from "../../ui/ModalConfirmacao/ModalConfirmacao";
+import ToastNotificacao from "../../ui/ToastNotificacao/ToastNotificacao";
 import BadgeDetalheModal from "../../BadgeDetalhe/BadgeDetalheModal";
-import badgesConsultorMock from "../../../data/badgesConsultorMock";
 import {
-    obterBadgeDetalheConsultor,
-    anexarRequisitoAoBadge,
-    submeterCandidaturaBadge,
+    obterMeuBadge,
+    criarOuObterRascunho,
+    submeterMinhaCandidatura,
+    guardarEvidencia,
+    removerEvidencia,
     obterUrlPublicaDoBadge,
     obterUrlPartilhaLinkedInDoBadge,
 } from "../../../services/badgeDetalheService";
 import {
     obterBadgesCatalogoNormalizados,
+    obterBadgesConsultorNormalizados,
     obterBadge,
 } from "../../../services/badgesService";
 import { normalizarBadgeDetalheCatalogo } from "../../../utils/badgeDetalheNormalizadores";
@@ -61,6 +64,50 @@ function obterNomeFicheiro(ficheiro) {
     }
 
     return ficheiro.name ?? "ficheiro selecionado";
+}
+
+function obterMensagemErroOperacao(error) {
+    const status = error.response?.status;
+    const codigo = error.response?.data?.codigo;
+    const mensagem = error.response?.data?.error;
+
+    if (status === 401) {
+        return "Sessão inválida. Inicia sessão novamente.";
+    }
+
+    if (codigo === "rascunho_inexistente") {
+        return "Cria ou continua um rascunho antes de anexar evidências.";
+    }
+
+    if (codigo === "submissao_nao_editavel") {
+        return "Esta candidatura já não pode ser editada.";
+    }
+
+    if (codigo === "ficheiro_obrigatorio") {
+        return "Seleciona um ficheiro antes de continuar.";
+    }
+
+    if (codigo === "multipart_invalido") {
+        return "Não foi possível processar o ficheiro enviado.";
+    }
+
+    if (codigo === "requisitos_incompletos") {
+        return "Completa todos os requisitos antes de submeter a candidatura.";
+    }
+
+    if (codigo === "badge_sem_requisitos") {
+        return "Este badge nao tem requisitos ativos para submeter.";
+    }
+
+    if (status === 404) {
+        return "O badge, requisito ou evidência já não existe.";
+    }
+
+    if (status === 409) {
+        return mensagem || "A operação não pode ser concluída neste estado.";
+    }
+
+    return mensagem || "Não foi possível concluir a operação.";
 }
 
 function criarOpcoesUnicas(badges, campo) {
@@ -145,9 +192,7 @@ function criarMensagemConfirmacaoAnexo(anexoPendente, detalheBadge) {
 function GaleriaBadges({ modo = "consultor" }) {
     const isConsultor = modo === "consultor";
 
-    const [badgesConsultor, setBadgesConsultor] = useState(
-        () => (isConsultor ? badgesConsultorMock : [])
-    );
+    const [badgesConsultor, setBadgesConsultor] = useState([]);
 
     const [abaAtiva, setAbaAtiva] = useState("sugeridos");
     const [pesquisa, setPesquisa] = useState("");
@@ -165,16 +210,33 @@ function GaleriaBadges({ modo = "consultor" }) {
     const [isLoadingCatalogo, setIsLoadingCatalogo] = useState(false);
     const [erroCatalogo, setErroCatalogo] = useState("");
     const [anexoPendente, setAnexoPendente] = useState(null);
+    const [remocaoPendente, setRemocaoPendente] = useState(null);
+    const [requisitosEmProcessamento, setRequisitosEmProcessamento] = useState({});
+    const [isCriandoRascunho, setIsCriandoRascunho] = useState(false);
+    const [submissaoPendenteConfirmacao, setSubmissaoPendenteConfirmacao] = useState(null);
+    const [isSubmetendoCandidatura, setIsSubmetendoCandidatura] = useState(false);
     const [avisoPermissaoLinkedIn, setAvisoPermissaoLinkedIn] = useState(false);
+    const [toast, setToast] = useState({
+        visivel: false,
+        mensagem: "",
+        tipo: "sucesso",
+    });
+
+    const mostrarToast = (mensagem, tipo = "sucesso") => {
+        setToast({ visivel: true, mensagem, tipo });
+    };
+    const fecharToast = () => {
+        setToast((prev) => ({ ...prev, visivel: false }));
+    };
+
+    const definirProcessamentoRequisito = (idRequisito, ativo) => {
+        setRequisitosEmProcessamento((prev) => ({
+            ...prev,
+            [idRequisito]: ativo,
+        }));
+    };
 
     useEffect(() => {
-        if (isConsultor) {
-            setBadgesConsultor(badgesConsultorMock);
-            setErroCatalogo("");
-            setIsLoadingCatalogo(false);
-            return undefined;
-        }
-
         let ativo = true;
 
         async function carregarCatalogo() {
@@ -183,7 +245,9 @@ function GaleriaBadges({ modo = "consultor" }) {
             setErroCatalogo("");
 
             try {
-                const badgesCatalogo = await obterBadgesCatalogoNormalizados();
+                const badgesCatalogo = isConsultor
+                    ? await obterBadgesConsultorNormalizados()
+                    : await obterBadgesCatalogoNormalizados();
 
                 if (ativo) {
                     setBadgesConsultor(badgesCatalogo);
@@ -264,7 +328,7 @@ function GaleriaBadges({ modo = "consultor" }) {
         return calcularContagensEstadoBadges(badgesParaContagem);
     }, [badgesParaContagem]);
 
-    const mensagemGaleriaVazia = !isConsultor && isLoadingCatalogo
+    const mensagemGaleriaVazia = isLoadingCatalogo
         ? "A carregar badges..."
         : erroCatalogo || undefined;
 
@@ -315,7 +379,7 @@ function GaleriaBadges({ modo = "consultor" }) {
 
         try {
             if (isConsultor) {
-                const detalhe = await obterBadgeDetalheConsultor(idBadge);
+                const detalhe = await obterMeuBadge(idBadge, { badgeData: badge });
                 setDetalheBadge(detalhe);
                 return;
             }
@@ -333,6 +397,7 @@ function GaleriaBadges({ modo = "consultor" }) {
         } catch (error) {
             console.error("Erro ao carregar detalhe do badge:", error);
             setDetalheBadge(null);
+            mostrarToast(obterMensagemErroOperacao(error), "erro");
 
             if (!isConsultor) {
                 setIsDetalheBadgeOpen(false);
@@ -346,6 +411,9 @@ function GaleriaBadges({ modo = "consultor" }) {
         setIsDetalheBadgeOpen(false);
         setDetalheBadge(null);
         setAnexoPendente(null);
+        setRemocaoPendente(null);
+        setSubmissaoPendenteConfirmacao(null);
+        setRequisitosEmProcessamento({});
     };
 
     const handleSelecionarFicheiroRequisito = ({ requisito, ficheiro }) => {
@@ -370,45 +438,135 @@ function GaleriaBadges({ modo = "consultor" }) {
             return;
         }
 
-        setIsLoadingDetalheBadge(true);
+        definirProcessamentoRequisito(idRequisito, true);
 
         try {
-            const detalheAtualizado = await anexarRequisitoAoBadge({
+            const resposta = await guardarEvidencia(
                 idBadge,
                 idRequisito,
-                ficheiro: anexoPendente.ficheiro,
-            });
+                anexoPendente.ficheiro,
+                { badgeData: detalheBadge }
+            );
+            const detalheAtualizado = resposta.badge;
 
             setDetalheBadge(detalheAtualizado);
             atualizarBadgeConsultorNaGaleria(detalheAtualizado);
+            mostrarToast(
+                resposta.substituida
+                    ? "Evidência substituída com sucesso."
+                    : "Evidência anexada com sucesso."
+            );
         } catch (error) {
             console.error("Erro ao anexar requisito:", error);
-            alert("Não foi possível anexar o requisito.");
+            mostrarToast(obterMensagemErroOperacao(error), "erro");
         } finally {
-            setIsLoadingDetalheBadge(false);
+            definirProcessamentoRequisito(idRequisito, false);
             setAnexoPendente(null);
         }
     };
 
-    const handleSubmeterCandidatura = async (badgeDetalhe) => {
+    const handleCriarOuObterRascunho = async (badgeDetalhe) => {
         const idBadge = obterIdBadge(badgeDetalhe);
 
         if (!idBadge) {
             return;
         }
 
-        setIsLoadingDetalheBadge(true);
+        setIsCriandoRascunho(true);
 
         try {
-            const detalheAtualizado = await submeterCandidaturaBadge(idBadge);
+            const resposta = await criarOuObterRascunho(idBadge, {
+                badgeData: badgeDetalhe,
+            });
+            const detalheAtualizado = resposta.badge;
 
             setDetalheBadge(detalheAtualizado);
             atualizarBadgeConsultorNaGaleria(detalheAtualizado);
+            mostrarToast(
+                resposta.reutilizado
+                    ? "Rascunho existente carregado."
+                    : "Rascunho criado com sucesso."
+            );
+        } catch (error) {
+            console.error("Erro ao criar ou obter rascunho:", error);
+            mostrarToast(obterMensagemErroOperacao(error), "erro");
+        } finally {
+            setIsCriandoRascunho(false);
+        }
+    };
+
+    const handleSolicitarSubmeterCandidatura = (badgeDetalhe) => {
+        setSubmissaoPendenteConfirmacao(badgeDetalhe);
+    };
+
+    const handleConfirmarSubmeterCandidatura = async () => {
+        if (isSubmetendoCandidatura) {
+            return;
+        }
+
+        const badgeOrigem = submissaoPendenteConfirmacao ?? detalheBadge;
+        const idBadge = obterIdBadge(badgeOrigem);
+
+        if (!idBadge) {
+            return;
+        }
+
+        setIsSubmetendoCandidatura(true);
+
+        try {
+            const resposta = await submeterMinhaCandidatura(idBadge, {
+                badgeData: badgeOrigem,
+            });
+            const detalheAtualizado = resposta.badge;
+
+            setDetalheBadge(detalheAtualizado);
+            atualizarBadgeConsultorNaGaleria(detalheAtualizado);
+            setSubmissaoPendenteConfirmacao(null);
+            mostrarToast("Candidatura submetida com sucesso.");
         } catch (error) {
             console.error("Erro ao submeter candidatura:", error);
-            alert("Não foi possível submeter a candidatura.");
+            mostrarToast(obterMensagemErroOperacao(error), "erro");
         } finally {
-            setIsLoadingDetalheBadge(false);
+            setIsSubmetendoCandidatura(false);
+        }
+    };
+
+    const handleSolicitarRemoverEvidencia = ({ requisito }) => {
+        setRemocaoPendente({ requisito });
+    };
+
+    const handleConfirmarRemoverEvidencia = async () => {
+        if (!remocaoPendente || !detalheBadge) {
+            return;
+        }
+
+        const idBadge = obterIdBadge(detalheBadge);
+        const idRequisito =
+            remocaoPendente.requisito.id_requisito ??
+            remocaoPendente.requisito.idRequisito ??
+            remocaoPendente.requisito.id;
+
+        if (!idBadge || !idRequisito) {
+            return;
+        }
+
+        definirProcessamentoRequisito(idRequisito, true);
+
+        try {
+            const resposta = await removerEvidencia(idBadge, idRequisito, {
+                badgeData: detalheBadge,
+            });
+            const detalheAtualizado = resposta.badge;
+
+            setDetalheBadge(detalheAtualizado);
+            atualizarBadgeConsultorNaGaleria(detalheAtualizado);
+            mostrarToast("Evidência removida com sucesso.");
+        } catch (error) {
+            console.error("Erro ao remover evidência:", error);
+            mostrarToast(obterMensagemErroOperacao(error), "erro");
+        } finally {
+            definirProcessamentoRequisito(idRequisito, false);
+            setRemocaoPendente(null);
         }
     };
 
@@ -520,6 +678,7 @@ function GaleriaBadges({ modo = "consultor" }) {
                 >
                     {isConsultor && abaAtual === "sugeridos" && (
                         <GaleriaSugeridos
+                            badges={badgesConsultor}
                             onBadgeClick={handleOpenDetalheBadge}
                         />
                     )}
@@ -551,9 +710,18 @@ function GaleriaBadges({ modo = "consultor" }) {
                 onSelecionarFicheiroRequisito={
                     isConsultor ? handleSelecionarFicheiroRequisito : undefined
                 }
-                onSubmeterCandidatura={
-                    isConsultor ? handleSubmeterCandidatura : undefined
+                onRemoverFicheiroRequisito={
+                    isConsultor ? handleSolicitarRemoverEvidencia : undefined
                 }
+                requisitosEmProcessamento={requisitosEmProcessamento}
+                onCriarOuObterRascunho={
+                    isConsultor ? handleCriarOuObterRascunho : undefined
+                }
+                onSubmeterCandidatura={
+                    isConsultor ? handleSolicitarSubmeterCandidatura : undefined
+                }
+                isProcessandoRascunho={isCriandoRascunho}
+                isSubmetendoCandidatura={isSubmetendoCandidatura}
                 onVerPaginaPublica={handleVerPaginaPublicaBadge}
                 onCopiarLinkPublico={handleCopiarLinkPublicoBadge}
                 onPartilharLinkedIn={
@@ -584,6 +752,43 @@ function GaleriaBadges({ modo = "consultor" }) {
                 textoConfirmar="Anexar requisito"
                 textoCancelar="Cancelar"
                 isDanger={false}
+            />
+
+            <ModalConfirmacao
+                isOpen={isConsultor && !!submissaoPendenteConfirmacao}
+                onClose={() => setSubmissaoPendenteConfirmacao(null)}
+                onConfirm={handleConfirmarSubmeterCandidatura}
+                titulo="Submeter candidatura"
+                mensagem="Vais submeter esta candidatura para avaliaÃ§Ã£o. Queres continuar?"
+                textoConfirmar={
+                    isSubmetendoCandidatura
+                        ? "A submeter..."
+                        : "Submeter candidatura"
+                }
+                textoCancelar="Cancelar"
+                isDanger={false}
+            />
+
+            <ModalConfirmacao
+                isOpen={isConsultor && !!remocaoPendente}
+                onClose={() => setRemocaoPendente(null)}
+                onConfirm={handleConfirmarRemoverEvidencia}
+                titulo="Remover evidência"
+                mensagem={
+                    remocaoPendente
+                        ? `Vais remover a evidência do requisito "${obterDescricaoRequisito(remocaoPendente.requisito)}". Queres continuar?`
+                        : ""
+                }
+                textoConfirmar="Remover evidência"
+                textoCancelar="Cancelar"
+                isDanger
+            />
+
+            <ToastNotificacao
+                visivel={toast.visivel}
+                mensagem={toast.mensagem}
+                tipo={toast.tipo}
+                onFechar={fecharToast}
             />
         </main>
     );

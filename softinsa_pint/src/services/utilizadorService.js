@@ -88,12 +88,4 @@ export async function atualizarUtilizador(id, dados) {
   }
 }
 
-export async function eliminarUtilizador(id) {
-  try {
-    const res = await api.delete(`/utilizadores/${id}`);
-    return res.data;
-  } catch (error) {
-    console.error("Erro ao eliminar utilizador:", error);
-    throw error;
-  }
-}
+

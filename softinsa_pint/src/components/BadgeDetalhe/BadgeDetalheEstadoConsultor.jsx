@@ -79,7 +79,7 @@ function BadgeDetalheEstadoConsultor({ detalhe }) {
                         {dataCandidatura
                             ? `Submetida em ${dataCandidatura}. `
                             : ""}
-                        O Talent Manager irá analisar a candidatura e dar
+                        O Talent Manager e o Service Line irão analisar a candidatura e dar
                         feedback em breve.
                     </p>
                 </div>
@@ -143,13 +143,13 @@ function BadgeDetalheEstadoConsultor({ detalhe }) {
                         {dataAvaliacao
                             ? `Avaliada em ${dataAvaliacao}. `
                             : ""}
-                        Revê o feedback do Talent Manager antes de submeter
+                        Revê o feedback antes de submeter
                         novamente.
                     </p>
 
                     {detalhe?.feedback && (
                         <div className="badge-detalhe-feedback">
-                            <strong>Feedback do Talent Manager</strong>
+                            <strong>Feedback:</strong>
                             <p>{detalhe.feedback}</p>
                         </div>
                     )}

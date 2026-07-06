@@ -5,6 +5,7 @@ import {
     requisitosBadgeMock,
     badgeDetalheConsultorMock,
 } from "../data/mocks";
+import api from "./api";
 
 import {
     normalizarBadgeDetalheCatalogo,
@@ -12,6 +13,7 @@ import {
     obterUrlPublicaBadge,
     ESTADOS_BADGE_CONSULTOR,
 } from "../utils/badgeDetalheNormalizadores";
+import { normalizarBadgeCatalogo } from "../utils/badgesNormalizadores";
 
 function clonar(valor) {
     return JSON.parse(JSON.stringify(valor));
@@ -25,28 +27,157 @@ let registoBadgesMockLocal = clonar(badgeDetalheConsultorMock.registoBadges);
 const estadoOverridePorBadge = new Map();
 
 function obterBadgeCatalogoPorId(idBadge, badgeData = null) {
+    if (badgeData) {
+        return normalizarBadgeCatalogo({
+            ...badgeData,
+            id_badge:
+                badgeData.id_badge ??
+                badgeData.idBadge ??
+                badgeData.id ??
+                Number(idBadge),
+        });
+    }
+
     const encontrado = badgesCatalogoMock.find(
         (badge) => Number(badge.id_badge) === Number(idBadge)
     );
-    if (encontrado) return encontrado;
-    if (badgeData) {
-        return {
-            id_badge: Number(idBadge),
-            nome_badge: badgeData.nome_badge ?? badgeData.Nome_Badge ?? badgeData.titulo ?? "Badge",
-            nome_area: badgeData.nome_area ?? badgeData.Nome_Area ?? "Geral",
-            id_service_line: badgeData.id_service_line ?? badgeData.ID_Service_Line ?? null,
-            nome_service_line: badgeData.nome_service_line ?? badgeData.Nome_Service_Line ?? "Sem Service Line",
-            id_learning_path: badgeData.id_learning_path ?? badgeData.ID_Learning_Path ?? null,
-            nome_learning_path: badgeData.nome_learning_path ?? badgeData.Nome_Learning_Path ?? "Sem Learning Path",
-            id_nivel: badgeData.id_nivel ?? badgeData.ID_Nivel ?? null,
-            nome_nivel: badgeData.nome_nivel ?? badgeData.Nome_Nivel ?? "Sem Nível",
-            pontos_badge: badgeData.pontos_badge ?? badgeData.Pontos_Badge ?? 100,
-            validade: badgeData.validade ?? badgeData.Validade ?? 365,
-            imagem: badgeData.imagem ?? badgeData.imagemBadge ?? null,
-            descricao_badge: badgeData.descricao_badge ?? badgeData.descricao ?? ""
-        };
+
+    return encontrado
+        ? normalizarBadgeCatalogo(encontrado)
+        : null;
+}
+function normalizarStatus(status) {
+    return typeof status === "string" ? status.trim().toLowerCase() : "";
+}
+
+function criarDetalheConsultorSemEstado(idBadge, badgeData = null) {
+    const badge = obterBadgeCatalogoPorId(idBadge, badgeData);
+
+    if (!badge) {
+        return null;
     }
-    return null;
+
+    const requisitos = badgeData
+        ? Array.isArray(badge.requisitos)
+            ? badge.requisitos
+            : []
+        : obterRequisitosPorBadge(idBadge);
+
+    const detalhe = normalizarBadgeDetalheConsultor({
+        badge,
+        requisitos,
+        estadoConsultor: {
+            id_badge: Number(idBadge),
+            estado: ESTADOS_BADGE_CONSULTOR.BLOQUEADO,
+            progresso: 0,
+            data_candidatura: null,
+            data_obtencao: null,
+            data_expiracao: null,
+        },
+        submissao: null,
+        documentos: [],
+        historico: null,
+        registo: null,
+    });
+
+    return {
+        ...detalhe,
+        podeAnexarRequisitos: false,
+        podeSubmeterCandidatura: false,
+    };
+}
+
+function normalizarMeuBadgeBackend(badgePessoal, badgeData = null) {
+    if (!badgePessoal) {
+        return null;
+    }
+
+    const idBadge =
+        badgePessoal.id_badge ??
+        badgeData?.id_badge ??
+        badgeData?.idBadge ??
+        badgeData?.id;
+    const badge = obterBadgeCatalogoPorId(idBadge, badgeData);
+
+    if (!badge) {
+        return null;
+    }
+
+    const requisitos = Array.isArray(badgePessoal.requisitos)
+        ? badgePessoal.requisitos
+        : [];
+    const documentos = requisitos
+        .map((requisito) => {
+            if (!requisito.documento) {
+                return null;
+            }
+
+            return {
+                ...requisito.documento,
+                id_requisito: requisito.id_requisito,
+                id_submissao:
+                    requisito.documento.id_submissao ??
+                    badgePessoal.submissao?.id_submissao ??
+                    null,
+                deleted_file: false,
+            };
+        })
+        .filter(Boolean);
+    const statusSubmissao = normalizarStatus(badgePessoal.submissao?.status);
+    const detalhe = normalizarBadgeDetalheConsultor({
+        badge,
+        requisitos,
+        estadoConsultor: {
+            ...badgePessoal,
+            estado: badgePessoal.estado ?? ESTADOS_BADGE_CONSULTOR.BLOQUEADO,
+            progresso: badgePessoal.progresso ?? 0,
+        },
+        submissao: badgePessoal.submissao,
+        documentos,
+        historico: badgePessoal.avaliacao,
+        registo: badgePessoal.registo,
+    });
+
+    const progresso = badgePessoal.progresso ?? detalhe.progresso ?? 0;
+
+    return {
+        ...detalhe,
+        ...badgePessoal,
+        modo: "consultor",
+        badge: detalhe.badge,
+        requisitos: detalhe.requisitos,
+        estado: badgePessoal.estado ?? detalhe.estado,
+        estadoLabel: detalhe.estadoLabel,
+        progresso,
+        totalRequisitos:
+            badgePessoal.documentos?.total_requisitos ?? detalhe.totalRequisitos,
+        requisitosAnexados:
+            badgePessoal.documentos?.requisitos_anexados ?? detalhe.requisitosAnexados,
+        submissao: detalhe.submissao,
+        registo: badgePessoal.registo,
+        avaliacao: badgePessoal.avaliacao,
+        documentos: badgePessoal.documentos,
+        inconsistencias: badgePessoal.inconsistencias ?? [],
+        datas: {
+            candidatura: badgePessoal.data_candidatura ?? null,
+            obtencao: badgePessoal.data_obtencao ?? null,
+            expiracao: badgePessoal.data_expiracao ?? null,
+            avaliacao: badgePessoal.avaliacao?.data_avaliacao ?? null,
+        },
+        podeAnexarRequisitos: statusSubmissao === "em_progresso",
+        podeSubmeterCandidatura:
+            statusSubmissao === "em_progresso" && Number(progresso) === 100,
+        podePartilharConquista:
+            badgePessoal.estado === ESTADOS_BADGE_CONSULTOR.CONQUISTADO,
+        urlPublica: obterUrlPublicaBadge(idBadge),
+    };
+}
+
+function normalizarRespostaComBadge(resposta, badgeData = null) {
+    return {
+        ...resposta,
+        badge: normalizarMeuBadgeBackend(resposta?.badge, badgeData),
+    };
 }
 
 function obterEstadoConsultorPorBadge(idBadge) {
@@ -217,6 +348,44 @@ export async function obterBadgeDetalheCatalogo(idBadge, opcoes = {}) {
     });
 }
 
+export async function obterBadgePublico(idBadge) {
+    const textoId = String(idBadge ?? "").trim();
+
+    if (!/^\d+$/.test(textoId)) {
+        const erro = new Error("Identificador de badge inválido.");
+        erro.response = {
+            status: 400,
+            data: {
+                erro: "Identificador de badge inválido.",
+                codigo: "id_badge_invalido",
+            },
+        };
+        throw erro;
+    }
+
+    const idNumerico = Number(textoId);
+    if (!Number.isSafeInteger(idNumerico) || idNumerico <= 0) {
+        const erro = new Error("Identificador de badge inválido.");
+        erro.response = {
+            status: 400,
+            data: {
+                erro: "Identificador de badge inválido.",
+                codigo: "id_badge_invalido",
+            },
+        };
+        throw erro;
+    }
+
+    const res = await api.get(`/badges/public/${idNumerico}`);
+
+    return normalizarBadgeDetalheCatalogo({
+        badge: res.data,
+        requisitos: Array.isArray(res.data?.requisitos)
+            ? res.data.requisitos
+            : [],
+    });
+}
+
 export async function obterBadgeDetalheConsultor(idBadge, opcoes = {}) {
     const { idUtilizador = 1, badgeData = null } = opcoes;
 
@@ -246,6 +415,57 @@ export async function obterBadgeDetalheConsultor(idBadge, opcoes = {}) {
         historico,
         registo,
     });
+}
+
+export async function obterMeuBadge(idBadge, opcoes = {}) {
+    const { badgeData = null } = opcoes;
+
+    try {
+        const res = await api.get(`/me/badges/${idBadge}`);
+        return normalizarMeuBadgeBackend(res.data, badgeData);
+    } catch (error) {
+        const mensagem = error.response?.data?.error ?? "";
+        if (
+            error.response?.status === 404 &&
+            mensagem.toLowerCase().includes("pessoal")
+        ) {
+            const resCatalogo = await api.get(`/badges/${idBadge}`);
+            return criarDetalheConsultorSemEstado(idBadge, resCatalogo.data);
+        }
+
+        throw error;
+    }
+}
+
+export async function criarOuObterRascunho(idBadge, opcoes = {}) {
+    const { badgeData = null } = opcoes;
+    const res = await api.post(`/me/badges/${idBadge}/rascunho`);
+    return normalizarRespostaComBadge(res.data, badgeData);
+}
+
+export async function submeterMinhaCandidatura(idBadge, opcoes = {}) {
+    const { badgeData = null } = opcoes;
+    const res = await api.post(`/me/badges/${idBadge}/submeter`);
+    return normalizarRespostaComBadge(res.data, badgeData);
+}
+
+export async function guardarEvidencia(idBadge, idRequisito, ficheiro, opcoes = {}) {
+    const { badgeData = null } = opcoes;
+    const formData = new FormData();
+    formData.append("ficheiro", ficheiro);
+
+    const res = await api.put(
+        `/me/badges/${idBadge}/evidencias/${idRequisito}`,
+        formData
+    );
+
+    return normalizarRespostaComBadge(res.data, badgeData);
+}
+
+export async function removerEvidencia(idBadge, idRequisito, opcoes = {}) {
+    const { badgeData = null } = opcoes;
+    const res = await api.delete(`/me/badges/${idBadge}/evidencias/${idRequisito}`);
+    return normalizarRespostaComBadge(res.data, badgeData);
 }
 
 export async function anexarRequisitoAoBadge({

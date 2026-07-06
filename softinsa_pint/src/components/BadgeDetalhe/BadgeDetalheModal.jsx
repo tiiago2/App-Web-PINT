@@ -8,7 +8,12 @@ function BadgeDetalheModal({
     detalhe,
     isLoading = false,
     onSelecionarFicheiroRequisito,
+    onRemoverFicheiroRequisito,
+    requisitosEmProcessamento,
+    onCriarOuObterRascunho,
     onSubmeterCandidatura,
+    isProcessandoRascunho,
+    isSubmetendoCandidatura,
     onVerPaginaPublica,
     onCopiarLinkPublico,
     onPartilharLinkedIn,
@@ -58,7 +63,12 @@ function BadgeDetalheModal({
                         onSelecionarFicheiroRequisito={
                             onSelecionarFicheiroRequisito
                         }
+                        onRemoverFicheiroRequisito={onRemoverFicheiroRequisito}
+                        requisitosEmProcessamento={requisitosEmProcessamento}
+                        onCriarOuObterRascunho={onCriarOuObterRascunho}
                         onSubmeterCandidatura={onSubmeterCandidatura}
+                        isProcessandoRascunho={isProcessandoRascunho}
+                        isSubmetendoCandidatura={isSubmetendoCandidatura}
                         onVerPaginaPublica={onVerPaginaPublica}
                         onCopiarLinkPublico={onCopiarLinkPublico}
                         onPartilharLinkedIn={onPartilharLinkedIn}

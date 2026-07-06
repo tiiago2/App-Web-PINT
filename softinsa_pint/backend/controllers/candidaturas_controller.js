@@ -8,7 +8,9 @@ const {
   Requisitos,
   Historico,
   Notificacoes,
-  Objetivos
+  Objetivos,
+  RegistoBadges,
+  Logs
 } = require("../models");
 const { Op } = require("sequelize");
 
@@ -313,6 +315,25 @@ module.exports = {
           obj.data_conclusao = new Date();
           obj.notificacao_fim = false;
           await obj.save();
+        }
+
+        // 4. Criar registo do badge atribuído e log de atividade
+        try {
+          const novoRegisto = await RegistoBadges.create({
+            id_badge: submissao.id_badge,
+            id_utilizador: submissao.id_utilizador,
+            data_obtencao: new Date()
+          });
+
+          await Logs.create({
+            tabela: 'registo_badges',
+            tipo: 1,
+            id_alvo: novoRegisto.id_registo,
+            data_log: new Date()
+          });
+        } catch (erroRegisto) {
+          console.error('Erro ao criar registo de badge/log de atividade:', erroRegisto);
+          // Não falhar a operação principal se o log falhar
         }
       }
 

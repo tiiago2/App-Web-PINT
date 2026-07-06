@@ -5,12 +5,18 @@ module.exports = {
     async getNotificacoes(req, res) {
         try {
             const id_utilizador = req.utilizadorLogado.id_utilizador;
-            
-            // Buscar as notificações associadas a este utilizador
+
+            // Buscar as notificações associadas a este utilizador (excluindo avisos)
             const user = await Utilizador.findByPk(id_utilizador, {
                 include: [{
                     model: Notificacoes,
-                    through: { attributes: [] }
+                    where: {
+                        tipo_notificacao: {
+                            [Op.ne]: 'aviso'
+                        }
+                    },
+                    through: { attributes: [] },
+                    required: false
                 }]
             });
 
@@ -60,7 +66,7 @@ module.exports = {
                 id_utilizador: id_remetente,
                 descricao_notificacao: mensagem,
                 data_envio: new Date(),
-                tipo_notificacao: 'aviso'
+                tipo_notificacao: `aviso:${tipoDestino || 'grupo'}:${destino || 'Todos'}`
             });
 
             // 2. Determinar destinatários
@@ -134,11 +140,26 @@ module.exports = {
         try {
             const id_utilizador = req.utilizadorLogado.id_utilizador;
 
+            // Helper para mapear avisos decodificando o tipoDestino e destino do campo tipo_notificacao
+            const mapearAviso = (n, autorPadrao) => {
+                const partes = (n.tipo_notificacao || "").split(":");
+                const tipoDest = partes[1] || "grupo";
+                const dest = partes[2] || "Todos";
+                return {
+                    id: n.id_notificacao,
+                    mensagem: n.descricao_notificacao,
+                    tipoDestino: tipoDest,
+                    destino: dest,
+                    data: n.data_envio,
+                    autor: n.Utilizador?.nome_user || autorPadrao
+                };
+            };
+
             // 1. Obter avisos recebidos pelo utilizador (através da tabela intermédia Recetor)
             const userWithReceived = await Utilizador.findByPk(id_utilizador, {
                 include: [{
                     model: Notificacoes,
-                    where: { tipo_notificacao: 'aviso' },
+                    where: { tipo_notificacao: { [Op.like]: 'aviso%' } },
                     through: { attributes: [] },
                     include: [{
                         model: Utilizador, // O autor/remetente do aviso
@@ -147,20 +168,13 @@ module.exports = {
                 }]
             });
 
-            const recebidos = (userWithReceived?.Notificacoes || []).map(n => ({
-                id: n.id_notificacao,
-                mensagem: n.descricao_notificacao,
-                tipoDestino: "grupo",
-                destino: "Todos",
-                data: n.data_envio,
-                autor: n.Utilizador?.nome_user || "Sistema"
-            }));
+            const recebidos = (userWithReceived?.Notificacoes || []).map(n => mapearAviso(n, "Sistema"));
 
             // 2. Obter todos os avisos enviados por este utilizador
             const enviadosRaw = await Notificacoes.findAll({
                 where: {
                     id_utilizador: id_utilizador,
-                    tipo_notificacao: 'aviso'
+                    tipo_notificacao: { [Op.like]: 'aviso%' }
                 },
                 include: [{
                     model: Utilizador,
@@ -169,14 +183,7 @@ module.exports = {
                 order: [['data_envio', 'DESC']]
             });
 
-            const enviados = enviadosRaw.map(n => ({
-                id: n.id_notificacao,
-                mensagem: n.descricao_notificacao,
-                tipoDestino: "grupo",
-                destino: "Todos",
-                data: n.data_envio,
-                autor: n.Utilizador?.nome_user || "Eu"
-            }));
+            const enviados = enviadosRaw.map(n => mapearAviso(n, "Eu"));
 
             return res.status(200).json({
                 recebidos,
@@ -185,6 +192,101 @@ module.exports = {
         } catch (error) {
             console.error("Erro ao obter avisos do utilizador:", error);
             return res.status(500).json({ error: "Erro interno no servidor ao obter os avisos." });
+        }
+    },
+
+    async editarAviso(req, res) {
+        try {
+            const id_remetente = req.utilizadorLogado.id_utilizador;
+            const { id } = req.params;
+            const { mensagem, tipoDestino, destino } = req.body;
+
+            if (!mensagem) {
+                return res.status(400).json({ error: "O texto da mensagem é obrigatório." });
+            }
+
+            // 1. Procurar o aviso
+            const aviso = await Notificacoes.findByPk(id);
+            if (!aviso) {
+                return res.status(404).json({ error: "Aviso não encontrado." });
+            }
+
+            // 2. Segurança: apenas o próprio utilizador que mandou pode editar
+            if (aviso.id_utilizador !== id_remetente) {
+                return res.status(403).json({ error: "Não autorizado a editar este aviso." });
+            }
+
+            // 3. Atualizar na tabela principal
+            await aviso.update({
+                descricao_notificacao: mensagem,
+                data_envio: new Date(),
+                tipo_notificacao: `aviso:${tipoDestino || 'grupo'}:${destino || 'Todos'}`
+            });
+
+            // 4. Determinar novos destinatários
+            let destinatariosIds = [];
+            if (tipoDestino === 'grupo') {
+                let roleQuery = null;
+                if (destino === 'Todos os Consultores') {
+                    roleQuery = 'Consultor';
+                } else if (destino === 'Todos os Talent Managers') {
+                    roleQuery = 'Talent Manager';
+                } else if (destino === 'Todos os Service Line Leaders') {
+                    roleQuery = 'Service Line Leader';
+                }
+
+                if (roleQuery) {
+                    const users = await Utilizador.findAll({
+                        include: [{
+                            model: Role,
+                            where: { nome_role: roleQuery },
+                            through: { attributes: [] }
+                        }],
+                        attributes: ['id_utilizador']
+                    });
+                    destinatariosIds = users.map(u => u.id_utilizador);
+                } else {
+                    const users = await Utilizador.findAll({
+                        where: { ativo: true },
+                        attributes: ['id_utilizador']
+                    });
+                    destinatariosIds = users.map(u => u.id_utilizador);
+                }
+            } else if (tipoDestino === 'individual' && destino) {
+                const user = await Utilizador.findOne({
+                    where: {
+                        [Op.or]: [
+                            { nome_user: destino },
+                            { email: destino }
+                        ]
+                    },
+                    attributes: ['id_utilizador']
+                });
+                if (user) {
+                    destinatariosIds = [user.id_utilizador];
+                }
+            }
+
+            // 5. Atualizar na tabela intermédia Recetor
+            await Recetor.destroy({
+                where: { id_notificacao: id }
+            });
+
+            if (destinatariosIds.length > 0) {
+                const dadosRecetores = destinatariosIds.map(id_dest => ({
+                    id_notificacao: id,
+                    id_utilizador: id_dest
+                }));
+                await Recetor.bulkCreate(dadosRecetores);
+            }
+
+            return res.status(200).json({
+                message: "Aviso atualizado com sucesso!",
+                id_notificacao: id
+            });
+        } catch (error) {
+            console.error("Erro ao editar aviso:", error);
+            return res.status(500).json({ error: "Erro interno no servidor ao editar o aviso." });
         }
     }
 };

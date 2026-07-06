@@ -1,14 +1,6 @@
 const { Submissoes, Sla, Historico, Consultor, Area, ServiceLine, Utilizador, Role, Notificacoes, Recetor, Defs_notificacao } = require('../models');
 const { Op } = require('sequelize');
-const nodemailer = require('nodemailer');
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail', 
-    auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS  
-    }
-});
+const { enviarEmail } = require('../helpers/emailHelper');
 
 /**
  * Cria uma notificação e o respetivo registo na tabela recetor.
@@ -77,16 +69,11 @@ const checkSubmissoesSla = async () => {
                     });
 
                     for (const tm of talentManagers) {
-                        try {
-                            await transporter.sendMail({
-                                from: process.env.EMAIL_USER,
-                                to: tm.email,
-                                subject: `🚨 [Aviso SLA] Submissão #${submissao.id_submissao} Pendente`,
-                                html: `<p>A submissão <b>#${submissao.id_submissao}</b> encontra-se pendente e ultrapassou o tempo máximo de avaliação.</p>`
-                            });
-                        } catch (mailError) {
-                            console.error(`Erro ao enviar email para Talent Manager ${tm.email}:`, mailError.message);
-                        }
+                        await enviarEmail({
+                            to: tm.email,
+                            subject: `🚨 [Aviso SLA] Submissão #${submissao.id_submissao} Pendente`,
+                            html: `<p>A submissão <b>#${submissao.id_submissao}</b> encontra-se pendente e ultrapassou o tempo máximo de avaliação.</p>`
+                        });
 
                         // Criar notificação + recetor apenas se o toggle estiver ativo
                         if (pushAtiva) {
@@ -110,16 +97,11 @@ const checkSubmissoesSla = async () => {
                         const lider = await Utilizador.findByPk(idLider);
                         if (lider) {
                             if (lider.email) {
-                                try {
-                                    await transporter.sendMail({
-                                        from: process.env.EMAIL_USER,
-                                        to: lider.email,
-                                        subject: `🚨 [Aviso SLA] Submissão #${submissao.id_submissao} Aguarda Avaliação Final`,
-                                        html: `<p>A submissão <b>#${submissao.id_submissao}</b> foi aceite pelo Talent Manager mas aguarda a tua avaliação final há demasiado tempo.</p>`
-                                    });
-                                } catch (mailError) {
-                                    console.error(`Erro ao enviar email para Líder ${lider.email}:`, mailError.message);
-                                }
+                                await enviarEmail({
+                                    to: lider.email,
+                                    subject: `🚨 [Aviso SLA] Submissão #${submissao.id_submissao} Aguarda Avaliação Final`,
+                                    html: `<p>A submissão <b>#${submissao.id_submissao}</b> foi aceite pelo Talent Manager mas aguarda a tua avaliação final há demasiado tempo.</p>`
+                                });
                             }
 
                             // Criar notificação + recetor apenas se o toggle estiver ativo

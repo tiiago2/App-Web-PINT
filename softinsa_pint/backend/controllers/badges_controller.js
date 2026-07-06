@@ -1,4 +1,12 @@
 const db = require('../models');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true
+});
 
 function criarIncludesBadges({ incluirRequisitos = false } = {}) {
     const includes = [
@@ -98,8 +106,117 @@ function criarErroHttp(statusCode, mensagem) {
     return erro;
 }
 
+function criarErroComCodigo(statusCode, mensagem, codigo) {
+    const erro = criarErroHttp(statusCode, mensagem);
+    erro.codigo = codigo;
+    return erro;
+}
+
 function temPropriedade(objeto, propriedade) {
     return Object.prototype.hasOwnProperty.call(objeto, propriedade);
+}
+
+function isUrlHttpValida(valor) {
+    if (typeof valor !== 'string') {
+        return false;
+    }
+
+    try {
+        const url = new URL(valor);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
+function isDataUrl(valor) {
+    return typeof valor === 'string' && valor.trim().toLowerCase().startsWith('data:');
+}
+
+function validarUrlImagemBadge(valor) {
+    const texto = validarTextoObrigatorio(valor, 'imagem');
+
+    if (isDataUrl(texto) || !isUrlHttpValida(texto)) {
+        throw criarErroHttp(400, 'imagem deve ser uma URL http ou https valida.');
+    }
+
+    return texto;
+}
+
+function normalizarBodyBadgeRecebido(body = {}) {
+    const valores = { ...body };
+
+    if (typeof valores.requisitos === 'string') {
+        try {
+            valores.requisitos = JSON.parse(valores.requisitos);
+        } catch {
+            throw criarErroHttp(400, 'requisitos deve ser um array.');
+        }
+    }
+
+    if (typeof valores.especial === 'string') {
+        const texto = valores.especial.trim().toLowerCase();
+        if (texto === 'true') {
+            valores.especial = true;
+        } else if (texto === 'false') {
+            valores.especial = false;
+        }
+    }
+
+    if (valores.validade === 'null') {
+        valores.validade = null;
+    }
+
+    return valores;
+}
+
+async function uploadImagemBadgeCloudinary(file) {
+    try {
+        const fileBase64 = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+        const uploadResult = await cloudinary.uploader.upload(fileBase64, {
+            folder: 'imagens_badges',
+            resource_type: 'image'
+        });
+
+        return {
+            secure_url: uploadResult.secure_url,
+            public_id: uploadResult.public_id,
+            resource_type: uploadResult.resource_type || 'image'
+        };
+    } catch (error) {
+        console.error('Erro ao enviar imagem do badge para o Cloudinary:', error);
+        throw criarErroComCodigo(502, 'Nao foi possivel guardar a imagem do badge.', 'upload_imagem_falhou');
+    }
+}
+
+async function limparUploadImagemBadge(uploadInfo) {
+    if (!uploadInfo?.public_id) {
+        return;
+    }
+
+    try {
+        await cloudinary.uploader.destroy(uploadInfo.public_id, {
+            resource_type: uploadInfo.resource_type || 'image'
+        });
+    } catch (cleanupError) {
+        console.error('Erro ao limpar upload de imagem do badge:', cleanupError);
+    }
+}
+
+function responderErroController(res, error, mensagemFallback) {
+    if (error.statusCode) {
+        if (error.codigo) {
+            return res.status(error.statusCode).json({
+                erro: error.message,
+                codigo: error.codigo
+            });
+        }
+
+        return res.status(error.statusCode).json({ error: error.message });
+    }
+
+    console.error(mensagemFallback, error);
+    return res.status(500).json({ error: mensagemFallback });
 }
 
 function validarInteiroPositivo(valor, campo) {
@@ -218,7 +335,7 @@ function validarBodyBadge(body, { parcial = false } = {}) {
     }
 
     if (temPropriedade(body, 'imagem')) {
-        valores.imagem = validarTextoObrigatorio(body.imagem, 'imagem');
+        valores.imagem = validarUrlImagemBadge(body.imagem);
     }
 
     if (temPropriedade(body, 'descricao_badge')) {
@@ -392,10 +509,18 @@ async function obterBadgeCompletoPorId(idBadge, transaction) {
 
 exports.criarBadgeAdmin = async (req, res) => {
     let transaction;
+    let uploadImagemInfo = null;
 
     try {
-        const valores = validarBodyBadge(req.body, { parcial: false });
-        const requisitosInfo = validarFormatoRequisitos(req.body);
+        const bodyNormalizado = normalizarBodyBadgeRecebido(req.body);
+
+        if (req.file) {
+            uploadImagemInfo = await uploadImagemBadgeCloudinary(req.file);
+            bodyNormalizado.imagem = uploadImagemInfo.secure_url;
+        }
+
+        const valores = validarBodyBadge(bodyNormalizado, { parcial: false });
+        const requisitosInfo = validarFormatoRequisitos(bodyNormalizado);
 
         transaction = await db.sequelize.transaction();
 
@@ -441,27 +566,39 @@ exports.criarBadgeAdmin = async (req, res) => {
             await transaction.rollback();
         }
 
-        if (error.statusCode === 400) {
-            return res.status(400).json({ error: error.message });
+        if (uploadImagemInfo) {
+            await limparUploadImagemBadge(uploadImagemInfo);
         }
 
-        console.error('Erro ao criar Badge:', error);
-        return res.status(500).json({ error: 'Erro ao criar badge.' });
+        return responderErroController(res, error, 'Erro ao criar badge.');
     }
 };
 
 exports.atualizarBadgeAdmin = async (req, res) => {
     let transaction;
+    let uploadImagemInfo = null;
 
     try {
         const idBadge = validarInteiroPositivo(req.params.id, 'id');
+        const bodyNormalizado = normalizarBodyBadgeRecebido(req.body);
 
-        if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body) || Object.keys(req.body).length === 0) {
+        if (
+            !req.file &&
+            (!bodyNormalizado ||
+                typeof bodyNormalizado !== 'object' ||
+                Array.isArray(bodyNormalizado) ||
+                Object.keys(bodyNormalizado).length === 0)
+        ) {
             return res.status(400).json({ error: 'Body nao pode estar vazio.' });
         }
 
-        const valores = validarBodyBadge(req.body, { parcial: true });
-        const requisitosInfo = validarFormatoRequisitos(req.body);
+        if (req.file) {
+            uploadImagemInfo = await uploadImagemBadgeCloudinary(req.file);
+            bodyNormalizado.imagem = uploadImagemInfo.secure_url;
+        }
+
+        const valores = validarBodyBadge(bodyNormalizado, { parcial: true });
+        const requisitosInfo = validarFormatoRequisitos(bodyNormalizado);
 
         if (
             Object.keys(valores).length === 0 &&
@@ -540,12 +677,11 @@ exports.atualizarBadgeAdmin = async (req, res) => {
             await transaction.rollback();
         }
 
-        if (error.statusCode === 400 || error.statusCode === 404) {
-            return res.status(error.statusCode).json({ error: error.message });
+        if (uploadImagemInfo) {
+            await limparUploadImagemBadge(uploadImagemInfo);
         }
 
-        console.error('Erro ao atualizar Badge:', error);
-        return res.status(500).json({ error: 'Erro ao atualizar badge.' });
+        return responderErroController(res, error, 'Erro ao atualizar badge.');
     }
 };
 
@@ -619,6 +755,44 @@ exports.listarBadgesCatalogo = async (req, res) => {
     } catch (error) {
         console.error('Erro ao listar Badges do catálogo:', error);
         return res.status(500).json({ error: 'Erro ao listar badges.' });
+    }
+};
+
+exports.obterBadgePublico = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!/^\d+$/.test(String(id))) {
+            return res.status(400).json({
+                erro: 'Identificador de badge invalido.',
+                codigo: 'id_badge_invalido'
+            });
+        }
+
+        const idBadge = Number(id);
+        if (!Number.isSafeInteger(idBadge) || idBadge <= 0) {
+            return res.status(400).json({
+                erro: 'Identificador de badge invalido.',
+                codigo: 'id_badge_invalido'
+            });
+        }
+
+        const badge = await obterBadgeCompletoPorId(idBadge);
+
+        if (!badge) {
+            return res.status(404).json({
+                erro: 'Badge nao encontrado.',
+                codigo: 'badge_nao_encontrado'
+            });
+        }
+
+        return res.status(200).json(formatarBadgeCatalogo(badge, { incluirRequisitos: true }));
+    } catch (error) {
+        console.error('Erro ao obter badge publico:', error);
+        return res.status(500).json({
+            erro: 'Nao foi possivel obter o badge.',
+            codigo: 'erro_obter_badge_publico'
+        });
     }
 };
 

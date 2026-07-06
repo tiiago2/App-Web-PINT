@@ -44,7 +44,7 @@
 
 .badge-detalhe-requisito {
     display: grid;
-    grid-template-columns: 42px minmax(0, 1fr) auto;
+    grid-template-columns: 42px minmax(0, 1fr) minmax(0, auto);
     align-items: center;
     gap: 14px;
     padding: 14px;
@@ -82,6 +82,7 @@
 
 .badge-detalhe-requisito-info {
     min-width: 0;
+    overflow: hidden;
 }
 
 .badge-detalhe-requisito-info h5 {
@@ -113,15 +114,32 @@
     color: var(--fontes);
     font-size: 0.76rem;
     font-weight: 700;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .badge-detalhe-requisito-ficheiro i {
+    flex: 0 0 auto;
     display: flex;
     color: var(--barra_lateral);
 }
 
+.badge-detalhe-requisito-ficheiro a,
+.badge-detalhe-requisito-ficheiro span {
+    min-width: 0;
+    overflow: hidden;
+    color: inherit;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .badge-detalhe-requisito-acoes {
-    flex: 0 0 auto;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 .badge-detalhe-requisito-input {
@@ -129,6 +147,7 @@
 }
 
 .badge-detalhe-requisito-botao {
+    max-width: 100%;
     min-height: 34px;
     display: inline-flex;
     align-items: center;

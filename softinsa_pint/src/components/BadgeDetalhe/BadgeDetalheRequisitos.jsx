@@ -75,11 +75,32 @@ function obterDescricaoRequisitos(modo, detalhe) {
     return "Lista de requisitos associados a este badge.";
 }
 
+function isUrlDocumento(valor = "") {
+    try {
+        const url = new URL(valor);
+        return ["http:", "https:"].includes(url.protocol);
+    } catch {
+        return false;
+    }
+}
+
+function obterTextoDocumento(documento) {
+    const documentoSeguro = documento ?? {};
+
+    return (
+        documentoSeguro.nomeFicheiro ??
+        documentoSeguro.ficheiro ??
+        "Documento"
+    );
+}
+
 function BadgeDetalheRequisitos({
     modo = "catalogo",
     detalhe,
     requisitos = [],
     onSelecionarFicheiroRequisito,
+    onRemoverFicheiroRequisito,
+    requisitosEmProcessamento = {},
 }) {
     const podeAnexar =
         modo === "consultor" && detalhe?.podeAnexarRequisitos === true;
@@ -106,9 +127,15 @@ function BadgeDetalheRequisitos({
                         requisito.id;
 
                     const inputId = `input-requisito-${detalhe?.id_badge}-${idRequisito}`;
+                    const isProcessando = requisitosEmProcessamento[idRequisito] === true;
+                    const ficheiroDocumento = requisito.documento?.ficheiro ?? "";
+                    const documentoTemUrl = isUrlDocumento(ficheiroDocumento);
+                    const textoDocumento = documentoTemUrl
+                        ? "Ver documento"
+                        : obterTextoDocumento(requisito.documento);
 
                     const handleSelecionarFicheiro = (ficheiro) => {
-                        if (!ficheiro) {
+                        if (!ficheiro || isProcessando) {
                             return;
                         }
 
@@ -132,6 +159,7 @@ function BadgeDetalheRequisitos({
                             }`}
                             onDragOver={
                                 podeAnexar
+                                && !isProcessando
                                     ? (event) => {
                                           event.preventDefault();
                                           event.dataTransfer.dropEffect =
@@ -141,6 +169,7 @@ function BadgeDetalheRequisitos({
                             }
                             onDrop={
                                 podeAnexar
+                                && !isProcessando
                                     ? (event) => {
                                           event.preventDefault();
 
@@ -166,10 +195,26 @@ function BadgeDetalheRequisitos({
                                 <p>{requisito.descricao}</p>
 
                                 {requisito.temAnexo && (
-                                    <span className="badge-detalhe-requisito-ficheiro">
+                                    <span
+                                        className="badge-detalhe-requisito-ficheiro"
+                                        title={
+                                            documentoTemUrl
+                                                ? "Abrir documento"
+                                                : textoDocumento
+                                        }
+                                    >
                                         <i className="fi fi-br-clip"></i>
-                                        {requisito.documento?.nomeFicheiro ??
-                                            requisito.documento?.ficheiro}
+                                        {documentoTemUrl ? (
+                                            <a
+                                                href={ficheiroDocumento}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                Ver documento
+                                            </a>
+                                        ) : (
+                                            <span>{textoDocumento}</span>
+                                        )}
                                     </span>
                                 )}
                             </div>
@@ -180,6 +225,7 @@ function BadgeDetalheRequisitos({
                                         id={inputId}
                                         type="file"
                                         className="badge-detalhe-requisito-input"
+                                        disabled={isProcessando}
                                         onChange={(event) => {
                                             const ficheiro =
                                                 event.target.files?.[0];
@@ -193,9 +239,27 @@ function BadgeDetalheRequisitos({
                                     <label
                                         htmlFor={inputId}
                                         className="badge-detalhe-requisito-botao"
+                                        aria-disabled={isProcessando}
                                     >
-                                        {obterTextoAcaoRequisito(requisito)}
+                                        {isProcessando
+                                            ? "A processar..."
+                                            : obterTextoAcaoRequisito(requisito)}
                                     </label>
+
+                                    {requisito.temAnexo && (
+                                        <button
+                                            type="button"
+                                            className="badge-detalhe-requisito-botao"
+                                            disabled={isProcessando}
+                                            onClick={() =>
+                                                onRemoverFicheiroRequisito?.({
+                                                    requisito,
+                                                })
+                                            }
+                                        >
+                                            Remover anexo
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </article>

@@ -15,6 +15,5 @@ router.get('/estatisticas', controller.getEstatisticas);
 router.get('/roles', controller.getRoles);
 router.post('/', upload.single('imagem'), controller.createUtilizador);
 router.put('/:id', upload.single('imagem'), controller.updateUtilizador);
-router.delete('/:id', controller.deleteUtilizador);
 
 module.exports = router;

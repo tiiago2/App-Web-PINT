@@ -7,6 +7,7 @@ const Controller = require('../controllers/notificacoes_controller.js');
 router.get("/getnotificacoes", authMiddleware, Controller.getNotificacoes);
 router.get("/updaterecetor", authMiddleware, Controller.updateRecetor);
 router.post("/enviaraviso", authMiddleware, Controller.enviarAviso);
+router.put("/editaraviso/:id", authMiddleware, Controller.editarAviso);
 router.get("/getavisos", authMiddleware, Controller.getAvisosUtilizador);
 
 module.exports = router;

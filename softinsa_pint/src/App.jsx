@@ -115,6 +115,7 @@ function App() {
   const [isAvisoModalOpen, setIsAvisoModalOpen] = useState(false);
   const [avisoParaVisualizar, setAvisoParaVisualizar] = useState(null);
   const [avisoToDelete, setAvisoToDelete] = useState(null);
+  const [avisoParaEditar, setAvisoParaEditar] = useState(null);
   const [abaAvisos, setAbaAvisos] = useState("recebidos");
 
   // === INICIALIZAÇÃO DO UTILIZADOR ===
@@ -505,7 +506,6 @@ function App() {
                     notificacoesRecentes.map((notif) => (
                       <div key={notif.id} className="d-flex justify-content-between align-items-center p-2 bg-white" id="notification_option">
                         <div className="m-0 pe-2" id="notification_esquerda">
-                          <span id="nome_notificacao"><b>{notif.remetente}</b></span>
                           <span id="nome_notificacao">{notif.texto}</span>
                         </div>
                         <div className="d-flex flex-column align-items-center justify-content-center" id="notification_direita">
@@ -569,17 +569,11 @@ function App() {
                       [...avisosExibidos].reverse().map((aviso) => (
                         <div key={aviso.id} className="d-flex justify-content-between align-items-center p-2 bg-white" id="notification_option">
                           <div className="m-0 pe-2" id="notification_esquerda" style={{ cursor: "pointer" }} onClick={() => visualizarAviso(aviso)}>
-                            <span id="nome_notificacao"><b>{aviso.autor}</b></span>
                             <span id="nome_notificacao">{aviso.mensagem}</span>
                           </div>
                           <div className="d-flex flex-column align-items-center justify-content-center" id="notification_direita">
                             <div className="d-flex align-items-center gap-1 mb-1">
                               <span className={`aviso-tag aviso-tag-${getStyleClass(aviso)}`}>{getTradDestino(aviso)}</span>
-                              {aviso.autor === user.nome && (
-                                <div className="d-flex gap-1 ms-1">
-                                  <i className="fi fi-br-trash text-danger" style={{ cursor: "pointer", fontSize: "11px" }} onClick={() => setAvisoToDelete(aviso)}></i>
-                                </div>
-                              )}
                             </div>
                             <span>{aviso.data}</span>
                           </div>
@@ -637,20 +631,41 @@ function App() {
 
         {/* MODAIS DE AVISOS */}
         {isAvisoModalOpen && (
-          <AvisoFormModal onClose={() => setIsAvisoModalOpen(false)} onSave={async (dados) => {
-            try {
-              await api.post("/notificacoes/enviaraviso", dados);
-              await carregarNotificacoesEAvisos();
-            } catch (error) {
-              console.error("Erro ao enviar aviso:", error);
-              alert("Erro ao enviar o aviso.");
-            }
-            setIsAvisoModalOpen(false);
-          }} t={t} />
+          <AvisoFormModal 
+            avisoParaEditar={avisoParaEditar}
+            onClose={() => { setIsAvisoModalOpen(false); setAvisoParaEditar(null); }} 
+            onSave={async (dados) => {
+              try {
+                if (avisoParaEditar) {
+                  await api.put(`/notificacoes/editaraviso/${avisoParaEditar.id}`, dados);
+                } else {
+                  await api.post("/notificacoes/enviaraviso", dados);
+                }
+                await carregarNotificacoesEAvisos();
+              } catch (error) {
+                console.error("Erro ao guardar aviso:", error);
+                alert("Erro ao guardar o aviso.");
+              }
+              setIsAvisoModalOpen(false);
+              setAvisoParaEditar(null);
+            }} 
+            t={t} 
+          />
         )}
 
         {avisoParaVisualizar && (
-          <AvisoDetailModal aviso={avisoParaVisualizar} onClose={() => setAvisoParaVisualizar(null)} t={t} getTradDestino={getTradDestino} getStyleClass={getStyleClass} />
+          <AvisoDetailModal 
+            aviso={avisoParaVisualizar} 
+            onClose={() => setAvisoParaVisualizar(null)} 
+            t={t} 
+            getTradDestino={getTradDestino} 
+            getStyleClass={getStyleClass} 
+            onEdit={(avisoParaVisualizar.autor === user.nome || avisoParaVisualizar.autor === "Eu") ? () => {
+              setAvisoParaEditar(avisoParaVisualizar);
+              setAvisoParaVisualizar(null);
+              setIsAvisoModalOpen(true);
+            } : null}
+          />
         )}
 
         <ModalConfirmacao isOpen={!!avisoToDelete} onClose={() => setAvisoToDelete(null)} onConfirm={() => { setAvisosEnviados((prev) => prev.filter((a) => a.id !== avisoToDelete.id)); setAvisoToDelete(null); }} titulo={t("eliminar_aviso")} mensagem={`${t("confirmar_eliminar_aviso")} (${avisoToDelete?.titulo || (avisoToDelete?.mensagem ? (avisoToDelete.mensagem.substring(0, 30) + '...') : '')})`} textoConfirmar="Eliminar" />
@@ -660,10 +675,10 @@ function App() {
 }
 
 // === COMPONENTS AUXILIARES PARA AVISOS ===
-function AvisoFormModal({ onClose, onSave, t }) {
-  const [mensagem, setMensagem] = useState("");
-  const [tipoDestino, setTipoDestino] = useState("grupo");
-  const [destino, setDestino] = useState("Todos");
+function AvisoFormModal({ onClose, onSave, t, avisoParaEditar }) {
+  const [mensagem, setMensagem] = useState(avisoParaEditar ? avisoParaEditar.mensagem : "");
+  const [tipoDestino, setTipoDestino] = useState(avisoParaEditar ? avisoParaEditar.tipoDestino : "grupo");
+  const [destino, setDestino] = useState(avisoParaEditar ? avisoParaEditar.destino : "Todos");
 
   const handleTipoChange = (e) => { const val = e.target.value; setTipoDestino(val); setDestino(val === "grupo" ? "Todos" : ""); };
 
@@ -677,7 +692,7 @@ function AvisoFormModal({ onClose, onSave, t }) {
     <div className="aviso-modal-overlay">
       <div className="aviso-modal-content">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h4 className="m-0">{t("criar_aviso")}</h4>
+          <h4 className="m-0">{avisoParaEditar ? t("editar_aviso") || "Editar Aviso" : t("criar_aviso")}</h4>
           <button className="aviso-modal-close-btn" type="button" onClick={onClose}><i className="fi fi-br-cross"></i></button>
         </div>
         <form onSubmit={handleSubmit}>
@@ -731,12 +746,24 @@ function AvisoFormModal({ onClose, onSave, t }) {
   );
 }
 
-function AvisoDetailModal({ aviso, onClose, getTradDestino, getStyleClass }) {
+function AvisoDetailModal({ aviso, onClose, getTradDestino, getStyleClass, t, onEdit }) {
   return (
     <div className="aviso-modal-overlay" onClick={onClose}>
       <div className="aviso-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="d-flex justify-content-between align-items-start mb-3">
-          <span className={`aviso-tag aviso-tag-${getStyleClass(aviso)}`}>{getTradDestino(aviso)}</span>
+          <div className="d-flex align-items-center gap-2">
+            <span className={`aviso-tag aviso-tag-${getStyleClass(aviso)}`}>{getTradDestino(aviso)}</span>
+            {onEdit && (
+              <button 
+                type="button" 
+                className="btn btn-outline-secondary btn-sm border-0 d-inline-flex align-items-center justify-content-center p-1" 
+                onClick={onEdit}
+                title={t("editar") || "Editar"}
+              >
+                <i className="fi fi-br-edit" style={{ fontSize: "12px" }}></i>
+              </button>
+            )}
+          </div>
           <button className="aviso-modal-close-btn" type="button" onClick={onClose}><i className="fi fi-br-cross" style={{ fontSize: "0.9rem" }}></i></button>
         </div>
         {aviso.titulo && <h4 className="mb-3">{aviso.titulo}</h4>}

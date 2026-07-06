@@ -5,7 +5,7 @@ module.exports = (sequelize) => {
     id_utilizador: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     email: { type: DataTypes.TEXT, allowNull: false },
     telefone: { type: DataTypes.INTEGER, allowNull: false },
-    last_login: { type: DataTypes.DATE, allowNull: false },
+    last_login: { type: DataTypes.DATE, allowNull: true },
     lingua: { type: DataTypes.TEXT, allowNull: false },
     password: { type: DataTypes.TEXT, allowNull: false },
     aceitacao_politicas: { type: DataTypes.BOOLEAN, allowNull: false },

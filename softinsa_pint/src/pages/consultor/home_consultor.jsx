@@ -134,7 +134,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                                                     </div>
                                                     <span className="badge-card-pct" style={{ color: cor.principal }}>{pct}%</span>
                                                 </div>
-                                                <button className="btn-detalhes-figma" onClick={() => navigate('/candidaturas')}>
+                                                <button className="btn-detalhes-figma" onClick={() => navigate('/candidaturas', { state: { selectedCandidaturaId: badge.id } })}>
                                                     <i className="fi fi-br-eye"></i> {t('mais_detalhes')}
                                                 </button>
                                             </div>

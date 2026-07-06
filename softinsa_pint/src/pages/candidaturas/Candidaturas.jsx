@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
 import BarraPesquisa from "../../components/ui/BarraPesquisa/BarraPesquisa";
 import BotaoDropdown from "../../components/ui/BotaoDropdown/BotaoDropdown";
@@ -74,10 +75,6 @@ function CandidaturaCard({ candidatura, isSelected, onClick }) {
           <span className="fw-medium text-gray-700 truncate">{user.nome}</span>
           <span className="text-gray-300">|</span>
           <span className="text-gray-500 truncate">{user.area}</span>
-        </div>
-
-        <div className="candidatura-progresso-bar-wrap mb-2">
-          <div className="candidatura-progresso-bar-fill" style={{ width: `${candidatura.progresso}%` }}></div>
         </div>
         
         <div className="d-flex justify-content-between align-items-center text-gray-400" style={{ fontSize: "0.7rem" }}>
@@ -228,13 +225,6 @@ function CandidaturaDetalhes({ candidatura, userRole, onAccept, onReject, onClos
                     <strong>{t("pontuacao_label")}:</strong> {t("pontos_count", { count: badge.pontos })}
                   </div>
                 </div>
-
-                <div className="d-flex align-items-center gap-3">
-                  <div className="candidatura-progresso-bar-wrap">
-                    <div className="candidatura-progresso-bar-fill" style={{ width: `${candidatura.progresso}%` }}></div>
-                  </div>
-                  <span className="fw-bold fs-6" style={{ color: "var(--barra_progresso)" }}>{candidatura.progresso}%</span>
-                </div>
                 
                 <div className="mt-3 text-start">
                   <span className={`status-pill ${
@@ -321,6 +311,7 @@ function CandidaturaDetalhes({ candidatura, userRole, onAccept, onReject, onClos
 // MAIN PAGE COMPONENT
 export default function Candidaturas({ loggedUser }) {
   const { t } = useTranslation();
+  const location = useLocation();
 
   // --- Todos os useState agrupados no topo ---
   const [candidaturas, setCandidaturas] = useState([]);
@@ -328,6 +319,19 @@ export default function Candidaturas({ loggedUser }) {
   const [erro, setErro] = useState(null);
   const [selectedCandidaturaId, setSelectedCandidaturaId] = useState(null);
   const [filtroStatus, setFiltroStatus] = useState("Pendente");
+
+  // Handle navigation from homepage targeting a specific candidacy
+  useEffect(() => {
+    if (location.state?.selectedCandidaturaId && candidaturas.length > 0) {
+      const match = candidaturas.find(c => c.id === location.state.selectedCandidaturaId);
+      if (match) {
+        setFiltroStatus(match.status);
+        setSelectedCandidaturaId(match.id);
+        // Clean navigation state
+        window.history.replaceState({}, document.title);
+      }
+    }
+  }, [location.state, candidaturas]);
   const [filtroArea, setFiltroArea] = useState("Todas");
   const [ordenacao, setOrdenacao] = useState("Mais Recentes");
   const [pesquisa, setPesquisa] = useState("");
@@ -507,6 +511,7 @@ export default function Candidaturas({ loggedUser }) {
     }
 
     try {
+      setLoading(true);
       await api.put(`/candidaturas/${id}/status`, { status: type, motivo: motivo });
       await carregarCandidaturas();
       setSelectedCandidaturaId(null);
@@ -522,6 +527,8 @@ export default function Candidaturas({ loggedUser }) {
     } catch (error) {
       console.error(`Erro ao atualizar candidatura (${type}):`, error);
       alert(type === "Aceite" ? "Não foi possível aceitar a candidatura." : "Não foi possível rejeitar a candidatura.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -853,6 +860,7 @@ export default function Candidaturas({ loggedUser }) {
                 className="btn rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 candidatura-modal-btn-cancelar font-medium transition-all"
                 style={{ fontSize: "0.9rem", height: "44px" }}
                 onClick={() => setModalConfirmacao(prev => ({ ...prev, visible: false }))}
+                disabled={loading}
               >
                 <span>{t("cancelar")}</span>
               </button>
@@ -860,8 +868,13 @@ export default function Candidaturas({ loggedUser }) {
                 className={`btn rounded-3 d-flex align-items-center justify-content-center gap-2 px-4 py-2 font-medium transition-all ${modalConfirmacao.type === "Aceite" ? "aceitar_btn" : "rejeitar_btn"}`}
                 style={{ fontSize: "0.9rem", height: "44px" }}
                 onClick={confirmarAcaoModal}
+                disabled={loading}
               >
-                <i className={modalConfirmacao.type === "Aceite" ? "fi fi-br-check" : "fi fi-br-cross"}></i>
+                {loading ? (
+                  <i className="fi fi-br-spinner hc-spinner"></i>
+                ) : (
+                  <i className={modalConfirmacao.type === "Aceite" ? "fi fi-br-check" : "fi fi-br-cross"}></i>
+                )}
                 <span>{modalConfirmacao.type === "Aceite" ? t("confirmar") : t("rejeitar")}</span>
               </button>
             </div>

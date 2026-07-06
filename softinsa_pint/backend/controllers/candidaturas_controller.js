@@ -250,6 +250,11 @@ module.exports = {
         return res.status(404).json({ error: "Candidatura não encontrada." });
       }
 
+      // Impedir alterações em candidaturas que já foram finalizadas
+      if (submissao.status === 'aceite' || submissao.status === 'recusada') {
+        return res.status(400).json({ error: "Esta candidatura já foi finalizada." });
+      }
+
       submissao.status = dbStatus;
       await submissao.save();
 

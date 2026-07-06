@@ -2,7 +2,8 @@
     position: relative;
 
     width: 100%;
-    height: var(--altura-card-sugerido);
+    height: auto;
+    min-height: var(--altura-card-sugerido);
 
     display: flex;
     align-items: stretch;
@@ -147,6 +148,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 12px;
 
     margin-top: auto;

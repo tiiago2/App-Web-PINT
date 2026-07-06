@@ -1,68 +1,17 @@
+import { useEffect, useMemo, useState } from "react";
 import CardBadgeSugerido from "../CardBadgeSugerido/CardBadgeSugerido";
+import { obterSugestoesBadgesConsultor } from "../../../services/badgesService";
 import "./GaleriaSugeridos.css";
-
-const sugestoesBackendMock = [
-  {
-    idBadge: 10,
-    justificacao:
-      "Conquistaste este badge recentemente. Vê os detalhes e partilha no teu perfil.",
-    descricao:
-      "Reconhece competências base em Low Code e serve como ponto de partida para badges de níveis superiores dentro da tua área.",
-  },
-  {
-    idBadge: 11,
-    justificacao: "Pronto para o próximo nível? Já tens progresso neste badge.",
-    descricao:
-      "Este badge aprofunda competências de integração e pode ajudar-te a evoluir no learning path técnico da tua service line.",
-  },
-  {
-    idBadge: 12,
-    justificacao:
-      "Candidatura submetida. Acompanha a validação para saberes o próximo passo.",
-    descricao:
-      "Este badge valida fundamentos de cloud e pode reforçar o teu percurso na área de Hybrid Systems.",
-  },
-  {
-    idBadge: 21,
-    justificacao:
-      "O teu badge expirou. Renova para manteres a certificação ativa.",
-    descricao:
-      "A renovação mantém a credencial atualizada e evita perder visibilidade sobre competências já reconhecidas.",
-  },
-  {
-    idBadge: 13,
-    justificacao:
-      "Candidatura recusada. Vê o feedback e tenta novamente com as evidências certas.",
-    descricao:
-      "Consulta os requisitos e o feedback antes de nova submissão para aumentares a probabilidade de aprovação.",
-  },
-  {
-    idBadge: 14,
-    justificacao: "Faltam pré-requisitos para desbloquear este badge.",
-    descricao:
-      "Este badge fica disponível quando completares os requisitos anteriores do percurso técnico.",
-  },
-  {
-    idBadge: 2,
-    justificacao: "Em destaque na plataforma este trimestre.",
-    descricao:
-      "Badge especial associado a reconhecimento transversal dentro da plataforma de badges da Softinsa.",
-  },
-  {
-    idBadge: 22,
-    justificacao:
-      "Sugerido com base no teu histórico e nos badges populares da plataforma.",
-    descricao:
-      "Este badge pode complementar o teu perfil com competências de gestão ágil e delivery.",
-  },
-];
 
 function obterIdBadge(badge = {}) {
   return badge.id_badge ?? badge.idBadge ?? badge.id;
 }
 
 function enriquecerSugestao(sugestao, badges) {
-  const idBadge = sugestao.idBadge ?? sugestao.ID_BADGE;
+  const idBadge =
+    sugestao.id_badge ??
+    sugestao.idBadge ??
+    sugestao.ID_BADGE;
   const badge = badges.find(
     (item) => Number(obterIdBadge(item)) === Number(idBadge)
   );
@@ -75,34 +24,95 @@ function enriquecerSugestao(sugestao, badges) {
     ...badge,
     justificacao:
       sugestao.justificacao ||
-      sugestao.Justificacao ||
-      "Sugestão personalizada para si.",
-    descricao: sugestao.descricao || sugestao.Descricao || "",
+      "Sugestao personalizada para si.",
   };
 }
 
 function GaleriaSugeridos({
   badges = [],
-  sugestoes = sugestoesBackendMock,
   onBadgeClick,
 }) {
-  const badgesReais = Array.isArray(badges) ? badges : [];
-  const badgesSugeridos = sugestoes
-    .map((sugestao) => enriquecerSugestao(sugestao, badgesReais))
-    .filter(Boolean)
-    .slice(0, 8);
+  const [sugestoes, setSugestoes] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    let ativo = true;
+
+    async function carregarSugestoes() {
+      setIsLoading(true);
+      setErro("");
+
+      try {
+        const resposta = await obterSugestoesBadgesConsultor();
+
+        if (ativo) {
+          setSugestoes(resposta.sugestoes);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar sugestoes de badges:", error);
+
+        if (ativo) {
+          setErro("Nao foi possivel carregar as sugestoes de badges.");
+          setSugestoes([]);
+        }
+      } finally {
+        if (ativo) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    carregarSugestoes();
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  const badgesSugeridos = useMemo(
+    () => {
+      const badgesReais = Array.isArray(badges) ? badges : [];
+
+      return sugestoes
+        .map((sugestao) => enriquecerSugestao(sugestao, badgesReais))
+        .filter(Boolean)
+        .slice(0, 8);
+    },
+    [sugestoes, badges]
+  );
+
+  if (isLoading) {
+    return (
+      <section className="galeria-sugeridos">
+        <p className="texto-nome-badge galeria-sugeridos-vazio">
+          A carregar sugestoes...
+        </p>
+      </section>
+    );
+  }
+
+  if (erro) {
+    return (
+      <section className="galeria-sugeridos">
+        <p className="texto-nome-badge galeria-sugeridos-vazio">
+          {erro}
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section className="galeria-sugeridos">
       {badgesSugeridos.length === 0 ? (
         <p className="texto-nome-badge galeria-sugeridos-vazio">
-          Ainda não existem badges sugeridos para apresentar.
+          Ainda nao existem badges sugeridos para apresentar.
         </p>
       ) : (
         <div className="galeria-sugeridos-grid">
           {badgesSugeridos.map((badge) => (
             <CardBadgeSugerido
-              key={badge.idBadge}
+              key={obterIdBadge(badge)}
               badge={badge}
               onBadgeClick={onBadgeClick}
             />

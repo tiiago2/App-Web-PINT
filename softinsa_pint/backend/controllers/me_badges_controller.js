@@ -1,5 +1,6 @@
-const { Op } = require('sequelize');
+const { Op, QueryTypes } = require('sequelize');
 const db = require('../models');
+const { enviarEmail } = require('../helpers/emailHelper');
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({
@@ -953,11 +954,303 @@ async function validarRascunhoCompleto(rascunho, idsRequisitosAtivos, transactio
     }
 }
 
-function criarResumoEmailsPendentes() {
+function criarResumoComunicacoesVazio() {
     return {
-        enviados: 0,
-        falhados: 0
+        emails: {
+            enviados: 0,
+            falhados: 0
+        },
+        notificacoes: {
+            destinatarios: 0,
+            criadas: 0,
+            falhadas: 0
+        }
     };
+}
+
+function normalizarEmail(email) {
+    return typeof email === 'string' ? email.trim().toLowerCase() : '';
+}
+
+function emailValido(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizarEmail(email));
+}
+
+function obterNomeUtilizador(utilizador, fallback = 'utilizador') {
+    return utilizador?.nome_user || utilizador?.nome || fallback;
+}
+
+function normalizarNomeRole(nomeRole) {
+    return String(nomeRole || '').trim().toLowerCase();
+}
+
+function utilizadorTemRoleTalentManager(utilizador) {
+    return (utilizador.Roles || []).some((role) => {
+        const nomeRole = normalizarNomeRole(role.nome_role);
+        return nomeRole === 'talent' || nomeRole === 'talent manager';
+    });
+}
+
+function desduplicarDestinatarios(destinatarios) {
+    const ids = new Set();
+    const emails = new Set();
+    const unicos = [];
+
+    for (const destinatario of destinatarios) {
+        if (!destinatario?.id_utilizador) {
+            continue;
+        }
+
+        const id = Number(destinatario.id_utilizador);
+        const email = normalizarEmail(destinatario.email);
+
+        if (ids.has(id) || (email && emails.has(email))) {
+            continue;
+        }
+
+        ids.add(id);
+        if (email) {
+            emails.add(email);
+        }
+
+        unicos.push({
+            id_utilizador: id,
+            nome_user: destinatario.nome_user,
+            email: destinatario.email
+        });
+    }
+
+    return unicos;
+}
+
+async function obterTalentManagersAtivos() {
+    const utilizadores = await db.Utilizador.findAll({
+        attributes: ['id_utilizador', 'nome_user', 'email', 'ativo'],
+        where: { ativo: true },
+        include: [{
+            model: db.Role,
+            attributes: ['nome_role'],
+            through: { attributes: [] },
+            required: true
+        }]
+    });
+
+    return utilizadores.filter(utilizadorTemRoleTalentManager);
+}
+
+async function obterDadosComunicacaoSubmissao({ idSubmissao, idUtilizador, idBadge }) {
+    const consultor = await db.Utilizador.findOne({
+        attributes: ['id_utilizador', 'nome_user', 'email', 'ativo'],
+        where: {
+            id_utilizador: idUtilizador,
+            ativo: true
+        }
+    });
+    const badge = await db.Badges.findOne({
+        attributes: ['id_badge', 'nome_badge', 'id_area'],
+        where: {
+            id_badge: idBadge,
+            deleted_badge: false
+        }
+    });
+
+    let area = null;
+    let serviceLine = null;
+    let lider = null;
+
+    if (badge) {
+        area = await db.Area.findOne({
+            attributes: ['id_area', 'id_service_line'],
+            where: {
+                id_area: badge.id_area,
+                deleted_area: false
+            }
+        });
+    }
+
+    if (area) {
+        serviceLine = await db.ServiceLine.findOne({
+            attributes: ['id_service_line', 'id_lider'],
+            where: {
+                id_service_line: area.id_service_line,
+                deleted_service: false
+            }
+        });
+    }
+
+    if (serviceLine?.id_lider) {
+        lider = await db.Utilizador.findOne({
+            attributes: ['id_utilizador', 'nome_user', 'email', 'ativo'],
+            where: {
+                id_utilizador: serviceLine.id_lider,
+                ativo: true
+            }
+        });
+    }
+
+    const talentManagers = await obterTalentManagersAtivos();
+    const avaliadores = desduplicarDestinatarios([
+        ...talentManagers,
+        ...(lider ? [lider] : [])
+    ]);
+
+    return {
+        idSubmissao,
+        consultor,
+        badge,
+        area,
+        serviceLine,
+        lider,
+        avaliadores
+    };
+}
+
+function criarEmailConsultor({ consultor, badge, idSubmissao }) {
+    const nomeConsultor = obterNomeUtilizador(consultor, 'consultor');
+    const nomeBadge = badge?.nome_badge || 'Badge';
+
+    return {
+        to: consultor.email,
+        subject: `Candidatura submetida - ${nomeBadge}`,
+        text:
+            `Ola ${nomeConsultor},\n\n` +
+            `A tua candidatura ao badge "${nomeBadge}" foi submetida com sucesso e encontra-se agora pendente de avaliacao.\n\n` +
+            `Numero da candidatura: ${idSubmissao}\n\n` +
+            'Receberas uma atualizacao quando existir uma decisao.',
+        html:
+            `<p>Ola ${nomeConsultor},</p>` +
+            `<p>A tua candidatura ao badge <strong>"${nomeBadge}"</strong> foi submetida com sucesso e encontra-se agora pendente de avaliacao.</p>` +
+            `<p>Numero da candidatura: <strong>${idSubmissao}</strong></p>` +
+            '<p>Receberas uma atualizacao quando existir uma decisao.</p>'
+    };
+}
+
+function criarEmailAvaliador({ destinatario, consultor, badge, idSubmissao }) {
+    const nomeDestinatario = obterNomeUtilizador(destinatario, 'avaliador');
+    const nomeConsultor = obterNomeUtilizador(consultor, 'consultor');
+    const nomeBadge = badge?.nome_badge || 'Badge';
+
+    return {
+        to: destinatario.email,
+        subject: `Nova candidatura para avaliacao - ${nomeBadge}`,
+        text:
+            `Ola ${nomeDestinatario},\n\n` +
+            `${nomeConsultor} submeteu uma candidatura ao badge "${nomeBadge}".\n\n` +
+            `Numero da candidatura: ${idSubmissao}\n\n` +
+            'A candidatura esta pendente de avaliacao na plataforma.',
+        html:
+            `<p>Ola ${nomeDestinatario},</p>` +
+            `<p>${nomeConsultor} submeteu uma candidatura ao badge <strong>"${nomeBadge}"</strong>.</p>` +
+            `<p>Numero da candidatura: <strong>${idSubmissao}</strong></p>` +
+            '<p>A candidatura esta pendente de avaliacao na plataforma.</p>'
+    };
+}
+
+async function enviarEmailsSubmissao(dados) {
+    const mensagens = [];
+
+    if (dados.consultor?.email && emailValido(dados.consultor.email)) {
+        mensagens.push(criarEmailConsultor(dados));
+    }
+
+    for (const avaliador of dados.avaliadores) {
+        if (avaliador.email && emailValido(avaliador.email)) {
+            mensagens.push(criarEmailAvaliador({
+                ...dados,
+                destinatario: avaliador
+            }));
+        }
+    }
+
+    if (mensagens.length === 0) {
+        return { enviados: 0, falhados: 0 };
+    }
+
+    const resultados = await Promise.allSettled(
+        mensagens.map((mensagem) => enviarEmail(mensagem))
+    );
+
+    return resultados.reduce((resumo, resultado) => {
+        if (resultado.status === 'fulfilled' && resultado.value?.sucesso === true) {
+            resumo.enviados += 1;
+            return resumo;
+        }
+
+        resumo.falhados += 1;
+        const erro = resultado.status === 'rejected'
+            ? resultado.reason
+            : resultado.value?.erro;
+        console.error('Falha ao enviar email de submissao:', erro?.message || erro);
+        return resumo;
+    }, { enviados: 0, falhados: 0 });
+}
+
+async function criarNotificacoesSubmissao(dados) {
+    const avaliadores = dados.avaliadores.filter((avaliador) => avaliador.id_utilizador);
+    const totalDestinatarios = avaliadores.length;
+
+    if (totalDestinatarios === 0) {
+        return {
+            destinatarios: 0,
+            criadas: 0,
+            falhadas: 0
+        };
+    }
+
+    try {
+        await db.sequelize.transaction(async (transaction) => {
+            const nomeConsultor = obterNomeUtilizador(dados.consultor, 'consultor');
+            const nomeBadge = dados.badge?.nome_badge || 'Badge';
+            const notificacao = await db.Notificacoes.create({
+                id_utilizador: dados.consultor?.id_utilizador,
+                descricao_notificacao: `${nomeConsultor} submeteu uma candidatura ao badge ${nomeBadge}.`,
+                data_envio: new Date(),
+                tipo_notificacao: 'NOVA_CANDIDATURA'
+            }, { transaction });
+
+            await db.Recetor.bulkCreate(
+                avaliadores.map((avaliador) => ({
+                    id_notificacao: notificacao.id_notificacao,
+                    id_utilizador: avaliador.id_utilizador,
+                    lida: false,
+                    last_read: null
+                })),
+                { transaction }
+            );
+        });
+
+        return {
+            destinatarios: totalDestinatarios,
+            criadas: totalDestinatarios,
+            falhadas: 0
+        };
+    } catch (error) {
+        console.error('Falha ao criar notificacoes internas de submissao:', error?.message || error);
+        return {
+            destinatarios: totalDestinatarios,
+            criadas: 0,
+            falhadas: totalDestinatarios
+        };
+    }
+}
+
+async function processarComunicacoesSubmissao({ idSubmissao, idUtilizador, idBadge }) {
+    try {
+        const dados = await obterDadosComunicacaoSubmissao({
+            idSubmissao,
+            idUtilizador,
+            idBadge
+        });
+        const [emails, notificacoes] = await Promise.all([
+            enviarEmailsSubmissao(dados),
+            criarNotificacoesSubmissao(dados)
+        ]);
+
+        return { emails, notificacoes };
+    } catch (error) {
+        console.error('Falha ao processar comunicacoes de submissao:', error?.message || error);
+        return criarResumoComunicacoesVazio();
+    }
 }
 
 exports.listarMeusBadges = async (req, res) => {
@@ -978,6 +1271,48 @@ exports.listarMeusBadges = async (req, res) => {
 
         console.error('Erro ao listar badges pessoais:', error);
         return res.status(500).json({ error: 'Erro ao listar badges pessoais.' });
+    }
+};
+
+exports.listarSugestoesBadges = async (req, res) => {
+    try {
+        const idUtilizador = req.utilizadorLogado?.id_utilizador;
+        const consultor = await obterConsultorAutenticado(idUtilizador);
+        const sugestoes = await db.sequelize.query(
+            `
+                SELECT
+                    id_badge,
+                    nome_badge,
+                    justificacao
+                FROM public.fn_sugerir_badges(:idUtilizador)
+            `,
+            {
+                replacements: {
+                    idUtilizador
+                },
+                type: QueryTypes.SELECT
+            }
+        );
+        const sugestoesNormalizadas = Array.isArray(sugestoes)
+            ? sugestoes.map((sugestao) => ({
+                id_badge: Number(sugestao.id_badge),
+                nome_badge: String(sugestao.nome_badge ?? ''),
+                justificacao: String(sugestao.justificacao ?? '')
+            }))
+            : [];
+
+        return res.status(200).json({
+            id_utilizador: consultor.id_utilizador,
+            total: sugestoesNormalizadas.length,
+            sugestoes: sugestoesNormalizadas
+        });
+    } catch (error) {
+        if (error.statusCode === 403 || error.statusCode === 404) {
+            return res.status(error.statusCode).json({ error: error.message });
+        }
+
+        console.error('Erro ao obter sugestoes de badges:', error);
+        return res.status(500).json({ error: 'Erro ao obter sugestões de badges.' });
     }
 };
 
@@ -1142,7 +1477,7 @@ exports.submeterMinhaCandidatura = async (req, res) => {
         await obterConsultorAutenticado(idUtilizador);
         await obterBadgeAtivo(idBadge);
 
-        await db.sequelize.transaction(
+        const resultadoSubmissao = await db.sequelize.transaction(
             { isolationLevel: 'SERIALIZABLE' },
             async (transaction) => {
                 await obterBadgeAtivo(idBadge, transaction);
@@ -1154,16 +1489,26 @@ exports.submeterMinhaCandidatura = async (req, res) => {
                 rascunho.status = 'pendente';
                 rascunho.data_submissao = new Date();
                 await rascunho.save({ transaction });
+
+                return {
+                    idSubmissao: rascunho.id_submissao
+                };
             }
         );
 
+        const comunicacoes = await processarComunicacoesSubmissao({
+            idSubmissao: resultadoSubmissao.idSubmissao,
+            idUtilizador,
+            idBadge
+        });
         const badge = await obterDetalhePessoalBadge(idUtilizador, idBadge);
 
         return res.status(200).json({
             message: 'Candidatura submetida com sucesso.',
             submetida: true,
             badge,
-            emails: criarResumoEmailsPendentes()
+            emails: comunicacoes.emails,
+            notificacoes: comunicacoes.notificacoes
         });
     } catch (error) {
         if (error.statusCode === 400 || error.statusCode === 403 || error.statusCode === 404 || error.statusCode === 409) {

@@ -13,6 +13,7 @@ import {
     obterUrlPublicaBadge,
     ESTADOS_BADGE_CONSULTOR,
 } from "../utils/badgeDetalheNormalizadores";
+import { normalizarBadgeCatalogo } from "../utils/badgesNormalizadores";
 
 function clonar(valor) {
     return JSON.parse(JSON.stringify(valor));
@@ -27,32 +28,24 @@ const estadoOverridePorBadge = new Map();
 
 function obterBadgeCatalogoPorId(idBadge, badgeData = null) {
     if (badgeData) {
-        return {
+        return normalizarBadgeCatalogo({
             ...badgeData,
-            id_badge: Number(idBadge),
-            nome_badge: badgeData.nome_badge ?? badgeData.nomeBadge ?? badgeData.Nome_Badge ?? badgeData.titulo ?? badgeData.nome ?? "Badge",
-            nome_area: badgeData.nome_area ?? badgeData.nomeArea ?? badgeData.Nome_Area ?? badgeData.area ?? "Geral",
-            id_service_line: badgeData.id_service_line ?? badgeData.idServiceLine ?? badgeData.ID_Service_Line ?? null,
-            nome_service_line: badgeData.nome_service_line ?? badgeData.serviceLine ?? badgeData.Nome_Service_Line ?? "Sem Service Line",
-            id_learning_path: badgeData.id_learning_path ?? badgeData.idLearningPath ?? badgeData.ID_Learning_Path ?? null,
-            nome_learning_path: badgeData.nome_learning_path ?? badgeData.learningPath ?? badgeData.Nome_Learning_Path ?? "Sem Learning Path",
-            id_nivel: badgeData.id_nivel ?? badgeData.idNivel ?? badgeData.ID_Nivel ?? null,
-            nome_nivel: badgeData.nome_nivel ?? badgeData.nivel ?? badgeData.Nome_Nivel ?? "Sem Nível",
-            pontos_badge: badgeData.pontos_badge ?? badgeData.pontosBadge ?? badgeData.Pontos_Badge ?? badgeData.pontos ?? 100,
-            validade: badgeData.validade ?? badgeData.Validade ?? 365,
-            imagem: badgeData.imagem ?? badgeData.imagemBadge ?? null,
-            descricao_badge: badgeData.descricao_badge ?? badgeData.descricao ?? ""
-        };
+            id_badge:
+                badgeData.id_badge ??
+                badgeData.idBadge ??
+                badgeData.id ??
+                Number(idBadge),
+        });
     }
 
     const encontrado = badgesCatalogoMock.find(
         (badge) => Number(badge.id_badge) === Number(idBadge)
     );
-    if (encontrado) return encontrado;
 
-    return null;
+    return encontrado
+        ? normalizarBadgeCatalogo(encontrado)
+        : null;
 }
-
 function normalizarStatus(status) {
     return typeof status === "string" ? status.trim().toLowerCase() : "";
 }
@@ -65,13 +58,9 @@ function criarDetalheConsultorSemEstado(idBadge, badgeData = null) {
     }
 
     const requisitos = badgeData
-        ? (
-            Array.isArray(badgeData.requisitos)
-                ? badgeData.requisitos
-                : Array.isArray(badgeData.Requisitos)
-                  ? badgeData.Requisitos
-                  : []
-        )
+        ? Array.isArray(badge.requisitos)
+            ? badge.requisitos
+            : []
         : obterRequisitosPorBadge(idBadge);
 
     const detalhe = normalizarBadgeDetalheConsultor({
@@ -356,6 +345,44 @@ export async function obterBadgeDetalheCatalogo(idBadge, opcoes = {}) {
     return normalizarBadgeDetalheCatalogo({
         badge,
         requisitos,
+    });
+}
+
+export async function obterBadgePublico(idBadge) {
+    const textoId = String(idBadge ?? "").trim();
+
+    if (!/^\d+$/.test(textoId)) {
+        const erro = new Error("Identificador de badge inválido.");
+        erro.response = {
+            status: 400,
+            data: {
+                erro: "Identificador de badge inválido.",
+                codigo: "id_badge_invalido",
+            },
+        };
+        throw erro;
+    }
+
+    const idNumerico = Number(textoId);
+    if (!Number.isSafeInteger(idNumerico) || idNumerico <= 0) {
+        const erro = new Error("Identificador de badge inválido.");
+        erro.response = {
+            status: 400,
+            data: {
+                erro: "Identificador de badge inválido.",
+                codigo: "id_badge_invalido",
+            },
+        };
+        throw erro;
+    }
+
+    const res = await api.get(`/badges/public/${idNumerico}`);
+
+    return normalizarBadgeDetalheCatalogo({
+        badge: res.data,
+        requisitos: Array.isArray(res.data?.requisitos)
+            ? res.data.requisitos
+            : [],
     });
 }
 

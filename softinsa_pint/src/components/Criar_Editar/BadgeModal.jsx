@@ -27,6 +27,13 @@ const NIVEIS = [
   },
 ];
 
+const TIPOS_IMAGEM_PERMITIDOS = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+]);
+const TAMANHO_MAXIMO_IMAGEM = 5 * 1024 * 1024;
+
 function obterIdLearningPath(learningPath = {}) {
   return learningPath.id_learning_path ?? learningPath.idLearningPath ?? learningPath.id;
 }
@@ -90,6 +97,7 @@ export default function BadgeModal({
   const [pontos, setPontos] = useState("");
   const [validade, setValidade] = useState("");
   const [imagemPreview, setImagemPreview] = useState(null);
+  const [imagemFile, setImagemFile] = useState(null);
   const [isEspecial, setIsEspecial] = useState(false);
 
   const [learningPathId, setLearningPathId] = useState("");
@@ -170,6 +178,7 @@ export default function BadgeModal({
   useEffect(() => {
     if (!isOpen) {
       document.body.style.overflow = "";
+      setImagemFile(null);
       return;
     }
 
@@ -226,6 +235,7 @@ export default function BadgeModal({
           : badgeToEdit.validade
       );
       setImagemPreview(badgeToEdit.imagem || null);
+      setImagemFile(null);
       setIsEspecial(Boolean(badgeToEdit.especial));
 
       setAreaId(areaExistente);
@@ -256,6 +266,7 @@ export default function BadgeModal({
       setPontos("");
       setValidade("");
       setImagemPreview(null);
+      setImagemFile(null);
       setIsEspecial(false);
 
       setLearningPathId("");
@@ -324,6 +335,20 @@ export default function BadgeModal({
 
     if (!file) return;
 
+    if (!TIPOS_IMAGEM_PERMITIDOS.has(file.type)) {
+      setImagemFile(null);
+      event.target.value = "";
+      setFormErro("Formato de imagem inválido. Utilize PNG, JPEG ou WEBP.");
+      return;
+    }
+
+    if (file.size > TAMANHO_MAXIMO_IMAGEM) {
+      setImagemFile(null);
+      event.target.value = "";
+      setFormErro("A imagem excede o limite máximo de 5 MB.");
+      return;
+    }
+
     const reader = new FileReader();
 
     reader.onloadend = () => {
@@ -331,6 +356,7 @@ export default function BadgeModal({
       setFormErro("");
     };
 
+    setImagemFile(file);
     reader.readAsDataURL(file);
   }
 
@@ -354,7 +380,7 @@ export default function BadgeModal({
       !serviceLineId ||
       !areaId ||
       !nivelId ||
-      !imagemPreview
+      (!badgeToEdit && !imagemFile)
     ) {
       setFormErro(
         "Preenche todos os campos obrigatórios: nome, hierarquia, nível, pontos e imagem."
@@ -399,7 +425,6 @@ export default function BadgeModal({
     const dadosBadge = {
       nome_badge: nome.trim(),
       descricao_badge: descricao.trim(),
-      imagem: imagemPreview,
       pontos_badge: Number(pontos),
       validade: validadeNormalizada,
       especial: Boolean(isEspecial),
@@ -407,6 +432,10 @@ export default function BadgeModal({
       id_nivel: Number(nivelId),
       requisitos: requisitosValidos,
     };
+
+    if (imagemFile) {
+      dadosBadge.imagemFile = imagemFile;
+    }
 
     setIsSaving(true);
 

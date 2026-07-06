@@ -1,9 +1,34 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import BadgeDetalheConteudo from "../../components/BadgeDetalhe/BadgeDetalheConteudo";
-import { obterBadgeDetalheCatalogo } from "../../services/badgeDetalheService";
+import { obterBadgePublico } from "../../services/badgeDetalheService";
 import softinsaLogo from "../../assets/logotipo_softinsa.png";
 import "./BadgePublico.css";
+
+function obterErroPublico(error) {
+    const status = error?.response?.status;
+
+    if (status === 400) {
+        return {
+            titulo: "Endereço de badge inválido",
+            mensagem: "O endereço indicado não corresponde a um badge válido.",
+        };
+    }
+
+    if (status === 404) {
+        return {
+            titulo: "Badge não encontrado",
+            mensagem:
+                "O badge pedido não existe ou não está disponível publicamente.",
+        };
+    }
+
+    return {
+        titulo: "Não foi possível carregar o badge",
+        mensagem:
+            "Ocorreu um problema ao carregar esta página. Tenta novamente mais tarde.",
+    };
+}
 
 function BadgePublico() {
     const { idBadge } = useParams();
@@ -11,7 +36,7 @@ function BadgePublico() {
 
     const [detalheBadge, setDetalheBadge] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [erro, setErro] = useState(false);
+    const [erro, setErro] = useState(null);
 
     useEffect(() => {
         let ativo = true;
@@ -19,16 +44,20 @@ function BadgePublico() {
         async function carregarBadgePublico() {
             try {
                 setIsLoading(true);
-                setErro(false);
+                setErro(null);
 
-                const detalhe = await obterBadgeDetalheCatalogo(idBadge);
+                const detalhe = await obterBadgePublico(idBadge);
 
                 if (!ativo) {
                     return;
                 }
 
                 if (!detalhe) {
-                    setErro(true);
+                    setErro({
+                        titulo: "Badge não encontrado",
+                        mensagem:
+                            "O badge pedido não existe ou não está disponível publicamente.",
+                    });
                     setDetalheBadge(null);
                     return;
                 }
@@ -38,7 +67,7 @@ function BadgePublico() {
                 console.error("Erro ao carregar página pública do badge:", error);
 
                 if (ativo) {
-                    setErro(true);
+                    setErro(obterErroPublico(error));
                     setDetalheBadge(null);
                 }
             } finally {
@@ -129,11 +158,8 @@ function BadgePublico() {
                 {erro && !isLoading ? (
                     <div className="badge-publico-erro">
                         <i className="fi fi-br-exclamation"></i>
-                        <h2>Badge não encontrado</h2>
-                        <p>
-                            O badge pedido não existe ou não está disponível
-                            publicamente.
-                        </p>
+                        <h2>{erro.titulo}</h2>
+                        <p>{erro.mensagem}</p>
 
                         <button
                             type="button"

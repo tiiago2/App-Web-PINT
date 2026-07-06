@@ -20,6 +20,7 @@ function uploadEvidencia(req, res, next) {
 }
 
 router.get('/badges', authMiddleware, controller.listarMeusBadges);
+router.get('/badges/sugeridos', authMiddleware, controller.listarSugestoesBadges);
 router.post('/badges/:id/rascunho', authMiddleware, controller.criarOuObterRascunho);
 router.post('/badges/:id/submeter', authMiddleware, controller.submeterMinhaCandidatura);
 router.put('/badges/:id/evidencias/:idRequisito', authMiddleware, uploadEvidencia, controller.guardarEvidenciaRascunho);

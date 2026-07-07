@@ -11,7 +11,8 @@ const {
   Objetivos,
   RegistoBadges,
   Logs,
-  Permissoes
+  Permissoes,
+  Recetor
 } = require("../models");
 const { Op } = require("sequelize");
 
@@ -53,7 +54,9 @@ module.exports = {
         : (roles.includes('consultor'));
 
       // Cláusula where principal de submissões
-      let whereClause = {};
+      let whereClause = {
+        status: { [Op.in]: ['pendente', 'aceite talent', 'aceite', 'recusada'] }
+      };
 
       // Se for Service Line Leader e não for Admin/Talent:
       if (isServiceLeader && !isAdmin && !isTalent) {
@@ -301,7 +304,11 @@ module.exports = {
       }
 
       submissao.status = dbStatus;
-      submissao.notificacao_sla = false;
+      if (isTalent && !isAdmin) {
+        submissao.notificacao_sla = false;
+      } else {
+        submissao.notificacao_sla = true;
+      }
       await submissao.save();
 
       // 1. Atualizar ou Criar registo na tabela de Historico de Avaliações
@@ -327,22 +334,35 @@ module.exports = {
       const nomeBadge = badgeObj ? badgeObj.nome_badge : 'Badge';
 
       let msgNotif = '';
+      let deveEnviarNotif = false;
       if (status === 'Recusada') {
         msgNotif = `O teu pedido de badge '${nomeBadge}' foi recusado. Motivo: ${motivo || 'Nenhum'}`;
+        deveEnviarNotif = true;
       } else {
         if (isTalent && !isAdmin) {
-          msgNotif = `O teu pedido de badge '${nomeBadge}' foi pré-aceite pelo Talent Manager e aguarda validação do Líder.`;
+          // Talent Manager aceitou (validação inicial) -> não envia notificação de imediato
+          deveEnviarNotif = false;
         } else {
+          // Service Line Leader ou Admin aceitou -> envia notificação
           msgNotif = `Parabéns! O teu pedido de badge '${nomeBadge}' foi totalmente aceite.`;
+          deveEnviarNotif = true;
         }
       }
 
-      await Notificacoes.create({
-        id_utilizador: submissao.id_utilizador, // ID do destinatário (consultor)
-        descricao_notificacao: msgNotif,
-        data_envio: new Date(),
-        tipo_notificacao: 'AVALIACAO_STATUS'
-      });
+      if (deveEnviarNotif) {
+        const notificacao = await Notificacoes.create({
+          id_utilizador: submissao.id_utilizador, // ID do destinatário (consultor)
+          descricao_notificacao: msgNotif,
+          data_envio: new Date(),
+          tipo_notificacao: 'AVALIACAO_STATUS'
+        });
+
+        await Recetor.create({
+          id_notificacao: notificacao.id_notificacao,
+          id_utilizador: submissao.id_utilizador,
+          lida: false
+        });
+      }
 
       // 3. Verificar e concluir objetivos relacionados com este badge
       if (dbStatus === 'aceite') {

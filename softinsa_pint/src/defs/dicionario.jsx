@@ -4,11 +4,11 @@ export const iconesNotificacao = {
     cor: "var(--fontes)"
   },
   "Aceite":{
-    desenho: "fi fi-br-check",
+    desenho: "fi fi-br-badge",
     cor: "var(--aceitar)"
   },
   "Rejeitada":{
-    desenho: "fi fi-br-cross",
+    desenho: "fi fi-br-badge",
     cor: "var(--rejeitar)"
   },
   "Candidatura":{
@@ -17,6 +17,10 @@ export const iconesNotificacao = {
   },
   "Sistema":{
     desenho: "fi fi-br-settings",
+    cor: "var(--fontes)"
+  },
+  "Aviso": {
+    desenho: "fi fi-br-info",
     cor: "var(--fontes)"
   }
 };

@@ -192,9 +192,16 @@ function App() {
         const formatadas = resNotif.data.map(n => {
           let tipoFront = 'Sistema';
           if (n.tipo_notificacao === 'BADGE_EXPIRADO') tipoFront = 'Badge';
-          else if (n.tipo_notificacao === 'Candidatura') tipoFront = 'Candidatura';
+          else if (n.tipo_notificacao === 'Candidatura' || n.tipo_notificacao === 'NOVA_CANDIDATURA') tipoFront = 'Candidatura';
           else if (n.tipo_notificacao === 'Aceite') tipoFront = 'Aceite';
           else if (n.tipo_notificacao === 'Rejeitada') tipoFront = 'Rejeitada';
+          else if (n.tipo_notificacao === 'AVALIACAO_STATUS') {
+             if (n.descricao_notificacao && n.descricao_notificacao.toLowerCase().includes('recusado')) {
+                tipoFront = 'Rejeitada';
+             } else {
+                tipoFront = 'Aceite';
+             }
+          }
           else if (iconesNotificacao[n.tipo_notificacao]) tipoFront = n.tipo_notificacao;
 
           const isLida = new Date(n.data_envio).getTime() <= loginTime;
@@ -573,6 +580,7 @@ function App() {
                           </div>
                           <div className="d-flex flex-column align-items-center justify-content-center" id="notification_direita">
                             <div className="d-flex align-items-center gap-1 mb-1">
+                              <i className="fi fi-br-info me-1" style={{ color: "var(--fontes)", fontSize: "0.9rem" }}></i>
                               <span className={`aviso-tag aviso-tag-${getStyleClass(aviso)}`}>{getTradDestino(aviso)}</span>
                             </div>
                             <span>{aviso.data}</span>

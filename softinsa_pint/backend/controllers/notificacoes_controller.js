@@ -12,7 +12,7 @@ module.exports = {
                     model: Notificacoes,
                     where: {
                         tipo_notificacao: {
-                            [Op.ne]: 'aviso'
+                            [Op.notILike]: 'aviso%'
                         }
                     },
                     through: { attributes: [] },
@@ -159,7 +159,7 @@ module.exports = {
             const userWithReceived = await Utilizador.findByPk(id_utilizador, {
                 include: [{
                     model: Notificacoes,
-                    where: { tipo_notificacao: { [Op.like]: 'aviso%' } },
+                    where: { tipo_notificacao: { [Op.iLike]: 'aviso%' } },
                     through: { attributes: [] },
                     include: [{
                         model: Utilizador, // O autor/remetente do aviso
@@ -174,7 +174,7 @@ module.exports = {
             const enviadosRaw = await Notificacoes.findAll({
                 where: {
                     id_utilizador: id_utilizador,
-                    tipo_notificacao: { [Op.like]: 'aviso%' }
+                    tipo_notificacao: { [Op.iLike]: 'aviso%' }
                 },
                 include: [{
                     model: Utilizador,

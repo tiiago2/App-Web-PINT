@@ -5,7 +5,7 @@ module.exports = {
     try {
       const perms = await Permissoes.findAll({
         where: {
-          id_permissao: [1, 2, 3, 4, 5, 6, 7]
+          id_permissao: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
         },
         order: [['id_permissao', 'ASC']]
       });

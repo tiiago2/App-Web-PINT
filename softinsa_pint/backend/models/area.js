@@ -7,6 +7,6 @@ module.exports = (sequelize) => {
     nome_area: { type: DataTypes.TEXT, allowNull: false },
     descricao_area: { type: DataTypes.TEXT, allowNull: true },
     updated_area: { type: DataTypes.DATE, allowNull: false },
-    deleted_area: { type: DataTypes.BOOLEAN, allowNull: false }
+    deleted_area: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
   }, { tableName: 'area', timestamps: false });
 };

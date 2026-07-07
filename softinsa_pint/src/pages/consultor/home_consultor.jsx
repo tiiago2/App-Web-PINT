@@ -80,7 +80,9 @@ const HomeConsultor = ({ user, saudacao }) => {
                             <style>{`.badges-grid::-webkit-scrollbar { display: none; }`}</style>
                             {carregando && badgesProgresso.length === 0 ? (
                                 <div className="badges-estado-vazio">
-                                    <i className="fi fi-br-spinner hc-spinner"></i>
+                                    <div className="spinner-border text-primary mb-2" role="status" style={{ width: '2rem', height: '2rem' }}>
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>
                                     <span>{t('a_carregar') || 'A carregar...'}</span>
                                 </div>
                             ) : badgesProgresso.length === 0 ? (
@@ -90,22 +92,31 @@ const HomeConsultor = ({ user, saudacao }) => {
                                 </div>
                             ) : (
                                 badgesProgresso.map((badge, idx) => {
-                                    const pct = Math.max(0, Math.min(100, Number(badge.progresso) || 0));
-                                    const cor = corPorProgresso(pct);
+                                    const isPendente = badge.status === 'pendente' || badge.status === 'aceite talent';
+                                    const pct = isPendente ? 0 : Math.max(0, Math.min(100, Number(badge.progresso) || 0));
+                                    const cor = isPendente ? { principal: '#cbd5e1' } : corPorProgresso(pct);
                                     return (
                                         <div className={`badge-col${idx < badgesProgresso.length - 1 ? ' badge-col-separator' : ''}`} key={badge.id}>
                                             <div className="badge-card-premium">
-                                                <div className="badge-card-imagem-wrap" style={{ '--badge-progress': `${pct}%`, '--badge-cor': cor.principal }}>
+                                                <div className="badge-card-imagem-wrap" style={{ '--badge-progress': isPendente ? '0%' : `${pct}%`, '--badge-cor': cor.principal }}>
                                                     <img className="badge-card-imagem" src={badge.imagem} alt={badge.titulo} />
                                                     <div className="badge-card-progress-ring" aria-hidden="true"></div>
                                                 </div>
                                                 <h6 className="badge-card-titulo text-truncate w-100" title={badge.titulo}>{badge.titulo}</h6>
-                                                <div className="badge-card-progresso">
-                                                    <div className="badge-card-barra-wrap">
-                                                        <div className="badge-card-barra-fill" style={{ width: `${pct}%`, backgroundColor: cor.principal }} />
+                                                {isPendente ? (
+                                                    <div className="badge-card-progresso justify-content-center">
+                                                        <span className="status-pill pendente" style={{ fontSize: '0.75rem', padding: '0.25rem 0.75rem' }}>
+                                                            {t('em_avaliacao') || 'Em Avaliação'}
+                                                        </span>
                                                     </div>
-                                                    <span className="badge-card-pct" style={{ color: cor.principal }}>{pct}%</span>
-                                                </div>
+                                                ) : (
+                                                    <div className="badge-card-progresso">
+                                                        <div className="badge-card-barra-wrap">
+                                                            <div className="badge-card-barra-fill" style={{ width: `${pct}%`, backgroundColor: cor.principal }} />
+                                                        </div>
+                                                        <span className="badge-card-pct" style={{ color: cor.principal }}>{pct}%</span>
+                                                    </div>
+                                                )}
                                                 <button className="btn-detalhes-figma" onClick={() => navigate('/candidaturas', { state: { selectedCandidaturaId: badge.id } })}>
                                                     <i className="fi fi-br-eye"></i> {t('mais_detalhes')}
                                                 </button>
@@ -133,7 +144,9 @@ const HomeConsultor = ({ user, saudacao }) => {
                         {carregando && objetivos.length === 0 ? (
                             <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
                                 <div className="objetivos-estado-vazio">
-                                    <i className="fi fi-br-spinner hc-spinner"></i>
+                                    <div className="spinner-border text-primary mb-2" role="status" style={{ width: '2rem', height: '2rem' }}>
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>
                                     <span>{t('a_carregar') || 'A carregar...'}</span>
                                 </div>
                             </div>
@@ -190,7 +203,9 @@ const HomeConsultor = ({ user, saudacao }) => {
                         {carregando && progressoItems.length === 0 ? (
                             <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
                                 <div className="progresso-estado-vazio" style={{ margin: 0 }}>
-                                    <i className="fi fi-br-spinner hc-spinner"></i>
+                                    <div className="spinner-border text-primary mb-2" role="status" style={{ width: '2rem', height: '2rem' }}>
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>
                                     <span>{t('a_carregar') || 'A carregar...'}</span>
                                 </div>
                             </div>

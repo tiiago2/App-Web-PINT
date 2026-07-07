@@ -1,6 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import ToggleSwitch from "../../../components/ui/ToggleSwitch/ToggleSwitch";
+import api from "../../../services/api.js";
+
+const DB_MAPPING = {
+  8: "email_candidatura",
+  9: "email_veredito",
+  10: "alerta_talent",
+  11: "alerta_service"
+};
+
+const FRONTEND_TO_DB_ID = {
+  "email_candidatura": 8,
+  "email_veredito": 9,
+  "alerta_talent": 10,
+  "alerta_service": 11
+};
 
 export default function TabNotificacoes() {
   const { t } = useTranslation();
@@ -16,8 +31,58 @@ export default function TabNotificacoes() {
     slack_ativo: false,
   });
 
+  const [estadoOriginal, setEstadoOriginal] = useState({});
+
+  useEffect(() => {
+    async function carregarConfiguracoes() {
+      try {
+        const response = await api.get("/defs-permissoes");
+        const novoEstado = { ...notifConfig };
+        response.data.forEach((perm) => {
+          const key = DB_MAPPING[perm.id_permissao];
+          if (key) {
+            novoEstado[key] = perm.toggle;
+          }
+        });
+        setNotifConfig(novoEstado);
+        setEstadoOriginal(novoEstado);
+      } catch (error) {
+        console.error("Erro ao carregar configurações de notificações:", error);
+      }
+    }
+    carregarConfiguracoes();
+  }, []);
+
   const toggleNotif = (key) => {
     setNotifConfig((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleGuardar = async () => {
+    try {
+      const alteracoes = [];
+      const chavesParaGuardar = ["email_candidatura", "email_veredito", "alerta_talent", "alerta_service"];
+      
+      chavesParaGuardar.forEach((key) => {
+        if (notifConfig[key] !== estadoOriginal[key]) {
+          alteracoes.push({
+            id_permissao: FRONTEND_TO_DB_ID[key],
+            toggle: notifConfig[key]
+          });
+        }
+      });
+
+      if (alteracoes.length === 0) {
+        alert(t("sem_alteracoes", "Não existem alterações para guardar."));
+        return;
+      }
+
+      await api.put("/defs-permissoes", { alteracoes });
+      setEstadoOriginal({ ...notifConfig });
+      alert(t("configuracoes_guardadas_sucesso", "Configurações guardadas com sucesso!"));
+    } catch (error) {
+      console.error("Erro ao guardar configurações de notificações:", error);
+      alert(t("erro_guardar_configuracoes", "Ocorreu um erro ao guardar as configurações."));
+    }
   };
 
   return (
@@ -42,25 +107,6 @@ export default function TabNotificacoes() {
           {t("eventos_consultor")}
         </h6>
         <div className="d-flex flex-column gap-3 mb-4">
-          <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
-            <div className="pe-3">
-              <label className="form-check-label fw-semibold mb-1">
-                {t("email_registo_label")}
-              </label>
-              <p
-                className="text-muted mb-0"
-                style={{ fontSize: "0.85rem" }}
-              >
-                {t("email_registo_desc")}
-              </p>
-            </div>
-            <div className="mb-0">
-              <ToggleSwitch
-                checked={notifConfig.email_registo}
-                onChange={() => toggleNotif("email_registo")}
-              />
-            </div>
-          </div>
 
           <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
             <div className="pe-3">
@@ -149,129 +195,9 @@ export default function TabNotificacoes() {
         </div>
       </div>
 
-      {/* Card 2: Alertas de Validade */}
-      <div className="p-4 border border-2 rounded-4 bg-light shadow-sm">
-        <h5
-          className="mb-4 fw-semibold"
-          style={{ color: "var(--fontes)" }}
-        >
-          {t("alertas_expiracao_badges")}
-        </h5>
-
-        <div className="d-flex flex-column gap-3">
-          <div className="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
-            <div className="pe-3">
-              <label className="form-check-label fw-semibold mb-1">
-                {t("lembrete_recertificacao_label")}
-              </label>
-              <p
-                className="text-muted mb-0"
-                style={{ fontSize: "0.85rem" }}
-              >
-                {t("lembrete_recertificacao_desc")}
-              </p>
-            </div>
-            <div className="mb-0">
-              <ToggleSwitch
-                checked={notifConfig.alerta_expiracao}
-                onChange={() => toggleNotif("alerta_expiracao")}
-              />
-            </div>
-          </div>
-
-          <div className="d-flex align-items-center bg-white p-3 rounded-3 border">
-            <div className="pe-3 flex-grow-1">
-              <label className="form-check-label fw-semibold mb-1">
-                {t("dias_antecedencia_alerta_label")}
-              </label>
-              <p
-                className="text-muted mb-0"
-                style={{ fontSize: "0.85rem" }}
-              >
-                {t("dias_antecedencia_alerta_desc")}
-              </p>
-            </div>
-            <div style={{ width: "130px" }}>
-              <div className="input-group">
-                <input
-                  type="number"
-                  className="form-control text-center px-1"
-                  value={notifConfig.dias_expiracao}
-                  onChange={(e) =>
-                    setNotifConfig({
-                      ...notifConfig,
-                      dias_expiracao: e.target.value,
-                    })
-                  }
-                  min="1"
-                  max="365"
-                />
-                <span className="input-group-text bg-light text-muted px-2">
-                  {t("dias_lowercase")}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Card 3: Integrações Externas */}
-      <div className="p-4 border border-2 rounded-4 bg-light shadow-sm">
-        <h5
-          className="mb-4 fw-semibold"
-          style={{ color: "var(--fontes)" }}
-        >
-          {t("integracoes_corporativas")}
-        </h5>
-        <p className="text-muted mb-4" style={{ fontSize: "0.85rem" }}>
-          {t("integracoes_corporativas_desc")}
-        </p>
-
-        <div className="row g-3">
-          <div className="col-md-6">
-            <div
-              className={`p-3 rounded-3 border d-flex flex-column align-items-center text-center transition-all ${notifConfig.teams_ativo ? "border-primary bg-white shadow-sm" : "bg-white"}`}
-            >
-              <div className="fs-1 text-primary mb-2">
-                <i className="fi fi-brands-microsoft"></i>
-              </div>
-              <h6 className="fw-bold mb-1">Microsoft Teams</h6>
-              <p className="text-muted small mb-3">
-                {t("partilha_teams_desc")}
-              </p>
-              <div className="mb-0">
-                <ToggleSwitch
-                  checked={notifConfig.teams_ativo}
-                  onChange={() => toggleNotif("teams_ativo")}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-6">
-            <div
-              className={`p-3 rounded-3 border d-flex flex-column align-items-center text-center transition-all ${notifConfig.slack_ativo ? "border-info bg-white shadow-sm" : "bg-white"}`}
-            >
-              <div className="fs-1 text-info mb-2">
-                <i className="fi fi-brands-slack"></i>
-              </div>
-              <h6 className="fw-bold mb-1">Slack</h6>
-              <p className="text-muted small mb-3">
-                {t("partilha_slack_desc")}
-              </p>
-              <div className="mb-0">
-                <ToggleSwitch
-                  checked={notifConfig.slack_ativo}
-                  onChange={() => toggleNotif("slack_ativo")}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="mt-2 text-end">
         <button
+          onClick={handleGuardar}
           className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white"
           style={{
             backgroundColor: "var(--barra_lateral)",

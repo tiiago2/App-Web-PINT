@@ -281,114 +281,119 @@ const EstatisticasService = ({ user }) => {
             </div>
 
             {/* ── CORPO PRINCIPAL ── */}
-            <div className="estat-service-body">
+            {carregando ? (
+                <div className="d-flex flex-column align-items-center justify-content-center flex-grow-1" style={{ minHeight: '50vh' }}>
+                    <div className="spinner-border text-primary mb-2" role="status" style={{ width: '3rem', height: '3rem' }}>
+                        <span className="visually-hidden">Loading...</span>
+                    </div>
+                    <span className="text-muted">{t("a_carregar") || "A carregar..."}</span>
+                </div>
+            ) : (
+                <div className="estat-service-body">
+                    {/* COLUNA ESQUERDA — KPIs, gráficos e contribuidores */}
+                    <div className="estat-service-col-esq">
+                        {/* ROW 1 — KPI + Badges por Nível */}
+                        <div className="estat-service-row">
+                            {/* KPI 2×2 */}
+                            <div className="estat-service-kpi-wrap">
+                                <div className="estat-service-kpi-grid">
+                                    {kpiCards.map((kpi, i) => (
+                                        <div key={i} className="estat-service-kpi-card">
+                                            <span className="estat-service-kpi-label">{t(kpi.label)}</span>
+                                            <div className="estat-service-kpi-row">
+                                                <i className={`${kpi.icone} estat-service-kpi-icon`} />
+                                                <span className="estat-service-kpi-valor">{kpi.valor}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
 
-                {/* COLUNA ESQUERDA — KPIs, gráficos e contribuidores */}
-                <div className="estat-service-col-esq">
+                            {/* Badges Atribuídos por Nível */}
+                            <div className="estat-service-niveis-wrap">
+                                <div className="estat-service-card h-100">
+                                    <div className="estat-service-card-header">
+                                        <p className="estat-service-chart-title m-0">{t('badges_atribuidos_nivel')}</p>
+                                    </div>
+                                    <BadgesPorNivel dados={dadosNiveis} />
+                                </div>
+                            </div>
+                        </div>
 
-                    {/* ROW 1 — KPI + Badges por Nível */}
-                    <div className="estat-service-row">
-
-                        {/* KPI 2×2 */}
-                        <div className="estat-service-kpi-wrap">
-                            <div className="estat-service-kpi-grid">
-                                {kpiCards.map((kpi, i) => (
-                                    <div key={i} className="estat-service-kpi-card">
-                                        <span className="estat-service-kpi-label">{t(kpi.label)}</span>
-                                        <div className="estat-service-kpi-row">
-                                            <i className={`${kpi.icone} estat-service-kpi-icon`} />
-                                            <span className="estat-service-kpi-valor">{kpi.valor}</span>
+                        {/* ROW 2 — Badges atribuídos por período + Melhores contribuidores */}
+                        <div className="estat-service-row">
+                            {/* Badges atribuídos por período */}
+                            <div className="estat-service-bar-wrap">
+                                <div className="estat-service-card h-100">
+                                    <div className="estat-service-card-header">
+                                        <p className="estat-service-chart-title m-0">{t('badges_atribuidos')}</p>
+                                        <div className="estat-service-pills estat-service-pills--header">
+                                            {periodos.map((p) => (
+                                                <button
+                                                    key={p.chave}
+                                                    className={`estat-service-pill ${periodo === p.chave ? 'active' : ''}`}
+                                                    onClick={() => setPeriodo(p.chave)}
+                                                >
+                                                    {t(p.label)}
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Badges Atribuídos por Nível */}
-                        <div className="estat-service-niveis-wrap">
-                            <div className="estat-service-card h-100">
-                                <div className="estat-service-card-header">
-                                    <p className="estat-service-chart-title m-0">{t('badges_atribuidos_nivel')}</p>
-                                </div>
-                                <BadgesPorNivel dados={dadosNiveis} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* ROW 2 — Badges atribuídos por período + Melhores contribuidores */}
-                    <div className="estat-service-row">
-
-                        {/* Badges atribuídos por período */}
-                        <div className="estat-service-bar-wrap">
-                            <div className="estat-service-card h-100">
-                                <div className="estat-service-card-header">
-                                    <p className="estat-service-chart-title m-0">{t('badges_atribuidos')}</p>
-                                    <div className="estat-service-pills estat-service-pills--header">
-                                        {periodos.map((p) => (
-                                            <button
-                                                key={p.chave}
-                                                className={`estat-service-pill ${periodo === p.chave ? 'active' : ''}`}
-                                                onClick={() => setPeriodo(p.chave)}
+                                    <div style={{ flex: 1, minHeight: 0 }}>
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart
+                                                data={dadosSemana}
+                                                margin={{ top: 18, right: 8, left: 8, bottom: 0 }}
+                                                barSize={dadosSemana.length > 6 ? 20 : 34}
                                             >
-                                                {t(p.label)}
-                                            </button>
-                                        ))}
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                                                <XAxis
+                                                    dataKey="label"
+                                                    tick={{ fontSize: 10, fill: '#8fa3b8' }}
+                                                    axisLine={false}
+                                                    tickLine={false}
+                                                    interval={0}
+                                                    angle={dadosSemana.length > 6 ? -30 : 0}
+                                                    textAnchor={dadosSemana.length > 6 ? 'end' : 'middle'}
+                                                    height={dadosSemana.length > 6 ? 50 : 30}
+                                                />
+                                                <YAxis hide />
+                                                <Tooltip
+                                                    contentStyle={TIP}
+                                                    formatter={(v) => [`${v}`, t('badges_atribuidos')]}
+                                                />
+                                                <Bar dataKey="atribuidos" fill={COR} radius={[6, 6, 0, 0]}>
+                                                    <LabelList
+                                                        dataKey="atribuidos"
+                                                        position="top"
+                                                        style={{ fontSize: '10px', fill: '#8fa3b8', fontWeight: 600 }}
+                                                    />
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
                                     </div>
                                 </div>
-                                <div style={{ flex: 1, minHeight: 0 }}>
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart
-                                            data={dadosSemana}
-                                            margin={{ top: 18, right: 8, left: 8, bottom: 0 }}
-                                            barSize={dadosSemana.length > 6 ? 20 : 34}
-                                        >
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                                            <XAxis
-                                                dataKey="label"
-                                                tick={{ fontSize: 10, fill: '#8fa3b8' }}
-                                                axisLine={false}
-                                                tickLine={false}
-                                                interval={0}
-                                                angle={dadosSemana.length > 6 ? -30 : 0}
-                                                textAnchor={dadosSemana.length > 6 ? 'end' : 'middle'}
-                                                height={dadosSemana.length > 6 ? 50 : 30}
-                                            />
-                                            <YAxis hide />
-                                            <Tooltip
-                                                contentStyle={TIP}
-                                                formatter={(v) => [`${v}`, t('badges_atribuidos')]}
-                                            />
-                                            <Bar dataKey="atribuidos" fill={COR} radius={[6, 6, 0, 0]}>
-                                                <LabelList
-                                                    dataKey="atribuidos"
-                                                    position="top"
-                                                    style={{ fontSize: '10px', fill: '#8fa3b8', fontWeight: 600 }}
-                                                />
-                                            </Bar>
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
+                            </div>
+
+                            {/* Status das candidaturas */}
+                            <div className="estat-service-status-wrap">
+                                <StatusCandidaturas dados={statusCandidaturas} />
                             </div>
                         </div>
+                    </div>
 
-                        {/* Status das candidaturas */}
-                        <div className="estat-service-status-wrap">
-                            <StatusCandidaturas dados={statusCandidaturas} />
-                        </div>
+                    {/* COLUNA DIREITA — Classificação da Service Line */}
+                    <div className="estat-service-col-dir">
+                        <ClassificacaoGeral
+                            classificacao={classificacao}
+                            user={user}
+                            titulo="Service Line"
+                            fullHeight={true}
+                            maxItems={10}
+                        />
                     </div>
                 </div>
-
-                {/* COLUNA DIREITA — Classificação da Service Line */}
-                <div className="estat-service-col-dir">
-                    <ClassificacaoGeral
-                        classificacao={classificacao}
-                        user={user}
-                        titulo="Service Line"
-                        fullHeight={true}
-                        maxItems={10}
-                    />
-                </div>
-            </div>
+            )}
         </div>
     );
 };

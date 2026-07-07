@@ -11,7 +11,7 @@ module.exports = (sequelize) => {
     nome_badge: { type: DataTypes.TEXT, allowNull: false },
     imagem: { type: DataTypes.TEXT, allowNull: false },
     update_badge: { type: DataTypes.DATE, allowNull: false },
-    deleted_badge: { type: DataTypes.BOOLEAN, allowNull: false },
+    deleted_badge: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     descricao_badge: { type: DataTypes.TEXT, allowNull: true }
   }, { tableName: 'badges', timestamps: false });
 };

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     BarChart, Bar,
     PieChart, Pie, Cell,
@@ -33,6 +34,7 @@ const PERIODOS = [
 ];
 
 const EstatisticasConsultor = ({ user }) => {
+    const { t } = useTranslation();
     const [periodo, setPeriodo] = useState('semestre');
     const [dadosBar, setDadosBar] = useState([]);
     const [kpi, setKpi] = useState({
@@ -277,143 +279,148 @@ const EstatisticasConsultor = ({ user }) => {
             </div>
 
             {/* ── CORPO PRINCIPAL ── */}
-            <div className="estat-body">
-
-                {/* COLUNA ESQUERDA — cresce para ocupar espaço disponível */}
-                <div className="estat-col-esq">
-
-                    {/* ROW 1 — KPI + Evolução de Pontos */}
-                    <div className="estat-row">
-
-                        {/* KPI 2×2 */}
-                        <div className="estat-kpi-wrap">
-                            <div className="estat-kpi-grid h-100">
-                                {kpiCards.map((kpiCard, i) => (
-                                    <div key={i} className="estat-kpi-card">
-                                        <span className="estat-kpi-label">{kpiCard.label}</span>
-                                        <div className="estat-kpi-row">
-                                            <i className={`${kpiCard.icone} estat-kpi-icon`} />
-                                            <span className="estat-kpi-valor">{carregando && kpiCard.valor === '-' ? '…' : kpiCard.valor}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Evolução de Pontos */}
-                        <div className="estat-evolucao-wrap">
-                            <div className="estat-card h-100">
-                                <div className="estat-card-header">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <p className="estat-chart-title m-0">Evolução de Pontos</p>
-                                        <i className="fi fi-br-expand text-muted" style={{ cursor: 'pointer', fontSize: '12px' }} onClick={() => setShowEvolucao(true)}></i>
-                                    </div>
-                                    <select className="estat-select" value={periodo} onChange={e => setPeriodo(e.target.value)}>
-                                        {PERIODOS.map(p =>
-                                            <option key={p.key} value={p.key}>{p.label}</option>
-                                        )}
-                                    </select>
-                                </div>
-                                <div style={{ flex: 1, minHeight: 0 }}>
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={dadosBar}
-                                            margin={{ top: 18, right: 8, left: 8, bottom: 0 }}
-                                            barSize={34}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                                            <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#8fa3b8' }} axisLine={false} tickLine={false} />
-                                            <YAxis hide />
-                                            <Tooltip contentStyle={TIP} formatter={v => [`${v} pts`, 'Pontos']} />
-                                            <Bar dataKey="pontos" fill={COR} radius={[6, 6, 0, 0]}>
-                                                <LabelList dataKey="pontos" position="top" style={{ fontSize: '9px', fill: '#8fa3b8' }} />
-                                            </Bar>
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            </div>
-                        </div>
+            {carregando ? (
+                <div className="d-flex flex-column align-items-center justify-content-center flex-grow-1" style={{ minHeight: '50vh' }}>
+                    <div className="spinner-border text-primary mb-2" role="status" style={{ width: '3rem', height: '3rem' }}>
+                        <span className="visually-hidden">Loading...</span>
                     </div>
-
-                    {/* ROW 2 — Pie chart + Badges por Nível */}
-                    <div className="estat-row">
-
-                        {/* Donut — Conquistados este mês */}
-                        <div className="estat-pie-wrap">
-                            <div className="estat-card h-100">
-                                <div className="estat-card-header">
-                                    <p className="estat-chart-title m-0">Conquistados este mês</p>
-                                    <span className="estat-chart-total">{totalPie}</span>
-                                </div>
-                                <div className="estat-pie-inner">
-                                    {/* Donut com total no centro */}
-                                    <div className="estat-donut-container">
-                                        <PieChart width={160} height={160}>
-                                            <Pie data={dadosPieComCores} cx="50%" cy="50%"
-                                                innerRadius={48} outerRadius={72}
-                                                dataKey="total_badges" strokeWidth={2} stroke="#fff" paddingAngle={2}>
-                                                {dadosPieComCores.map((e, i) => <Cell key={i} fill={e.cor} />)}
-                                            </Pie>
-                                            <Tooltip contentStyle={TIP} formatter={(v, n) => [`${v}`, n]} />
-                                        </PieChart>
-                                        {/* Número total no buraco do donut */}
-                                        <div className="estat-donut-center">
-                                            <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--fontes)', lineHeight: 1 }}>{totalPie}</div>
-                                            <div style={{ fontSize: '9px', color: '#8fa3b8', marginTop: '2px', fontWeight: 500 }}>total</div>
-                                        </div>
-                                    </div>
-                                    {/* Legenda com nº de badges */}
-                                    <div className="estat-legenda" style={{ flex: 1, minWidth: 0 }}>
-                                        {dadosPieComCores.map((e, i) => (
-                                            <div key={i} className="estat-legenda-item" style={{ justifyContent: 'space-between' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                                                    <span className="estat-legenda-dot" style={{ backgroundColor: e.cor, flexShrink: 0 }} />
-                                                    <span style={{ fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.Nome_Area}</span>
-                                                </div>
-                                                <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--fontes)', marginLeft: '8px', flexShrink: 0 }}>{e.total_badges}</span>
+                    <span className="text-muted">{t("a_carregar") || "A carregar..."}</span>
+                </div>
+            ) : (
+                <div className="estat-body">
+                    {/* COLUNA ESQUERDA — cresce para ocupar espaço disponível */}
+                    <div className="estat-col-esq">
+                        {/* ROW 1 — KPI + Evolução de Pontos */}
+                        <div className="estat-row">
+                            {/* KPI 2×2 */}
+                            <div className="estat-kpi-wrap">
+                                <div className="estat-kpi-grid h-100">
+                                    {kpiCards.map((kpiCard, i) => (
+                                        <div key={i} className="estat-kpi-card">
+                                            <span className="estat-kpi-label">{kpiCard.label}</span>
+                                            <div className="estat-kpi-row">
+                                                <i className={`${kpiCard.icone} estat-kpi-icon`} />
+                                                <span className="estat-kpi-valor">{kpiCard.valor}</span>
                                             </div>
-                                        ))}
-                                        {dadosPieComCores.length === 0 && (
-                                            <span style={{ fontSize: '11px', color: '#8fa3b8' }}>Sem conquistas neste mês.</span>
-                                        )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Evolução de Pontos */}
+                            <div className="estat-evolucao-wrap">
+                                <div className="estat-card h-100">
+                                    <div className="estat-card-header">
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <p className="estat-chart-title m-0">Evolução de Pontos</p>
+                                            <i className="fi fi-br-expand text-muted" style={{ cursor: 'pointer', fontSize: '12px' }} onClick={() => setShowEvolucao(true)}></i>
+                                        </div>
+                                        <select className="estat-select" value={periodo} onChange={e => setPeriodo(e.target.value)}>
+                                            {PERIODOS.map(p =>
+                                                <option key={p.key} value={p.key}>{p.label}</option>
+                                            )}
+                                        </select>
+                                    </div>
+                                    <div style={{ flex: 1, minHeight: 0 }}>
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={dadosBar}
+                                                margin={{ top: 18, right: 8, left: 8, bottom: 0 }}
+                                                barSize={34}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                                                <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#8fa3b8' }} axisLine={false} tickLine={false} />
+                                                <YAxis hide />
+                                                <Tooltip contentStyle={TIP} formatter={v => [`${v} pts`, 'Pontos']} />
+                                                <Bar dataKey="pontos" fill={COR} radius={[6, 6, 0, 0]}>
+                                                    <LabelList dataKey="pontos" position="top" style={{ fontSize: '9px', fill: '#8fa3b8' }} />
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Badges por Nível */}
-                        <div className="estat-niveis-wrap">
-                            <div className="estat-card h-100">
-                                <div className="estat-card-header">
-                                    <p className="estat-chart-title m-0">Badges por Nível</p>
-                                    <span className="estat-chart-total">{totalNiveis}</span>
+                        {/* ROW 2 — Pie chart + Badges por Nível */}
+                        <div className="estat-row">
+                            {/* Donut — Conquistados este mês */}
+                            <div className="estat-pie-wrap">
+                                <div className="estat-card h-100">
+                                    <div className="estat-card-header">
+                                        <p className="estat-chart-title m-0">Conquistados este mês</p>
+                                        <span className="estat-chart-total">{totalPie}</span>
+                                    </div>
+                                    <div className="estat-pie-inner">
+                                        {/* Donut com total no centro */}
+                                        <div className="estat-donut-container">
+                                            <PieChart width={160} height={160}>
+                                                <Pie data={dadosPieComCores} cx="50%" cy="50%"
+                                                    innerRadius={48} outerRadius={72}
+                                                    dataKey="total_badges" strokeWidth={2} stroke="#fff" paddingAngle={2}>
+                                                    {dadosPieComCores.map((e, i) => <Cell key={i} fill={e.cor} />)}
+                                                </Pie>
+                                                <Tooltip contentStyle={TIP} formatter={(v, n) => [`${v}`, n]} />
+                                            </PieChart>
+                                            {/* Número total no buraco do donut */}
+                                            <div className="estat-donut-center">
+                                                <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--fontes)', lineHeight: 1 }}>{totalPie}</div>
+                                                <div style={{ fontSize: '9px', color: '#8fa3b8', marginTop: '2px', fontWeight: 500 }}>total</div>
+                                            </div>
+                                        </div>
+                                        {/* Legenda com nº de badges */}
+                                        <div className="estat-legenda" style={{ flex: 1, minWidth: 0 }}>
+                                            {dadosPieComCores.map((e, i) => (
+                                                <div key={i} className="estat-legenda-item" style={{ justifyContent: 'space-between' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                                                        <span className="estat-legenda-dot" style={{ backgroundColor: e.cor, flexShrink: 0 }} />
+                                                        <span style={{ fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.Nome_Area}</span>
+                                                    </div>
+                                                    <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--fontes)', marginLeft: '8px', flexShrink: 0 }}>{e.total_badges}</span>
+                                                </div>
+                                            ))}
+                                            {dadosPieComCores.length === 0 && (
+                                                <span style={{ fontSize: '11px', color: '#8fa3b8' }}>Sem conquistas neste mês.</span>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div style={{ flex: 1, minHeight: 0 }}>
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={dadosNiveis} layout="vertical"
-                                            margin={{ top: 4, right: 36, left: 4, bottom: 4 }}
-                                            barSize={20}>
-                                            <XAxis type="number" hide />
-                                            <YAxis type="category" dataKey="Nome_Nivel"
-                                                tick={{ fontSize: 11, fill: '#8fa3b8' }}
-                                                axisLine={false} tickLine={false} width={82} />
-                                            <Tooltip contentStyle={TIP} formatter={(v) => [`${v} badges`, 'Total']} />
-                                            <Bar dataKey="total_badges" radius={[0, 6, 6, 0]}>
-                                                {dadosNiveis.map((e, i) => <Cell key={i} fill={e.cor} />)}
-                                                <LabelList dataKey="total_badges" position="right"
-                                                    style={{ fontSize: '11px', fill: '#8fa3b8', fontWeight: 600 }} />
-                                            </Bar>
-                                        </BarChart>
-                                    </ResponsiveContainer>
+                            </div>
+
+                            {/* Badges por Nível */}
+                            <div className="estat-niveis-wrap">
+                                <div className="estat-card h-100">
+                                    <div className="estat-card-header">
+                                        <p className="estat-chart-title m-0">Badges por Nível</p>
+                                        <span className="estat-chart-total">{totalNiveis}</span>
+                                    </div>
+                                    <div style={{ flex: 1, minHeight: 0 }}>
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={dadosNiveis} layout="vertical"
+                                                margin={{ top: 4, right: 36, left: 4, bottom: 4 }}
+                                                barSize={20}>
+                                                <XAxis type="number" hide />
+                                                <YAxis type="category" dataKey="Nome_Nivel"
+                                                    tick={{ fontSize: 11, fill: '#8fa3b8' }}
+                                                    axisLine={false} tickLine={false} width={82} />
+                                                <Tooltip contentStyle={TIP} formatter={(v) => [`${v} badges`, 'Total']} />
+                                                <Bar dataKey="total_badges" radius={[0, 6, 6, 0]}>
+                                                    {dadosNiveis.map((e, i) => <Cell key={i} fill={e.cor} />)}
+                                                    <LabelList dataKey="total_badges" position="right"
+                                                        style={{ fontSize: '11px', fill: '#8fa3b8', fontWeight: 600 }} />
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* COLUNA DIREITA — Classificação Geral */}
-                <div className="estat-col-dir">
-                    <ClassificacaoGeral user={user} classificacao={classificacao} fullHeight={true} maxItems={9} />
+                    {/* COLUNA DIREITA — Classificação Geral */}
+                    <div className="estat-col-dir">
+                        <ClassificacaoGeral user={user} classificacao={classificacao} fullHeight={true} maxItems={9} />
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Modals Extras */}
             {showEvolucao && <EvolucaoModal onClose={() => setShowEvolucao(false)} />}

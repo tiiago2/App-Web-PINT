@@ -45,7 +45,9 @@ function BadgeDetalheConteudo({
     if (isLoading) {
         return (
             <div className="badge-detalhe-loading">
-                <i className="fi fi-br-spinner"></i>
+                <div className="spinner-border text-primary mb-2" role="status" style={{ width: '2rem', height: '2rem' }}>
+                    <span className="visually-hidden">Loading...</span>
+                </div>
                 <span>A carregar detalhe do badge...</span>
             </div>
         );

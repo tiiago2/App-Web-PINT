@@ -301,7 +301,9 @@ const ClassificacaoGeral = ({
     if (isLoading) {
         return (
             <div className="p-3 d-flex flex-column bg-white justify-content-center align-items-center" style={{ border: 'var(--borda-principal) solid var(--contorno)', borderRadius: 'var(--border-radius-grande)', boxSizing: 'border-box', height: fullHeight ? '100%' : '35vh' }}>
-                <i className="fi fi-br-spinner hc-spinner mb-2" style={{ fontSize: '2rem', color: '#aab7c4', animation: 'hc-spin 1s linear infinite' }}></i>
+                <div className="spinner-border text-primary mb-2" role="status" style={{ width: '2rem', height: '2rem' }}>
+                    <span className="visually-hidden">Loading...</span>
+                </div>
                 <span style={{ color: '#aab7c4', fontSize: '0.9rem' }}>{t('a_carregar') || 'A carregar...'}</span>
             </div>
         );

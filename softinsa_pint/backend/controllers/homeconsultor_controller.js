@@ -26,7 +26,7 @@ module.exports = {
         where: {
           id_utilizador,
           status: {
-            [Op.notIn]: ["Aceite", "Concluído"]
+            [Op.in]: ['em_progresso', 'pendente', 'aceite talent']
           }
         },
         include: [
@@ -65,7 +65,8 @@ module.exports = {
           id_badge: badge.id_badge,
           titulo: badge.nome_badge,
           imagem: badge.imagem,
-          progresso
+          progresso,
+          status: sub.status
         });
       }
 

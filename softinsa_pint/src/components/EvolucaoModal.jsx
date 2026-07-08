@@ -98,7 +98,9 @@ const EvolucaoModal = ({ onClose }) => {
                 <div style={{ flex: 1, minHeight: 0, marginTop: '10px' }}>
                     {carregando ? (
                         <div className="d-flex align-items-center justify-content-center h-100">
-                            <i className="fi fi-br-spinner hc-spinner" style={{ fontSize: '2rem', color: '#8fa3b8' }}></i>
+                            <div className="spinner-border text-primary" role="status" style={{ width: '2rem', height: '2rem' }}>
+                                <span className="visually-hidden">Loading...</span>
+                            </div>
                         </div>
                     ) : dados.length === 0 ? (
                         <div className="d-flex align-items-center justify-content-center h-100 text-muted" style={{ fontSize: '14px' }}>

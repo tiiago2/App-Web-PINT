@@ -518,8 +518,10 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
                 <div className="obj-picker-body">
                     {carregando ? (
                         <div className="text-center text-muted py-5" style={{ fontSize: '14px' }}>
-                            <i className="fi fi-br-spinner spinner-animado d-block mb-2" style={{ fontSize: '2rem' }} />
-                            A carregar badges da base de dados...
+                            <div className="spinner-border text-primary mb-2" role="status" style={{ width: '2rem', height: '2rem' }}>
+                                <span className="visually-hidden">Loading...</span>
+                            </div>
+                            <div className="d-block">A carregar badges da base de dados...</div>
                         </div>
                     ) : filtrados.length === 0 ? (
                         <div className="text-center text-muted py-5" style={{ fontSize: '14px' }}>
@@ -1005,7 +1007,9 @@ const ObjetivosConsultor = ({ user }) => {
                     <div className="obj-lista-scroll">
                         {isLoadingObjetivos ? (
                             <div className="obj-painel-vazio fade-in">
-                                <i className="fi fi-br-spinner spinner-animado" />
+                                <div className="spinner-border text-primary mb-2" role="status" style={{ width: '2rem', height: '2rem' }}>
+                                    <span className="visually-hidden">Loading...</span>
+                                </div>
                                 <span>A carregar os teus objetivos...</span>
                             </div>
                         ) : erroAPIObjetivos ? (

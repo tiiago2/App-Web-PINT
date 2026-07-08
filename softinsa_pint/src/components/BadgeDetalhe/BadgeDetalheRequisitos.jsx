@@ -1,4 +1,6 @@
+import React from "react";
 import "./BadgeDetalheRequisitos.css";
+import api from "../../services/api";
 import {
     ESTADOS_BADGE_CONSULTOR,
     ESTADOS_REQUISITO_DETALHE,
@@ -197,24 +199,18 @@ function BadgeDetalheRequisitos({
                                 {requisito.temAnexo && (
                                     <span
                                         className="badge-detalhe-requisito-ficheiro"
-                                        title={
-                                            documentoTemUrl
-                                                ? "Abrir documento"
-                                                : textoDocumento
-                                        }
+                                        title="Download documento"
                                     >
                                         <i className="fi fi-br-clip"></i>
-                                        {documentoTemUrl ? (
-                                            <a
-                                                href={ficheiroDocumento}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                Ver documento
-                                            </a>
-                                        ) : (
-                                            <span>{textoDocumento}</span>
-                                        )}
+                                        <a
+                                            href={`${api.defaults.baseURL}/documentos/${requisito.documento?.id_ficheiro}/download?token=${localStorage.getItem("token_softinsa") || ""}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="fw-medium text-decoration-none"
+                                            style={{ fontSize: "0.85rem", color: "var(--barra_lateral)" }}
+                                        >
+                                            Download documento
+                                        </a>
                                     </span>
                                 )}
                             </div>

@@ -255,126 +255,131 @@ const EstatisticasAdmin = () => {
             </div>
 
             {/* ── CORPO PRINCIPAL ── */}
-            <div className="estat-admin-body">
-
-                {/* COLUNA ESQUERDA — KPIs, gráficos e learning paths */}
-                <div className="estat-admin-col-esq">
-
-                    {/* ROW 1 — KPI + Badges por Nível */}
-                    <div className="estat-admin-row">
-
-                        {/* KPI 2×2 */}
-                        <div className="estat-admin-kpi-wrap">
-                            <div className="estat-admin-kpi-grid">
-                                {kpiCards.map((kpi, i) => (
-                                    <div key={i} className="estat-admin-kpi-card">
-                                        <span className="estat-admin-kpi-label">{t(kpi.label)}</span>
-                                        <div className="estat-admin-kpi-row">
-                                            <i className={`${kpi.icone} estat-admin-kpi-icon`} />
-                                            <span className="estat-admin-kpi-valor">{kpi.valor}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Badges Atribuídos por Nível */}
-                        <div className="estat-admin-niveis-wrap">
-                            <div className="estat-admin-card h-100">
-                                <div className="estat-admin-card-header">
-                                    <p className="estat-admin-chart-title m-0">{t('badges_atribuidos_nivel')}</p>
-                                </div>
-                                <BadgesPorNivel dados={dadosNiveis} />
-                            </div>
-                        </div>
+            {carregando ? (
+                <div className="d-flex flex-column align-items-center justify-content-center flex-grow-1" style={{ minHeight: '50vh' }}>
+                    <div className="spinner-border text-primary mb-2" role="status" style={{ width: '3rem', height: '3rem' }}>
+                        <span className="visually-hidden">Loading...</span>
                     </div>
-
-                    {/* ROW 2 — Pie (Atribuídos este mês) + Learning Paths */}
-                    <div className="estat-admin-row">
-
-                        {/* Donut — Atribuídos este mês */}
-                        <div className="estat-admin-pie-wrap">
-                            <div className="estat-admin-card h-100">
-                                <div className="estat-admin-card-header">
-                                    <p className="estat-admin-chart-title m-0">{t('atribuidos_este_mes')}</p>
-                                    <span className="estat-admin-total">{totalAtribuidos}</span>
+                    <span className="text-muted">{t("a_carregar") || "A carregar..."}</span>
+                </div>
+            ) : (
+                <div className="estat-admin-body">
+                    {/* COLUNA ESQUERDA — KPIs, gráficos e learning paths */}
+                    <div className="estat-admin-col-esq">
+                        {/* ROW 1 — KPI + Badges por Nível */}
+                        <div className="estat-admin-row">
+                            {/* KPI 2×2 */}
+                            <div className="estat-admin-kpi-wrap">
+                                <div className="estat-admin-kpi-grid">
+                                    {kpiCards.map((kpi, i) => (
+                                        <div key={i} className="estat-admin-kpi-card">
+                                            <span className="estat-admin-kpi-label">{t(kpi.label)}</span>
+                                            <div className="estat-admin-kpi-row">
+                                                <i className={`${kpi.icone} estat-admin-kpi-icon`} />
+                                                <span className="estat-admin-kpi-valor">{kpi.valor}</span>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                                <div className="estat-admin-pie-inner">
-                                    <div className="estat-admin-donut-container">
-                                        <PieChart width={160} height={160}>
-                                            <Pie
-                                                data={dadosPieComCores}
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius={48}
-                                                outerRadius={72}
-                                                dataKey="total_badges"
-                                                strokeWidth={2}
-                                                stroke="#fff"
-                                                paddingAngle={2}
-                                            >
-                                                {dadosPieComCores.map((e, i) => (
-                                                    <Cell key={i} fill={e.cor} />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip contentStyle={TIP} formatter={(v, n) => [`${v}`, n]} />
-                                        </PieChart>
-                                        <div className="estat-admin-donut-center">
-                                            <div className="estat-admin-donut-total">{totalAtribuidos}</div>
-                                            <div className="estat-admin-donut-label">{t('total')}</div>
+                            </div>
+
+                            {/* Badges Atribuídos por Nível */}
+                            <div className="estat-admin-niveis-wrap">
+                                <div className="estat-admin-card h-100">
+                                    <div className="estat-admin-card-header">
+                                        <p className="estat-admin-chart-title m-0">{t('badges_atribuidos_nivel')}</p>
+                                    </div>
+                                    <BadgesPorNivel dados={dadosNiveis} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ROW 2 — Pie (Atribuídos este mês) + Learning Paths */}
+                        <div className="estat-admin-row">
+                            {/* Donut — Atribuídos este mês */}
+                            <div className="estat-admin-pie-wrap">
+                                <div className="estat-admin-card h-100">
+                                    <div className="estat-admin-card-header">
+                                        <p className="estat-admin-chart-title m-0">{t('atribuidos_este_mes')}</p>
+                                        <span className="estat-admin-total">{totalAtribuidos}</span>
+                                    </div>
+                                    <div className="estat-admin-pie-inner">
+                                        <div className="estat-admin-donut-container">
+                                            <PieChart width={160} height={160}>
+                                                <Pie
+                                                    data={dadosPieComCores}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={48}
+                                                    outerRadius={72}
+                                                    dataKey="total_badges"
+                                                    strokeWidth={2}
+                                                    stroke="#fff"
+                                                    paddingAngle={2}
+                                                >
+                                                    {dadosPieComCores.map((e, i) => (
+                                                        <Cell key={i} fill={e.cor} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip contentStyle={TIP} formatter={(v, n) => [`${v}`, n]} />
+                                            </PieChart>
+                                            <div className="estat-admin-donut-center">
+                                                <div className="estat-admin-donut-total">{totalAtribuidos}</div>
+                                                <div className="estat-admin-donut-label">{t('total')}</div>
+                                            </div>
+                                        </div>
+                                        <div className="estat-admin-legenda">
+                                            {dadosPieComCores.map((e, i) => (
+                                                <div key={i} className="estat-admin-legenda-item">
+                                                    <div className="estat-admin-legenda-esq">
+                                                        <span className="estat-admin-legenda-dot" style={{ backgroundColor: e.cor }} />
+                                                        <span>{e.Nome_Area}</span>
+                                                    </div>
+                                                    <span className="estat-admin-legenda-valor">{e.total_badges}</span>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-                                    <div className="estat-admin-legenda">
-                                        {dadosPieComCores.map((e, i) => (
-                                            <div key={i} className="estat-admin-legenda-item">
-                                                <div className="estat-admin-legenda-esq">
-                                                    <span className="estat-admin-legenda-dot" style={{ backgroundColor: e.cor }} />
-                                                    <span>{e.Nome_Area}</span>
+                                </div>
+                            </div>
+
+                            {/* Learning Paths */}
+                            <div className="estat-admin-learning-wrap">
+                                <div className="estat-admin-card h-100">
+                                    <div className="estat-admin-card-header">
+                                        <p className="estat-admin-chart-title m-0">{t('learning_paths')}</p>
+                                        <span className="estat-admin-total">{learningPaths.length}</span>
+                                    </div>
+                                    <div className="estat-admin-learning-grid">
+                                        {learningPaths.map((lp, i) => (
+                                            <div key={i} className="estat-admin-learning-card">
+                                                <div className="estat-admin-learning-info">
+                                                    <span className="estat-admin-learning-name">{lp.nome}</span>
+                                                    <span className="estat-admin-learning-meta">
+                                                        {lp.total_badges} {t('badges').toLowerCase()}
+                                                    </span>
                                                 </div>
-                                                <span className="estat-admin-legenda-valor">{e.total_badges}</span>
+                                                <div className="estat-admin-learning-count">
+                                                    <span>{lp.total_badges}</span>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Learning Paths */}
-                        <div className="estat-admin-learning-wrap">
-                            <div className="estat-admin-card h-100">
-                                <div className="estat-admin-card-header">
-                                    <p className="estat-admin-chart-title m-0">{t('learning_paths')}</p>
-                                    <span className="estat-admin-total">{learningPaths.length}</span>
-                                </div>
-                                <div className="estat-admin-learning-grid">
-                                    {learningPaths.map((lp, i) => (
-                                        <div key={i} className="estat-admin-learning-card">
-                                            <div className="estat-admin-learning-info">
-                                                <span className="estat-admin-learning-name">{lp.nome}</span>
-                                                <span className="estat-admin-learning-meta">
-                                                    {lp.total_badges} {t('badges').toLowerCase()}
-                                                </span>
-                                            </div>
-                                            <div className="estat-admin-learning-count">
-                                                <span>{lp.total_badges}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                    {/* COLUNA DIREITA — Classificação Geral */}
+                    <div className="estat-admin-col-dir">
+                        <ClassificacaoGeral
+                            classificacao={classificacao}
+                            fullHeight={true}
+                            maxItems={10}
+                        />
                     </div>
                 </div>
-
-                {/* COLUNA DIREITA — Classificação Geral */}
-                <div className="estat-admin-col-dir">
-                    <ClassificacaoGeral
-                        classificacao={classificacao}
-                        fullHeight={true}
-                        maxItems={10}
-                    />
-                </div>
-            </div>
+            )}
         </div>
     );
 };

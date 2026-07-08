@@ -11,9 +11,14 @@ const {
   Objetivos,
   RegistoBadges,
   Logs,
-  Permissoes
+  Permissoes,
+  Recetor,
+  Documentos
 } = require("../models");
 const { Op } = require("sequelize");
+const { enviarEmail } = require('../helpers/emailHelper');
+
+const emailValido = (email) => typeof email === 'string' && email.length > 5 && email.includes('@');
 
 module.exports = {
   // GET /api/candidaturas
@@ -53,7 +58,9 @@ module.exports = {
         : (roles.includes('consultor'));
 
       // Cláusula where principal de submissões
-      let whereClause = {};
+      let whereClause = {
+        status: { [Op.in]: ['pendente', 'aceite talent', 'aceite', 'recusada'] }
+      };
 
       // Se for Service Line Leader e não for Admin/Talent:
       if (isServiceLeader && !isAdmin && !isTalent) {
@@ -120,6 +127,12 @@ module.exports = {
               attributes: ['id_utilizador', 'nome_user', 'imagem_perfil']
             }
           ]
+        },
+        {
+          model: Documentos,
+          attributes: ['id_ficheiro', 'id_requisito', 'ficheiro'],
+          where: { deleted_file: false },
+          required: false
         }
       ];
 
@@ -157,8 +170,19 @@ module.exports = {
           else if (dbStatus === 'recusada' || dbStatus === 'rejeitada') mappedStatus = 'Recusada';
         }
 
+        const documentosDaSubmissao = sub.Documentos || [];
+
         const requisitos = sub.Badge?.Requisitos
-          ? sub.Badge.Requisitos.map(r => r.descricao_requisito || r.nome_requisito)
+          ? sub.Badge.Requisitos.map(r => {
+              const docAssociado = documentosDaSubmissao.find(d => d.id_requisito === r.id_requisito);
+              return {
+                 id: r.id_requisito,
+                 nome: r.nome_requisito,
+                 descricao: r.descricao_requisito,
+                 temAnexo: !!docAssociado,
+                 documento: docAssociado ? { id_ficheiro: docAssociado.id_ficheiro, ficheiro: docAssociado.ficheiro } : null
+              };
+            })
           : [];
 
         const historicos = sub.Historicos
@@ -301,7 +325,11 @@ module.exports = {
       }
 
       submissao.status = dbStatus;
-      submissao.notificacao_sla = false;
+      if (isTalent && !isAdmin) {
+        submissao.notificacao_sla = false;
+      } else {
+        submissao.notificacao_sla = true;
+      }
       await submissao.save();
 
       // 1. Atualizar ou Criar registo na tabela de Historico de Avaliações
@@ -322,27 +350,93 @@ module.exports = {
         await hist.save();
       }
 
-      // 2. Enviar notificação ao consultor/candidato
-      const badgeObj = await Badges.findByPk(submissao.id_badge);
+      // 2. Enviar notificação ao consultor/candidato (se a permissão de veredicto estiver ativa)
+      const candidato = await Utilizador.findByPk(submissao.id_utilizador);
+      const badgeObj = await Badges.findByPk(submissao.id_badge, {
+        include: [{
+          model: Area,
+          include: [{
+            model: ServiceLine,
+            include: [{
+              model: Utilizador,
+              as: 'Lider'
+            }]
+          }]
+        }]
+      });
       const nomeBadge = badgeObj ? badgeObj.nome_badge : 'Badge';
+      const lider = badgeObj?.Area?.ServiceLine?.Lider;
 
       let msgNotif = '';
+      let deveEnviarNotif = false;
       if (status === 'Recusada') {
         msgNotif = `O teu pedido de badge '${nomeBadge}' foi recusado. Motivo: ${motivo || 'Nenhum'}`;
+        deveEnviarNotif = true;
       } else {
         if (isTalent && !isAdmin) {
-          msgNotif = `O teu pedido de badge '${nomeBadge}' foi pré-aceite pelo Talent Manager e aguarda validação do Líder.`;
+          // Talent Manager aceitou (validação inicial) -> não envia notificação de imediato
+          deveEnviarNotif = false;
         } else {
+          // Service Line Leader ou Admin aceitou -> envia notificação
           msgNotif = `Parabéns! O teu pedido de badge '${nomeBadge}' foi totalmente aceite.`;
+          deveEnviarNotif = true;
         }
       }
 
-      await Notificacoes.create({
-        id_utilizador: submissao.id_utilizador, // ID do destinatário (consultor)
-        descricao_notificacao: msgNotif,
-        data_envio: new Date(),
-        tipo_notificacao: 'AVALIACAO_STATUS'
-      });
+      // Permissão 9: Veredito avaliação
+      const perm9 = await Permissoes.findByPk(9);
+      if (deveEnviarNotif && perm9?.toggle !== false) {
+        const notificacao = await Notificacoes.create({
+          id_utilizador: id_utilizador, // Emissor (avaliador)
+          descricao_notificacao: msgNotif,
+          data_envio: new Date(),
+          tipo_notificacao: 'AVALIACAO_STATUS'
+        });
+
+        await Recetor.create({
+          id_notificacao: notificacao.id_notificacao,
+          id_utilizador: submissao.id_utilizador, // Recetor (candidato)
+          lida: false
+        });
+
+        if (candidato?.email && emailValido(candidato.email)) {
+          await enviarEmail({
+            to: candidato.email,
+            subject: `Resultado da candidatura - ${nomeBadge}`,
+            text: msgNotif,
+            html: `<p>${msgNotif}</p>`
+          });
+        }
+      }
+
+      // Permissão 11: Alerta validação final (para Service Line Leaders)
+      if (dbStatus === 'aceite talent' && lider) {
+        const perm11 = await Permissoes.findByPk(11);
+        if (perm11?.toggle !== false) {
+          const msgSLL = `A candidatura de ${candidato?.nome_user || 'Consultor'} ao badge "${nomeBadge}" foi pré-aceite pelo Talent Manager e aguarda a sua validação final.`;
+          const notificacaoSLL = await Notificacoes.create({
+            id_utilizador: id_utilizador, // Emissor (TM)
+            descricao_notificacao: msgSLL,
+            data_envio: new Date(),
+            tipo_notificacao: 'VALIDACAO_FINAL_PENDENTE'
+          });
+
+          await Recetor.create({
+            id_notificacao: notificacaoSLL.id_notificacao,
+            id_utilizador: lider.id_utilizador, // Recetor (SLL)
+            lida: false
+          });
+
+          if (lider.email && emailValido(lider.email)) {
+            await enviarEmail({
+              to: lider.email,
+              subject: `Nova validação final pendente - ${nomeBadge}`,
+              text: msgSLL,
+              html: `<p>${msgSLL}</p>`
+            });
+          }
+        }
+      }
 
       // 3. Verificar e concluir objetivos relacionados com este badge
       if (dbStatus === 'aceite') {

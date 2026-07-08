@@ -6,6 +6,7 @@ import GaleriaToolbar from "../GaleriaToolbar/GaleriaToolbar";
 import FiltroEstadoBadges from "../FiltroEstadoBadges/FiltroEstadoBadges";
 import ModalConfirmacao from "../../ui/ModalConfirmacao/ModalConfirmacao";
 import ToastNotificacao from "../../ui/ToastNotificacao/ToastNotificacao";
+import BotaoExportar from "../../ui/BotaoExportar/BotaoExportar";
 import BadgeDetalheModal from "../../BadgeDetalhe/BadgeDetalheModal";
 import {
     obterMeuBadge,
@@ -23,7 +24,12 @@ import {
 } from "../../../services/badgesService";
 import { normalizarBadgeDetalheCatalogo } from "../../../utils/badgeDetalheNormalizadores";
 import "./GaleriaBadges.css";
-import { verificarPermissaoPartilhaLinkedIn } from "../../../services/permissoesService";
+import {
+    obterRoleAutenticada,
+    obterUtilizadorAutenticadoBasico,
+    verificarPermissaoExportacaoBadges,
+    verificarPermissaoPartilhaLinkedIn,
+} from "../../../services/permissoesService";
 
 function normalizarTexto(texto = "") {
     return String(texto)
@@ -189,6 +195,39 @@ function criarMensagemConfirmacaoAnexo(anexoPendente, detalheBadge) {
     return mensagem;
 }
 
+function obterContextoExportacao({ isConsultor, abaAtual, consultor }) {
+    if (isConsultor) {
+        const separador =
+            abaAtual === "sugeridos" ? "Sugeridos" : "Todos os Badges";
+        const nome = consultor?.nome ?? "Consultor";
+        const email = consultor?.email ? ` | Email: ${consultor.email}` : "";
+
+        return `Consultor: ${nome}${email} | Separador: ${separador}`;
+    }
+
+    const role = obterRoleAutenticada();
+    return role === "Service Line Leader"
+        ? "Service Line Leader"
+        : "Talent Manager";
+}
+
+function badgeTemConquistaConfirmada(detalhe) {
+    if (!detalhe || typeof detalhe !== "object") {
+        return false;
+    }
+
+    const estado = String(detalhe.estado ?? "")
+        .trim()
+        .toLowerCase();
+    const estadosConquistados = new Set(["conquistados", "conquistado", "aceite"]);
+
+    return (
+        estadosConquistados.has(estado) &&
+        !!detalhe.registo &&
+        detalhe.registo?.expirado !== true
+    );
+}
+
 function GaleriaBadges({ modo = "consultor" }) {
     const isConsultor = modo === "consultor";
 
@@ -216,6 +255,11 @@ function GaleriaBadges({ modo = "consultor" }) {
     const [submissaoPendenteConfirmacao, setSubmissaoPendenteConfirmacao] = useState(null);
     const [isSubmetendoCandidatura, setIsSubmetendoCandidatura] = useState(false);
     const [avisoPermissaoLinkedIn, setAvisoPermissaoLinkedIn] = useState(false);
+    const [podeExportarBadges, setPodeExportarBadges] = useState(false);
+    const [badgesSugeridosExportacao, setBadgesSugeridosExportacao] = useState([]);
+    const [badgesTodosExportacao, setBadgesTodosExportacao] = useState([]);
+    const [consultorAutenticado, setConsultorAutenticado] = useState(null);
+    const [isGerandoCertificado, setIsGerandoCertificado] = useState(false);
     const [toast, setToast] = useState({
         visivel: false,
         mensagem: "",
@@ -266,6 +310,47 @@ function GaleriaBadges({ modo = "consultor" }) {
         }
 
         carregarCatalogo();
+
+        return () => {
+            ativo = false;
+        };
+    }, [isConsultor]);
+
+    useEffect(() => {
+        let ativo = true;
+
+        async function carregarPermissaoExportacao() {
+            const autorizado = await verificarPermissaoExportacaoBadges({ modo });
+
+            if (ativo) {
+                setPodeExportarBadges(autorizado);
+            }
+        }
+
+        carregarPermissaoExportacao();
+
+        return () => {
+            ativo = false;
+        };
+    }, [modo]);
+
+    useEffect(() => {
+        if (!isConsultor) {
+            setConsultorAutenticado(null);
+            return undefined;
+        }
+
+        let ativo = true;
+
+        async function carregarConsultorAutenticado() {
+            const utilizador = await obterUtilizadorAutenticadoBasico();
+
+            if (ativo) {
+                setConsultorAutenticado(utilizador);
+            }
+        }
+
+        carregarConsultorAutenticado();
 
         return () => {
             ativo = false;
@@ -623,25 +708,142 @@ function GaleriaBadges({ modo = "consultor" }) {
         window.open(urlLinkedIn, "_blank", "noopener,noreferrer");
     };
 
+    const obterListaAtualExportacao = () => {
+        if (isConsultor && abaAtual === "sugeridos") {
+            return badgesSugeridosExportacao;
+        }
+
+        return badgesTodosExportacao;
+    };
+
+    const tratarErroExportacao = (error) => {
+        if (error?.codigo === "sem_badges_para_exportar") {
+            mostrarToast("Não existem badges para exportar.", "erro");
+            return;
+        }
+
+        console.error("Erro ao exportar badges:", error);
+        mostrarToast("Não foi possível exportar os badges.", "erro");
+    };
+
+    const handleExportarExcel = async () => {
+        try {
+            const { exportarBadgesExcel } = await import(
+                "../../../utils/exportarBadges"
+            );
+
+            await exportarBadgesExcel({
+                badges: obterListaAtualExportacao(),
+                titulo: isConsultor
+                    ? "Galeria de Badges do Consultor"
+                    : "Galeria de Badges",
+                contexto: obterContextoExportacao({
+                    isConsultor,
+                    abaAtual,
+                    consultor: consultorAutenticado,
+                }),
+                tipo: isConsultor ? "consultor" : "catalogo",
+                nomeFicheiro: isConsultor
+                    ? "Galeria_Badges_Consultor"
+                    : "Galeria_Badges_Talent_Service",
+            });
+        } catch (error) {
+            tratarErroExportacao(error);
+        }
+    };
+
+    const handleExportarPDF = async () => {
+        try {
+            const { exportarBadgesPdf } = await import(
+                "../../../utils/exportarBadges"
+            );
+
+            await exportarBadgesPdf({
+                badges: obterListaAtualExportacao(),
+                titulo: isConsultor
+                    ? "Galeria de Badges do Consultor"
+                    : "Galeria de Badges",
+                contexto: obterContextoExportacao({
+                    isConsultor,
+                    abaAtual,
+                    consultor: consultorAutenticado,
+                }),
+                tipo: isConsultor ? "consultor" : "catalogo",
+                nomeFicheiro: isConsultor
+                    ? "Galeria_Badges_Consultor"
+                    : "Galeria_Badges_Talent_Service",
+            });
+        } catch (error) {
+            tratarErroExportacao(error);
+        }
+    };
+
+    const handleDownloadCertificadoBadge = async (badgeDetalhe) => {
+        if (
+            !isConsultor ||
+            !podeExportarBadges ||
+            !badgeTemConquistaConfirmada(badgeDetalhe) ||
+            isGerandoCertificado
+        ) {
+            return;
+        }
+
+        setIsGerandoCertificado(true);
+
+        try {
+            const { gerarCertificadoBadgePdf } = await import(
+                "../../../utils/gerarCertificadoBadgePdf"
+            );
+            const idBadge = obterIdBadge(badgeDetalhe);
+            const urlPublica =
+                badgeDetalhe?.urlPublica ?? obterUrlPublicaDoBadge(idBadge);
+
+            await gerarCertificadoBadgePdf({
+                badge: badgeDetalhe,
+                consultor: consultorAutenticado,
+                urlPublica: `${window.location.origin}${urlPublica}`,
+            });
+        } catch (error) {
+            console.error("Erro ao gerar certificado do badge:", error);
+            mostrarToast(
+                "Não foi possível gerar o certificado do badge.",
+                "erro"
+            );
+        } finally {
+            setIsGerandoCertificado(false);
+        }
+    };
+
     return (
         <main className="galeria-badges-page">
             <div className="galeria-badges-topo">
-                <h1 className="texto-titulo-principal galeria-badges-titulo">
-                    Galeria de Badges
-                </h1>
+                <div className="galeria-badges-topo-esquerda">
+                    <h1 className="texto-titulo-principal galeria-badges-titulo">
+                        Galeria de Badges
+                    </h1>
 
-                {isConsultor && (
-                    <div className="galeria-badges-seletor">
-                        <SeletorAbas
-                            valorAtivo={abaAtiva}
-                            onChange={setAbaAtiva}
-                            opcoes={[
-                                { valor: "sugeridos", label: "Sugeridos" },
-                                {
-                                    valor: "todos",
-                                    label: "Todos os Badges",
-                                },
-                            ]}
+                    {isConsultor && (
+                        <div className="galeria-badges-seletor">
+                            <SeletorAbas
+                                valorAtivo={abaAtiva}
+                                onChange={setAbaAtiva}
+                                opcoes={[
+                                    { valor: "sugeridos", label: "Sugeridos" },
+                                    {
+                                        valor: "todos",
+                                        label: "Todos os Badges",
+                                    },
+                                ]}
+                            />
+                        </div>
+                    )}
+                </div>
+
+                {podeExportarBadges && (
+                    <div className="galeria-badges-topo-acoes">
+                        <BotaoExportar
+                            onExportarExcel={handleExportarExcel}
+                            onExportarPDF={handleExportarPDF}
                         />
                     </div>
                 )}
@@ -680,6 +882,7 @@ function GaleriaBadges({ modo = "consultor" }) {
                         <GaleriaSugeridos
                             badges={badgesConsultor}
                             onBadgeClick={handleOpenDetalheBadge}
+                            onBadgesSugeridosChange={setBadgesSugeridosExportacao}
                         />
                     )}
 
@@ -696,6 +899,7 @@ function GaleriaBadges({ modo = "consultor" }) {
                             mostrarEstado={isConsultor}
                             onBadgeClick={handleOpenDetalheBadge}
                             emptyMessage={mensagemGaleriaVazia}
+                            onBadgesFiltradosChange={setBadgesTodosExportacao}
                         />
                     )}
                 </div>
@@ -726,6 +930,17 @@ function GaleriaBadges({ modo = "consultor" }) {
                 onCopiarLinkPublico={handleCopiarLinkPublicoBadge}
                 onPartilharLinkedIn={
                     isConsultor ? handlePartilharLinkedIn : undefined
+                }
+                acaoCertificado={
+                    isConsultor &&
+                    podeExportarBadges &&
+                    detalheBadge &&
+                    badgeTemConquistaConfirmada(detalheBadge)
+                        ? {
+                              onDownload: handleDownloadCertificadoBadge,
+                              emProcessamento: isGerandoCertificado,
+                          }
+                        : null
                 }
             />
 

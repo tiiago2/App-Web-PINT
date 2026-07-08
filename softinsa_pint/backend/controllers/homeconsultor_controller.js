@@ -26,7 +26,7 @@ module.exports = {
         where: {
           id_utilizador,
           status: {
-            [Op.notIn]: ["Aceite", "Concluído", "recusada", "aceite talent"]
+            [Op.in]: ['em_progresso', 'pendente', 'aceite talent']
           }
         },
         include: [

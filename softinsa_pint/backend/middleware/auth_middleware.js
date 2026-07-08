@@ -1,15 +1,17 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
-    // 1. Ir buscar o token ao cabeçalho (Header) do pedido
+    // 1. Ir buscar o token ao cabeçalho (Header) do pedido ou query string
     const authHeader = req.headers.authorization;
+    let token = req.query.token;
 
-    if (!authHeader) {
-        return res.status(401).json({ error: "Acesso negado. Token não fornecido." });
+    if (authHeader) {
+        token = authHeader.split(' ')[1];
     }
 
-    // O formato costuma ser "Bearer TOKEN_AQUI", por isso cortamos a palavra "Bearer "
-    const token = authHeader.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({ error: "Acesso negado. Token não fornecido." });
+    }
 
     try {
         // 2. Verificar se a pulseira é verdadeira e está na validade

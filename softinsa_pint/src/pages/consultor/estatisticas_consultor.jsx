@@ -339,12 +339,11 @@ const EstatisticasConsultor = ({ user }) => {
 
                     {/* ROW 2 — Pie chart + Badges por Nível */}
                     <div className="estat-row">
-
                         {/* Donut — Conquistados este mês */}
                         <div className="estat-pie-wrap">
                             <div className="estat-card h-100">
                                 <div className="estat-card-header">
-                                    <p className="estat-chart-title m-0">Conquistados este mês</p>
+                                    <p className="estat-chart-title m-0">{t('conquistados_este_mes')}</p>
                                     <span className="estat-chart-total">{totalPie}</span>
                                 </div>
                                 <div className="estat-pie-inner">
@@ -376,7 +375,7 @@ const EstatisticasConsultor = ({ user }) => {
                                             </div>
                                         ))}
                                         {dadosPieComCores.length === 0 && (
-                                            <span style={{ fontSize: '11px', color: '#8fa3b8' }}>Sem conquistas neste mês.</span>
+                                            <span style={{ fontSize: '11px', color: '#8fa3b8' }}>{t('sem_conquistas_mes')}</span>
                                         )}
                                     </div>
                                 </div>
@@ -401,7 +400,6 @@ const EstatisticasConsultor = ({ user }) => {
                     <ClassificacaoGeral user={user} classificacao={classificacao} fullHeight={true} maxItems={9} />
                 </div>
             </div>
-
         </div>
     );
 };

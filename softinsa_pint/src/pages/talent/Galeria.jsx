@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import GaleriaTodosBadges from "../../components/Galeria/GaleriaTodosBadges/GaleriaTodosBadges";
 import BadgeItemAdmin from "../../components/Galeria/BadgeItemAdmin/BadgeItemAdmin";
 import ModalConfirmacao from "../../components/ui/ModalConfirmacao/ModalConfirmacao";
 import BadgeModal from '../../components/Criar_Editar/BadgeModal';
 import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
 import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
+import BotaoExportar from "../../components/ui/BotaoExportar/BotaoExportar";
 import VistaTabelaBadges from "../../components/Galeria/VistaTabelaBadges/VistaTabelaBadges";
 import GaleriaToolbar from "../../components/Galeria/GaleriaToolbar/GaleriaToolbar";
 import {
@@ -282,72 +280,45 @@ function Galeria() {
     );
   }, [badges]);
 
-  const [mostrarExportar, setMostrarExportar] = useState(false);
-  const exportRef = useRef(null);
+  const tratarErroExportacao = (error) => {
+    if (error?.codigo === "sem_badges_para_exportar") {
+      alert("Não existem badges para exportar.");
+      return;
+    }
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (exportRef.current && !exportRef.current.contains(e.target)) {
-        setMostrarExportar(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleExportarExcel = () => {
-    const livro = XLSX.utils.book_new();
-    const dadosExportar = badgesFiltradosAdmin.map((b) => ({
-      "Nome Badge": b.nome,
-      "Categoria": b.categoria || "-",
-      "Learning Path": b.learningPath || "-",
-      "Service Line": b.serviceLine || "-",
-      "Área": b.area || "-",
-      "Nível": b.nivel || "-",
-      "Pontos": b.pontos
-    }));
-
-    const folha = XLSX.utils.json_to_sheet(dadosExportar);
-    XLSX.utils.book_append_sheet(livro, folha, "Badges");
-    XLSX.writeFile(livro, "Galeria_Badges_Export.xlsx");
-    setMostrarExportar(false);
+    console.error("Erro ao exportar a galeria de badges:", error);
+    alert("Não foi possível exportar os badges.");
   };
 
-  const handleExportarPDF = () => {
+  const handleExportarExcel = async () => {
     try {
-      const doc = new jsPDF('p', 'pt', 'a4');
+      const { exportarBadgesExcel } = await import("../../utils/exportarBadges");
 
-      doc.setFontSize(18);
-      doc.setTextColor(0, 86, 179);
-      doc.text("Galeria de Badges - Catálogo", 40, 40);
-
-      doc.setFontSize(11);
-      doc.setTextColor(80);
-      doc.text(`Total de Badges Exportados: ${badgesFiltradosAdmin.length}`, 40, 70);
-
-      const dadosExportar = badgesFiltradosAdmin.map((b) => [
-        b.nome || "-",
-        b.learningPath || "-",
-        b.serviceLine || "-",
-        b.area || "-",
-        b.nivel || "-",
-        String(b.pontos || 0)
-      ]);
-
-      autoTable(doc, {
-        startY: 100,
-        head: [["Nome Badge", "Learning Path", "Service Line", "Área", "Nível", "Pontos"]],
-        body: dadosExportar.length > 0 ? dadosExportar : [["Sem dados", "-", "-", "-", "-", "-"]],
-        theme: 'striped',
-        headStyles: { fillColor: [0, 86, 179] },
-        styles: { fontSize: 9 }
+      await exportarBadgesExcel({
+        badges: badgesVisiveis,
+        titulo: "Galeria de Badges",
+        contexto: "Catálogo Global",
+        tipo: "catalogo",
+        nomeFicheiro: "Galeria_Badges_Admin",
       });
+    } catch (error) {
+      tratarErroExportacao(error);
+    }
+  };
 
-      doc.save("Galeria_Badges_Export.pdf");
-      setMostrarExportar(false);
-    } catch (erro) {
-      console.error("Erro ao gerar PDF da Galeria:", erro);
-      alert("Erro ao gerar o PDF.");
+  const handleExportarPDF = async () => {
+    try {
+      const { exportarBadgesPdf } = await import("../../utils/exportarBadges");
+
+      await exportarBadgesPdf({
+        badges: badgesVisiveis,
+        titulo: "Galeria de Badges",
+        contexto: "Catálogo Global",
+        tipo: "catalogo",
+        nomeFicheiro: "Galeria_Badges_Admin",
+      });
+    } catch (error) {
+      tratarErroExportacao(error);
     }
   };
 
@@ -648,21 +619,10 @@ function Galeria() {
             Adicionar Badge
           </BotaoAcao>
 
-          <div className="estat-admin-export-wrap" ref={exportRef}>
-            <BotaoAcao
-              variante="primario"
-              icone="fi-br-download"
-              onClick={() => setMostrarExportar(o => !o)}
-            >
-              Exportar
-            </BotaoAcao>
-            {mostrarExportar && (
-              <div className="estat-admin-export-menu">
-                <div className="estat-admin-export-item" onClick={handleExportarExcel}>Excel</div>
-                <div className="estat-admin-export-item" onClick={handleExportarPDF}>PDF</div>
-              </div>
-            )}
-          </div>
+          <BotaoExportar
+            onExportarExcel={handleExportarExcel}
+            onExportarPDF={handleExportarPDF}
+          />
         </div>
       </div>
 

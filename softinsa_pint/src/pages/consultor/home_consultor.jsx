@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import './home_consultor.css';
@@ -64,6 +64,13 @@ const HomeConsultor = ({ user, saudacao }) => {
         carregarDados();
     }, []);
 
+    const badgesFiltrados = useMemo(() => {
+        return badgesProgresso
+            .filter((badge) => String(badge.status || '').toLowerCase() === 'em_progresso')
+            .sort((a, b) => (Number(b.progresso) || 0) - (Number(a.progresso) || 0))
+            .slice(0, 3);
+    }, [badgesProgresso]);
+
     return (
         <div className="home-consultor-container">
             <div className="flex-shrink-0">
@@ -78,22 +85,22 @@ const HomeConsultor = ({ user, saudacao }) => {
                         </div>
                         <div className="badges-grid flex-grow-1 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                             <style>{`.badges-grid::-webkit-scrollbar { display: none; }`}</style>
-                            {carregando && badgesProgresso.length === 0 ? (
+                            {carregando && badgesFiltrados.length === 0 ? (
                                 <div className="badges-estado-vazio">
                                     <i className="fi fi-br-spinner hc-spinner"></i>
                                     <span>{t('a_carregar') || 'A carregar...'}</span>
                                 </div>
-                            ) : badgesProgresso.length === 0 ? (
+                            ) : badgesFiltrados.length === 0 ? (
                                 <div className="badges-estado-vazio">
                                     <i className="fi fi-br-badge"></i>
                                     <span>{t('sem_badges_progresso') || 'Sem badges em progresso.'}</span>
                                 </div>
                             ) : (
-                                badgesProgresso.map((badge, idx) => {
+                                badgesFiltrados.map((badge, idx) => {
                                     const pct = Math.max(0, Math.min(100, Number(badge.progresso) || 0));
                                     const cor = corPorProgresso(pct);
                                     return (
-                                        <div className={`badge-col${idx < badgesProgresso.length - 1 ? ' badge-col-separator' : ''}`} key={badge.id}>
+                                        <div className={`badge-col${idx < badgesFiltrados.length - 1 ? ' badge-col-separator' : ''}`} key={badge.id}>
                                             <div className="badge-card-premium">
                                                 <div className="badge-card-imagem-wrap" style={{ '--badge-progress': `${pct}%`, '--badge-cor': cor.principal }}>
                                                     <img className="badge-card-imagem" src={badge.imagem} alt={badge.titulo} />

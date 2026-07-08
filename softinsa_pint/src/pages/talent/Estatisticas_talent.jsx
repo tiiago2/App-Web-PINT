@@ -241,19 +241,19 @@ const EstatisticasTalent = () => {
     const totalAtribuidos = dadosPieComCores.reduce((s, x) => s + x.total_badges, 0);
 
     return (
-        <div className="estat-admin-page">
+        <div className="estat-talent-page">
 
             {/* ── CABEÇALHO ── */}
-            <div className="estat-admin-header">
+            <div className="estat-talent-header">
                 <h1 className="texto-titulo-principal m-0">{t('estatisticas')}</h1>
-                <div className="estat-admin-actions">
+                <div className="estat-talent-actions">
                     <button
-                        className="estat-admin-btn-outline"
+                        className="estat-talent-btn-outline"
                         onClick={() => navigate('/atividade')}
                     >
                         {t('historico_atribuidos')}
                     </button>
-                    <div className="estat-admin-export-wrap" ref={exportRef}>
+                    <div className="estat-talent-export-wrap" ref={exportRef}>
                         <BotaoAcao
                             variante="primario"
                             icone="fi-br-download"
@@ -262,9 +262,9 @@ const EstatisticasTalent = () => {
                             {t('exportar')}
                         </BotaoAcao>
                         {showExport && (
-                            <div className="estat-admin-export-menu">
-                                <div className="estat-admin-export-item" onClick={handleExportarExcel}>Excel</div>
-                                <div className="estat-admin-export-item" onClick={handleExportarPDF}>PDF</div>
+                            <div className="estat-talent-export-menu">
+                                <div className="estat-talent-export-item" onClick={handleExportarExcel}>Excel</div>
+                                <div className="estat-talent-export-item" onClick={handleExportarPDF}>PDF</div>
                             </div>
                         )}
                     </div>
@@ -272,23 +272,23 @@ const EstatisticasTalent = () => {
             </div>
 
             {/* ── CORPO PRINCIPAL ── */}
-            <div className="estat-admin-body">
+            <div className="estat-talent-body">
 
                 {/* COLUNA ESQUERDA — KPIs, gráficos e learning paths */}
-                <div className="estat-admin-col-esq">
+                <div className="estat-talent-col-esq">
 
                     {/* ROW 1 — KPI + Badges por Nível */}
-                    <div className="estat-admin-row">
+                    <div className="estat-talent-row">
 
                         {/* KPI 2×2 */}
-                        <div className="estat-admin-kpi-wrap">
-                            <div className="estat-admin-kpi-grid">
+                        <div className="estat-talent-kpi-wrap">
+                            <div className="estat-talent-kpi-grid">
                                 {kpiCards.map((kpi, i) => (
-                                    <div key={i} className="estat-admin-kpi-card">
-                                        <span className="estat-admin-kpi-label">{t(kpi.label)}</span>
-                                        <div className="estat-admin-kpi-row">
-                                            <i className={`${kpi.icone} estat-admin-kpi-icon`} />
-                                            <span className="estat-admin-kpi-valor">{kpi.valor}</span>
+                                    <div key={i} className="estat-talent-kpi-card">
+                                        <span className="estat-talent-kpi-label">{t(kpi.label)}</span>
+                                        <div className="estat-talent-kpi-row">
+                                            <i className={`${kpi.icone} estat-talent-kpi-icon`} />
+                                            <span className="estat-talent-kpi-valor">{kpi.valor}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -296,10 +296,10 @@ const EstatisticasTalent = () => {
                         </div>
 
                         {/* Badges Atribuídos por Nível */}
-                        <div className="estat-admin-niveis-wrap">
-                            <div className="estat-admin-card h-100">
-                                <div className="estat-admin-card-header">
-                                    <p className="estat-admin-chart-title m-0">{t('badges_atribuidos_nivel')}</p>
+                        <div className="estat-talent-niveis-wrap">
+                            <div className="estat-talent-card h-100">
+                                <div className="estat-talent-card-header">
+                                    <p className="estat-talent-chart-title m-0">{t('badges_atribuidos_nivel')}</p>
                                 </div>
                                 <BadgesPorNivel dados={dadosNiveis} />
                             </div>
@@ -307,17 +307,17 @@ const EstatisticasTalent = () => {
                     </div>
 
                     {/* ROW 2 — Pie (Atribuídos este mês) + Learning Paths */}
-                    <div className="estat-admin-row">
+                    <div className="estat-talent-row">
 
                         {/* Donut — Atribuídos este mês */}
-                        <div className="estat-admin-pie-wrap">
-                            <div className="estat-admin-card h-100">
-                                <div className="estat-admin-card-header">
-                                    <p className="estat-admin-chart-title m-0">{t('atribuidos_este_mes')}</p>
-                                    <span className="estat-admin-total">{totalAtribuidos}</span>
+                        <div className="estat-talent-pie-wrap">
+                            <div className="estat-talent-card h-100">
+                                <div className="estat-talent-card-header">
+                                    <p className="estat-talent-chart-title m-0">{t('atribuidos_este_mes')}</p>
+                                    <span className="estat-talent-total">{totalAtribuidos}</span>
                                 </div>
-                                <div className="estat-admin-pie-inner">
-                                    <div className="estat-admin-donut-container">
+                                <div className="estat-talent-pie-inner">
+                                    <div className="estat-talent-donut-container">
                                         <PieChart width={160} height={160}>
                                             <Pie
                                                 data={dadosPieComCores}
@@ -336,19 +336,19 @@ const EstatisticasTalent = () => {
                                             </Pie>
                                             <Tooltip contentStyle={TIP} formatter={(v, n) => [`${v}`, n]} />
                                         </PieChart>
-                                        <div className="estat-admin-donut-center">
-                                            <div className="estat-admin-donut-total">{totalAtribuidos}</div>
-                                            <div className="estat-admin-donut-label">{t('total')}</div>
+                                        <div className="estat-talent-donut-center">
+                                            <div className="estat-talent-donut-total">{totalAtribuidos}</div>
+                                            <div className="estat-talent-donut-label">{t('total')}</div>
                                         </div>
                                     </div>
-                                    <div className="estat-admin-legenda">
+                                    <div className="estat-talent-legenda">
                                         {dadosPieComCores.map((e, i) => (
-                                            <div key={i} className="estat-admin-legenda-item">
-                                                <div className="estat-admin-legenda-esq">
-                                                    <span className="estat-admin-legenda-dot" style={{ backgroundColor: e.cor }} />
+                                            <div key={i} className="estat-talent-legenda-item">
+                                                <div className="estat-talent-legenda-esq">
+                                                    <span className="estat-talent-legenda-dot" style={{ backgroundColor: e.cor }} />
                                                     <span>{e.Nome_Area}</span>
                                                 </div>
-                                                <span className="estat-admin-legenda-valor">{e.total_badges}</span>
+                                                <span className="estat-talent-legenda-valor">{e.total_badges}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -357,22 +357,22 @@ const EstatisticasTalent = () => {
                         </div>
 
                         {/* Learning Paths */}
-                        <div className="estat-admin-learning-wrap">
-                            <div className="estat-admin-card h-100">
-                                <div className="estat-admin-card-header">
-                                    <p className="estat-admin-chart-title m-0">{t('learning_paths')}</p>
-                                    <span className="estat-admin-total">{learningPaths.length}</span>
+                        <div className="estat-talent-learning-wrap">
+                            <div className="estat-talent-card h-100">
+                                <div className="estat-talent-card-header">
+                                    <p className="estat-talent-chart-title m-0">{t('learning_paths')}</p>
+                                    <span className="estat-talent-total">{learningPaths.length}</span>
                                 </div>
-                                <div className="estat-admin-learning-grid">
+                                <div className="estat-talent-learning-grid">
                                     {learningPaths.map((lp, i) => (
-                                        <div key={i} className="estat-admin-learning-card">
-                                            <div className="estat-admin-learning-info">
-                                                <span className="estat-admin-learning-name">{lp.nome}</span>
-                                                <span className="estat-admin-learning-meta">
+                                        <div key={i} className="estat-talent-learning-card">
+                                            <div className="estat-talent-learning-info">
+                                                <span className="estat-talent-learning-name">{lp.nome}</span>
+                                                <span className="estat-talent-learning-meta">
                                                     {lp.total_badges} {t('badges').toLowerCase()}
                                                 </span>
                                             </div>
-                                            <div className="estat-admin-learning-count">
+                                            <div className="estat-talent-learning-count">
                                                 <span>{lp.total_badges}</span>
                                             </div>
                                         </div>
@@ -384,7 +384,7 @@ const EstatisticasTalent = () => {
                 </div>
 
                 {/* COLUNA DIREITA — Classificação Geral */}
-                <div className="estat-admin-col-dir">
+                <div className="estat-talent-col-dir">
                     <ClassificacaoGeral
                         classificacao={classificacao}
                         fullHeight={true}

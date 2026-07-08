@@ -1,0 +1,216 @@
+.rgpd-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1200;
+}
+
+.rgpd-modal-container {
+  background: white;
+  width: 90%;
+  max-width: 700px;
+  max-height: 85vh;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: rgpdModalPopIn 0.2s ease-out forwards;
+}
+
+@keyframes rgpdModalPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.rgpd-modal-header {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #fafafa;
+}
+
+.rgpd-modal-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #eff6ff;
+  color: var(--barra_lateral);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.rgpd-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  background-color: white;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.rgpd-modal-body::-webkit-scrollbar {
+  display: none;
+}
+
+.rgpd-modal-texto {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #374151;
+}
+
+.rgpd-modal-titulo-secao {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #111827;
+}
+
+.rgpd-modal-titulo-secao:first-child {
+  margin-top: 0;
+}
+
+.rgpd-modal-paragrafo {
+  margin-bottom: 0.75rem;
+}
+
+.rgpd-modal-lista {
+  margin-bottom: 0.5rem;
+  padding-left: 1.25rem;
+}
+
+.rgpd-modal-lista li {
+  margin-bottom: 0.25rem;
+}
+
+.rgpd-modal-loading,
+.rgpd-modal-erro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.rgpd-modal-erro {
+  color: #ef4444;
+}
+
+.rgpd-modal-footer {
+  padding: 1rem 1.5rem;
+  background-color: #f9fafb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.rgpd-modal-btn-recusar {
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #4b5563;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rgpd-modal-btn-recusar:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.rgpd-modal-btn-aceitar {
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: white;
+  background-color: var(--barra_lateral);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rgpd-modal-btn-aceitar:hover:not(:disabled) {
+  background-color: #1a2a4a;
+}
+
+.rgpd-modal-btn-aceitar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Renderer Markdown dentro do modal */
+.rgpd-modal-markdown {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #374151;
+}
+
+.rgpd-modal-markdown h1,
+.rgpd-modal-markdown h2,
+.rgpd-modal-markdown h3,
+.rgpd-modal-markdown h4,
+.rgpd-modal-markdown h5,
+.rgpd-modal-markdown h6 {
+  color: #111827;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.rgpd-modal-markdown h1:first-child,
+.rgpd-modal-markdown h2:first-child,
+.rgpd-modal-markdown h3:first-child,
+.rgpd-modal-markdown h4:first-child,
+.rgpd-modal-markdown h5:first-child,
+.rgpd-modal-markdown h6:first-child {
+  margin-top: 0;
+}
+
+.rgpd-modal-markdown p {
+  margin-bottom: 0.75rem;
+}
+
+.rgpd-modal-markdown ul,
+.rgpd-modal-markdown ol {
+  margin-bottom: 0.75rem;
+  padding-left: 1.25rem;
+}
+
+.rgpd-modal-markdown li {
+  margin-bottom: 0.25rem;
+}
+
+.rgpd-modal-markdown a {
+  color: var(--barra_lateral);
+  text-decoration: underline;
+}
+
+.rgpd-modal-markdown a:hover {
+  color: #1a2a4a;
+}

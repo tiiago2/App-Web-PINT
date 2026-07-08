@@ -304,3 +304,38 @@
         flex-direction: column;
     }
 }
+
+/* Checkbox RGPD no primeiro acesso */
+.primeiro-acesso-checkbox-rgpd .form-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.primeiro-acesso-checkbox-rgpd .form-check-input {
+    margin-top: 0.2rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.primeiro-acesso-checkbox-rgpd .form-check-label {
+    line-height: 1.4;
+    cursor: pointer;
+    margin: 0;
+}
+
+.primeiro-acesso-link-rgpd {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--barra_lateral);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: inherit;
+    font-weight: 500;
+}
+
+.primeiro-acesso-link-rgpd:hover {
+    color: #1a2a4a;
+}

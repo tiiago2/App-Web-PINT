@@ -120,7 +120,7 @@ module.exports = {
   async getEstatisticasEvolucao(req, res) {
     try {
       const id_utilizador = req.utilizadorLogado.id_utilizador;
-      const periodo = (req.params.periodo || "semestre").toLowerCase();
+      const periodo = (req.params.periodo || "mes").toLowerCase();
 
       // Busca todos os registos do user com pontos associados
       const registos = await RegistoBadges.findAll({
@@ -172,6 +172,18 @@ module.exports = {
           diaAtual = new Date(fimReal);
           diaAtual.setDate(diaAtual.getDate() + 1);
         }
+      } else if (periodo === "trimestre") {
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mesAtual = hoje.getMonth();
+        const inicioTrimestre = Math.floor(mesAtual / 3) * 3;
+
+        for (let i = inicioTrimestre; i <= mesAtual; i++) {
+          const total = entradas
+            .filter(e => e.data.getFullYear() === ano && e.data.getMonth() === i)
+            .reduce((s, e) => s + e.pontos, 0);
+          dados.push({ label: NOMES_MESES[i], pontos: total });
+        }
       } else if (periodo === "ano") {
         const ano = new Date().getFullYear();
         for (let i = 0; i < 12; i++) {
@@ -180,51 +192,32 @@ module.exports = {
             .reduce((s, e) => s + e.pontos, 0);
           dados.push({ label: NOMES_MESES[i], pontos: total });
         }
-      } else if (periodo === "sempre") {
-        if (entradas.length === 0) {
-          return res.status(200).json([]);
-        }
-        const primeiraData = entradas[0].data;
-        const hoje = new Date();
-        const totalMeses = (hoje.getFullYear() - primeiraData.getFullYear()) * 12 +
-          (hoje.getMonth() - primeiraData.getMonth());
-
-        if (totalMeses <= 24) {
-          const mesAtual = new Date(primeiraData.getFullYear(), primeiraData.getMonth(), 1);
-          while (mesAtual <= hoje) {
-            const total = entradas
-              .filter(e => e.data.getFullYear() === mesAtual.getFullYear() && e.data.getMonth() === mesAtual.getMonth())
-              .reduce((s, e) => s + e.pontos, 0);
-            const nomeMes = mesAtual.toLocaleString("pt-PT", { month: "short" });
-            const anoCurto = mesAtual.getFullYear().toString().slice(2);
-            dados.push({ label: `${nomeMes}/${anoCurto}`, pontos: total });
-            mesAtual.setMonth(mesAtual.getMonth() + 1);
-          }
-        } else {
-          let anoLoop = primeiraData.getFullYear();
-          let triLoop = Math.floor(primeiraData.getMonth() / 3) + 1;
-          const anoFim = hoje.getFullYear();
-          const triFim = Math.floor(hoje.getMonth() / 3) + 1;
-          while (anoLoop < anoFim || (anoLoop === anoFim && triLoop <= triFim)) {
-            const total = entradas
-              .filter(e => e.data.getFullYear() === anoLoop && Math.floor(e.data.getMonth() / 3) + 1 === triLoop)
-              .reduce((s, e) => s + e.pontos, 0);
-            const anoCurto = anoLoop.toString().slice(2);
-            dados.push({ label: `T${triLoop} ${anoCurto}`, pontos: total });
-            triLoop++;
-            if (triLoop > 4) { triLoop = 1; anoLoop++; }
-          }
-        }
       } else {
-        // semestre (padrão)
-        const mesAtual = new Date().getMonth();
-        const inicioSemestre = mesAtual < 6 ? 0 : 6;
+        // padrão: mês
         const ano = new Date().getFullYear();
-        for (let i = inicioSemestre; i <= mesAtual; i++) {
+        const mes = new Date().getMonth();
+        const primeiroDia = new Date(ano, mes, 1);
+        const ultimoDia = new Date(ano, mes + 1, 0);
+
+        let diaAtual = new Date(primeiroDia);
+        while (diaAtual <= ultimoDia) {
+          const inicioSemanaLoop = new Date(diaAtual);
+          let diasAteDomingo = diaAtual.getDay() === 0 ? 0 : 7 - diaAtual.getDay();
+          const fimSemana = new Date(diaAtual);
+          fimSemana.setDate(diaAtual.getDate() + diasAteDomingo);
+          const fimReal = fimSemana > ultimoDia ? new Date(ultimoDia) : fimSemana;
+
           const total = entradas
-            .filter(e => e.data.getFullYear() === ano && e.data.getMonth() === i)
+            .filter(e => e.data >= inicioSemanaLoop && e.data <= new Date(fimReal.getTime() + 86400000 - 1))
             .reduce((s, e) => s + e.pontos, 0);
-          dados.push({ label: NOMES_MESES[i], pontos: total });
+
+          dados.push({
+            label: `${inicioSemanaLoop.getDate()} a ${fimReal.getDate()}/${mes + 1}`,
+            pontos: total
+          });
+
+          diaAtual = new Date(fimReal);
+          diaAtual.setDate(diaAtual.getDate() + 1);
         }
       }
 
@@ -308,10 +301,13 @@ module.exports = {
         porNivel[id_nivel].total_badges++;
       }
 
+      const total = Object.values(porNivel).reduce((s, e) => s + e.total_badges, 0);
+
       const dados = Object.values(porNivel).map(e => ({
         ID_Nivel: e.id_nivel,
         Nome_Nivel: e.nome_nivel,
-        total_badges: e.total_badges
+        total_badges: e.total_badges,
+        valor: total > 0 ? Math.round((e.total_badges / total) * 100) : 0
       }));
 
       return res.status(200).json(dados);

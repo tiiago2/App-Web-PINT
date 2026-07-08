@@ -39,6 +39,7 @@ module.exports = {
                     id: user.id_utilizador,
                     email: user.email,
                     primeiro_login: user.primeiro_login ?? false,
+                    aceitacao_politicas: user.aceitacao_politicas ?? false,
                     roles: listaRoles
                 }
             });
@@ -154,6 +155,7 @@ module.exports = {
             await user.update({
                 password: hashedPassword,
                 primeiro_login: false,
+                aceitacao_politicas: true,
                 update_user: agora
             });
 
@@ -163,6 +165,7 @@ module.exports = {
                 await consultor.update({
                     password: hashedPassword,
                     primeiro_login: false,
+                    aceitacao_politicas: true,
                     update_user: agora
                 });
             }

@@ -482,5 +482,41 @@ module.exports = {
       console.error("Erro ao atualizar utilizador:", error);
       return res.status(500).json({ error: "Erro ao atualizar utilizador." });
     }
+  },
+
+  async aceitarRGPD(req, res) {
+    try {
+      const { id } = req.params;
+      const idUtilizadorLogado = req.utilizadorLogado.id_utilizador;
+
+      if (Number(id) !== idUtilizadorLogado) {
+        return res.status(403).json({ error: "Não pode aceitar políticas por outro utilizador." });
+      }
+
+      const user = await Utilizador.findByPk(id);
+      if (!user) {
+        return res.status(404).json({ error: "Utilizador não encontrado." });
+      }
+
+      const agora = new Date();
+
+      await user.update({
+        aceitacao_politicas: true,
+        update_user: agora
+      });
+
+      const consultor = await Consultor.findOne({ where: { id_utilizador: id } });
+      if (consultor) {
+        await consultor.update({
+          aceitacao_politicas: true,
+          update_user: agora
+        });
+      }
+
+      return res.status(200).json({ message: "Políticas RGPD aceites com sucesso." });
+    } catch (error) {
+      console.error("Erro ao aceitar políticas RGPD:", error);
+      return res.status(500).json({ error: "Erro ao aceitar políticas RGPD." });
+    }
   }
 };

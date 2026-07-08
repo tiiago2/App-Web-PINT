@@ -103,8 +103,9 @@
 #barra_lateral{
     color: #FFFFFF;
     background-color: var(--barra_lateral);
-    box-shadow: 4px 0px 4px 0px rgba(0, 0, 0, 0.20);
-    font-size: 24px;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+    font-size: 15px;
     width: 16.66667%; /* Imita a largura original da col-2 */
     max-width: 260px; /* Lock da largura máxima (tamanho do portátil). Impede que fique "muito grande" no Monitor. */
     flex-shrink: 0;
@@ -112,6 +113,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    padding: 16px 0;
 }
 
 /* Mal as letras desaparecem (< 1200px devido ao d-xl-block), força a barra para a largura mínima dos ícones */
@@ -119,27 +121,112 @@
     #barra_lateral, #image_esquerda {
         width: 80px;
     }
+
+    .sidebar-nav {
+        padding: 0 10px;
+    }
+
+    .sidebar-nav-item {
+        padding: 12px;
+    }
+
+    .pag_ativa::before {
+        display: none;
+    }
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 0 12px;
+    gap: 4px;
+}
+
+.sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    position: relative;
+}
+
+.sidebar-nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+}
+
+.sidebar-nav-item:hover .sidebar-nav-icon {
+    color: #FFFFFF;
+}
+
+.sidebar-nav-icon {
+    font-size: 1.15rem;
+    color: rgba(255, 255, 255, 0.7);
+    flex-shrink: 0;
+    transition: color 0.15s ease;
+}
+
+.sidebar-nav-label {
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .pag_ativa {
-    color: var(--selecao) !important; /* Coloca aqui o teu código de cor favorito */
-    font-weight: bold;
+    background-color: #FFFFFF;
+    color: var(--barra_lateral) !important;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-#item_lateral{
-    cursor: pointer;
+.pag_ativa::before {
+    content: "";
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 24px;
+    background-color: #FFFFFF;
+    border-radius: 0 4px 4px 0;
+}
+
+.pag_ativa .sidebar-nav-icon {
+    color: var(--barra_lateral);
+}
+
+.sidebar-footer {
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 8px;
+    padding: 0 12px;
+    margin-bottom: 8px;
+}
+
+.sidebar-footer-dot {
+    opacity: 0.5;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .item_rodape_lateral {
     cursor: pointer;
-    font-size: 0.7rem; /* Fica mais pequeno do que o 0.8rem anterior */
-    opacity: 0.6;
-    transition: color 0.2s ease, opacity 0.2s ease;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.65);
+    opacity: 1;
+    transition: color 0.2s ease;
 }
 
 .item_rodape_lateral:hover {
-    color: var(--selecao);
-    opacity: 1;
+    color: #FFFFFF;
 }
 
 #pop_up_notification{

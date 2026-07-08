@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../services/api.js";
 import AuthTopBar from "../../components/Auth/AuthTopBar/AuthTopBar.jsx";
 import AuthArtPanel from "../../components/Auth/AuthArtPanel/AuthArtPanel.jsx";
+import RgpdModal from "../../components/ui/RgpdModal/RgpdModal.jsx";
 import "./EsqueciPasswordPage.css";
 
 function PrimeiroAcessoPage() {
@@ -18,6 +19,8 @@ function PrimeiroAcessoPage() {
   const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
   const [estado, setEstado] = useState("normal");
   const [mensagemErro, setMensagemErro] = useState("");
+  const [aceitouPoliticas, setAceitouPoliticas] = useState(false);
+  const [mostrarModalRgpd, setMostrarModalRgpd] = useState(false);
 
   useEffect(() => {
     // Se o email veio através do state de navegação do Login, preenche automaticamente
@@ -50,6 +53,12 @@ function PrimeiroAcessoPage() {
 
     if (password !== confirmPassword) {
       setMensagemErro(t("auth_esqueci_erro_password_diferente"));
+      setEstado("error");
+      return;
+    }
+
+    if (!aceitouPoliticas) {
+      setMensagemErro(t("primeiro_acesso_erro_aceitar"));
       setEstado("error");
       return;
     }
@@ -131,6 +140,28 @@ function PrimeiroAcessoPage() {
               </div>
             </div>
 
+            <div className="login-form-grupo primeiro-acesso-checkbox-rgpd">
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="aceitar-rgpd"
+                  checked={aceitouPoliticas}
+                  onChange={(e) => setAceitouPoliticas(e.target.checked)}
+                />
+                <label className="form-check-label texto-auth-label" htmlFor="aceitar-rgpd">
+                  {t("primeiro_acesso_aceitar_politicas")}{" "}
+                  <button
+                    type="button"
+                    className="primeiro-acesso-link-rgpd"
+                    onClick={() => setMostrarModalRgpd(true)}
+                  >
+                    {t("primeiro_acesso_ver_politicas")}
+                  </button>
+                </label>
+              </div>
+            </div>
+
             {estado === "error" && (
               <div className="login-feedback login-feedback-erro">
                 <i className="fi fi-br-info"></i>
@@ -158,6 +189,15 @@ function PrimeiroAcessoPage() {
           </form>
         </section>
       </main>
+
+      <RgpdModal
+        isOpen={mostrarModalRgpd}
+        onAceitar={() => {
+          setAceitouPoliticas(true);
+          setMostrarModalRgpd(false);
+        }}
+        onRecusar={() => setMostrarModalRgpd(false)}
+      />
     </div>
   );
 }

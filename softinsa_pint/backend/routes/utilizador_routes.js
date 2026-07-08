@@ -15,5 +15,6 @@ router.get('/estatisticas', controller.getEstatisticas);
 router.get('/roles', controller.getRoles);
 router.post('/', upload.single('imagem'), controller.createUtilizador);
 router.put('/:id', upload.single('imagem'), controller.updateUtilizador);
+router.put('/:id/aceitar-rgpd', controller.aceitarRGPD);
 
 module.exports = router;

@@ -88,72 +88,13 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
-.rgpd-secao {
-  margin-bottom: 2rem;
-}
-
-.rgpd-secao:last-child {
-  margin-bottom: 0;
-}
-
-.rgpd-secao-titulo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--fontes);
-  font-size: 1.15rem;
-  font-weight: 700;
-  margin: 0 0 1rem 0;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid var(--contorno);
-}
-
-.rgpd-secao-numero {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background-color: var(--barra_lateral);
-  color: var(--fundo);
-  border-radius: 50%;
-  font-size: 0.9rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.rgpd-secao-conteudo {
-  color: var(--fontes);
-  font-size: 0.95rem;
-  line-height: 1.7;
-}
-
-.rgpd-secao-conteudo p {
-  margin: 0 0 1rem 0;
-}
-
-.rgpd-secao-conteudo p:last-child {
-  margin-bottom: 0;
-}
-
-.rgpd-lista {
-  margin: 0 0 1rem 0;
-  padding-left: 1.5rem;
-}
-
-.rgpd-lista li {
-  margin-bottom: 0.5rem;
-}
-
-.rgpd-texto-livre {
-  color: var(--fontes);
-  font-size: 0.95rem;
-  line-height: 1.7;
-  white-space: pre-line;
-}
-
-.rgpd-texto-livre p {
-  margin: 0 0 1rem 0;
+.rgpd-conteudo-card .rgpd-renderer h1:first-child,
+.rgpd-conteudo-card .rgpd-renderer h2:first-child,
+.rgpd-conteudo-card .rgpd-renderer h3:first-child,
+.rgpd-conteudo-card .rgpd-renderer h4:first-child,
+.rgpd-conteudo-card .rgpd-renderer h5:first-child,
+.rgpd-conteudo-card .rgpd-renderer h6:first-child {
+  margin-top: 0;
 }
 
 .rgpd-rodape {

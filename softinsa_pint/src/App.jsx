@@ -610,17 +610,21 @@ function App() {
       {/* CORPO PRINCIPAL */}
       <div className="d-flex m-0 flex-grow-1 w-100" style={{ minHeight: 0 }}>
         <div id="barra_lateral">
-          <div className="mt-3 justify-content-center">
+          <div className="sidebar-nav">
             {menuItems.map((item) => (
-              <div key={item.slug} className={`d-flex align-items-center justify-content-center justify-content-xl-start my-2 ps-xl-2 ${location.pathname.includes(item.slug) ? "pag_ativa" : ""}`} onClick={() => navigate(`/${item.slug}`)} id="item_lateral">
-                <i className={`fi ${item.icon} mx-2 fs-5`}></i>
-                <span className="ms-2 d-none d-xl-block fs-5">{t(item.label)}</span>
+              <div
+                key={item.slug}
+                className={`sidebar-nav-item ${location.pathname.includes(item.slug) ? "pag_ativa" : ""}`}
+                onClick={() => navigate(`/${item.slug}`)}
+              >
+                <i className={`fi ${item.icon} sidebar-nav-icon`}></i>
+                <span className="sidebar-nav-label d-none d-xl-block">{t(item.label)}</span>
               </div>
             ))}
           </div>
-          <div className="d-none d-xl-flex mb-3 align-items-center justify-content-center w-100 gap-2">
+          <div className="sidebar-footer d-none d-xl-flex">
             <span className="item_rodape_lateral" onClick={() => navigate("/politicas-rgpd")}>{t("politicas_rgpd")}</span>
-            <span style={{ opacity: 0.5, fontSize: '0.7rem' }}>•</span>
+            <span className="sidebar-footer-dot">•</span>
             <span className="item_rodape_lateral" onClick={() => window.open('https://www.softinsa.pt', '_blank', 'noopener,noreferrer')}>{t("quem_somos")}</span>
           </div>
         </div>

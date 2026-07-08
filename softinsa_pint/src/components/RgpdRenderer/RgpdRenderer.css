@@ -1,0 +1,136 @@
+.rgpd-renderer {
+    color: var(--fontes);
+    font-size: 0.95rem;
+    line-height: 1.7;
+}
+
+.rgpd-renderer h1,
+.rgpd-renderer h2,
+.rgpd-renderer h3,
+.rgpd-renderer h4,
+.rgpd-renderer h5,
+.rgpd-renderer h6 {
+    color: var(--fontes);
+    font-weight: 700;
+    margin: 1.5rem 0 1rem 0;
+    line-height: 1.3;
+}
+
+.rgpd-renderer h1 {
+    font-size: 1.5rem;
+}
+
+.rgpd-renderer h2 {
+    font-size: 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--contorno);
+}
+
+.rgpd-renderer h3 {
+    font-size: 1.1rem;
+}
+
+.rgpd-renderer h4 {
+    font-size: 1rem;
+}
+
+.rgpd-renderer p {
+    margin: 0 0 1rem 0;
+}
+
+.rgpd-renderer ul,
+.rgpd-renderer ol {
+    margin: 0 0 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.rgpd-renderer li {
+    margin-bottom: 0.5rem;
+}
+
+.rgpd-renderer li > ul,
+.rgpd-renderer li > ol {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.rgpd-renderer a {
+    color: var(--barra_lateral);
+    text-decoration: underline;
+    transition: color 0.15s ease;
+}
+
+.rgpd-renderer a:hover {
+    color: var(--fontes);
+}
+
+.rgpd-renderer strong {
+    font-weight: 700;
+    color: var(--fontes);
+}
+
+.rgpd-renderer em {
+    font-style: italic;
+}
+
+.rgpd-renderer blockquote {
+    margin: 0 0 1rem 0;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid var(--barra_lateral);
+    background-color: var(--fundo2);
+    border-radius: 0 var(--border-radius-pequeno) var(--border-radius-pequeno) 0;
+}
+
+.rgpd-renderer blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+.rgpd-renderer table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.rgpd-renderer th,
+.rgpd-renderer td {
+    padding: 0.75rem;
+    border: 1px solid var(--contorno);
+    text-align: left;
+}
+
+.rgpd-renderer th {
+    background-color: var(--fundo2);
+    font-weight: 700;
+}
+
+.rgpd-renderer tr:nth-child(even) {
+    background-color: var(--fundo2);
+}
+
+.rgpd-renderer hr {
+    border: none;
+    border-top: 1px solid var(--contorno);
+    margin: 1.5rem 0;
+}
+
+.rgpd-renderer code {
+    background-color: var(--fundo2);
+    padding: 0.2rem 0.4rem;
+    border-radius: var(--border-radius-pequeno);
+    font-family: monospace;
+    font-size: 0.85em;
+}
+
+.rgpd-renderer pre {
+    background-color: var(--fundo2);
+    padding: 1rem;
+    border-radius: var(--border-radius-pequeno);
+    overflow-x: auto;
+    margin-bottom: 1rem;
+}
+
+.rgpd-renderer pre code {
+    background-color: transparent;
+    padding: 0;
+}

@@ -31,7 +31,7 @@ const BadgesPorNivel = ({ dados = [] }) => {
                                 }}
                             ></div>
                         </div>
-                        <span className="bpn-valor" style={{ color: cor.principal }}>{valor}%</span>
+                        <span className="bpn-valor" style={{ color: cor.principal }}>{item.total_badges ?? 0}</span>
                     </div>
                 );
             })}

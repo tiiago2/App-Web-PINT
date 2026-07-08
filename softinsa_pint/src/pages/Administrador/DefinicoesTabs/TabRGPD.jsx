@@ -185,6 +185,21 @@ export default function TabRGPD() {
           {t("editor_texto_consentimento_desc")}
         </p>
 
+        <div
+          className="mb-3 p-3 rounded-3"
+          style={{
+            backgroundColor: "var(--fundo2)",
+            border: "1px solid var(--contorno)",
+            fontSize: "0.8rem",
+            color: "var(--fontes)",
+          }}
+        >
+          <strong>{t("markdown_ajuda_titulo")}</strong>
+          <div className="mt-1" style={{ opacity: 0.85 }}>
+            {t("markdown_ajuda_desc")}
+          </div>
+        </div>
+
         <div className="mb-4">
           <textarea
             className="form-control"

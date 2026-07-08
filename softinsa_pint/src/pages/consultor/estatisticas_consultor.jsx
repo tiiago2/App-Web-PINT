@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     BarChart, Bar,
     PieChart, Pie, Cell,
     ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, LabelList
 } from 'recharts';
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
-import EvolucaoModal from '../../components/EvolucaoModal.jsx';
+import BadgesPorNivel from '../../components/BadgesPorNivel/BadgesPorNivel.jsx';
 import api from '../../services/api.js';
 import BotaoAcao from '../../components/ui/BotaoAcao/BotaoAcao';
 import * as XLSX from 'xlsx';
@@ -13,27 +14,19 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './estatisticas_consultor.css';
 
-/* ── CORES ─────────────────────────────────────────────────── */
-
-/* Badges por nível — gradiente de azuis claros a escuros (Júnior → Líder) */
-const NIVEIS_CORES = ['#b3cde8', '#7fafd4', '#4d90bf', '#2d6da3', '#1a4d7a', '#4d90bf'];
-function corNivel(id_nivel) {
-    return NIVEIS_CORES[(id_nivel - 1) % NIVEIS_CORES.length];
-}
-
 const TIP = { borderRadius: 'var(--border-radius-pequeno)', border: 'var(--borda-principal) solid var(--contorno)', fontSize: '11px' };
 const COR = '#39639C';
 
 const PERIODOS = [
-    { key: 'semana',    label: 'Semana' },
-    { key: 'mes',       label: 'Mês' },
-    { key: 'semestre',  label: 'Semestre' },
-    { key: 'ano',       label: 'Ano' },
-    { key: 'sempre',    label: 'Sempre' },
+    { key: 'semana',    label: 'esta_semana' },
+    { key: 'mes',       label: 'este_mes' },
+    { key: 'trimestre', label: 'este_trimestre' },
+    { key: 'ano',       label: 'este_ano' },
 ];
 
 const EstatisticasConsultor = ({ user }) => {
-    const [periodo, setPeriodo] = useState('semestre');
+    const { t } = useTranslation();
+    const [periodo, setPeriodo] = useState('mes');
     const [dadosBar, setDadosBar] = useState([]);
     const [kpi, setKpi] = useState({
         lugar_atual: '-',
@@ -54,7 +47,6 @@ const EstatisticasConsultor = ({ user }) => {
     }, [dadosPie]);
     const [dadosNiveis, setDadosNiveis] = useState([]);
     const [classificacao, setClassificacao] = useState([]);
-    const [showEvolucao, setShowEvolucao] = useState(false);
     const [carregando, setCarregando] = useState(true);
     const [mostrarExportar, setMostrarExportar] = useState(false);
     const exportRef = useRef(null);
@@ -218,7 +210,7 @@ const EstatisticasConsultor = ({ user }) => {
 
                 setKpi(resKpi.data || {});
                 setDadosPie(resPie.data || []);
-                setDadosNiveis((resNiveis.data || []).map(n => ({ ...n, cor: corNivel(n.ID_Nivel) })));
+                setDadosNiveis(resNiveis.data || []);
                 setClassificacao(resRanking.data || []);
             } catch (erro) {
                 console.error('Erro ao carregar estatísticas:', erro);
@@ -304,27 +296,39 @@ const EstatisticasConsultor = ({ user }) => {
                         <div className="estat-evolucao-wrap">
                             <div className="estat-card h-100">
                                 <div className="estat-card-header">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <p className="estat-chart-title m-0">Evolução de Pontos</p>
-                                        <i className="fi fi-br-expand text-muted" style={{ cursor: 'pointer', fontSize: '12px' }} onClick={() => setShowEvolucao(true)}></i>
+                                    <p className="estat-chart-title m-0">{t('evolucao_pontos')}</p>
+                                    <div className="estat-pills estat-pills--header">
+                                        {PERIODOS.map((p) => (
+                                            <button
+                                                key={p.key}
+                                                className={`estat-pill ${periodo === p.key ? 'active' : ''}`}
+                                                onClick={() => setPeriodo(p.key)}
+                                            >
+                                                {t(p.label)}
+                                            </button>
+                                        ))}
                                     </div>
-                                    <select className="estat-select" value={periodo} onChange={e => setPeriodo(e.target.value)}>
-                                        {PERIODOS.map(p =>
-                                            <option key={p.key} value={p.key}>{p.label}</option>
-                                        )}
-                                    </select>
                                 </div>
                                 <div style={{ flex: 1, minHeight: 0 }}>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart data={dadosBar}
                                             margin={{ top: 18, right: 8, left: 8, bottom: 0 }}
-                                            barSize={34}>
+                                            barSize={dadosBar.length > 6 ? 20 : 34}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                                            <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#8fa3b8' }} axisLine={false} tickLine={false} />
+                                            <XAxis
+                                                dataKey="label"
+                                                tick={{ fontSize: 10, fill: '#8fa3b8' }}
+                                                axisLine={false}
+                                                tickLine={false}
+                                                interval={0}
+                                                angle={dadosBar.length > 6 ? -30 : 0}
+                                                textAnchor={dadosBar.length > 6 ? 'end' : 'middle'}
+                                                height={dadosBar.length > 6 ? 50 : 30}
+                                            />
                                             <YAxis hide />
-                                            <Tooltip contentStyle={TIP} formatter={v => [`${v} pts`, 'Pontos']} />
+                                            <Tooltip contentStyle={TIP} formatter={(v) => [`${v}`, t('evolucao_pontos')]} />
                                             <Bar dataKey="pontos" fill={COR} radius={[6, 6, 0, 0]}>
-                                                <LabelList dataKey="pontos" position="top" style={{ fontSize: '9px', fill: '#8fa3b8' }} />
+                                                <LabelList dataKey="pontos" position="top" style={{ fontSize: '10px', fill: '#8fa3b8', fontWeight: 600 }} />
                                             </Bar>
                                         </BarChart>
                                     </ResponsiveContainer>
@@ -383,27 +387,10 @@ const EstatisticasConsultor = ({ user }) => {
                         <div className="estat-niveis-wrap">
                             <div className="estat-card h-100">
                                 <div className="estat-card-header">
-                                    <p className="estat-chart-title m-0">Badges por Nível</p>
+                                    <p className="estat-chart-title m-0">{t('badges_conquistados_nivel')}</p>
                                     <span className="estat-chart-total">{totalNiveis}</span>
                                 </div>
-                                <div style={{ flex: 1, minHeight: 0 }}>
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={dadosNiveis} layout="vertical"
-                                            margin={{ top: 4, right: 36, left: 4, bottom: 4 }}
-                                            barSize={20}>
-                                            <XAxis type="number" hide />
-                                            <YAxis type="category" dataKey="Nome_Nivel"
-                                                tick={{ fontSize: 11, fill: '#8fa3b8' }}
-                                                axisLine={false} tickLine={false} width={82} />
-                                            <Tooltip contentStyle={TIP} formatter={(v) => [`${v} badges`, 'Total']} />
-                                            <Bar dataKey="total_badges" radius={[0, 6, 6, 0]}>
-                                                {dadosNiveis.map((e, i) => <Cell key={i} fill={e.cor} />)}
-                                                <LabelList dataKey="total_badges" position="right"
-                                                    style={{ fontSize: '11px', fill: '#8fa3b8', fontWeight: 600 }} />
-                                            </Bar>
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
+                                <BadgesPorNivel dados={dadosNiveis} />
                             </div>
                         </div>
                     </div>
@@ -415,8 +402,6 @@ const EstatisticasConsultor = ({ user }) => {
                 </div>
             </div>
 
-            {/* Modals Extras */}
-            {showEvolucao && <EvolucaoModal onClose={() => setShowEvolucao(false)} />}
         </div>
     );
 };

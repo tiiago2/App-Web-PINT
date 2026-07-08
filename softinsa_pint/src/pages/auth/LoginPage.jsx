@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import api from '../../services/api.js';
 import AuthTopBar from "../../components/Auth/AuthTopBar/AuthTopBar.jsx";
 import AuthArtPanel from "../../components/Auth/AuthArtPanel/AuthArtPanel.jsx";
+import RgpdModal from "../../components/ui/RgpdModal/RgpdModal.jsx";
 import "./LoginPage.css";
 
 function LoginPage({ onLoginSuccess }) {
@@ -22,6 +23,7 @@ function LoginPage({ onLoginSuccess }) {
   const [utilizadorValidado, setUtilizadorValidado] = useState(null);
   const [roles, setRoles] = useState(null);
   const [roleSelecionada, setRoleSelecionada] = useState(null);
+  const [mostrarModalRgpd, setMostrarModalRgpd] = useState(false);
 
   const extrairDadosEAvancar = async (userApi, roleEscolhida) => {
 
@@ -37,6 +39,44 @@ function LoginPage({ onLoginSuccess }) {
     });
 
     window.location.reload();
+  };
+
+  const continuarFluxoAposRgpd = (utilizador) => {
+    const rolesRecebidas = utilizador.roles || [];
+
+    if (rolesRecebidas.length === 1) {
+      extrairDadosEAvancar(utilizador, rolesRecebidas[0]);
+    } else if (rolesRecebidas.length > 1) {
+      setRoles(rolesRecebidas);
+      setRoleSelecionada(rolesRecebidas[0]);
+      setEtapa("roles");
+      setEstadoLogin("normal");
+    } else {
+      setEstadoLogin("error");
+    }
+  };
+
+  const handleAceitarRgpd = async () => {
+    if (!utilizadorValidado) return;
+
+    try {
+      await api.put(`/utilizadores/${utilizadorValidado.id}/aceitar-rgpd`);
+      setMostrarModalRgpd(false);
+      continuarFluxoAposRgpd(utilizadorValidado);
+    } catch (erro) {
+      console.error("Erro ao aceitar políticas RGPD:", erro);
+      alert(t("rgpd_modal_erro_aceitar"));
+    }
+  };
+
+  const handleRecusarRgpd = () => {
+    localStorage.removeItem('token_softinsa');
+    localStorage.removeItem('utilizador_id');
+    localStorage.removeItem('role_softinsa');
+    setMostrarModalRgpd(false);
+    setUtilizadorValidado(null);
+    setEtapa("login");
+    setEstadoLogin("normal");
   };
 
   const handleSubmit = async (event) => {
@@ -57,18 +97,13 @@ function LoginPage({ onLoginSuccess }) {
       localStorage.setItem('token_softinsa', token);
       setUtilizadorValidado(utilizador);
 
-      const rolesRecebidas = utilizador.roles || [];
-
-      if (rolesRecebidas.length === 1) {
-        extrairDadosEAvancar(utilizador, rolesRecebidas[0]);
-      } else if (rolesRecebidas.length > 1) {
-        setRoles(rolesRecebidas);
-        setRoleSelecionada(rolesRecebidas[0]);
-        setEtapa("roles");
+      if (utilizador.aceitacao_politicas === false) {
+        setMostrarModalRgpd(true);
         setEstadoLogin("normal");
-      } else {
-        setEstadoLogin("error");
+        return;
       }
+
+      continuarFluxoAposRgpd(utilizador);
     } catch (erro) {
       console.error("Erro no login:", erro);
       setEstadoLogin("error");
@@ -220,6 +255,12 @@ function LoginPage({ onLoginSuccess }) {
           </section>
         )}
       </main>
+
+      <RgpdModal
+        isOpen={mostrarModalRgpd}
+        onAceitar={handleAceitarRgpd}
+        onRecusar={handleRecusarRgpd}
+      />
     </div>
   );
 }

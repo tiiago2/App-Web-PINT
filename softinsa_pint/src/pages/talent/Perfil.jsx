@@ -129,6 +129,7 @@ const PerfilPessoal = () => {
   const [isDetalheBadgeOpen, setIsDetalheBadgeOpen] = useState(false);
   const [detalheBadge, setDetalheBadge] = useState(null);
   const [isLoadingDetalheBadge, setIsLoadingDetalheBadge] = useState(false);
+  const [isGerandoCertificado, setIsGerandoCertificado] = useState(false);
 
   const fileInputRef = useRef(null);
   const assinaturaRef = useRef(null);
@@ -307,6 +308,31 @@ const PerfilPessoal = () => {
     }
   };
 
+  const handleDownloadCertificadoBadge = async (badgeDetalhe) => {
+    if (!badgeDetalhe || isGerandoCertificado) return;
+    
+    setIsGerandoCertificado(true);
+
+    try {
+        const { gerarCertificadoBadgePdf } = await import(
+            "../../utils/gerarCertificadoBadgePdf"
+        );
+        const idBadge = badgeDetalhe?.id_badge ?? badgeDetalhe?.id;
+        const urlPublica = badgeDetalhe?.urlPublica ?? obterUrlPublicaDoBadge(idBadge);
+
+        await gerarCertificadoBadgePdf({
+            badge: badgeDetalhe,
+            consultor: { nome: profileData.nome, email: profileData.email },
+            urlPublica: `${window.location.origin}${urlPublica}`,
+        });
+    } catch (error) {
+        console.error("Erro ao gerar certificado do badge:", error);
+        alert("Não foi possível gerar o certificado do badge.");
+    } finally {
+        setIsGerandoCertificado(false);
+    }
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -465,6 +491,14 @@ const PerfilPessoal = () => {
         isLoading={isLoadingDetalheBadge}
         onVerPaginaPublica={handleVerPaginaPublicaBadge}
         onCopiarLinkPublico={handleCopiarLinkPublicoBadge}
+        acaoCertificado={
+          detalheBadge && (detalheBadge.estado === "conquistados" || detalheBadge.estado === "conquistado")
+            ? {
+                onDownload: handleDownloadCertificadoBadge,
+                emProcessamento: isGerandoCertificado,
+              }
+            : undefined
+        }
       />
     </div>
   );

@@ -1149,16 +1149,23 @@ function criarEmailAvaliador({ destinatario, consultor, badge, idSubmissao }) {
 async function enviarEmailsSubmissao(dados) {
     const mensagens = [];
 
-    if (dados.consultor?.email && emailValido(dados.consultor.email)) {
+    // Permissão 8: Confirmação de candidatura
+    const perm8 = await db.Permissoes.findByPk(8);
+    if (perm8?.toggle !== false && dados.consultor?.email && emailValido(dados.consultor.email)) {
         mensagens.push(criarEmailConsultor(dados));
     }
 
-    for (const avaliador of dados.avaliadores) {
-        if (avaliador.email && emailValido(avaliador.email)) {
-            mensagens.push(criarEmailAvaliador({
-                ...dados,
-                destinatario: avaliador
-            }));
+    // Permissão 10: Alerta nova candidatura (apenas para Talent Managers)
+    const perm10 = await db.Permissoes.findByPk(10);
+    if (perm10?.toggle !== false) {
+        const talentManagers = await obterTalentManagersAtivos();
+        for (const tm of talentManagers) {
+            if (tm.email && emailValido(tm.email)) {
+                mensagens.push(criarEmailAvaliador({
+                    ...dados,
+                    destinatario: tm
+                }));
+            }
         }
     }
 
@@ -1186,8 +1193,19 @@ async function enviarEmailsSubmissao(dados) {
 }
 
 async function criarNotificacoesSubmissao(dados) {
-    const avaliadores = dados.avaliadores.filter((avaliador) => avaliador.id_utilizador);
-    const totalDestinatarios = avaliadores.length;
+    // Permissão 10: Alerta nova candidatura
+    const perm10 = await db.Permissoes.findByPk(10);
+    if (perm10?.toggle === false) {
+        return {
+            destinatarios: 0,
+            criadas: 0,
+            falhadas: 0
+        };
+    }
+
+    const talentManagers = await obterTalentManagersAtivos();
+    const tms = talentManagers.filter((tm) => tm.id_utilizador);
+    const totalDestinatarios = tms.length;
 
     if (totalDestinatarios === 0) {
         return {
@@ -1209,9 +1227,9 @@ async function criarNotificacoesSubmissao(dados) {
             }, { transaction });
 
             await db.Recetor.bulkCreate(
-                avaliadores.map((avaliador) => ({
+                tms.map((tm) => ({
                     id_notificacao: notificacao.id_notificacao,
-                    id_utilizador: avaliador.id_utilizador,
+                    id_utilizador: tm.id_utilizador,
                     lida: false,
                     last_read: null
                 })),

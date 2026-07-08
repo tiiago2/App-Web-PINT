@@ -27,6 +27,7 @@ const rotas_editar = require('./editar_routes');
 const rotas_sla = require('./sla_routes');
 const rotas_notificacoes = require('./notificacoes_routes');
 const rotasMe = require('./me_routes');
+const rotas_documentos = require('./documentos_routes');
 
 router.use("/hometalent", rotas_home_talent);
 router.use("/homeconsultor", rotas_home_consultor);
@@ -55,5 +56,6 @@ router.use("/commun", rotas_comuns);
 router.use("/permissoes", rotas_permissoes);
 router.use("/sla", rotas_sla);
 router.use("/notificacoes", rotas_notificacoes);
+router.use("/documentos", rotas_documentos);
 
 module.exports = router;

@@ -10,6 +10,16 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import api from "../../services/api.js";
 import "./candidaturas.css";
+import "../../components/BadgeDetalhe/BadgeDetalheRequisitos.css";
+
+function isUrlDocumento(valor = "") {
+    try {
+        const url = new URL(valor);
+        return ["http:", "https:"].includes(url.protocol);
+    } catch {
+        return false;
+    }
+}
 
 // Paleta de cores rotativas para os ícones dos badges (determinística por badge ID)
 const CORES_TEMPLATE = [
@@ -270,22 +280,38 @@ function CandidaturaDetalhes({ candidatura, userRole, onAccept, onReject, onClos
                 <span>{t("requisitos_comprovados")}</span>
               </h6>
               
-              <div className="d-flex flex-column gap-2">
-                {candidatura.requisitos.map((req, idx) => (
-                  <div key={idx} className="requisito-card shadow-xs">
-                    <div className="d-flex align-items-center gap-3 min-w-0">
-                      <span className="fw-bold" style={{ fontSize: "0.95rem", color: "var(--barra_lateral)" }}>{idx + 1}.</span>
-                      <span className="truncate" style={{ fontSize: "0.85rem", color: "var(--fontes)" }}>{req}</span>
-                    </div>
-                    <button 
-                      onClick={() => alert(t("transferindo_documentacao", { req }))}
-                      className="requisito-doc-btn"
-                      title={t("download_comprovativo")}
-                    >
-                      <i className="fi fi-br-document" style={{ fontSize: "0.85rem" }}></i>
-                    </button>
-                  </div>
-                ))}
+              <div className="badge-detalhe-requisitos-lista mt-3">
+                {candidatura.requisitos.map((req, idx) => {
+                    const ficheiroDocumento = req.documento?.ficheiro || "";
+                    const documentoTemUrl = isUrlDocumento(ficheiroDocumento);
+                    const textoDocumento = documentoTemUrl ? "Ver documento" : (req.documento?.nomeFicheiro || "Documento Anexado");
+                    
+                    return (
+                        <article key={req.id || idx} className={`badge-detalhe-requisito ${req.temAnexo ? "badge-detalhe-requisito--anexado" : ""}`}>
+                            <div className="badge-detalhe-requisito-icon">
+                                <i className={`fi ${req.temAnexo ? "fi-br-file-check" : "fi-br-clock"}`}></i>
+                            </div>
+                            <div className="badge-detalhe-requisito-info">
+                                <h5>{req.nome}</h5>
+                                <p>{req.descricao}</p>
+                                {req.temAnexo && (
+                                    <span className="badge-detalhe-requisito-ficheiro">
+                                        <i className="fi fi-br-clip"></i>
+                                        <a 
+                                            href={`${api.defaults.baseURL}/documentos/${req.documento.id_ficheiro}/download?token=${localStorage.getItem("token_softinsa") || ""}`}
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="fw-medium text-decoration-none"
+                                            style={{ fontSize: "0.85rem", color: "var(--barra_lateral)" }}
+                                        >
+                                            Download documento
+                                        </a>
+                                    </span>
+                                )}
+                            </div>
+                        </article>
+                    );
+                })}
               </div>
             </div>
 

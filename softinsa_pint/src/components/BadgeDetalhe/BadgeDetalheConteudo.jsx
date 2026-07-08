@@ -41,6 +41,7 @@ function BadgeDetalheConteudo({
     onVerPaginaPublica,
     onCopiarLinkPublico,
     onPartilharLinkedIn,
+    acaoCertificado,
 }) {
     if (isLoading) {
         return (
@@ -162,6 +163,7 @@ function BadgeDetalheConteudo({
                 onVerPaginaPublica={onVerPaginaPublica}
                 onCopiarLinkPublico={onCopiarLinkPublico}
                 onPartilharLinkedIn={onPartilharLinkedIn}
+                acaoCertificado={acaoCertificado}
             />
         </div>
     );

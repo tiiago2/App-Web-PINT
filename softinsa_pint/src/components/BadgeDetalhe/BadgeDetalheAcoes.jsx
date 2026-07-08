@@ -1,4 +1,5 @@
 import "./BadgeDetalheAcoes.css";
+import BotaoAcao from "../ui/BotaoAcao/BotaoAcao";
 import { ESTADOS_BADGE_CONSULTOR } from "../../utils/badgeDetalheNormalizadores";
 
 function SecaoPaginaPublica({
@@ -132,6 +133,7 @@ function BadgeDetalheAcoes({
     onVerPaginaPublica,
     onCopiarLinkPublico,
     onPartilharLinkedIn,
+    acaoCertificado,
 }) {
     if (!detalhe) {
         return null;
@@ -152,6 +154,23 @@ function BadgeDetalheAcoes({
                     isProcessandoRascunho={isProcessandoRascunho}
                     isSubmetendoCandidatura={isSubmetendoCandidatura}
                 />
+            )}
+
+            {acaoCertificado && (
+                <section className="badge-detalhe-acoes">
+                    <BotaoAcao
+                        variante="secundario"
+                        icone="fi-br-download"
+                        onClick={() =>
+                            !acaoCertificado.emProcessamento &&
+                            acaoCertificado.onDownload?.(detalhe)
+                        }
+                    >
+                        {acaoCertificado.emProcessamento
+                            ? "A gerar certificado..."
+                            : "Download de Certificação de Badge"}
+                    </BotaoAcao>
+                </section>
             )}
 
             <SecaoPaginaPublica

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import BadgeSeccao from "../BadgeSeccao/BadgeSeccao";
 import "./GaleriaTodosBadges.css";
 
@@ -102,6 +102,7 @@ function GaleriaTodosBadges({
   onBadgeClick,
   renderBadge,
   emptyMessage = "Não foram encontrados badges com os filtros atuais.",
+  onBadgesFiltradosChange,
 }) {
   const isConsultor = modo === "consultor";
 
@@ -160,6 +161,10 @@ function GaleriaTodosBadges({
       badgesMinhaArea.length === 0 &&
       badgesOutrasAreas.length === 0
     : badgesEspeciais.length === 0 && badgesNormais.length === 0;
+
+  useEffect(() => {
+    onBadgesFiltradosChange?.(badgesFiltrados);
+  }, [badgesFiltrados, onBadgesFiltradosChange]);
 
   return (
     <section className="galeria-todos-badges">

@@ -31,6 +31,7 @@ function enriquecerSugestao(sugestao, badges) {
 function GaleriaSugeridos({
   badges = [],
   onBadgeClick,
+  onBadgesSugeridosChange,
 }) {
   const [sugestoes, setSugestoes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -81,6 +82,10 @@ function GaleriaSugeridos({
     },
     [sugestoes, badges]
   );
+
+  useEffect(() => {
+    onBadgesSugeridosChange?.(badgesSugeridos);
+  }, [badgesSugeridos, onBadgesSugeridosChange]);
 
   if (isLoading) {
     return (

@@ -1,70 +1,31 @@
 const {
   Utilizador,
-  Consultor,
   Badges,
   Area,
   Submissoes,
   RegistoBadges,
-  Historico,
   Role,
   ServiceLine
 } = require("../models");
-const registo_badges = require("../models/registo_badges");
 const { Op } = require('sequelize');
 const { calcularRanking } = require("../helpers/rankingHelper");
+const { getRolesFromRequest } = require("../helpers/roleHelper");
+const { getBadgeIdsForServiceLeader } = require("../helpers/serviceLineHelper");
 
 module.exports = {
     async getCandidaturas(req, res) {
        try {
-            const id_utilizador = req.utilizadorLogado.id_utilizador;
-
-            // 1. Obter as roles do utilizador na base de dados
-            const userWithRoles = await Utilizador.findByPk(id_utilizador, {
-                include: [{ model: Role, through: { attributes: [] } }]
-            });
-            const roles = userWithRoles ? userWithRoles.Roles.map(r => r.nome_role ? r.nome_role.toLowerCase() : "") : [];
-
-            // Ler a role ativa enviada pelo frontend no cabeçalho x-user-role
-            const activeRoleHeader = req.headers['x-user-role'] ? req.headers['x-user-role'].toLowerCase() : null;
-            const roleAtiva = (activeRoleHeader && roles.includes(activeRoleHeader))
-                ? activeRoleHeader
-                : null;
-
-            const isAdmin = roleAtiva
-                ? (roleAtiva === 'admin' || roleAtiva === 'administrador')
-                : (roles.includes('admin') || roles.includes('administrador'));
-
-            const isTalent = roleAtiva
-                ? (roleAtiva === 'talent' || roleAtiva === 'talent manager')
-                : (roles.includes('talent') || roles.includes('talent manager'));
-
-            const isServiceLeader = roleAtiva
-                ? (roleAtiva === 'service' || roleAtiva === 'service line leader')
-                : (roles.includes('service') || roles.includes('service line leader'));
+            const { id_utilizador, isAdmin, isTalent, isServiceLeader } = await getRolesFromRequest(req);
 
             let whereClause = { status: 'pendente' };
 
             // Se for Service Line Leader e não for Admin/Talent:
             if (isServiceLeader && !isAdmin && !isTalent) {
-                const serviceLine = await ServiceLine.findOne({
-                    where: { id_lider: id_utilizador, deleted_service: false }
-                });
+                const badgeIds = await getBadgeIdsForServiceLeader(id_utilizador);
 
-                if (!serviceLine) {
+                if (!badgeIds) {
                     return res.status(200).json([]);
                 }
-
-                // Buscar as áreas pertencentes a esta Service Line
-                const areas = await Area.findAll({
-                    where: { id_service_line: serviceLine.id_service_line, deleted_area: false }
-                });
-                const areaIds = areas.map(a => a.id_area);
-
-                // Buscar os badges correspondentes
-                const badges = await Badges.findAll({
-                    where: { id_area: areaIds, deleted_badge: false }
-                });
-                const badgeIds = badges.map(b => b.id_badge);
 
                 whereClause.id_badge = { [Op.in]: badgeIds };
                 whereClause.status = 'aceite talent';

@@ -381,6 +381,30 @@ export default function Candidaturas({ loggedUser }) {
       setOrdenacao("Recusadas Recentemente");
     }
   }, [filtroStatus]);
+
+  const opcoesOrdenacaoBase = useMemo(() => [
+    { valor: "Mais Recentes", label: t("ordenar_recentes") },
+    { valor: "Mais Antigas", label: t("ordenar_antigos") },
+    { valor: "Pontos (Decrescente)", label: t("mais_pontos") },
+    { valor: "Pontos (Crescente)", label: t("menos_pontos") }
+  ], [t]);
+
+  const opcoesOrdenacao = useMemo(() => {
+    if (filtroStatus === "Aceite") {
+      return [
+        { valor: "Aceites Recentemente", label: t("aceites_recentemente") || "Aceites recentemente" },
+        ...opcoesOrdenacaoBase
+      ];
+    }
+    if (filtroStatus === "Recusada") {
+      return [
+        { valor: "Recusadas Recentemente", label: t("recusadas_recently") || "Recusadas recentemente" },
+        ...opcoesOrdenacaoBase
+      ];
+    }
+    return opcoesOrdenacaoBase;
+  }, [filtroStatus, opcoesOrdenacaoBase, t]);
+
   const [filtroArea, setFiltroArea] = useState("Todas");
   const [ordenacao, setOrdenacao] = useState("Mais Recentes");
   const [pesquisa, setPesquisa] = useState("");
@@ -776,30 +800,7 @@ export default function Candidaturas({ loggedUser }) {
                   <BotaoDropdown
                     titulo={t("ordenar_por")}
                     valor={ordenacao}
-                    opcoes={
-                      filtroStatus === "Aceite"
-                        ? [
-                            { valor: "Aceites Recentemente", label: t("aceites_recentemente") || "Aceites recentemente" },
-                            { valor: "Mais Recentes", label: t("ordenar_recentes") },
-                            { valor: "Mais Antigas", label: t("ordenar_antigos") },
-                            { valor: "Pontos (Decrescente)", label: t("mais_pontos") },
-                            { valor: "Pontos (Crescente)", label: t("menos_pontos") }
-                          ]
-                        : filtroStatus === "Recusada"
-                        ? [
-                            { valor: "Recusadas Recentemente", label: t("recusadas_recently") || "Recusadas recentemente" },
-                            { valor: "Mais Recentes", label: t("ordenar_recentes") },
-                            { valor: "Mais Antigas", label: t("ordenar_antigos") },
-                            { valor: "Pontos (Decrescente)", label: t("mais_pontos") },
-                            { valor: "Pontos (Crescente)", label: t("menos_pontos") }
-                          ]
-                        : [
-                            { valor: "Mais Recentes", label: t("ordenar_recentes") },
-                            { valor: "Mais Antigas", label: t("ordenar_antigos") },
-                            { valor: "Pontos (Decrescente)", label: t("mais_pontos") },
-                            { valor: "Pontos (Crescente)", label: t("menos_pontos") }
-                          ]
-                    }
+                    opcoes={opcoesOrdenacao}
                     onChange={setOrdenacao}
                   />
                 </div>

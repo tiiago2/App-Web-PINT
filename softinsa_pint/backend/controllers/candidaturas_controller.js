@@ -17,6 +17,8 @@ const {
 } = require("../models");
 const { Op } = require("sequelize");
 const { enviarEmail } = require('../helpers/emailHelper');
+const { getRolesFromRequest } = require("../helpers/roleHelper");
+const { getBadgeIdsForServiceLeader } = require("../helpers/serviceLineHelper");
 
 const emailValido = (email) => typeof email === 'string' && email.length > 5 && email.includes('@');
 
@@ -24,38 +26,7 @@ module.exports = {
   // GET /api/candidaturas
   async getCandidaturas(req, res) {
     try {
-      const id_utilizador = req.utilizadorLogado.id_utilizador;
-
-      // 1. Obter as roles do utilizador na base de dados
-      const userWithRoles = await Utilizador.findByPk(id_utilizador, {
-        include: [{ model: Role, through: { attributes: [] } }]
-      });
-
-      const roles = userWithRoles ? userWithRoles.Roles.map(r => r.nome_role ? r.nome_role.toLowerCase() : "") : [];
-
-      // Ler a role ativa enviada pelo frontend no cabeçalho x-user-role
-      const activeRoleHeader = req.headers['x-user-role'] ? req.headers['x-user-role'].toLowerCase() : null;
-
-      // Segurança: verificar se a role enviada no header pertence ao utilizador
-      const roleAtiva = (activeRoleHeader && roles.includes(activeRoleHeader))
-        ? activeRoleHeader
-        : null;
-
-      const isAdmin = roleAtiva
-        ? (roleAtiva === 'admin' || roleAtiva === 'administrador')
-        : (roles.includes('admin') || roles.includes('administrador'));
-
-      const isTalent = roleAtiva
-        ? (roleAtiva === 'talent' || roleAtiva === 'talent manager')
-        : (roles.includes('talent') || roles.includes('talent manager'));
-
-      const isServiceLeader = roleAtiva
-        ? (roleAtiva === 'service' || roleAtiva === 'service line leader')
-        : (roles.includes('service') || roles.includes('service line leader'));
-
-      const isConsultor = roleAtiva
-        ? (roleAtiva === 'consultor')
-        : (roles.includes('consultor'));
+      const { id_utilizador, isAdmin, isTalent, isServiceLeader, isConsultor } = await getRolesFromRequest(req);
 
       // Cláusula where principal de submissões
       let whereClause = {
@@ -64,26 +35,12 @@ module.exports = {
 
       // Se for Service Line Leader e não for Admin/Talent:
       if (isServiceLeader && !isAdmin && !isTalent) {
-        const serviceLine = await ServiceLine.findOne({
-          where: { id_lider: id_utilizador, deleted_service: false }
-        });
+        const badgeIds = await getBadgeIdsForServiceLeader(id_utilizador);
 
-        if (!serviceLine) {
+        if (!badgeIds) {
           // Se for SLL mas não tiver nenhuma Service Line associada, retorna vazio
           return res.status(200).json([]);
         }
-
-        // Buscar as áreas pertencentes a esta Service Line
-        const areas = await Area.findAll({
-          where: { id_service_line: serviceLine.id_service_line, deleted_area: false }
-        });
-        const areaIds = areas.map(a => a.id_area);
-
-        // Buscar os badges correspondentes
-        const badges = await Badges.findAll({
-          where: { id_area: areaIds, deleted_badge: false }
-        });
-        const badgeIds = badges.map(b => b.id_badge);
 
         // Filtrar submissões que pertençam a estes badges e que tenham estado 'aceite talent', 'aceite' ou 'recusada'
         whereClause.id_badge = { [Op.in]: badgeIds };
@@ -238,27 +195,7 @@ module.exports = {
         return res.status(400).json({ error: "Estado inválido." });
       }
 
-      const id_utilizador = req.utilizadorLogado.id_utilizador;
-      
-      // Obter as roles do utilizador na base de dados
-      const userWithRoles = await Utilizador.findByPk(id_utilizador, {
-        include: [{ model: Role, through: { attributes: [] } }]
-      });
-      const roles = userWithRoles ? userWithRoles.Roles.map(r => r.nome_role ? r.nome_role.toLowerCase() : "") : [];
-
-      // Ler a role ativa enviada pelo frontend
-      const activeRoleHeader = req.headers['x-user-role'] ? req.headers['x-user-role'].toLowerCase() : null;
-      const roleAtiva = (activeRoleHeader && roles.includes(activeRoleHeader))
-        ? activeRoleHeader
-        : null;
-
-      const isAdmin = roleAtiva
-        ? (roleAtiva === 'admin' || roleAtiva === 'administrador')
-        : (roles.includes('admin') || roles.includes('administrador'));
-
-      const isTalent = roleAtiva
-        ? (roleAtiva === 'talent' || roleAtiva === 'talent manager')
-        : (roles.includes('talent') || roles.includes('talent manager'));
+      const { id_utilizador, roles, roleAtiva, isAdmin, isTalent } = await getRolesFromRequest(req);
 
       const submissao = await Submissoes.findByPk(id);
       if (!submissao) {
@@ -283,13 +220,11 @@ module.exports = {
         }]
       });
 
-      const permissoesAtivas = [];
+      const permissoesAtivas = new Set();
       for (const r of rolesComPermissoes) {
         if (r.Permissoes) {
           for (const p of r.Permissoes) {
-            if (!permissoesAtivas.includes(p.id_permissao)) {
-              permissoesAtivas.push(p.id_permissao);
-            }
+            permissoesAtivas.add(p.id_permissao);
           }
         }
       }
@@ -298,13 +233,13 @@ module.exports = {
       if (status === 'Aceite') {
         if (isTalent && !isAdmin) {
           // Talent Manager faz validação inicial (precisa de id_permissao: 4 -> "Validar Evidências")
-          if (!permissoesAtivas.includes(4)) {
+          if (!permissoesAtivas.has(4)) {
             return res.status(403).json({ error: "Não tens permissões para validar evidências (Validação Inicial)." });
           }
           dbStatus = 'aceite talent';
         } else {
           // Admin ou SLL faz validação final (precisa de id_permissao: 6 -> "Validação Final")
-          if (!permissoesAtivas.includes(6)) {
+          if (!permissoesAtivas.has(6)) {
             return res.status(403).json({ error: "Não tens permissões para realizar a Validação Final desta candidatura." });
           }
           dbStatus = 'aceite';
@@ -313,12 +248,12 @@ module.exports = {
         dbStatus = 'recusada';
         // Se a candidatura já foi pré-aceite pelo TM ('aceite talent'), apenas quem tem permissão de Validação Final (6) pode recusar
         if (submissao.status === 'aceite talent') {
-          if (!permissoesAtivas.includes(6)) {
+          if (!permissoesAtivas.has(6)) {
             return res.status(403).json({ error: "Apenas utilizadores com permissão de Validação Final podem recusar esta candidatura." });
           }
         } else {
           // Se está pendente, quem tem permissão 4 (Validar Evidências) ou 6 (Validação Final) pode recusar
-          if (!permissoesAtivas.includes(4) && !permissoesAtivas.includes(6)) {
+          if (!permissoesAtivas.has(4) && !permissoesAtivas.has(6)) {
             return res.status(403).json({ error: "Não tens permissões para rejeitar esta candidatura." });
           }
         }

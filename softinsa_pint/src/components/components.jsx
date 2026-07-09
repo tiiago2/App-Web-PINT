@@ -79,6 +79,20 @@ export function BotaoRejeitar({ onClick, tamanho }) {
 export const GraficoCandidaturas = ({dados_grafico_candidaturas, loading}) => {
 
     const {t} = useTranslation();
+    const chartRef = React.useRef(null);
+    const [isNarrow, setIsNarrow] = React.useState(false);
+
+    React.useEffect(() => {
+        const checkWidth = () => {
+            if (chartRef.current) {
+                setIsNarrow(chartRef.current.offsetWidth < 260);
+            }
+        };
+
+        checkWidth();
+        window.addEventListener('resize', checkWidth);
+        return () => window.removeEventListener('resize', checkWidth);
+    }, []);
 
     const total = dados_grafico_candidaturas.reduce((acumulador, dado) => {
         return acumulador + (dado.quantidade || 0);
@@ -94,10 +108,10 @@ export const GraficoCandidaturas = ({dados_grafico_candidaturas, loading}) => {
     const isVazio = dados_grafico_candidaturas.every(d => !d.quantidade);
 
     return (
-        <div className="p-3 d-flex flex-column bg-white h-100" style={{ border: 'var(--borda-principal) solid var(--contorno)', borderRadius: 'var(--border-radius-grande)', boxSizing: 'border-box' }}>
+        <div className="p-3 d-flex flex-column bg-white h-100 grafico-candidaturas-wrapper" style={{ border: 'var(--borda-principal) solid var(--contorno)', borderRadius: 'var(--border-radius-grande)', boxSizing: 'border-box' }}>
             <h5 className="mb-2">{t('titulo_candidaturas')}</h5>
             
-            <div className="flex-grow-1 d-flex justify-content-center align-items-center" style={{ width: '100%', minHeight: '140px' }}>
+            <div ref={chartRef} className="flex-grow-1 d-flex justify-content-center align-items-center" style={{ width: '100%', minHeight: '140px' }}>
                 {loading ? (
                     <div className="spinner-border text-primary" role="status">
                         <span className="visually-hidden">Loading...</span>
@@ -111,11 +125,11 @@ export const GraficoCandidaturas = ({dados_grafico_candidaturas, loading}) => {
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie
-                                cx="50%"
+                                cx={isNarrow ? "50%" : "45%"}
                                 cy="50%"
                                 data={dados_traduzidos}
-                                innerRadius="60%"
-                                outerRadius="85%" 
+                                innerRadius={isNarrow ? "55%" : "60%"}
+                                outerRadius={isNarrow ? "80%" : "85%"}
                                 dataKey="quantidade"
                                 nameKey="nome"
                                 stroke="none"
@@ -131,7 +145,7 @@ export const GraficoCandidaturas = ({dados_grafico_candidaturas, loading}) => {
                                                 textAnchor="middle" 
                                                 dominantBaseline="central" 
                                                 className="fw-bold" 
-                                                style={{ fontSize: '28px', fill: 'var(--fontes)'}}
+                                                style={{ fontSize: isNarrow ? '22px' : '28px', fill: 'var(--fontes)'}}
                                             >
                                                 {total}
                                             </text>
@@ -156,11 +170,11 @@ export const GraficoCandidaturas = ({dados_grafico_candidaturas, loading}) => {
                             <Tooltip />
                             
                             <Legend 
-                                layout="vertical" 
-                                verticalAlign="middle" 
-                                align="right" 
+                                layout={isNarrow ? "horizontal" : "vertical"}
+                                verticalAlign={isNarrow ? "bottom" : "middle"}
+                                align={isNarrow ? "center" : "right"}
                                 iconType="circle" 
-                                wrapperStyle={{ right: 0 }}
+                                wrapperStyle={isNarrow ? { bottom: 0, fontSize: '12px' } : { right: 0 }}
                             /> 
                         </PieChart>
                     </ResponsiveContainer>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import BadgeCirculo from '../../components/Galeria/BadgeCirculo/BadgeCirculo';
@@ -6,6 +6,7 @@ import SeletorAbas from '../../components/ui/SeletorAbas/SeletorAbas_Galeria';
 import BotaoDropdown from '../../components/ui/BotaoDropdown/BotaoDropdown';
 import GaleriaFiltroDropdown from '../../components/Galeria/GaleriaFiltroDropdown/GaleriaFiltroDropdown';
 import ModalConfirmacao from '../../components/ui/ModalConfirmacao/ModalConfirmacao';
+import ToastNotificacao from '../../components/ui/ToastNotificacao/ToastNotificacao';
 import BadgeDetalheModal from '../../components/BadgeDetalhe/BadgeDetalheModal';
 import {
     obterBadgeDetalheConsultor,
@@ -17,13 +18,6 @@ import {
 import { verificarPermissaoPartilhaLinkedIn } from '../../services/permissoesService';
 import { obterObjetivosConsultor, criarObjetivoConsultor, obterBadgesParaPropor, removerObjetivoConsultor } from '../../services/objetivosService';
 import './objetivos_consultor.css';
-
-/* ── Imagens de badges (mock — na BD vêm da API) ── */
-import badgeImg1 from '../../assets/badges/Low Code.png';
-import badgeImg2 from '../../assets/badges/Low Code 2.png';
-import badgeImg3 from '../../assets/badges/Low Code 3.png';
-import badgeImg4 from '../../assets/badges/Low Code 4.png';
-import badgeImg5 from '../../assets/badges/Low Code 5.png';
 
 /* ─────────────────────────────────────────────────────────────────────
    MOCK DATA — nomes dos campos exatamente como na base de dados
@@ -72,6 +66,7 @@ const corAgrupada = (objs) => {
 const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
     const [mesVista,  setMesVista]  = useState(new Date());
     const [hoverInfo, setHoverInfo] = useState(null);
+    const [hoverAcima, setHoverAcima] = useState(false);
 
     const hoje = new Date();
     const ano  = mesVista.getFullYear();
@@ -158,11 +153,16 @@ const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
                             onMouseEnter={(e) => {
                                 if (!temObjs) return;
                                 const rect = e.currentTarget.getBoundingClientRect();
+                                const popupHeight = 140;
+                                const gap = 8;
+                                const abaixo = rect.bottom + gap;
+                                const abreAcima = abaixo + popupHeight > window.innerHeight - 12;
+                                setHoverAcima(abreAcima);
                                 setHoverInfo({
                                     objs,
                                     dia,
                                     mesNome: MESES_PT[mes],
-                                    top:  rect.bottom + 8,
+                                    top:  abreAcima ? rect.top - popupHeight - gap : rect.bottom + gap,
                                     left: rect.left + rect.width / 2,
                                 });
                             }}
@@ -184,22 +184,24 @@ const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
 
             {/* ── Legenda de cores ── */}
             <div className="obj-cal-legenda">
-                <div className="obj-cal-leg-item">
-                    <span className="obj-cal-dot" style={{ backgroundColor: 'var(--aceitar)' }} />
-                    <span>≥ 70%</span>
-                </div>
-                <div className="obj-cal-leg-item">
-                    <span className="obj-cal-dot" style={{ backgroundColor: 'var(--progresso)' }} />
-                    <span>40–69%</span>
-                </div>
-                <div className="obj-cal-leg-item">
-                    <span className="obj-cal-dot" style={{ backgroundColor: 'var(--rejeitar)' }} />
-                    <span>&lt; 40%</span>
+                <div className="obj-cal-leg-grupo">
+                    <div className="obj-cal-leg-item">
+                        <span className="obj-cal-dot" style={{ backgroundColor: 'var(--aceitar)' }} />
+                        <span>Concluído</span>
+                    </div>
+                    <div className="obj-cal-leg-item">
+                        <span className="obj-cal-dot" style={{ backgroundColor: 'var(--progresso)' }} />
+                        <span>Em progresso</span>
+                    </div>
+                    <div className="obj-cal-leg-item">
+                        <span className="obj-cal-dot" style={{ backgroundColor: 'var(--rejeitar)' }} />
+                        <span>Expirado</span>
+                    </div>
                 </div>
                 {diaSelecionado && (
                     <span className="obj-cal-leg-info">
                         <i className="fi fi-br-cursor-finger" style={{ fontSize: '11px' }} />
-                        Clica no dia para remover filtro
+                        Clica para remover filtro
                     </span>
                 )}
             </div>
@@ -207,7 +209,7 @@ const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
             {/* ── Popup de hover (portal) ── */}
             {hoverInfo && ReactDOM.createPortal(
                 <div
-                    className="obj-cal-popup"
+                    className={`obj-cal-popup${hoverAcima ? ' obj-cal-popup--acima' : ''}`}
                     style={{ top: hoverInfo.top, left: hoverInfo.left }}
                 >
                     <div className="obj-cal-popup-titulo">
@@ -239,6 +241,7 @@ const DatePickerPopup = ({ value, onChange, min }) => {
         return new Date();
     });
     const [popupPos, setPopupPos] = useState({ top: 0, left: 0, width: 0 });
+    const [popupAcima, setPopupAcima] = useState(false);
     const inputRef = useRef(null);
 
     const hoje        = new Date();
@@ -256,9 +259,25 @@ const DatePickerPopup = ({ value, onChange, min }) => {
 
     const handleOpen = () => {
         const rect = inputRef.current.getBoundingClientRect();
-        const popupWidth = 260;
-        const maxLeft = window.innerWidth - popupWidth - 12;
-        setPopupPos({ top: rect.bottom + 6, left: Math.min(rect.left, maxLeft), width: rect.width });
+        const popupWidth = rect.width / 2;
+        const popupHeight = 360;
+        const gap = 8;
+
+        let left = rect.left;
+        let top = rect.bottom + gap;
+
+        // Evitar que saia pela direita
+        if (left + popupWidth > window.innerWidth - 12) {
+            left = window.innerWidth - popupWidth - 12;
+        }
+        // Evitar que saia por baixo: abrir para cima se necessário
+        const abreAcima = top + popupHeight > window.innerHeight - 12;
+        if (abreAcima) {
+            top = rect.top - popupHeight - gap;
+        }
+
+        setPopupAcima(abreAcima);
+        setPopupPos({ top, left, width: popupWidth });
         if (value) setMesVista(new Date(value + 'T00:00:00'));
         setOpen(true);
     };
@@ -322,7 +341,7 @@ const DatePickerPopup = ({ value, onChange, min }) => {
             {/* Popup calendário (portal) */}
             {open && ReactDOM.createPortal(
                 <div
-                    className="obj-dp-popup"
+                    className={`obj-dp-popup${popupAcima ? ' obj-dp-popup--acima' : ''}`}
                     style={{ top: popupPos.top, left: popupPos.left, minWidth: popupPos.width }}
                 >
                     {/* Cabeçalho de navegação */}
@@ -397,6 +416,11 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
         document.body.style.overflow = 'hidden';
         let active = true;
 
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') onClose();
+        };
+        document.addEventListener('keydown', handleKeyDown);
+
         obterBadgesParaPropor()
             .then(badges => {
                 if (active) {
@@ -418,24 +442,9 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
         return () => {
             active = false;
             document.body.style.overflow = '';
+            document.removeEventListener('keydown', handleKeyDown);
         };
-    }, []);
-
-    // Obter opções únicas para cada filtro a partir dos badges reais da BD
-    const opcoesFiltro = {
-        learningPath: Array.from(new Set(listaBadges.map(b => b.Nome_Learning_Path || b.nome_learning_path).filter(Boolean))).map(lp => ({
-            valor: lp,
-            label: lp
-        })),
-        serviceLine: Array.from(new Set(listaBadges.map(b => b.Nome_Service_Line || b.nome_service_line).filter(Boolean))).map(sl => ({
-            valor: sl,
-            label: sl
-        })),
-        area: Array.from(new Set(listaBadges.map(b => b.Nome_Area || b.nome_area).filter(Boolean))).map(area => ({
-            valor: area,
-            label: area
-        }))
-    };
+    }, [onClose]);
 
     const opcoesOrdenacao = [
         { valor: "recentes", label: "Mais recentes" },
@@ -443,6 +452,14 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
         { valor: "az", label: "A-Z" },
         { valor: "za", label: "Z-A" },
     ];
+
+    // Lista única de áreas para as pills
+    const areasUnicas = useMemo(() => {
+        const areas = Array.from(new Set(listaBadges.map(b => b.Nome_Area || b.nome_area).filter(Boolean)));
+        return ['Todas', ...areas.sort((a, b) => a.localeCompare(b))];
+    }, [listaBadges]);
+
+    const areaAtiva = filtro.tipo === 'todos' ? 'Todas' : filtro.valor;
 
     const filtrados = listaBadges
         .filter(b => {
@@ -455,12 +472,10 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
                                   nomeArea.toLowerCase().includes(search.toLowerCase()) ||
                                   nomeSL.toLowerCase().includes(search.toLowerCase()) ||
                                   nomeLP.toLowerCase().includes(search.toLowerCase());
-            
-            const matchesFiltro = filtro.tipo === "todos" || 
-                                  (filtro.tipo === "area" && nomeArea === filtro.valor) ||
-                                  (filtro.tipo === "serviceLine" && nomeSL === filtro.valor) ||
-                                  (filtro.tipo === "learningPath" && nomeLP === filtro.valor);
-            
+
+            const matchesFiltro = filtro.tipo === "todos" ||
+                                  (filtro.tipo === "area" && nomeArea === filtro.valor);
+
             return matchesSearch && matchesFiltro;
         })
         .sort((a, b) => {
@@ -483,50 +498,64 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
 
                 <div className="obj-picker-header">
                     <div className="obj-picker-title-row">
-                        <span className="obj-picker-title">Escolha um Badge</span>
+                        <span className="obj-picker-title">Escolhe um Badge</span>
                         <button className="obj-btn-close" onClick={onClose} title="Fechar">
                             <i className="fi fi-br-cross" />
                         </button>
                     </div>
-                    <div className="obj-picker-controls">
-                        <div className="obj-picker-search-wrap">
-                            <i className="fi fi-br-search" style={{ color: '#aab7c4', fontSize: '13px', flexShrink: 0 }} />
-                            <input
-                                className="obj-picker-search-input"
-                                placeholder="Pesquisar Badge..."
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
-                                autoFocus
-                            />
+                    <div className="obj-picker-search-wrap">
+                        <i className="fi fi-br-search obj-picker-search-icone" />
+                        <input
+                            className="obj-picker-search-input"
+                            placeholder="Pesquisar badge, área, learning path..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            autoFocus
+                        />
+                    </div>
+                    <div className="obj-picker-filtros-row">
+                        <div className="obj-picker-area-pills">
+                            {areasUnicas.map(area => (
+                                <button
+                                    key={area}
+                                    type="button"
+                                    className={`obj-picker-pill${areaAtiva === area ? ' active' : ''}`}
+                                    onClick={() => setFiltro(area === 'Todas'
+                                        ? { tipo: 'todos', valor: '', label: 'Todas' }
+                                        : { tipo: 'area', valor: area, label: area }
+                                    )}
+                                >
+                                    {area === 'Todas' ? 'Todas As Áreas' : area}
+                                </button>
+                            ))}
                         </div>
-                        <div className="obj-picker-actions-row">
-                            <GaleriaFiltroDropdown
-                                valor={filtro}
-                                opcoes={opcoesFiltro}
-                                onChange={setFiltro}
-                            />
-                            <BotaoDropdown
-                                titulo="Ordenar por"
-                                valor={ordenacao}
-                                opcoes={opcoesOrdenacao}
-                                onChange={setOrdenacao}
-                            />
-                        </div>
+                        <BotaoDropdown
+                            titulo="Mais recentes"
+                            valor={ordenacao}
+                            opcoes={opcoesOrdenacao}
+                            onChange={setOrdenacao}
+                        />
                     </div>
                 </div>
 
                 <div className="obj-picker-body">
+                    {!carregando && (
+                        <div className="obj-picker-counter">
+                            {filtrados.length} {filtrados.length === 1 ? 'badge encontrado' : 'badges encontrados'}
+                        </div>
+                    )}
                     {carregando ? (
-                        <div className="text-center text-muted py-5" style={{ fontSize: '14px' }}>
-                            <div className="spinner-border text-primary mb-2" role="status" style={{ width: '2rem', height: '2rem' }}>
-                                <span className="visually-hidden">Loading...</span>
+                        <div className="obj-picker-estado-vazio">
+                            <div className="spinner-animado obj-picker-spinner" role="status">
+                                <span className="visually-hidden">A carregar...</span>
                             </div>
-                            <div className="d-block">A carregar badges da base de dados...</div>
+                            <span>A carregar badges da base de dados...</span>
                         </div>
                     ) : filtrados.length === 0 ? (
-                        <div className="text-center text-muted py-5" style={{ fontSize: '14px' }}>
-                            <i className="fi fi-br-search d-block mb-2" style={{ fontSize: '2rem', opacity: 0.3 }} />
-                            Nenhum badge encontrado
+                        <div className="obj-picker-estado-vazio">
+                            <i className="fi fi-br-search obj-picker-estado-icone" />
+                            <span>Nenhum badge encontrado</span>
+                            <span className="obj-picker-estado-sub">Tenta ajustar os filtros ou a pesquisa.</span>
                         </div>
                     ) : (
                         <div className="obj-badge-grid">
@@ -535,6 +564,9 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
                                     key={badge.ID_Badge}
                                     className={`obj-badge-grid-card${selected?.ID_Badge === badge.ID_Badge ? ' selecionado' : ''}`}
                                     onClick={() => setSelected(badge)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelected(badge); }}
                                 >
                                     <div className="obj-badge-grid-circle-wrap">
                                         <BadgeCirculo
@@ -544,10 +576,9 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
                                         />
                                     </div>
                                     <div className="obj-badge-grid-nome">{badge.Nome_Badge}</div>
-                                    <div className="obj-badge-grid-area">
+                                    <div className="obj-badge-grid-meta">
                                         {badge.Nome_Area}
-                                        {` • ${badge.Nome_Service_Line || 'Sem Service Line'}`}
-                                        {` • ${badge.Nome_Learning_Path || 'Sem Learning Path'}`}
+                                        {badge.Pontos_Badge ? ` • ${badge.Pontos_Badge} pts` : ''}
                                     </div>
                                 </div>
                             ))}
@@ -580,7 +611,7 @@ function obterIdBadge(badge = {}) {
 /* ─────────────────────────────────────────────────────────────────────
    PÁGINA PRINCIPAL — OBJETIVOS CONSULTOR
    ───────────────────────────────────────────────────────────────────── */
-const ObjetivosConsultor = ({ user }) => {
+const ObjetivosConsultor = () => {
     const navigate = useNavigate();
 
     const [badgeSelecionado, setBadgeSelecionado] = useState(null);
@@ -599,6 +630,9 @@ const ObjetivosConsultor = ({ user }) => {
     const [isLoadingDetalheBadge, setIsLoadingDetalheBadge] = useState(false);
     const [anexoPendente, setAnexoPendente] = useState(null);
     const [avisoPermissaoLinkedIn, setAvisoPermissaoLinkedIn] = useState(false);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [toast, setToast] = useState({ visivel: false, mensagem: '', tipo: 'sucesso' });
 
     const carregarObjetivosAPI = async () => {
         setIsLoadingObjetivos(true);
@@ -643,12 +677,38 @@ const ObjetivosConsultor = ({ user }) => {
         }
     });
 
+    const mostrarToast = (mensagem, tipo = 'sucesso') => {
+        setToast({ visivel: true, mensagem, tipo });
+    };
+
+    const objetivoDuplicadoAtivo = (idBadge) => {
+        return objetivos.some(obj => {
+            const isConcluido = obj.progresso === 100 || obj.Data_Conclusao !== null;
+            return Number(obterIdBadge(obj.badge)) === Number(idBadge) && !isConcluido;
+        });
+    };
+
     const handleSubmeter = async (e) => {
         e.preventDefault();
-        if (!badgeSelecionado || !data) return;
+        if (!badgeSelecionado || !data || isSubmitting) return;
 
         const idBadge = obterIdBadge(badgeSelecionado);
         if (!idBadge) return;
+
+        // Validação: data não pode ser anterior a hoje
+        const hojeStr = new Date().toISOString().split('T')[0];
+        if (data < hojeStr) {
+            mostrarToast('A data limite não pode ser anterior a hoje.', 'erro');
+            return;
+        }
+
+        // Validação: impedir objetivo duplicado ativo
+        if (objetivoDuplicadoAtivo(idBadge)) {
+            mostrarToast('Já tens um objetivo ativo para este badge.', 'erro');
+            return;
+        }
+
+        setIsSubmitting(true);
 
         try {
             const novoObj = await criarObjetivoConsultor({
@@ -659,13 +719,21 @@ const ObjetivosConsultor = ({ user }) => {
             setObjetivos(prev => [novoObj, ...prev]);
             setBadgeSelecionado(null);
             setData('');
+            mostrarToast('Objetivo proposto com sucesso!', 'sucesso');
 
             if (diaSelecionado && !mesmoDia(new Date(novoObj.Data_Objetivo), diaSelecionado)) {
                 setDiaSelecionado(null);
             }
         } catch (error) {
             console.error("Erro ao criar objetivo:", error);
-            alert("Não foi possível propor o objetivo. Garante que o badge selecionado existe no sistema.");
+            const mensagem =
+                error.response?.status === 409
+                    ? 'Já tens um objetivo ativo para este badge.'
+                    : error.response?.data?.error ||
+                      'Não foi possível propor o objetivo. Tenta novamente.';
+            mostrarToast(mensagem, 'erro');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -688,7 +756,7 @@ const ObjetivosConsultor = ({ user }) => {
             }
         } catch (error) {
             console.error("Erro ao remover objetivo:", error);
-            alert("Não foi possível remover o objetivo. Tenta novamente.");
+            mostrarToast('Não foi possível remover o objetivo. Tenta novamente.', 'erro');
         } finally {
             setObjetivoParaRemover(null);
         }
@@ -767,7 +835,7 @@ const ObjetivosConsultor = ({ user }) => {
             );
         } catch (error) {
             console.error("Erro ao anexar requisito:", error);
-            alert("Não foi possível anexar o requisito.");
+            mostrarToast('Não foi possível anexar o requisito.', 'erro');
         } finally {
             setIsLoadingDetalheBadge(false);
             setAnexoPendente(null);
@@ -801,7 +869,7 @@ const ObjetivosConsultor = ({ user }) => {
             );
         } catch (error) {
             console.error("Erro ao submeter candidatura:", error);
-            alert("Não foi possível submeter a candidatura.");
+            mostrarToast('Não foi possível submeter a candidatura.', 'erro');
         } finally {
             setIsLoadingDetalheBadge(false);
         }
@@ -821,7 +889,7 @@ const ObjetivosConsultor = ({ user }) => {
         const urlAbsoluta = `${window.location.origin}${urlPublica}`;
         try {
             await navigator.clipboard.writeText(urlAbsoluta);
-            alert("Link público copiado.");
+            mostrarToast('Link público copiado.', 'sucesso');
         } catch (error) {
             console.error("Erro ao copiar link público:", error);
             window.prompt("Copia o link público:", urlAbsoluta);
@@ -887,13 +955,16 @@ const ObjetivosConsultor = ({ user }) => {
                 <form onSubmit={handleSubmeter}>
                     <div className="obj-form-grid">
 
-                        {/* Campo: Título do Objetivo → abre badge picker */}
+                        {/* Campo: Badge a conquistar → abre badge picker */}
                         <div>
-                            <label className="obj-form-label">Título do Objetivo</label>
+                            <label className="obj-form-label">Badge a conquistar</label>
                             <div
                                 className={`obj-badge-picker${badgeSelecionado ? ' selecionado' : ''}`}
                                 onClick={() => setShowPicker(true)}
                                 title="Clique para escolher um badge"
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowPicker(true); }}
                             >
                                 {badgeSelecionado ? (
                                     <>
@@ -904,23 +975,28 @@ const ObjetivosConsultor = ({ user }) => {
                                                 nomeBadge={badgeSelecionado.Nome_Badge}
                                             />
                                         </div>
-                                        <span style={{ fontSize: '14px', color: 'var(--fontes)', flex: 1 }}>
+                                        <span className="obj-badge-picker-texto">
                                             {badgeSelecionado.Nome_Badge}
                                         </span>
-                                        <i
-                                            className="fi fi-br-cross-circle"
-                                            style={{ color: '#aab7c4', fontSize: '13px', flexShrink: 0 }}
+                                        <button
+                                            type="button"
+                                            className="obj-badge-picker-limpar"
                                             onClick={e => { e.stopPropagation(); setBadgeSelecionado(null); }}
                                             title="Remover seleção"
-                                        />
+                                            aria-label="Remover seleção de badge"
+                                        >
+                                            <i className="fi fi-br-cross-circle" />
+                                        </button>
                                     </>
                                 ) : (
                                     <>
-                                        <span style={{ fontSize: '14px', color: '#aab7c4', flex: 1 }}>Escolher badge...</span>
-                                        <i className="fi fi-br-expand" style={{ color: '#aab7c4', fontSize: '13px', flexShrink: 0 }} />
+                                        <i className="fi fi-br-award obj-badge-picker-icone-vazio" />
+                                        <span className="obj-badge-picker-placeholder">Escolhe um badge...</span>
+                                        <i className="fi fi-br-expand obj-badge-picker-icone-expand" />
                                     </>
                                 )}
                             </div>
+                            <span className="obj-form-ajuda">Seleciona o badge que pretendes conquistar.</span>
                         </div>
 
                         {/* Campo: Data Limite */}
@@ -931,16 +1007,34 @@ const ObjetivosConsultor = ({ user }) => {
                                 onChange={setData}
                                 min={new Date().toISOString().split('T')[0]}
                             />
+                            <span className="obj-form-ajuda">Define a data até quando pretendes completar este objetivo.</span>
                         </div>
                     </div>
 
-                    <div className="d-flex justify-content-end mt-3">
+                    <div className="obj-form-footer">
+                        <span className="obj-form-info">
+                            <i className="fi fi-br-info" />
+                            {!badgeSelecionado && !data
+                                ? 'Seleciona um badge e uma data para submeteres.'
+                                : !badgeSelecionado
+                                    ? 'Seleciona um badge para continuar.'
+                                    : !data
+                                        ? 'Seleciona uma data limite para continuar.'
+                                        : 'Podes agora propor o teu objetivo.'}
+                        </span>
                         <button
                             type="submit"
                             className="obj-btn-submeter"
-                            disabled={!badgeSelecionado || !data}
+                            disabled={!badgeSelecionado || !data || isSubmitting}
                         >
-                            Submeter
+                            {isSubmitting ? (
+                                <>
+                                    <span className="spinner-animado obj-spinner-btn" />
+                                    A submeter...
+                                </>
+                            ) : (
+                                'Submeter Objetivo'
+                            )}
                         </button>
                     </div>
                 </form>
@@ -1202,6 +1296,14 @@ const ObjetivosConsultor = ({ user }) => {
                 textoConfirmar="Enviar Comprovativo"
                 textoCancelar="Cancelar"
                 isDanger={false}
+            />
+
+            {/* ══ TOAST DE FEEDBACK ══════════════════════════════════════ */}
+            <ToastNotificacao
+                mensagem={toast.mensagem}
+                tipo={toast.tipo}
+                visivel={toast.visivel}
+                onFechar={() => setToast(prev => ({ ...prev, visivel: false }))}
             />
         </div>
     );

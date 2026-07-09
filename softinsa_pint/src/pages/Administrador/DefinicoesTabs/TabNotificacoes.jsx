@@ -195,10 +195,10 @@ export default function TabNotificacoes() {
         </div>
       </div>
 
-      <div className="mt-2 text-end">
+      <div className="mt-2 text-end definicoes-acao-guardar">
         <button
           onClick={handleGuardar}
-          className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white"
+          className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white definicoes-btn-guardar"
           style={{
             backgroundColor: "var(--barra_lateral)",
             height: "44px",

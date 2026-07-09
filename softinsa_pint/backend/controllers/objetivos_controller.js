@@ -168,6 +168,23 @@ module.exports = {
         return res.status(404).json({ error: "Badge não encontrado." });
       }
 
+      // Impedir objetivos duplicados ativos para o mesmo badge
+      const objetivoExistente = await Objetivos.findOne({
+        where: {
+          id_utilizador,
+          id_badge,
+          deleted_objetivo: false,
+          data_conclusao: null
+        }
+      });
+
+      if (objetivoExistente) {
+        return res.status(409).json({
+          error: "Já existe um objetivo ativo para este badge.",
+          code: "OBJETIVO_DUPLICADO"
+        });
+      }
+
       const novoObjetivo = await Objetivos.create({
         id_badge: badgeObj.id_badge,
         id_utilizador,

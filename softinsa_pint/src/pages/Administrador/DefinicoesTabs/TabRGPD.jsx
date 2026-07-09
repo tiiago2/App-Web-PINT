@@ -85,7 +85,7 @@ export default function TabRGPD() {
 
       {/* Painel de Auditoria (Métricas) */}
       <div className="row g-3">
-        <div className="col-md-6">
+        <div className="col-12 col-md-6">
           <div className="p-4 border border-2 rounded-4 bg-light shadow-sm h-100 d-flex flex-column justify-content-center">
             <h6
               className="text-muted fw-semibold mb-2"
@@ -131,7 +131,7 @@ export default function TabRGPD() {
             </div>
           </div>
         </div>
-        <div className="col-md-6">
+        <div className="col-12 col-md-6">
           <div className="p-4 border border-2 rounded-4 bg-light shadow-sm h-100 d-flex flex-column justify-content-center">
             <h6
               className="text-muted fw-semibold mb-2"
@@ -215,10 +215,10 @@ export default function TabRGPD() {
           ></textarea>
         </div>
 
-        <div className="text-end">
+        <div className="text-end definicoes-acao-guardar">
           <button
             onClick={handleGuardar}
-            className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white"
+            className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white definicoes-btn-guardar"
             style={{
               backgroundColor: "var(--barra_lateral)",
               height: "44px",

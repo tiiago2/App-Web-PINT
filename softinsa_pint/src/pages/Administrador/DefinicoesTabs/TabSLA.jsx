@@ -128,7 +128,7 @@ export default function TabSLA() {
 
       {/* Painel de Monitorização Ativa */}
       <div className="row g-3">
-        <div className="col-md-4">
+        <div className="col-12 col-md-6 col-lg-4">
           <div className="p-4 border border-2 rounded-4 bg-light shadow-sm h-100 d-flex flex-column justify-content-center position-relative overflow-hidden">
             <div
               className="position-absolute opacity-25"
@@ -175,7 +175,7 @@ export default function TabSLA() {
           </div>
         </div>
 
-        <div className="col-md-4">
+        <div className="col-12 col-md-6 col-lg-4">
           <div className="p-4 border border-2 rounded-4 bg-light shadow-sm h-100 d-flex flex-column justify-content-center position-relative overflow-hidden">
             <div
               className="position-absolute opacity-25"
@@ -222,7 +222,7 @@ export default function TabSLA() {
           </div>
         </div>
 
-        <div className="col-md-4">
+        <div className="col-12 col-md-6 col-lg-4">
           <div className="p-4 border border-2 rounded-4 bg-light shadow-sm h-100 d-flex flex-column justify-content-center position-relative overflow-hidden">
             <div
               className="position-absolute opacity-25"
@@ -444,7 +444,7 @@ export default function TabSLA() {
           )}
         </div>
         <button
-          className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white"
+          className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white definicoes-btn-guardar"
           style={{
             backgroundColor: "var(--barra_lateral)",
             height: "44px",

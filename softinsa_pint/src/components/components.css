@@ -64,3 +64,12 @@
   text-decoration: line-through;
   color: #aaa;
 }
+
+/* ── Gráfico de Candidaturas ───────────────────────────────── */
+.grafico-candidaturas-wrapper {
+  min-width: 0;
+}
+
+.grafico-candidaturas-wrapper > div {
+  min-width: 0;
+}

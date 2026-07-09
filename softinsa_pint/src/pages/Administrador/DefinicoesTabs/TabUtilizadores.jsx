@@ -139,7 +139,7 @@ export default function TabUtilizadores() {
         <label className="form-label fw-medium mb-2">
           {t("selecionar_tipo_utilizador")}
         </label>
-        <div style={{ maxWidth: "300px" }}>
+        <div className="definicoes-dropdown-wrapper">
           <BotaoDropdown
             titulo={t("selecione_opcao")}
             valor={roleSelecionada}
@@ -189,10 +189,10 @@ export default function TabUtilizadores() {
             ))}
           </div>
 
-          <div className="mt-4 text-end">
+          <div className="mt-4 text-end definicoes-acao-guardar">
             <button
               onClick={handleGuardar}
-              className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white"
+              className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white definicoes-btn-guardar"
               style={{
                 backgroundColor: "var(--barra_lateral)",
                 height: "44px",

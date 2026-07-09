@@ -2,6 +2,7 @@
     padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo) var(--margem-inferior-conteudo);
     height: 100%;
     overflow-y: auto;
+    overflow-x: hidden;
     background-color: var(--fundo);
     box-sizing: border-box;
     display: flex;
@@ -70,4 +71,73 @@
 .acao-rapida-btn:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* --- Responsividade das Ações Rápidas --- */
+.acoes-rapidas-wrapper {
+    gap: clamp(8px, 2vw, 18px);
+}
+
+.acoes-rapidas-wrapper .acao-rapida-btn {
+    flex: 1 1 0;
+    min-width: 80px;
+    max-width: 110px;
+    aspect-ratio: 1 / 1;
+}
+
+@media (max-width: 575.98px) {
+    .acoes-rapidas-wrapper {
+        gap: 10px;
+    }
+
+    .acoes-rapidas-wrapper .acao-rapida-btn {
+        min-width: 70px;
+        max-width: 90px;
+        padding: 8px;
+    }
+
+    .acoes-rapidas-wrapper .acao-rapida-btn i {
+        font-size: 1.4rem !important;
+    }
+
+    .acoes-rapidas-wrapper .acao-rapida-btn span {
+        font-size: clamp(0.55rem, 2.5vw, 0.7rem) !important;
+    }
+}
+
+/* --- Responsividade dos Widgets Inferiores --- */
+.home-admin-widgets {
+    min-height: 0;
+}
+
+@media (max-width: 991.98px) {
+    .home-admin-widgets {
+        flex: 0 0 auto !important;
+        margin-bottom: var(--gap-default-seccoes);
+    }
+
+    .home-admin-widgets > [class*="col-"] {
+        min-height: 300px;
+        height: auto !important;
+    }
+
+    .home-admin-widgets > [class*="col-"] > div,
+    .home-admin-widgets > [class*="col-"] > .bg-white {
+        height: 300px !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .home-admin-container {
+        padding-top: 20px;
+    }
+
+    .home-admin-widgets > [class*="col-"] {
+        min-height: 260px;
+    }
+
+    .home-admin-widgets > [class*="col-"] > div,
+    .home-admin-widgets > [class*="col-"] > .bg-white {
+        height: 260px !important;
+    }
 }

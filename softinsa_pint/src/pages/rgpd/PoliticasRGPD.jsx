@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import api from "../../services/api.js";
 import RgpdRenderer from "../../components/RgpdRenderer/RgpdRenderer.jsx";
+import LoadingSpinner from "../../components/ui/Loading/LoadingSpinner";
 import "./PoliticasRGPD.css";
 
 const TEXTO_MODELO_RGPD = `## 1. Identificação do Responsável pelo Tratamento
@@ -150,8 +151,8 @@ function PoliticasRGPD() {
 
   if (loading) {
     return (
-      <div className="rgpd-container">
-        <div className="text-center py-5">{t("a_carregar")}</div>
+      <div className="rgpd-container d-flex justify-content-center align-items-center">
+        <LoadingSpinner tamanho="lg" texto={t("a_carregar")} centralizado />
       </div>
     );
   }

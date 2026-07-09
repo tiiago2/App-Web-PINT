@@ -4,6 +4,8 @@ import { Routes, Route, useNavigate, useLocation, Navigate } from "react-router-
 import api from "./services/api.js";
 import { menu_lateral } from "./defs/barra_lateral.jsx";
 import { iconesNotificacao } from "./defs/dicionario.jsx";
+import useToast from "./hooks/useToast.js";
+import PageLoader from "./components/ui/Loading/PageLoader.jsx";
 import "./i18n";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
@@ -43,6 +45,7 @@ import user_logo from "./assets/utilizador.png";
 
 function App() {
   const { t } = useTranslation();
+  const { mostrarToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const isRotaPublicaBadge = location.pathname.startsWith("/badges/");
@@ -419,7 +422,7 @@ function App() {
   };
 
   // === RENDERIZAÇÃO CONDICIONAL ===
-  if (loading) return <div className="vh-100 d-flex justify-content-center align-items-center text-secondary">A carregar...</div>;
+  if (loading) return <PageLoader texto={t("a_carregar", "A carregar...")} />;
   
   if (isRotaPublicaBadge) {
     return (
@@ -643,9 +646,10 @@ function App() {
 
         {/* MODAIS DE AVISOS */}
         {isAvisoModalOpen && (
-          <AvisoFormModal 
+          <AvisoFormModal
             avisoParaEditar={avisoParaEditar}
-            onClose={() => { setIsAvisoModalOpen(false); setAvisoParaEditar(null); }} 
+            mostrarToast={mostrarToast}
+            onClose={() => { setIsAvisoModalOpen(false); setAvisoParaEditar(null); }}
             onSave={async (dados) => {
               try {
                 if (avisoParaEditar) {
@@ -656,7 +660,7 @@ function App() {
                 await carregarNotificacoesEAvisos();
               } catch (error) {
                 console.error("Erro ao guardar aviso:", error);
-                alert("Erro ao guardar o aviso.");
+                mostrarToast("Erro ao guardar o aviso.", "erro");
               }
               setIsAvisoModalOpen(false);
               setAvisoParaEditar(null);
@@ -687,7 +691,7 @@ function App() {
 }
 
 // === COMPONENTS AUXILIARES PARA AVISOS ===
-function AvisoFormModal({ onClose, onSave, t, avisoParaEditar }) {
+function AvisoFormModal({ onClose, onSave, t, avisoParaEditar, mostrarToast }) {
   const [mensagem, setMensagem] = useState(avisoParaEditar ? avisoParaEditar.mensagem : "");
   const [tipoDestino, setTipoDestino] = useState(avisoParaEditar ? avisoParaEditar.tipoDestino : "grupo");
   const [destino, setDestino] = useState(avisoParaEditar ? avisoParaEditar.destino : "Todos");
@@ -696,7 +700,10 @@ function AvisoFormModal({ onClose, onSave, t, avisoParaEditar }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!mensagem.trim() || (tipoDestino === "individual" && !destino.trim())) { alert("Por favor preencha todos os campos obrigatórios."); return; }
+    if (!mensagem.trim() || (tipoDestino === "individual" && !destino.trim())) {
+      mostrarToast("Por favor preencha todos os campos obrigatórios.", "erro");
+      return;
+    }
     onSave({ titulo: "", mensagem, tipoDestino, destino });
   };
 

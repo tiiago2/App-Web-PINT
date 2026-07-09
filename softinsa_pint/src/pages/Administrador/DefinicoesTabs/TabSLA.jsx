@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ToggleSwitch from "../../../components/ui/ToggleSwitch/ToggleSwitch";
+import LoadingSpinner from "../../../components/ui/Loading/LoadingSpinner";
 import { useTranslation } from "react-i18next";
 import { obterConfigSla, guardarConfigSla } from "../../../services/slaService";
 
@@ -110,9 +111,7 @@ export default function TabSLA() {
   if (isLoading) {
     return (
       <div className="d-flex justify-content-center align-items-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">A carregar...</span>
-        </div>
+        <LoadingSpinner tamanho="md" />
       </div>
     );
   }
@@ -458,8 +457,8 @@ export default function TabSLA() {
         >
           {isSaving ? (
             <>
-              <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-              {t("a_guardar")}
+              <LoadingSpinner tamanho="sm" />
+              <span className="ms-2">{t("a_guardar")}</span>
             </>
           ) : (
             <>

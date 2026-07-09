@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import BotaoDropdown from "../../../components/ui/BotaoDropdown/BotaoDropdown";
 import ToggleSwitch from "../../../components/ui/ToggleSwitch/ToggleSwitch";
+import useToast from "../../../hooks/useToast.js";
 import api from "../../../services/api.js";
 
 const DB_MAPPING = {
@@ -26,6 +27,7 @@ const FRONTEND_TO_DB_ID = {
 
 export default function TabUtilizadores() {
   const { t } = useTranslation();
+  const { mostrarToast } = useToast();
 
   const [roleSelecionada, setRoleSelecionada] = useState("");
   const [permissoesAtivas, setPermissoesAtivas] = useState({});
@@ -117,16 +119,16 @@ export default function TabUtilizadores() {
       });
 
       if (alteracoes.length === 0) {
-        alert(t("sem_alteracoes", "Não existem alterações para guardar."));
+        mostrarToast(t("sem_alteracoes", "Não existem alterações para guardar."), "info");
         return;
       }
 
       await api.put("/defs-permissoes", { alteracoes });
       setEstadoOriginal({ ...permissoesAtivas });
-      alert(t("permissoes_guardadas_sucesso", "Configurações de permissões guardadas com sucesso!"));
+      mostrarToast(t("permissoes_guardadas_sucesso", "Configurações de permissões guardadas com sucesso!"), "sucesso");
     } catch (error) {
       console.error("Erro ao guardar permissões:", error);
-      alert(t("erro_guardar_permissoes", "Ocorreu um erro ao guardar as permissões."));
+      mostrarToast(t("erro_guardar_permissoes", "Ocorreu um erro ao guardar as permissões."), "erro");
     }
   };
 

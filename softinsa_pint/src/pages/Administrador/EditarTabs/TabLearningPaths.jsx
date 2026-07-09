@@ -3,6 +3,7 @@ import GaleriaToolbar from "../../../components/Galeria/GaleriaToolbar/GaleriaTo
 import MetricasResumo from "../../../components/ui/MetricasResumo/MetricasResumo";
 import VistaTabelaLearningPaths from "../../../components/Gestao/VistaTabelaLearningPaths/VistaTabelaLearningPaths";
 import ModalConfirmacao from "../../../components/ui/ModalConfirmacao/ModalConfirmacao";
+import useToast from "../../../hooks/useToast.js";
 import { 
     obterLearningPathsNormalizados, 
     criarLearningPath, 
@@ -113,6 +114,7 @@ function ordenarLearningPaths(lista, ordenacao) {
 }
 
 function TabLearningPaths({ onRegisterAdicionar }) {
+    const { mostrarToast } = useToast();
     const [searchTerm, setSearchTerm] = useState("");
     const [ordenacao, setOrdenacao] = useState("recentes");
     const [filtro, setFiltro] = useState({
@@ -186,7 +188,7 @@ function TabLearningPaths({ onRegisterAdicionar }) {
             setLearningPathAEliminar(null);
         } catch (err) {
             const mensagemErro = err.response?.data?.error || "Erro ao eliminar o Learning Path.";
-            alert(mensagemErro);
+            mostrarToast(mensagemErro, "erro");
             setLearningPathAEliminar(null);
         }
     };
@@ -270,7 +272,7 @@ function TabLearningPaths({ onRegisterAdicionar }) {
             await carregarLearningPaths();
         } catch (err) {
             const mensagemErro = err.response?.data?.error || "Erro ao guardar o Learning Path.";
-            alert(mensagemErro);
+            mostrarToast(mensagemErro, "erro");
         }
     };
 

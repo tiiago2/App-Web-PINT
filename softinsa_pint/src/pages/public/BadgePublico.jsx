@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import BadgeDetalheConteudo from "../../components/BadgeDetalhe/BadgeDetalheConteudo";
+import useToast from "../../hooks/useToast.js";
 import { obterBadgePublico } from "../../services/badgeDetalheService";
 import softinsaLogo from "../../assets/logotipo_softinsa.png";
 import "./BadgePublico.css";
@@ -33,6 +34,7 @@ function obterErroPublico(error) {
 function BadgePublico() {
     const { idBadge } = useParams();
     const navigate = useNavigate();
+    const { mostrarToast } = useToast();
 
     const [detalheBadge, setDetalheBadge] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -89,7 +91,7 @@ function BadgePublico() {
 
         try {
             await navigator.clipboard.writeText(urlAtual);
-            alert("Link público copiado.");
+            mostrarToast("Link público copiado.", "sucesso");
         } catch (error) {
             console.error("Erro ao copiar link público:", error);
             window.prompt("Copia o link público:", urlAtual);

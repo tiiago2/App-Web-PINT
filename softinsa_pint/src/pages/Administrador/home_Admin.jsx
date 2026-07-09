@@ -8,6 +8,7 @@ import { BotaoVerMais, GraficoCandidaturas } from "../../components/components.j
 import AtividadeRecente from "../../components/AtividadeModal.jsx";
 import { mapearAtividadeParaModal } from "../../utils/atividadeUtils.js";
 import ClassificacaoModal from "../../components/ClassificacaoModal.jsx";
+import LoadingSpinner from "../../components/ui/Loading/LoadingSpinner";
 import {
   PieChart,
   Pie,
@@ -83,6 +84,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
   const [classificacao, setClassificacao] = useState([]);
   const [dadosAtividade, setDadosAtividade] = useState([]);
   const [carregandoAtividade, setCarregandoAtividade] = useState(true);
+  const [carregandoInicial, setCarregandoInicial] = useState(true);
 
   useEffect(() => {
     const carregarStats = async () => {
@@ -159,11 +161,23 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
       }
     };
 
-    getGrafCandidaturas();
-    carregarStats();
-    carregarRanking();
-    carregarAtividade();
+    Promise.all([
+      getGrafCandidaturas(),
+      carregarStats(),
+      carregarRanking(),
+      carregarAtividade()
+    ]).finally(() => {
+      setCarregandoInicial(false);
+    });
   }, []);
+
+  if (carregandoInicial) {
+    return (
+      <div className="home-admin-container d-flex justify-content-center align-items-center">
+        <LoadingSpinner tamanho="lg" texto={t('a_carregar') || 'A carregar...'} centralizado />
+      </div>
+    );
+  }
 
   return (
     <div

@@ -5,6 +5,7 @@ import SeletorAbas from "../../components/ui/SeletorAbas/SeletorAbas_Galeria";
 import BarraPesquisa from "../../components/ui/BarraPesquisa/BarraPesquisa";
 import BotaoDropdown from "../../components/ui/BotaoDropdown/BotaoDropdown";
 import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
+import useToast from "../../hooks/useToast.js";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -347,6 +348,7 @@ function CandidaturaDetalhes({ candidatura, userRole, onAccept, onReject, onClos
 // MAIN PAGE COMPONENT
 export default function Candidaturas({ loggedUser }) {
   const { t } = useTranslation();
+  const { mostrarToast } = useToast();
   const location = useLocation();
 
   // --- Todos os useState agrupados no topo ---
@@ -565,7 +567,7 @@ export default function Candidaturas({ loggedUser }) {
     if (!item) return;
 
     if (type === "Recusada" && (!motivo || motivo.trim() === "")) {
-      alert(t("motivo_obrigatorio") || "O motivo de rejeição é obrigatório!");
+      mostrarToast(t("motivo_obrigatorio") || "O motivo de rejeição é obrigatório!", "erro");
       return;
     }
 
@@ -585,7 +587,7 @@ export default function Candidaturas({ loggedUser }) {
       }
     } catch (error) {
       console.error(`Erro ao atualizar candidatura (${type}):`, error);
-      alert(type === "Aceite" ? "Não foi possível aceitar a candidatura." : "Não foi possível rejeitar a candidatura.");
+      mostrarToast(type === "Aceite" ? "Não foi possível aceitar a candidatura." : "Não foi possível rejeitar a candidatura.", "erro");
     } finally {
       setLoading(false);
     }
@@ -599,7 +601,7 @@ export default function Candidaturas({ loggedUser }) {
             setMostrarExportar(estadoAtual => !estadoAtual);
         } else {
             setMostrarExportar(false);
-            alert("Não tens permissões para exportar estes dados.");
+            mostrarToast("Não tens permissões para exportar estes dados.", "erro");
         }
     } catch (erro) {
         console.error("Erro ao verificar permissão:", erro);
@@ -666,7 +668,7 @@ export default function Candidaturas({ loggedUser }) {
 
     } catch (erro) {
       console.error("Erro CRÍTICO ao gerar o PDF:", erro);
-      alert("Erro ao gerar o PDF.");
+      mostrarToast("Erro ao gerar o PDF.", "erro");
     }
   };
 

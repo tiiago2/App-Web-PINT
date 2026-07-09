@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import api from "../../../services/api.js";
 import ToastNotificacao from "../../../components/ui/ToastNotificacao/ToastNotificacao.jsx";
+import LoadingSpinner from "../../../components/ui/Loading/LoadingSpinner";
 
 export default function TabRGPD() {
   const { t } = useTranslation();
@@ -70,7 +71,11 @@ export default function TabRGPD() {
   };
 
   if (loading) {
-    return <div className="text-center py-5">{t("a_carregar", "A carregar...")}</div>;
+    return (
+      <div className="d-flex justify-content-center align-items-center py-5">
+        <LoadingSpinner tamanho="md" texto={t("a_carregar", "A carregar...")} centralizado />
+      </div>
+    );
   }
 
   return (

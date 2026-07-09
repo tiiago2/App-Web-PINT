@@ -7,6 +7,7 @@ import BotaoDropdown from '../../components/ui/BotaoDropdown/BotaoDropdown';
 import GaleriaFiltroDropdown from '../../components/Galeria/GaleriaFiltroDropdown/GaleriaFiltroDropdown';
 import ModalConfirmacao from '../../components/ui/ModalConfirmacao/ModalConfirmacao';
 import ToastNotificacao from '../../components/ui/ToastNotificacao/ToastNotificacao';
+import LoadingSpinner from '../../components/ui/Loading/LoadingSpinner';
 import BadgeDetalheModal from '../../components/BadgeDetalhe/BadgeDetalheModal';
 import {
     obterBadgeDetalheConsultor,
@@ -546,10 +547,7 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
                     )}
                     {carregando ? (
                         <div className="obj-picker-estado-vazio">
-                            <div className="spinner-animado obj-picker-spinner" role="status">
-                                <span className="visually-hidden">A carregar...</span>
-                            </div>
-                            <span>A carregar badges da base de dados...</span>
+                            <LoadingSpinner tamanho="md" texto="A carregar badges da base de dados..." centralizado />
                         </div>
                     ) : filtrados.length === 0 ? (
                         <div className="obj-picker-estado-vazio">
@@ -1029,8 +1027,8 @@ const ObjetivosConsultor = () => {
                         >
                             {isSubmitting ? (
                                 <>
-                                    <span className="spinner-animado obj-spinner-btn" />
-                                    A submeter...
+                                    <LoadingSpinner tamanho="sm" />
+                                    <span className="ms-2">A submeter...</span>
                                 </>
                             ) : (
                                 'Submeter Objetivo'
@@ -1101,10 +1099,7 @@ const ObjetivosConsultor = () => {
                     <div className="obj-lista-scroll">
                         {isLoadingObjetivos ? (
                             <div className="obj-painel-vazio fade-in">
-                                <div className="spinner-border text-primary mb-2" role="status" style={{ width: '2rem', height: '2rem' }}>
-                                    <span className="visually-hidden">Loading...</span>
-                                </div>
-                                <span>A carregar os teus objetivos...</span>
+                                <LoadingSpinner tamanho="md" texto="A carregar os teus objetivos..." centralizado />
                             </div>
                         ) : erroAPIObjetivos ? (
                             <div className="obj-painel-vazio fade-in">

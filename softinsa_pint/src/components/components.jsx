@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import LoadingSpinner from "./ui/Loading/LoadingSpinner";
 
 import "./components.css";
 
@@ -113,9 +114,7 @@ export const GraficoCandidaturas = ({dados_grafico_candidaturas, loading}) => {
             
             <div ref={chartRef} className="flex-grow-1 d-flex justify-content-center align-items-center" style={{ width: '100%', minHeight: '140px' }}>
                 {loading ? (
-                    <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                    </div>
+                    <LoadingSpinner tamanho="md" />
                 ) : isVazio ? (
                     <div className="text-muted text-center w-100">
                         <i className="fi fi-br-info text-muted fs-4 mb-2 d-block"></i>

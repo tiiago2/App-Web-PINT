@@ -5,6 +5,43 @@ const cloudinary = require('cloudinary').v2;
 const bcrypt = require('bcrypt');
 const { enviarEmail } = require('../helpers/emailHelper');
 
+// ── Helpers para permissões de Service Line Leader ─────────────────────────
+async function getRolesDoUtilizador(id_utilizador) {
+  const utilizador = await Utilizador.findByPk(id_utilizador, {
+    include: [
+      {
+        model: Role,
+        attributes: ['nome_role'],
+        through: { attributes: [] }
+      }
+    ]
+  });
+  if (!utilizador || !utilizador.Roles) return [];
+  return utilizador.Roles.map((r) => String(r.nome_role || '').trim().toLowerCase());
+}
+
+async function isServiceLineLeader(req) {
+  const id_utilizador = req.utilizadorLogado?.id_utilizador;
+  if (!id_utilizador) return false;
+  const roles = await getRolesDoUtilizador(id_utilizador);
+  return roles.includes('service line leader');
+}
+
+async function getServiceLineDoLider(id_utilizador) {
+  return await ServiceLine.findOne({
+    where: { id_lider: id_utilizador, deleted_service: false }
+  });
+}
+
+async function getIdsAreasServiceLine(id_service_line) {
+  const areas = await Area.findAll({
+    where: { id_service_line, deleted_area: false },
+    attributes: ['id_area'],
+    raw: true
+  });
+  return areas.map((a) => a.id_area);
+}
+
 // Configure Cloudinary inline
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -104,6 +141,27 @@ module.exports = {
         );
       }
 
+      // Filtro por Service Line Leader: apenas consultores da sua service line
+      const serviceLineLeader = await isServiceLineLeader(req);
+      if (serviceLineLeader) {
+        const id_utilizador = req.utilizadorLogado.id_utilizador;
+        const serviceLine = await getServiceLineDoLider(id_utilizador);
+        if (!serviceLine) {
+          return res.status(200).json([]);
+        }
+        const idsAreas = await getIdsAreasServiceLine(serviceLine.id_service_line);
+        const roleConsultor = await Role.findOne({
+          where: { nome_role: { [Op.iLike]: '%consultor%' } }
+        });
+        const idRoleConsultor = roleConsultor?.id_role;
+
+        resultado = resultado.filter((u) => {
+          const temRoleConsultor = idRoleConsultor && u.roles?.some((r) => r.id_role === idRoleConsultor);
+          const areaPertence = u.consultor?.id_area && idsAreas.includes(u.consultor.id_area);
+          return temRoleConsultor && areaPertence;
+        });
+      }
+
       return res.status(200).json(resultado);
     } catch (error) {
       console.error("Erro ao obter utilizadores:", error);
@@ -113,6 +171,33 @@ module.exports = {
 
   async getEstatisticas(req, res) {
     try {
+      const serviceLineLeader = await isServiceLineLeader(req);
+
+      if (serviceLineLeader) {
+        const id_utilizador = req.utilizadorLogado.id_utilizador;
+        const serviceLine = await getServiceLineDoLider(id_utilizador);
+        if (!serviceLine) {
+          return res.status(200).json({ total: 0, ativos: 0, inativos: 0, administradores: 0 });
+        }
+
+        const idsAreas = await getIdsAreasServiceLine(serviceLine.id_service_line);
+        const consultores = await Consultor.findAll({
+          where: { id_area: { [Op.in]: idsAreas } },
+          include: [
+            {
+              model: Utilizador,
+              attributes: ['ativo']
+            }
+          ]
+        });
+
+        const total = consultores.length;
+        const ativos = consultores.filter((c) => c.Utilizador?.ativo).length;
+        const inativos = total - ativos;
+
+        return res.status(200).json({ total, ativos, inativos, administradores: 0 });
+      }
+
       const total = await Utilizador.count();
       const ativos = await Utilizador.count({ where: { ativo: true } });
       const inativos = await Utilizador.count({ where: { ativo: false } });

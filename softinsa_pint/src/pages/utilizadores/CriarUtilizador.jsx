@@ -10,6 +10,27 @@ import "./utilizadores.css";
 export default function CriarUtilizador() {
   const navigate = useNavigate();
 
+  const cargoLocal = (() => {
+    try {
+      const role = localStorage.getItem("role_softinsa");
+      if (!role) return null;
+      const parsed = JSON.parse(role);
+      return typeof parsed === "string" ? parsed : parsed?.nome;
+    } catch {
+      return null;
+    }
+  })();
+
+  const isAdmin =
+    cargoLocal?.toLowerCase() === "administrador" ||
+    cargoLocal?.toLowerCase() === "admin";
+
+  useEffect(() => {
+    if (!isAdmin) {
+      navigate("/utilizadores", { replace: true });
+    }
+  }, [isAdmin, navigate]);
+
   const [rolesDisponiveis, setRolesDisponiveis] = useState([]);
   const [areas, setAreas] = useState([]);
   const [serviceLines, setServiceLines] = useState([]);

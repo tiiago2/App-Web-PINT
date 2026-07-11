@@ -3,6 +3,7 @@ import GaleriaToolbar from "../../../components/Galeria/GaleriaToolbar/GaleriaTo
 import VistaTabelaBadges from "../../../components/Galeria/VistaTabelaBadges/VistaTabelaBadges";
 import BadgeModal from "../../../components/Criar_Editar/BadgeModal";
 import ModalConfirmacao from "../../../components/ui/ModalConfirmacao/ModalConfirmacao";
+import useToast from "../../../hooks/useToast.js";
 import { 
   obterBadgesCatalogoNormalizados, 
   obterBadge,
@@ -142,6 +143,7 @@ function ordenarBadgesAdmin(lista, ordenacao) {
 }
 
 function TabBadges({ onRegisterAdicionar }) {
+  const { mostrarToast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [ordenacao, setOrdenacao] = useState("recentes");
   const [filtro, setFiltro] = useState({
@@ -216,7 +218,7 @@ function TabBadges({ onRegisterAdicionar }) {
     } catch (err) {
       const mensagemErro =
         err.response?.data?.error || "Erro ao carregar detalhe do Badge.";
-      alert(mensagemErro);
+      mostrarToast(mensagemErro, "erro");
     }
   };
 
@@ -250,7 +252,7 @@ function TabBadges({ onRegisterAdicionar }) {
       }
     } catch (err) {
       const mensagemErro = err.response?.data?.error || "Erro ao eliminar o Badge.";
-      alert(mensagemErro);
+      mostrarToast(mensagemErro, "erro");
     } finally {
       eliminarBadgeEmProgressoRef.current = false;
     }

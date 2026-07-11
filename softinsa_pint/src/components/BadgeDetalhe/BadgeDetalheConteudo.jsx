@@ -1,4 +1,5 @@
 import "./BadgeDetalheConteudo.css";
+import LoadingSpinner from "../ui/Loading/LoadingSpinner";
 import BadgeDetalheRequisitos from "./BadgeDetalheRequisitos";
 import BadgeDetalheEstadoConsultor from "./BadgeDetalheEstadoConsultor";
 import BadgeDetalheAcoes from "./BadgeDetalheAcoes";
@@ -46,10 +47,7 @@ function BadgeDetalheConteudo({
     if (isLoading) {
         return (
             <div className="badge-detalhe-loading">
-                <div className="spinner-border text-primary mb-2" role="status" style={{ width: '2rem', height: '2rem' }}>
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-                <span>A carregar detalhe do badge...</span>
+                <LoadingSpinner tamanho="md" texto="A carregar detalhe do badge..." centralizado />
             </div>
         );
     }

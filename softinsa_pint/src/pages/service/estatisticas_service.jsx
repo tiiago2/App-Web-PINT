@@ -8,6 +8,8 @@ import {
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import StatusCandidaturas from '../../components/StatusCandidaturas/StatusCandidaturas.jsx';
 import BadgesPorNivel from '../../components/BadgesPorNivel/BadgesPorNivel.jsx';
+import useToast from "../../hooks/useToast.js";
+import LoadingSpinner from "../../components/ui/Loading/LoadingSpinner";
 import api from '../../services/api.js';
 import BotaoAcao from '../../components/ui/BotaoAcao/BotaoAcao';
 import * as XLSX from 'xlsx';
@@ -38,6 +40,7 @@ const COR = '#39639C';
 
 const EstatisticasService = ({ user }) => {
     const { t } = useTranslation();
+    const { mostrarToast } = useToast();
     const navigate = useNavigate();
     const exportRef = useRef(null);
 
@@ -122,7 +125,7 @@ const EstatisticasService = ({ user }) => {
                 setShowExport(estadoAtual => !estadoAtual);
             } else {
                 setShowExport(false);
-                alert("Não tens permissões para exportar estes dados.");
+                mostrarToast("Não tens permissões para exportar estes dados.", "erro");
             }
         } catch (erro) {
             console.error("Erro ao verificar permissão:", erro);
@@ -245,7 +248,7 @@ const EstatisticasService = ({ user }) => {
 
         } catch (erro) {
             console.error("Erro CRÍTICO ao gerar o PDF:", erro);
-            alert("Erro ao gerar o PDF.");
+            mostrarToast("Erro ao gerar o PDF.", "erro");
         }
     };
 
@@ -283,10 +286,7 @@ const EstatisticasService = ({ user }) => {
             {/* ── CORPO PRINCIPAL ── */}
             {carregando ? (
                 <div className="d-flex flex-column align-items-center justify-content-center flex-grow-1" style={{ minHeight: '50vh' }}>
-                    <div className="spinner-border text-primary mb-2" role="status" style={{ width: '3rem', height: '3rem' }}>
-                        <span className="visually-hidden">Loading...</span>
-                    </div>
-                    <span className="text-muted">{t("a_carregar") || "A carregar..."}</span>
+                    <LoadingSpinner tamanho="lg" texto={t("a_carregar") || "A carregar..."} centralizado />
                 </div>
             ) : (
                 <div className="estat-service-body">

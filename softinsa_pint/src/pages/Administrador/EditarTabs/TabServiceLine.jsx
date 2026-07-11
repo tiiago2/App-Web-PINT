@@ -4,6 +4,7 @@ import MetricasResumo from "../../../components/ui/MetricasResumo/MetricasResumo
 import VistaTabelaServiceLines from "../../../components/Gestao/VistaTabelaServiceLines/VistaTabelaServiceLines";
 import ModalConfirmacao from "../../../components/ui/ModalConfirmacao/ModalConfirmacao";
 import ServiceLineModal from "../../../components/Criar_Editar/ServiceLineModal";
+import useToast from "../../../hooks/useToast.js";
 import { normalizarServiceLine } from "../../../utils/gestaoNormalizadores";
 import { 
     obterServiceLinesNormalizadas, 
@@ -110,6 +111,7 @@ function ordenarServiceLines(lista, ordenacao) {
 }
 
 function TabServiceLine({ onRegisterAdicionar }) {
+    const { mostrarToast } = useToast();
     const [searchTerm, setSearchTerm] = useState("");
     const [ordenacao, setOrdenacao] = useState("recentes");
     const [filtro, setFiltro] = useState({
@@ -207,7 +209,7 @@ function TabServiceLine({ onRegisterAdicionar }) {
             setServiceLineAEliminar(null);
         } catch (err) {
             const mensagemErro = err.response?.data?.error || "Erro ao eliminar a Service Line.";
-            alert(mensagemErro);
+            mostrarToast(mensagemErro, "erro");
             setServiceLineAEliminar(null);
         }
     };
@@ -225,7 +227,7 @@ function TabServiceLine({ onRegisterAdicionar }) {
             await carregarServiceLines();
         } catch (err) {
             const mensagemErro = err.response?.data?.error || "Erro ao guardar a Service Line.";
-            alert(mensagemErro);
+            mostrarToast(mensagemErro, "erro");
         }
     };
 

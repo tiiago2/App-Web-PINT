@@ -8,6 +8,7 @@ import { calcularTempoRestante } from '../../utils/dateUtils.js';
 import { mapearAtividadeParaModal } from '../../utils/atividadeUtils.js';
 import AtividadeRecente from '../../components/AtividadeModal.jsx';
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
+import LoadingSpinner from '../../components/ui/Loading/LoadingSpinner';
 
 function corPorProgresso(progresso) {
     const pct = Math.max(0, Math.min(100, Number(progresso) || 0));
@@ -87,10 +88,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                             <style>{`.badges-grid::-webkit-scrollbar { display: none; }`}</style>
                             {carregando && badgesFiltrados.length === 0 ? (
                                 <div className="badges-estado-vazio">
-                                    <div className="spinner-border text-primary mb-2" role="status" style={{ width: '2rem', height: '2rem' }}>
-                                        <span className="visually-hidden">Loading...</span>
-                                    </div>
-                                    <span>{t('a_carregar') || 'A carregar...'}</span>
+                                    <LoadingSpinner tamanho="md" texto={t('a_carregar') || 'A carregar...'} centralizado />
                                 </div>
                             ) : badgesFiltrados.length === 0 ? (
                                 <div className="badges-estado-vazio">
@@ -151,10 +149,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                         {carregando && objetivos.length === 0 ? (
                             <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
                                 <div className="objetivos-estado-vazio">
-                                    <div className="spinner-border text-primary mb-2" role="status" style={{ width: '2rem', height: '2rem' }}>
-                                        <span className="visually-hidden">Loading...</span>
-                                    </div>
-                                    <span>{t('a_carregar') || 'A carregar...'}</span>
+                                    <LoadingSpinner tamanho="md" texto={t('a_carregar') || 'A carregar...'} centralizado />
                                 </div>
                             </div>
                         ) : objetivos.length === 0 ? (
@@ -210,10 +205,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                         {carregando && progressoItems.length === 0 ? (
                             <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
                                 <div className="progresso-estado-vazio" style={{ margin: 0 }}>
-                                    <div className="spinner-border text-primary mb-2" role="status" style={{ width: '2rem', height: '2rem' }}>
-                                        <span className="visually-hidden">Loading...</span>
-                                    </div>
-                                    <span>{t('a_carregar') || 'A carregar...'}</span>
+                                    <LoadingSpinner tamanho="md" texto={t('a_carregar') || 'A carregar...'} centralizado />
                                 </div>
                             </div>
                         ) : progressoItems.length === 0 ? (

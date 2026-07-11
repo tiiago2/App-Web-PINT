@@ -9,7 +9,7 @@ const {
   Submissoes
 } = require("../models");
 
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const { calcularRanking } = require("../helpers/rankingHelper");
 
 // ── Helpers de data ─────────────────────────────────────────────
@@ -50,16 +50,32 @@ module.exports = {
         : '0,0';
 
       // ── Taxa de aprovação global ──
-      const totalSubmissoes = await Submissoes.count();
+      // Consideram-se apenas candidaturas fechadas (aceites ou rejeitadas).
+      // Candidaturas pendentes/em análise são ignoradas.
+      const STATUS_ACEITES = ["aceite", "concluído", "concluido", "aprovado", "fechado"];
+      const STATUS_REJEITADOS = ["recusada", "rejeitada", "rejeitado"];
 
       const submissoesAceites = await Submissoes.count({
         where: {
-          status: { [Op.in]: ["aceite", "Concluído", "Concluido", "Aprovado", "Fechado"] }
+          status: Sequelize.where(
+            Sequelize.fn('LOWER', Sequelize.col('status')),
+            { [Op.in]: STATUS_ACEITES }
+          )
         }
       });
 
-      const taxa = totalSubmissoes > 0
-        ? Math.round((submissoesAceites / totalSubmissoes) * 100)
+      const submissoesRejeitadas = await Submissoes.count({
+        where: {
+          status: Sequelize.where(
+            Sequelize.fn('LOWER', Sequelize.col('status')),
+            { [Op.in]: STATUS_REJEITADOS }
+          )
+        }
+      });
+
+      const submissoesFechadas = submissoesAceites + submissoesRejeitadas;
+      const taxa = submissoesFechadas > 0
+        ? Math.round((submissoesAceites / submissoesFechadas) * 100)
         : 0;
 
       return res.status(200).json({

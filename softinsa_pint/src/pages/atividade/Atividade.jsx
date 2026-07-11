@@ -5,6 +5,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import BarraPesquisa from "../../components/ui/BarraPesquisa/BarraPesquisa";
 import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
+import useToast from "../../hooks/useToast.js";
 import api from "../../services/api.js";
 import "./Atividade.css";
 
@@ -93,6 +94,7 @@ function groupActivitiesByDate(activities) {
 
 export default function Atividade() {
   const { t } = useTranslation();
+  const { mostrarToast } = useToast();
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [activitiesList, setActivitiesList] = useState([]);
@@ -210,7 +212,7 @@ export default function Atividade() {
         setMostrarExportar((estadoAtual) => !estadoAtual);
       } else {
         setMostrarExportar(false);
-        alert("Não tens permissões para exportar estes dados.");
+        mostrarToast("Não tens permissões para exportar estes dados.", "erro");
       }
     } catch (erro) {
       console.error("Erro ao verificar permissão:", erro);
@@ -269,7 +271,7 @@ export default function Atividade() {
       setMostrarExportar(false);
     } catch (erro) {
       console.error("Erro CRÍTICO ao gerar o PDF:", erro);
-      alert("Erro ao gerar o PDF.");
+      mostrarToast("Erro ao gerar o PDF.", "erro");
     }
   };
 

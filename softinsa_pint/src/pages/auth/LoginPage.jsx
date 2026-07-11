@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from '../../services/api.js';
+import useToast from "../../hooks/useToast.js";
 import AuthTopBar from "../../components/Auth/AuthTopBar/AuthTopBar.jsx";
 import AuthArtPanel from "../../components/Auth/AuthArtPanel/AuthArtPanel.jsx";
 import RgpdModal from "../../components/ui/RgpdModal/RgpdModal.jsx";
@@ -9,6 +10,7 @@ import "./LoginPage.css";
 
 function LoginPage({ onLoginSuccess }) {
   const { t } = useTranslation();
+  const { mostrarToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const passwordResetSuccess = location.state?.passwordResetSuccess || false;
@@ -65,7 +67,7 @@ function LoginPage({ onLoginSuccess }) {
       continuarFluxoAposRgpd(utilizadorValidado);
     } catch (erro) {
       console.error("Erro ao aceitar políticas RGPD:", erro);
-      alert(t("rgpd_modal_erro_aceitar"));
+      mostrarToast(t("rgpd_modal_erro_aceitar"), "erro");
     }
   };
 

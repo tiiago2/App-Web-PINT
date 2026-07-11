@@ -26,7 +26,7 @@ function DefinicoesAdmin() {
     <div className="definicoes-container w-100">
       <h1 className="texto-titulo-principal" style={{ marginBottom: 'var(--gap-titulo-principal-conteudo)' }}>{t("definicoes")}</h1>
 
-      <div style={{ marginBottom: "2rem", width: "50%" }}>
+      <div className="definicoes-seletor-abas">
         <SeletorAbas 
           opcoes={abasDefinicoes} 
           valorAtivo={abaAtiva} 

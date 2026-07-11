@@ -7,11 +7,13 @@ import {
 import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import BadgesPorNivel from '../../components/BadgesPorNivel/BadgesPorNivel.jsx';
+import useToast from "../../hooks/useToast.js";
 import api from '../../services/api.js';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './estatisticas_talent.css';
+import LoadingSpinner from "../../components/ui/Loading/LoadingSpinner";
 
 const TIP = {
     borderRadius: 'var(--border-radius-pequeno)',
@@ -21,6 +23,7 @@ const TIP = {
 
 const EstatisticasTalent = () => {
     const { t } = useTranslation();
+    const { mostrarToast } = useToast();
     const navigate = useNavigate();
     const exportRef = useRef(null);
 
@@ -64,11 +67,11 @@ const EstatisticasTalent = () => {
         const carregar = async () => {
             try {
                 const [resKpis, resNiveis, resPie, resLearningPaths, resRanking] = await Promise.all([
-                    api.get('/estatisticasadmin/kpis'),
-                    api.get('/estatisticasadmin/badges-por-nivel'),
-                    api.get('/estatisticasadmin/atribuidos-mes'),
-                    api.get('/estatisticasadmin/learning-paths'),
-                    api.get('/estatisticasadmin/ranking')
+                    api.get('/estatisticastalent/kpis'),
+                    api.get('/estatisticastalent/badges-por-nivel'),
+                    api.get('/estatisticastalent/atribuidos-mes'),
+                    api.get('/estatisticastalent/learning-paths'),
+                    api.get('/estatisticastalent/ranking')
                 ]);
 
                 setKpis(resKpis.data || {});
@@ -216,7 +219,7 @@ const EstatisticasTalent = () => {
 
         } catch (erro) {
             console.error("Erro CRÍTICO ao gerar o PDF:", erro);
-            alert("Erro ao gerar o PDF. Vê a consola para detalhes.");
+            mostrarToast("Erro ao gerar o PDF. Vê a consola para detalhes.", "erro");
         }
     };
 
@@ -229,7 +232,7 @@ const EstatisticasTalent = () => {
                 setShowExport(estadoAtual => !estadoAtual);
             } else {
                 setShowExport(false);
-                alert("Não tens permissões para exportar estes dados.");
+                mostrarToast("Não tens permissões para exportar estes dados.", "erro");
             }
         } catch (erro) {
             console.error("Erro ao verificar permissão:", erro);
@@ -272,6 +275,11 @@ const EstatisticasTalent = () => {
             </div>
 
             {/* ── CORPO PRINCIPAL ── */}
+            {carregando ? (
+                <div className="d-flex flex-column align-items-center justify-content-center flex-grow-1" style={{ minHeight: '50vh' }}>
+                    <LoadingSpinner tamanho="lg" texto={t("a_carregar") || "A carregar..."} centralizado />
+                </div>
+            ) : (
             <div className="estat-talent-body">
 
                 {/* COLUNA ESQUERDA — KPIs, gráficos e learning paths */}
@@ -392,6 +400,7 @@ const EstatisticasTalent = () => {
                     />
                 </div>
             </div>
+            )}
         </div>
     );
 };

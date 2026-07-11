@@ -8,6 +8,7 @@ import { BotaoVerMais, GraficoCandidaturas } from "../../components/components.j
 import AtividadeRecente from "../../components/AtividadeModal.jsx";
 import { mapearAtividadeParaModal } from "../../utils/atividadeUtils.js";
 import ClassificacaoModal from "../../components/ClassificacaoModal.jsx";
+import LoadingSpinner from "../../components/ui/Loading/LoadingSpinner";
 import {
   PieChart,
   Pie,
@@ -83,6 +84,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
   const [classificacao, setClassificacao] = useState([]);
   const [dadosAtividade, setDadosAtividade] = useState([]);
   const [carregandoAtividade, setCarregandoAtividade] = useState(true);
+  const [carregandoInicial, setCarregandoInicial] = useState(true);
 
   useEffect(() => {
     const carregarStats = async () => {
@@ -159,11 +161,23 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
       }
     };
 
-    getGrafCandidaturas();
-    carregarStats();
-    carregarRanking();
-    carregarAtividade();
+    Promise.all([
+      getGrafCandidaturas(),
+      carregarStats(),
+      carregarRanking(),
+      carregarAtividade()
+    ]).finally(() => {
+      setCarregandoInicial(false);
+    });
   }, []);
+
+  if (carregandoInicial) {
+    return (
+      <div className="home-admin-container d-flex justify-content-center align-items-center">
+        <LoadingSpinner tamanho="lg" texto={t('a_carregar') || 'A carregar...'} centralizado />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -185,8 +199,8 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
           {t("acoes_rapidas")}
         </h6>
         <div
-          className="d-flex w-100 px-2 justify-content-center"
-          style={{ gap: "6%" }}
+          className="d-flex flex-wrap w-100 px-2 justify-content-center acoes-rapidas-wrapper"
+          style={{ gap: "clamp(8px, 2vw, 18px)" }}
         >
           <AcaoRapida
             cor="#00b4d8"
@@ -233,8 +247,8 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
       </div>
 
       {/* Estatísticas */}
-      <div className="row" style={{ flex: "0 0 auto", marginTop: 'var(--gap-default-seccoes)' }}>
-        <div className="col-4">
+      <div className="row gy-3 gy-lg-0" style={{ flex: "0 0 auto", marginTop: 'var(--gap-default-seccoes)' }}>
+        <div className="col-12 col-md-6 col-lg-4">
           <div
             className="admin-card py-2 px-3 bg-white d-flex flex-column justify-content-between h-100"
             style={{ minHeight: "90px" }}
@@ -265,7 +279,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
             </div>
           </div>
         </div>
-        <div className="col-4">
+        <div className="col-12 col-md-6 col-lg-4">
           <div
             className="admin-card py-2 px-3 bg-white d-flex flex-column justify-content-between h-100"
             style={{ minHeight: "90px" }}
@@ -292,7 +306,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
             </div>
           </div>
         </div>
-        <div className="col-4">
+        <div className="col-12 col-md-6 col-lg-4">
           <div
             className="admin-card py-2 px-3 bg-white d-flex flex-column justify-content-between h-100"
             style={{ minHeight: "90px" }}
@@ -326,9 +340,9 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
       </div>
 
       {/* Widgets Inferiores */}
-      <div className="row flex-grow-1" style={{ marginTop: 'var(--gap-default-seccoes)' }}>
+      <div className="row flex-grow-1 gy-3 gy-lg-0 home-admin-widgets" style={{ marginTop: 'var(--gap-default-seccoes)' }}>
         <div
-          className="col-4 h-100 d-flex flex-column"
+          className="col-12 col-lg-4 h-100 d-flex flex-column"
           style={{ minHeight: 0 }}
         >
           <div
@@ -340,7 +354,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
         </div>
 
         <div
-          className="col-4 h-100 d-flex flex-column"
+          className="col-12 col-lg-4 h-100 d-flex flex-column"
           style={{ minHeight: 0 }}
         >
           <div
@@ -352,7 +366,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
         </div>
 
         <div
-          className="col-4 h-100 d-flex flex-column"
+          className="col-12 col-lg-4 h-100 d-flex flex-column"
           style={{ minHeight: 0 }}
         >
           <GraficoCandidaturas dados_grafico_candidaturas={dados_grafico_candidaturas} />

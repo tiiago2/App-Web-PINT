@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import ToggleSwitch from "../../../components/ui/ToggleSwitch/ToggleSwitch";
+import useToast from "../../../hooks/useToast.js";
 import api from "../../../services/api.js";
 
 const DB_MAPPING = {
@@ -19,6 +20,7 @@ const FRONTEND_TO_DB_ID = {
 
 export default function TabNotificacoes() {
   const { t } = useTranslation();
+  const { mostrarToast } = useToast();
   const [notifConfig, setNotifConfig] = useState({
     email_registo: true,
     email_candidatura: true,
@@ -72,16 +74,16 @@ export default function TabNotificacoes() {
       });
 
       if (alteracoes.length === 0) {
-        alert(t("sem_alteracoes", "Não existem alterações para guardar."));
+        mostrarToast(t("sem_alteracoes", "Não existem alterações para guardar."), "info");
         return;
       }
 
       await api.put("/defs-permissoes", { alteracoes });
       setEstadoOriginal({ ...notifConfig });
-      alert(t("configuracoes_guardadas_sucesso", "Configurações guardadas com sucesso!"));
+      mostrarToast(t("configuracoes_guardadas_sucesso", "Configurações guardadas com sucesso!"), "sucesso");
     } catch (error) {
       console.error("Erro ao guardar configurações de notificações:", error);
-      alert(t("erro_guardar_configuracoes", "Ocorreu um erro ao guardar as configurações."));
+      mostrarToast(t("erro_guardar_configuracoes", "Ocorreu um erro ao guardar as configurações."), "erro");
     }
   };
 
@@ -195,10 +197,10 @@ export default function TabNotificacoes() {
         </div>
       </div>
 
-      <div className="mt-2 text-end">
+      <div className="mt-2 text-end definicoes-acao-guardar">
         <button
           onClick={handleGuardar}
-          className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white"
+          className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white definicoes-btn-guardar"
           style={{
             backgroundColor: "var(--barra_lateral)",
             height: "44px",

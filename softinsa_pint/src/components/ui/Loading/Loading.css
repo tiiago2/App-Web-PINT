@@ -1,0 +1,131 @@
+.loading-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loading-wrapper-centralizado {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.loading-spinner {
+  display: inline-block;
+  border: 3px solid rgba(59, 110, 153, 0.15);
+  border-right-color: var(--barra_lateral, #3b6e99);
+  border-radius: 50%;
+  animation: loading-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+.loading-spinner-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 2px;
+}
+
+.loading-spinner-md {
+  width: 2rem;
+  height: 2rem;
+}
+
+.loading-spinner-lg {
+  width: 3rem;
+  height: 3rem;
+  border-width: 4px;
+}
+
+.loading-texto {
+  color: var(--fontes, #333);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.page-loader {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--fundo, #ffffff);
+}
+
+/* Skeletons */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(59, 110, 153, 0.08) 25%,
+    rgba(59, 110, 153, 0.15) 50%,
+    rgba(59, 110, 153, 0.08) 75%
+  );
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-linha {
+  min-height: 0.875rem;
+}
+
+.skeleton-imagem {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+}
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--contorno, #e0e0e0);
+  border-radius: 12px;
+  background-color: var(--fundo-card, #fff);
+}
+
+.skeleton-card-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skeleton-tabela {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--contorno, #e0e0e0);
+  border-radius: 12px;
+  background-color: var(--fundo-card, #fff);
+}
+
+.skeleton-tabela-cabecalho,
+.skeleton-tabela-linha {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 1rem;
+  align-items: center;
+}
+
+.skeleton-tabela-cabecalho {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--contorno, #e0e0e0);
+}
+
+@keyframes skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

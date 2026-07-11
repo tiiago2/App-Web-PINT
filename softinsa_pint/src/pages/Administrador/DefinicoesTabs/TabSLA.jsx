@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ToggleSwitch from "../../../components/ui/ToggleSwitch/ToggleSwitch";
+import LoadingSpinner from "../../../components/ui/Loading/LoadingSpinner";
 import { useTranslation } from "react-i18next";
 import { obterConfigSla, guardarConfigSla } from "../../../services/slaService";
 
@@ -110,9 +111,7 @@ export default function TabSLA() {
   if (isLoading) {
     return (
       <div className="d-flex justify-content-center align-items-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">A carregar...</span>
-        </div>
+        <LoadingSpinner tamanho="md" />
       </div>
     );
   }
@@ -128,7 +127,7 @@ export default function TabSLA() {
 
       {/* Painel de Monitorização Ativa */}
       <div className="row g-3">
-        <div className="col-md-4">
+        <div className="col-12 col-md-6 col-lg-4">
           <div className="p-4 border border-2 rounded-4 bg-light shadow-sm h-100 d-flex flex-column justify-content-center position-relative overflow-hidden">
             <div
               className="position-absolute opacity-25"
@@ -175,7 +174,7 @@ export default function TabSLA() {
           </div>
         </div>
 
-        <div className="col-md-4">
+        <div className="col-12 col-md-6 col-lg-4">
           <div className="p-4 border border-2 rounded-4 bg-light shadow-sm h-100 d-flex flex-column justify-content-center position-relative overflow-hidden">
             <div
               className="position-absolute opacity-25"
@@ -222,7 +221,7 @@ export default function TabSLA() {
           </div>
         </div>
 
-        <div className="col-md-4">
+        <div className="col-12 col-md-6 col-lg-4">
           <div className="p-4 border border-2 rounded-4 bg-light shadow-sm h-100 d-flex flex-column justify-content-center position-relative overflow-hidden">
             <div
               className="position-absolute opacity-25"
@@ -444,7 +443,7 @@ export default function TabSLA() {
           )}
         </div>
         <button
-          className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white"
+          className="btn d-inline-flex align-items-center gap-2 shadow-sm border-0 px-4 text-white definicoes-btn-guardar"
           style={{
             backgroundColor: "var(--barra_lateral)",
             height: "44px",
@@ -458,8 +457,8 @@ export default function TabSLA() {
         >
           {isSaving ? (
             <>
-              <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-              {t("a_guardar")}
+              <LoadingSpinner tamanho="sm" />
+              <span className="ms-2">{t("a_guardar")}</span>
             </>
           ) : (
             <>

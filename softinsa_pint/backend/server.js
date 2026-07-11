@@ -5,6 +5,7 @@ const db = require("./models");
 const iniciarCronJobs = require("./cron");
 
 const app = express();
+const porta = process.env.PORT || 5000;
 
 // Middlewares globais
 app.use(cors());
@@ -21,7 +22,7 @@ async function iniciar_bd() {
         // Iniciar os cron jobs
         iniciarCronJobs();
 
-        app.listen(5000, () => {
+        app.listen(porta, () => {
             console.log("Servidor a ouvir na porta 5000");
         });
     } catch (err) {

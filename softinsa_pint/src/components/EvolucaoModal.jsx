@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
+import LoadingSpinner from "./ui/Loading/LoadingSpinner";
 import api from '../services/api.js';
 
 // Estilos de tooltip partilhados
@@ -98,9 +99,7 @@ const EvolucaoModal = ({ onClose }) => {
                 <div style={{ flex: 1, minHeight: 0, marginTop: '10px' }}>
                     {carregando ? (
                         <div className="d-flex align-items-center justify-content-center h-100">
-                            <div className="spinner-border text-primary" role="status" style={{ width: '2rem', height: '2rem' }}>
-                                <span className="visually-hidden">Loading...</span>
-                            </div>
+                            <LoadingSpinner tamanho="md" />
                         </div>
                     ) : dados.length === 0 ? (
                         <div className="d-flex align-items-center justify-content-center h-100 text-muted" style={{ fontSize: '14px' }}>

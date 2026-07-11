@@ -206,6 +206,10 @@
     color: var(--barra_lateral);
 }
 
+.pag_ativa .sidebar-nav-label {
+    color: var(--barra_lateral);
+}
+
 .sidebar-footer {
     align-items: center;
     justify-content: center;

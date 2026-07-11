@@ -28,6 +28,7 @@ import {
 } from "../../utils/badgeDetalheNormalizadores";
 import "./Galeria.css";
 import BadgeDetalheModal from "../../components/BadgeDetalhe/BadgeDetalheModal";
+import useToast from "../../hooks/useToast.js";
 
 const mapaCategoriaParaFiltro = {
   "Hybrid Systems": {
@@ -198,6 +199,7 @@ function obterValorOrdenacaoTemporal(badge = {}) {
 
 function Galeria() {
   const location = useLocation();
+  const { mostrarToast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [ordenacao, setOrdenacao] = useState('recentes');
@@ -282,12 +284,12 @@ function Galeria() {
 
   const tratarErroExportacao = (error) => {
     if (error?.codigo === "sem_badges_para_exportar") {
-      alert("Não existem badges para exportar.");
+      mostrarToast("Não existem badges para exportar.", "info");
       return;
     }
 
     console.error("Erro ao exportar a galeria de badges:", error);
-    alert("Não foi possível exportar os badges.");
+    mostrarToast("Não foi possível exportar os badges.", "erro");
   };
 
   const handleExportarExcel = async () => {
@@ -409,7 +411,7 @@ function Galeria() {
       setIsModalOpen(true);
     } catch (error) {
       console.error("Erro ao carregar detalhe do badge para edição:", error);
-      alert(error.response?.data?.error || "Erro ao carregar detalhe do Badge.");
+      mostrarToast(error.response?.data?.error || "Erro ao carregar detalhe do Badge.", "erro");
     } finally {
       editarBadgeEmProgressoRef.current = false;
     }
@@ -445,7 +447,7 @@ function Galeria() {
       }
     } catch (error) {
       console.error("Erro ao eliminar badge:", error);
-      alert(error.response?.data?.error || "Erro ao eliminar o Badge.");
+      mostrarToast(error.response?.data?.error || "Erro ao eliminar o Badge.", "erro");
     } finally {
       eliminarBadgeEmProgressoRef.current = false;
     }
@@ -537,7 +539,7 @@ function Galeria() {
     } catch (error) {
       console.error("Erro ao carregar detalhe do badge:", error);
       setDetalheBadge(null);
-      alert(error.response?.data?.error || "Erro ao carregar detalhe do Badge.");
+      mostrarToast(error.response?.data?.error || "Erro ao carregar detalhe do Badge.", "erro");
     } finally {
       setIsLoadingDetalheBadge(false);
       detalheBadgeEmProgressoRef.current = false;
@@ -582,7 +584,7 @@ function Galeria() {
 
     try {
       await navigator.clipboard.writeText(urlAbsoluta);
-      alert("Link público copiado.");
+      mostrarToast("Link público copiado.", "sucesso");
     } catch (error) {
       console.error("Erro ao copiar link público:", error);
       window.prompt("Copia o link público:", urlAbsoluta);

@@ -4,10 +4,32 @@ import { criarUtilizador, obterRoles } from "../../services/utilizadorService.js
 import { obterAreas, obterServiceLines } from "../../services/gestaoService.js";
 import defaultAvatar from "../../assets/utilizador.png";
 import ToastNotificacao from "../../components/ui/ToastNotificacao/ToastNotificacao.jsx";
+import LoadingSpinner from "../../components/ui/Loading/LoadingSpinner";
 import "./utilizadores.css";
 
 export default function CriarUtilizador() {
   const navigate = useNavigate();
+
+  const cargoLocal = (() => {
+    try {
+      const role = localStorage.getItem("role_softinsa");
+      if (!role) return null;
+      const parsed = JSON.parse(role);
+      return typeof parsed === "string" ? parsed : parsed?.nome;
+    } catch {
+      return null;
+    }
+  })();
+
+  const isAdmin =
+    cargoLocal?.toLowerCase() === "administrador" ||
+    cargoLocal?.toLowerCase() === "admin";
+
+  useEffect(() => {
+    if (!isAdmin) {
+      navigate("/utilizadores", { replace: true });
+    }
+  }, [isAdmin, navigate]);
 
   const [rolesDisponiveis, setRolesDisponiveis] = useState([]);
   const [areas, setAreas] = useState([]);
@@ -162,7 +184,7 @@ export default function CriarUtilizador() {
   if (loading) {
     return (
       <main className="utilizadores-page d-flex justify-content-center align-items-center">
-        <span className="text-secondary">A carregar...</span>
+        <LoadingSpinner tamanho="lg" texto="A carregar..." centralizado />
       </main>
     );
   }

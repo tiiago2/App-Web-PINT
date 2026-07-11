@@ -982,3 +982,17 @@ exports.removerBadge = async (req, res) => {
         return res.status(500).json({ error: 'Erro ao remover Badge.' });
     }
 };
+
+exports.obterTodosRequisitos = async (req, res) => {
+    try {
+        const requisitos = await db.Requisitos.findAll({
+            attributes: ['id_requisito', 'nome_requisito', 'descricao_requisito'],
+            where: { deleted_requisitos: false },
+            order: [['nome_requisito', 'ASC']]
+        });
+        return res.status(200).json(requisitos);
+    } catch (error) {
+        console.error('Erro ao obter requisitos:', error);
+        return res.status(500).json({ error: 'Erro ao obter requisitos.' });
+    }
+};

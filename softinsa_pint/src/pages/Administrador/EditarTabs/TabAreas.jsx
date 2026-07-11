@@ -4,6 +4,7 @@ import MetricasResumo from "../../../components/ui/MetricasResumo/MetricasResumo
 import VistaTabelaAreas from "../../../components/Gestao/VistaTabelaAreas/VistaTabelaAreas";
 import ModalConfirmacao from "../../../components/ui/ModalConfirmacao/ModalConfirmacao";
 import AreaModal from "../../../components/Criar_Editar/AreaModal";
+import useToast from "../../../hooks/useToast.js";
 import { 
     obterAreasNormalizadas, 
     obterLearningPathsNormalizados,
@@ -108,6 +109,7 @@ function ordenarAreas(lista, ordenacao) {
 }
 
 function TabAreas({ onRegisterAdicionar }) {
+    const { mostrarToast } = useToast();
     const [searchTerm, setSearchTerm] = useState("");
     const [ordenacao, setOrdenacao] = useState("recentes");
     const [filtro, setFiltro] = useState({
@@ -193,7 +195,7 @@ function TabAreas({ onRegisterAdicionar }) {
             setAreaAEliminar(null);
         } catch (err) {
             const mensagemErro = err.response?.data?.error || "Erro ao eliminar a Área.";
-            alert(mensagemErro);
+            mostrarToast(mensagemErro, "erro");
             setAreaAEliminar(null);
         }
     };
@@ -211,7 +213,7 @@ function TabAreas({ onRegisterAdicionar }) {
             await carregarAreas();
         } catch (err) {
             const mensagemErro = err.response?.data?.error || "Erro ao guardar a Área.";
-            alert(mensagemErro);
+            mostrarToast(mensagemErro, "erro");
         }
     };
 

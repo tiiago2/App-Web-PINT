@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactDOM from 'react-dom';
+import LoadingSpinner from "./ui/Loading/LoadingSpinner";
 import './ClassificacaoModal.css';
 import user_logo from '../assets/utilizador.png';
 import { mockClassificacao } from '../defs/classificacao_mock';
@@ -301,10 +302,7 @@ const ClassificacaoGeral = ({
     if (isLoading) {
         return (
             <div className="p-3 d-flex flex-column bg-white justify-content-center align-items-center" style={{ border: 'var(--borda-principal) solid var(--contorno)', borderRadius: 'var(--border-radius-grande)', boxSizing: 'border-box', height: fullHeight ? '100%' : '35vh' }}>
-                <div className="spinner-border text-primary mb-2" role="status" style={{ width: '2rem', height: '2rem' }}>
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-                <span style={{ color: '#aab7c4', fontSize: '0.9rem' }}>{t('a_carregar') || 'A carregar...'}</span>
+                <LoadingSpinner tamanho="md" texto={t('a_carregar') || 'A carregar...'} centralizado />
             </div>
         );
     }

@@ -7,6 +7,8 @@ import {
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import BadgesPorNivel from '../../components/BadgesPorNivel/BadgesPorNivel.jsx';
 import BotaoAcao from "../../components/ui/BotaoAcao/BotaoAcao";
+import LoadingSpinner from "../../components/ui/Loading/LoadingSpinner";
+import useToast from "../../hooks/useToast.js";
 import api from '../../services/api.js';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -21,6 +23,7 @@ const TIP = {
 
 const EstatisticasAdmin = () => {
     const { t } = useTranslation();
+    const { mostrarToast } = useToast();
     const navigate = useNavigate();
     const exportRef = useRef(null);
 
@@ -217,7 +220,7 @@ const EstatisticasAdmin = () => {
 
         } catch (erro) {
             console.error("Erro CRÍTICO ao gerar o PDF:", erro);
-            alert("Erro ao gerar o PDF. Vê a consola para detalhes.");
+            mostrarToast("Erro ao gerar o PDF. Vê a consola para detalhes.", "erro");
         }
     };
 
@@ -257,10 +260,7 @@ const EstatisticasAdmin = () => {
             {/* ── CORPO PRINCIPAL ── */}
             {carregando ? (
                 <div className="d-flex flex-column align-items-center justify-content-center flex-grow-1" style={{ minHeight: '50vh' }}>
-                    <div className="spinner-border text-primary mb-2" role="status" style={{ width: '3rem', height: '3rem' }}>
-                        <span className="visually-hidden">Loading...</span>
-                    </div>
-                    <span className="text-muted">{t("a_carregar") || "A carregar..."}</span>
+                    <LoadingSpinner tamanho="lg" texto={t("a_carregar") || "A carregar..."} centralizado />
                 </div>
             ) : (
                 <div className="estat-admin-body">

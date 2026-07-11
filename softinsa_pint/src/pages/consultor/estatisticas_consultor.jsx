@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import BadgesPorNivel from '../../components/BadgesPorNivel/BadgesPorNivel.jsx';
+import useToast from "../../hooks/useToast.js";
 import api from '../../services/api.js';
 import BotaoAcao from '../../components/ui/BotaoAcao/BotaoAcao';
 import * as XLSX from 'xlsx';
@@ -26,6 +27,7 @@ const PERIODOS = [
 
 const EstatisticasConsultor = ({ user }) => {
     const { t } = useTranslation();
+    const { mostrarToast } = useToast();
     const [periodo, setPeriodo] = useState('mes');
     const [dadosBar, setDadosBar] = useState([]);
     const [kpi, setKpi] = useState({
@@ -70,7 +72,7 @@ const EstatisticasConsultor = ({ user }) => {
                 setMostrarExportar(estadoAtual => !estadoAtual);
             } else {
                 setMostrarExportar(false);
-                alert("Não tens permissões para exportar estes dados.");
+                mostrarToast("Não tens permissões para exportar estes dados.", "erro");
             }
         } catch (erro) {
             console.error("Erro ao verificar permissão:", erro);
@@ -193,7 +195,7 @@ const EstatisticasConsultor = ({ user }) => {
 
         } catch (erro) {
             console.error("Erro CRÍTICO ao gerar o PDF:", erro);
-            alert("Erro ao gerar o PDF.");
+            mostrarToast("Erro ao gerar o PDF.", "erro");
         }
     };
 

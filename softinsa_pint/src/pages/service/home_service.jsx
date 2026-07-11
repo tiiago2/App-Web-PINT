@@ -9,6 +9,7 @@ import { mapearAtividadeParaModal } from '../../utils/atividadeUtils.js';
 import CandidaturaModal from '../../components/CandidaturaModal.jsx';
 import badge_logo from '../../assets/teste_badge.png';
 import {BotaoVerMais, BotaoAceitar, BotaoRejeitar, GraficoCandidaturas} from '../../components/components.jsx'
+import LoadingSpinner from '../../components/ui/Loading/LoadingSpinner';
 
 const HomeService = ({ user, saudacao }) => {
     const { t } = useTranslation();
@@ -28,6 +29,7 @@ const HomeService = ({ user, saudacao }) => {
     const [classificacaoServiceLine, setClassificacaoServiceLine] = useState([]);
     const [atividadeRecente, setAtividadeRecente] = useState([]);
     const [carregandoAtividade, setCarregandoAtividade] = useState(true);
+    const [carregandoInicial, setCarregandoInicial] = useState(true);
 
         useEffect(() => {
             const buscarCandidaturas = async () => {
@@ -120,10 +122,14 @@ const HomeService = ({ user, saudacao }) => {
             }
         }
 
-            buscarCandidaturas();
-            getGrafCandidaturas();
-            carregarRankings();
-            carregarAtividade();
+            Promise.all([
+                buscarCandidaturas(),
+                getGrafCandidaturas(),
+                carregarRankings(),
+                carregarAtividade()
+            ]).finally(() => {
+                setCarregandoInicial(false);
+            });
         }, []);
 
     const RenderCandidaturas = () => {
@@ -172,12 +178,20 @@ const HomeService = ({ user, saudacao }) => {
         });
     };
 
+    if (carregandoInicial) {
+        return (
+            <div className="home-service-container d-flex justify-content-center align-items-center">
+                <LoadingSpinner tamanho="lg" texto={t('a_carregar') || 'A carregar...'} centralizado />
+            </div>
+        );
+    }
+
     return (
         <div className="home-service-container gap-3">
             <div className="flex-shrink-0">
                 <h1 className="texto-titulo-principal m-0">{saudacao}</h1>
             </div>
-            
+
             <div className="d-flex flex-column gap-3" style={{ flex: '1 1 auto' }}>
                 
                 {/* Primeira linha: Candidaturas Recentes e Gráfico de Candidaturas */}

@@ -3,6 +3,7 @@
   background-color: var(--fundo);
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .form-switch .form-check-input:checked {
@@ -102,4 +103,167 @@
 .btn-editar:hover {
   background-color: var(--selecao);
   border-color: var(--contorno);
+}
+
+/* --- Responsividade do Seletor de Abas --- */
+.definicoes-seletor-abas {
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 560px;
+  min-width: 0;
+}
+
+.definicoes-seletor-abas .seletor-abas {
+  width: 100%;
+  height: auto;
+  min-height: var(--altura-controlos-1);
+  flex-wrap: wrap;
+}
+
+.definicoes-seletor-abas .seletor-abas-botao {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: auto;
+  min-height: 36px;
+  padding: 8px 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Responsividade dos Cartões e Formulários --- */
+.content-card {
+  min-width: 0;
+}
+
+.role-card {
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.role-info {
+  min-width: 0;
+  flex: 1 1 100%;
+}
+
+@media (min-width: 576px) {
+  .role-info {
+    flex: 1 1 0;
+  }
+}
+
+/* Itens de configuração (permissões, notificações, SLA) */
+.content-card .d-flex.justify-content-between.align-items-center.bg-white.p-3.rounded-3.border,
+.content-card .d-flex.align-items-center.bg-white.p-3.rounded-3.border {
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.content-card .d-flex.justify-content-between.align-items-center.bg-white.p-3.rounded-3.border > div:first-child,
+.content-card .d-flex.align-items-center.bg-white.p-3.rounded-3.border > div:first-child {
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+.content-card .d-flex.justify-content-between.align-items-center.bg-white.p-3.rounded-3.border > div:last-child,
+.content-card .d-flex.align-items-center.bg-white.p-3.rounded-3.border > div:last-child {
+  flex-shrink: 0;
+}
+
+/* Inputs de dias no SLA */
+.content-card .input-group {
+  min-width: 110px;
+}
+
+/* Wrapper do dropdown de roles */
+.definicoes-dropdown-wrapper {
+  max-width: 300px;
+  width: 100%;
+}
+
+@media (max-width: 575.98px) {
+  .definicoes-dropdown-wrapper {
+    max-width: 100%;
+  }
+}
+
+/* Botão de guardar + feedback */
+.content-card .mt-2.d-flex.justify-content-between.align-items-center {
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.content-card .mt-2.d-flex.justify-content-between.align-items-center > div,
+.content-card .mt-2.d-flex.justify-content-between.align-items-center > button {
+  flex: 1 1 auto;
+}
+
+/* Botões de guardar */
+.definicoes-acao-guardar {
+  text-align: right;
+}
+
+.definicoes-btn-guardar {
+  min-width: 140px;
+}
+
+@media (max-width: 575.98px) {
+  .definicoes-acao-guardar {
+    text-align: center;
+  }
+
+  .definicoes-btn-guardar {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .definicoes-container {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .definicoes-seletor-abas {
+    max-width: 100%;
+  }
+
+  .definicoes-seletor-abas .seletor-abas-botao {
+    flex: 1 1 50%;
+    font-size: 0.85rem;
+    padding: 10px 8px;
+  }
+
+  .content-card {
+    padding: 1.25rem;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+  }
+
+  .content-card .d-flex.justify-content-between.align-items-center.bg-white.p-3.rounded-3.border,
+  .content-card .d-flex.align-items-center.bg-white.p-3.rounded-3.border {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  .content-card .d-flex.justify-content-between.align-items-center.bg-white.p-3.rounded-3.border > div:last-child,
+  .content-card .d-flex.align-items-center.bg-white.p-3.rounded-3.border > div:last-child {
+    align-self: flex-end;
+  }
+
+  .content-card .mt-2.d-flex.justify-content-between.align-items-center {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  .content-card .mt-2.d-flex.justify-content-between.align-items-center > button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .content-card h3.section-title {
+    word-break: break-word;
+  }
 }

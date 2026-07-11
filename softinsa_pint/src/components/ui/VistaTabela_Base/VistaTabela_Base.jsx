@@ -1,4 +1,5 @@
 import "./VistaTabela_Base.css";
+import SkeletonTabela from "../Loading/SkeletonTabela";
 
 function valorOuTraco(valor) {
     if (valor === null || valor === undefined || valor === "") {
@@ -18,7 +19,6 @@ function VistaTabela_Base({
     getItemLabel,
     isLoading = false,
     emptyMessage = "Não existem dados para apresentar.",
-    loadingMessage = "A carregar dados...",
     mostrarAcoes = true,
     tituloAcoes = "Ações",
     larguraMinima = "980px",
@@ -29,9 +29,7 @@ function VistaTabela_Base({
     if (isLoading) {
         return (
             <div className={`vista-tabela-base ${className}`}>
-                <div className="vista-tabela-base-mensagem">
-                    {loadingMessage}
-                </div>
+                <SkeletonTabela linhas={5} colunas={colunas.length || 4} />
             </div>
         );
     }

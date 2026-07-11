@@ -682,7 +682,7 @@ function GaleriaBadges({ modo = "consultor" }) {
 
         try {
             await navigator.clipboard.writeText(urlAbsoluta);
-            alert("Link público copiado.");
+            mostrarToast("Link público copiado.", "sucesso");
         } catch (error) {
             console.error("Erro ao copiar link público:", error);
             window.prompt("Copia o link público:", urlAbsoluta);

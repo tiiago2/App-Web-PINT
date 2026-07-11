@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import './home_talent.css';
 import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import AtividadeRecente from '../../components/AtividadeModal.jsx';
+import LoadingSpinner from '../../components/ui/Loading/LoadingSpinner';
 import { mapearAtividadeParaModal } from '../../utils/atividadeUtils.js';
 import badge_logo from '../../assets/teste_badge.png';
 import { BotaoVerMais, BotaoAceitar, BotaoRejeitar, GraficoCandidaturas } from '../../components/components.jsx'
@@ -170,9 +171,7 @@ const HomeTalent = ({ user, saudacao }) => {
 
                 <div className="flex-grow-1 d-flex justify-content-center align-items-center" style={{ width: '100%', minHeight: '200px' }}>
                     {loadingGraficos ? (
-                        <div className="spinner-border text-primary" role="status">
-                            <span className="visually-hidden">Loading...</span>
-                        </div>
+                        <LoadingSpinner tamanho="md" />
                     ) : isVazio ? (
                         <div className="text-muted text-center w-100">
                             <i className="fi fi-br-info text-muted fs-4 mb-2 d-block"></i>

@@ -438,13 +438,13 @@ export default function Utilizadores({ userRole }) {
                   <th>Telefone</th>
                   <th>Roles</th>
                   <th>Estado</th>
-                  <th className="text-end">Ações</th>
+                  {isAdmin && <th className="text-end">Ações</th>}
                 </tr>
               </thead>
               <tbody>
                 {filtrados.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="utilizadores-vazio">
+                    <td colSpan={isAdmin ? "6" : "5"} className="utilizadores-vazio">
                       Nenhum utilizador encontrado.
                     </td>
                   </tr>
@@ -497,34 +497,36 @@ export default function Utilizadores({ userRole }) {
                           {u.ativo ? "Ativo" : "Inativo"}
                         </span>
                       </td>
-                      <td>
-                        <div className="utilizadores-acoes">
-                          <button
-                            className="utilizadores-acao editar"
-                            onClick={(e) => handleEditar(u, e)}
-                            title="Editar"
-                          >
-                            <i className="fi fi-br-pencil"></i>
-                          </button>
-                          {u.ativo ? (
+                      {isAdmin && (
+                        <td>
+                          <div className="utilizadores-acoes">
                             <button
-                              className="utilizadores-acao eliminar"
-                              onClick={(e) => handleAtivarDesativar(u, e)}
-                              title="Desativar"
+                              className="utilizadores-acao editar"
+                              onClick={(e) => handleEditar(u, e)}
+                              title="Editar"
                             >
-                              <i className="fi fi-br-trash"></i>
+                              <i className="fi fi-br-pencil"></i>
                             </button>
-                          ) : (
-                            <button
-                              className="utilizadores-acao ativar"
-                              onClick={(e) => handleAtivarDesativar(u, e)}
-                              title="Ativar"
-                            >
-                              <i className="fi fi-br-power"></i>
-                            </button>
-                          )}
-                        </div>
-                      </td>
+                            {u.ativo ? (
+                              <button
+                                className="utilizadores-acao eliminar"
+                                onClick={(e) => handleAtivarDesativar(u, e)}
+                                title="Desativar"
+                              >
+                                <i className="fi fi-br-trash"></i>
+                              </button>
+                            ) : (
+                              <button
+                                className="utilizadores-acao ativar"
+                                onClick={(e) => handleAtivarDesativar(u, e)}
+                                title="Ativar"
+                              >
+                                <i className="fi fi-br-power"></i>
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}

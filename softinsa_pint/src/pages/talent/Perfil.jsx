@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import '../../App.css';
 import './Perfil.css';
+import useToast from "../../hooks/useToast.js";
 import api from '../../services/api.js';
 import { handleLogout } from '../../functions/log_out.js';
 import { obterUrlPublicaBadge } from '../../utils/badgeDetalheNormalizadores';
@@ -117,6 +118,7 @@ const BotaoLogout_Concluir = ({ edicao, onConcluir, isSaving }) => {
 const PerfilPessoal = () => {
 
   const navigate = useNavigate();
+  const { mostrarToast } = useToast();
   const { id } = useParams();
   const { t } = useTranslation();
 
@@ -145,10 +147,10 @@ const PerfilPessoal = () => {
       const clipboardItem = new ClipboardItem({ "text/html": blobHtml });
 
       await navigator.clipboard.write([clipboardItem]);
-      alert("Assinatura copiada com sucesso! Faça Ctrl+V no seu email.");
+      mostrarToast("Assinatura copiada com sucesso! Faça Ctrl+V no seu email.", "sucesso");
     } catch (erro) {
       console.error("Erro ao copiar:", erro);
-      alert("O seu navegador bloqueou a cópia. Tente novamente.");
+      mostrarToast("O seu navegador bloqueou a cópia. Tente novamente.", "erro");
     }
   };
 
@@ -302,7 +304,7 @@ const PerfilPessoal = () => {
     const urlAbsoluta = `${window.location.origin}${urlPublica}`;
     try {
       await navigator.clipboard.writeText(urlAbsoluta);
-      alert("Link público copiado.");
+      mostrarToast("Link público copiado.", "sucesso");
     } catch (error) {
       console.error("Erro ao copiar link público:", error);
     }
@@ -327,7 +329,7 @@ const PerfilPessoal = () => {
         });
     } catch (error) {
         console.error("Erro ao gerar certificado do badge:", error);
-        alert("Não foi possível gerar o certificado do badge.");
+        mostrarToast("Não foi possível gerar o certificado do badge.", "erro");
     } finally {
         setIsGerandoCertificado(false);
     }
@@ -380,7 +382,7 @@ const PerfilPessoal = () => {
       window.location.reload();
     } catch (error) {
       console.error('Erro ao guardar perfil:', error);
-      alert("Houve um erro ao tentar guardar as tuas alterações.");
+      mostrarToast("Houve um erro ao tentar guardar as tuas alterações.", "erro");
     } finally {
       setIsSaving(false);
     }

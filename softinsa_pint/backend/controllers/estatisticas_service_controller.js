@@ -9,7 +9,7 @@ const {
   Permissoes
 } = require("../models");
 
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const { calcularRanking } = require("../helpers/rankingHelper");
 
 const NOMES_MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -81,19 +81,34 @@ module.exports = {
         : '0,0';
 
       // ── Taxa de aprovação das candidaturas da service line ──
-      const totalSubmissoes = await Submissoes.count({
-        where: { id_utilizador: { [Op.in]: idsConsultores } }
-      });
+      // Consideram-se apenas candidaturas fechadas (aceites ou rejeitadas).
+      // Candidaturas pendentes/em análise são ignoradas.
+      const STATUS_ACEITES = ["aceite", "concluído", "concluido", "aprovado", "fechado"];
+      const STATUS_REJEITADOS = ["recusada", "rejeitada", "rejeitado"];
 
       const submissoesAceites = await Submissoes.count({
         where: {
           id_utilizador: { [Op.in]: idsConsultores },
-          status: { [Op.in]: ["aceite", "Concluído", "Concluido", "Aprovado", "Fechado"] }
+          status: Sequelize.where(
+            Sequelize.fn('LOWER', Sequelize.col('status')),
+            { [Op.in]: STATUS_ACEITES }
+          )
         }
       });
 
-      const taxa = totalSubmissoes > 0
-        ? Math.round((submissoesAceites / totalSubmissoes) * 100)
+      const submissoesRejeitadas = await Submissoes.count({
+        where: {
+          id_utilizador: { [Op.in]: idsConsultores },
+          status: Sequelize.where(
+            Sequelize.fn('LOWER', Sequelize.col('status')),
+            { [Op.in]: STATUS_REJEITADOS }
+          )
+        }
+      });
+
+      const submissoesFechadas = submissoesAceites + submissoesRejeitadas;
+      const taxa = submissoesFechadas > 0
+        ? Math.round((submissoesAceites / submissoesFechadas) * 100)
         : 0;
 
       return res.status(200).json({

@@ -171,3 +171,8 @@ export async function obterBadgesConsultorNormalizados(opcoes = {}) {
         }
     );
 }
+
+export async function obterTodosRequisitos() {
+    const res = await api.get("/badges/requisitos/todos");
+    return res.data;
+}

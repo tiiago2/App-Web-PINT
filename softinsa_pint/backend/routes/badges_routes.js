@@ -55,6 +55,7 @@ function processarUploadImagemBadge(req, res, next) {
 }
 
 router.get('/public/:id', badgesController.obterBadgePublico);
+router.get('/requisitos/todos', authMiddleware, badgesController.obterTodosRequisitos);
 router.get('/', authMiddleware, badgesController.listarBadgesCatalogo);
 router.get('/:id', authMiddleware, badgesController.obterBadgeDetalhe);
 

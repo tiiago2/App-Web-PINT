@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import "./BadgeModal.css";
 import BotaoDropdown from "../ui/BotaoDropdown/BotaoDropdown";
 import BadgeCirculo from "../Galeria/BadgeCirculo/BadgeCirculo";
+import { obterTodosRequisitos } from "../../services/badgesService";
 
 const NIVEIS = [
   {
@@ -111,6 +112,9 @@ export default function BadgeModal({
 
   const [requisitos, setRequisitos] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [requisitosDisponiveis, setRequisitosDisponiveis] = useState([]);
+  const [sugestoesAtivasId, setSugestoesAtivasId] = useState(null);
+  const sugestoesRef = useRef(null);
 
   const listaLPs = useMemo(
     () => (Array.isArray(learningPaths) ? learningPaths : []),
@@ -184,6 +188,11 @@ export default function BadgeModal({
 
     document.body.style.overflow = "hidden";
     setFormErro("");
+    setSugestoesAtivasId(null);
+
+    obterTodosRequisitos()
+      .then((dados) => setRequisitosDisponiveis(Array.isArray(dados) ? dados : []))
+      .catch(() => setRequisitosDisponiveis([]));
     setErroSl("");
     setErroArea("");
 
@@ -328,6 +337,43 @@ export default function BadgeModal({
 
   function handleNomeRequisitoChange(idReq, novoNome) {
     handleUpdateRequisito(idReq, "nome_requisito", novoNome);
+    if (novoNome.trim().length > 0) {
+      setSugestoesAtivasId(idReq);
+    } else {
+      setSugestoesAtivasId(null);
+    }
+  }
+
+  function handleSelecionarRequisitoExistente(idReq, requisitoExistente) {
+    setRequisitos((requisitosAtuais) =>
+      requisitosAtuais.map((req) =>
+        req.id === idReq
+          ? {
+              ...req,
+              id_requisito: requisitoExistente.id_requisito,
+              nome_requisito: requisitoExistente.nome_requisito,
+              descricao_requisito: requisitoExistente.descricao_requisito,
+              readOnly: true,
+            }
+          : req
+      )
+    );
+    setSugestoesAtivasId(null);
+  }
+
+  function filtrarSugestoes(termo) {
+    if (!termo || termo.trim().length === 0) return [];
+    const termoNormalizado = termo.trim().toLowerCase();
+    const idsJaAdicionados = new Set(
+      requisitos
+        .filter((r) => r.id_requisito)
+        .map((r) => Number(r.id_requisito))
+    );
+    return requisitosDisponiveis.filter(
+      (r) =>
+        !idsJaAdicionados.has(Number(r.id_requisito)) &&
+        r.nome_requisito.toLowerCase().includes(termoNormalizado)
+    );
   }
 
   function handleImageUpload(event) {
@@ -748,15 +794,43 @@ export default function BadgeModal({
                   <input
                     type="text"
                     className="badge-form-input"
-                    placeholder="Nome do requisito"
+                    placeholder="Nome do requisito (pesquise existentes...)"
                     value={requisito.nome_requisito}
                     onChange={(event) =>
                       handleNomeRequisitoChange(requisito.id, event.target.value)
                     }
+                    onFocus={() => {
+                      if (!requisito.readOnly && requisito.nome_requisito.trim().length > 0) {
+                        setSugestoesAtivasId(requisito.id);
+                      }
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => setSugestoesAtivasId(null), 200);
+                    }}
                     readOnly={requisito.readOnly}
                     disabled={requisito.readOnly}
                     autoComplete="off"
                   />
+                  {sugestoesAtivasId === requisito.id &&
+                    !requisito.readOnly &&
+                    filtrarSugestoes(requisito.nome_requisito).length > 0 && (
+                      <div className="requisito-sugestoes-dropdown" ref={sugestoesRef}>
+                        {filtrarSugestoes(requisito.nome_requisito).map((sug) => (
+                          <button
+                            key={sug.id_requisito}
+                            type="button"
+                            className="requisito-sugestao-item"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() =>
+                              handleSelecionarRequisitoExistente(requisito.id, sug)
+                            }
+                          >
+                            <span className="requisito-sugestao-nome">{sug.nome_requisito}</span>
+                            <span className="requisito-sugestao-desc">{sug.descricao_requisito}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                 </div>
 
                 <div className="badge-form-group mb-0">

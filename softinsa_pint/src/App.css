@@ -161,7 +161,7 @@
     color: #FFFFFF;
 }
 
-.sidebar-nav-item:hover .sidebar-nav-icon {
+.sidebar-nav-item:hover {
     color: #FFFFFF;
 }
 
@@ -199,6 +199,10 @@
 }
 
 .pag_ativa .sidebar-nav-icon {
+    color: var(--barra_lateral);
+}
+
+.pag_ativa .sidebar-nav-label {
     color: var(--barra_lateral);
 }
 

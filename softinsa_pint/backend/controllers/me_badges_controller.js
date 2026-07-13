@@ -1600,11 +1600,16 @@ exports.submeterMinhaCandidatura = async (req, res) => {
             }
         );
 
-        const comunicacoes = await processarComunicacoesSubmissao({
+        processarComunicacoesSubmissao({
             idSubmissao: resultadoSubmissao.idSubmissao,
             idUtilizador,
             idBadge
-        });
+        }).catch(err => console.error("Erro silencioso nas comunicações:", err));
+        
+        const comunicacoes = { 
+            emails: { enviados: 0, falhados: 0 }, 
+            notificacoes: { destinatarios: 0, criadas: 0, falhadas: 0 } 
+        };
         const badge = await obterDetalhePessoalBadge(idUtilizador, idBadge);
 
         return res.status(200).json({

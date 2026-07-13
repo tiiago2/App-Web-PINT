@@ -103,9 +103,10 @@ function BadgeDetalheRequisitos({
     onSelecionarFicheiroRequisito,
     onRemoverFicheiroRequisito,
     requisitosEmProcessamento = {},
+    uploadDesativado = false,
 }) {
     const podeAnexar =
-        modo === "consultor" && detalhe?.podeAnexarRequisitos === true;
+        modo === "consultor" && detalhe?.podeAnexarRequisitos === true && !uploadDesativado;
 
     return (
         <section className="badge-detalhe-card badge-detalhe-requisitos">
@@ -120,6 +121,13 @@ function BadgeDetalheRequisitos({
                     {requisitos.length === 1 ? "requisito" : "requisitos"}
                 </span>
             </div>
+
+            {uploadDesativado && modo === "consultor" && detalhe?.podeAnexarRequisitos === true && (
+                <div className="badge-detalhe-upload-desativado">
+                    <i className="fi fi-br-lock"></i>
+                    <span>O upload de evidências está temporariamente desativado pelo administrador.</span>
+                </div>
+            )}
 
             <div className="badge-detalhe-requisitos-lista">
                 {requisitos.map((requisito) => {

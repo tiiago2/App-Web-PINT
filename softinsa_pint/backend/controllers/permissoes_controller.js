@@ -1,6 +1,10 @@
 const { Utilizador, Role, Permissoes } = require("../models");
 
 const MAPA_PERMISSOES = {
+    "upload-evidencias": {
+        "Consultor": ["Upload de Evidências"],
+        "Administrador": ["Upload de Evidências"]
+    },
     "partilha-linkedin": {
         "Talent Manager": ["Partilha Externa (LinkedIn)"],
         "Service Line Leader": ["Partilha Externa (LinkedIn)"],

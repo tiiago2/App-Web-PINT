@@ -1647,6 +1647,15 @@ exports.guardarEvidenciaRascunho = async (req, res) => {
         await obterConsultorAutenticado(idUtilizador);
         await obterBadgeAtivo(idBadge);
         await obterRequisitoAtivoAssociado(idBadge, idRequisito);
+
+        // Verificar se a permissão "Upload de Evidências" está ativa
+        const permUpload = await db.Permissoes.findOne({
+            where: { descricao_permissao: 'Upload de Evidências' }
+        });
+        if (permUpload && permUpload.toggle === false) {
+            throw criarErroComCodigo(403, 'A funcionalidade de upload de evidências está desativada.', 'upload_evidencias_desativado');
+        }
+
         await obterRascunhoEditavel(idUtilizador, idBadge);
 
         if (!req.file) {
@@ -1735,6 +1744,14 @@ exports.removerEvidenciaRascunho = async (req, res) => {
         await obterConsultorAutenticado(idUtilizador);
         await obterBadgeAtivo(idBadge);
         await obterRequisitoAtivoAssociado(idBadge, idRequisito);
+
+        // Verificar se a permissão "Upload de Evidências" está ativa
+        const permUpload = await db.Permissoes.findOne({
+            where: { descricao_permissao: 'Upload de Evidências' }
+        });
+        if (permUpload && permUpload.toggle === false) {
+            throw criarErroComCodigo(403, 'A funcionalidade de upload de evidências está desativada.', 'upload_evidencias_desativado');
+        }
 
         const resultado = await db.sequelize.transaction(
             { isolationLevel: 'SERIALIZABLE' },

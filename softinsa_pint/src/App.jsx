@@ -37,6 +37,7 @@ import Utilizadores from "./pages/utilizadores/Utilizadores.jsx";
 import CriarUtilizador from "./pages/utilizadores/CriarUtilizador.jsx";
 import LanguageSelector from "./components/ui/LanguageSelector/LanguageSelector.jsx";
 import BadgePublico from "./pages/public/BadgePublico.jsx";
+import PerfilPublico from "./pages/public/PerfilPublico.jsx";
 import PoliticasRGPD from "./pages/rgpd/PoliticasRGPD.jsx";
 
 // Imagens
@@ -49,6 +50,7 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const isRotaPublicaBadge = location.pathname.startsWith("/badges/");
+  const isRotaPublicaPerfil = location.pathname.startsWith("/perfil/publico/");
   const isRotaPublicaAuth = location.pathname === "/login" || location.pathname === "/esqueci-password" || location.pathname === "/primeiro-acesso";
   const isRotaPerfil = location.pathname.startsWith("/perfil");
 
@@ -96,18 +98,19 @@ function App() {
       !loading &&
       !user.cargo &&
       !isRotaPublicaAuth &&
-      !isRotaPublicaBadge
+      !isRotaPublicaBadge &&
+      !isRotaPublicaPerfil
     ) {
       navigate("/login", { replace: true });
     }
-  }, [loading, user.cargo, location.pathname, isRotaPublicaAuth, isRotaPublicaBadge, navigate]);
+  }, [loading, user.cargo, location.pathname, isRotaPublicaAuth, isRotaPublicaBadge, isRotaPublicaPerfil, navigate]);
 
   // Atualizar último login quando a página carrega/muda (exceto na rota de perfil)
   useEffect(() => {
-    if (user.id && user.cargo && !isRotaPublicaAuth && !isRotaPublicaBadge && !isRotaPerfil) {
+    if (user.id && user.cargo && !isRotaPublicaAuth && !isRotaPublicaBadge && !isRotaPerfil && !isRotaPublicaPerfil) {
       atualizar_lastLogin();
     }
-  }, [location.pathname, user.id, user.cargo, isRotaPublicaAuth, isRotaPublicaBadge, isRotaPerfil]);
+  }, [location.pathname, user.id, user.cargo, isRotaPublicaAuth, isRotaPublicaBadge, isRotaPerfil, isRotaPublicaPerfil]);
 
   // === REFS E ESTADOS PARA MENUS, NOTIFICAÇÕES E AVISOS ===
   const bellRef = useRef(null);
@@ -429,6 +432,15 @@ function App() {
       <Routes>
         <Route path="/badges/:idBadge" element={<BadgePublico />} />
         <Route path="*" element={<Navigate to="/badges/1" replace />} />
+      </Routes>
+    );
+  }
+
+  if (isRotaPublicaPerfil) {
+    return (
+      <Routes>
+        <Route path="/perfil/publico/:idUtilizador" element={<PerfilPublico />} />
+        <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     );
   }

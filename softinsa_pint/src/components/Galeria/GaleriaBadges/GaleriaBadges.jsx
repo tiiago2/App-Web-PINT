@@ -31,6 +31,7 @@ import {
     verificarPermissaoExportacaoBadges,
     verificarPermissaoPartilhaLinkedIn,
     verificarPermissaoDownloadPDF,
+    verificarPermissaoUploadEvidencias,
 } from "../../../services/permissoesService";
 
 function normalizarTexto(texto = "") {
@@ -93,6 +94,10 @@ function obterMensagemErroOperacao(error) {
 
     if (codigo === "ficheiro_obrigatorio") {
         return "Seleciona um ficheiro antes de continuar.";
+    }
+
+    if (codigo === "upload_evidencias_desativado") {
+        return "A funcionalidade de upload de evidências está desativada pelo administrador.";
     }
 
     if (codigo === "multipart_invalido") {
@@ -259,6 +264,7 @@ function GaleriaBadges({ modo = "consultor" }) {
     const [isSubmetendoCandidatura, setIsSubmetendoCandidatura] = useState(false);
     const [avisoPermissaoLinkedIn, setAvisoPermissaoLinkedIn] = useState(false);
     const [podeExportarBadges, setPodeExportarBadges] = useState(false);
+    const [podeUploadEvidencias, setPodeUploadEvidencias] = useState(true);
     const [badgesSugeridosExportacao, setBadgesSugeridosExportacao] = useState([]);
     const [badgesTodosExportacao, setBadgesTodosExportacao] = useState([]);
     const [consultorAutenticado, setConsultorAutenticado] = useState(null);
@@ -336,6 +342,29 @@ function GaleriaBadges({ modo = "consultor" }) {
             ativo = false;
         };
     }, [modo]);
+
+    useEffect(() => {
+        if (!isConsultor) {
+            setPodeUploadEvidencias(true);
+            return undefined;
+        }
+
+        let ativo = true;
+
+        async function carregarPermissaoUpload() {
+            const autorizado = await verificarPermissaoUploadEvidencias();
+
+            if (ativo) {
+                setPodeUploadEvidencias(autorizado);
+            }
+        }
+
+        carregarPermissaoUpload();
+
+        return () => {
+            ativo = false;
+        };
+    }, [isConsultor]);
 
     useEffect(() => {
         if (!isConsultor) {
@@ -921,11 +950,12 @@ function GaleriaBadges({ modo = "consultor" }) {
                 detalhe={detalheBadge}
                 isLoading={isLoadingDetalheBadge}
                 onSelecionarFicheiroRequisito={
-                    isConsultor ? handleSelecionarFicheiroRequisito : undefined
+                    isConsultor && podeUploadEvidencias ? handleSelecionarFicheiroRequisito : undefined
                 }
                 onRemoverFicheiroRequisito={
-                    isConsultor ? handleSolicitarRemoverEvidencia : undefined
+                    isConsultor && podeUploadEvidencias ? handleSolicitarRemoverEvidencia : undefined
                 }
+                uploadDesativado={isConsultor && !podeUploadEvidencias}
                 requisitosEmProcessamento={requisitosEmProcessamento}
                 onCriarOuObterRascunho={
                     isConsultor ? handleCriarOuObterRascunho : undefined

@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL:'https://pint-he77.onrender.com/api'
+  baseURL: 'http://localhost:5000/api'
 });
-{/* 'http://localhost:5000/api' */}
+{/* 'https://pint-he77.onrender.com/api' */ }
 
 api.interceptors.request.use(
   (config) => {
@@ -11,7 +11,7 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     // Obter a role selecionada da localStorage e enviar no cabeçalho x-user-role
     const roleGuardada = localStorage.getItem('role_softinsa');
     if (roleGuardada) {
@@ -26,7 +26,7 @@ api.interceptors.request.use(
         config.headers['x-user-role'] = roleGuardada;
       }
     }
-    
+
     return config;
   },
   (error) => Promise.reject(error)

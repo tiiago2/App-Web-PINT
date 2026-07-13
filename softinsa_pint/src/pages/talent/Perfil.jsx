@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import '../../App.css';
 import './Perfil.css';
+import '../../components/BadgeDetalhe/BadgeDetalheAcoes.css';
 import useToast from "../../hooks/useToast.js";
 import api from '../../services/api.js';
 import { handleLogout } from '../../functions/log_out.js';
@@ -360,6 +361,21 @@ const PerfilPessoal = () => {
     }
   };
 
+  const handleVerPaginaPublicaPerfil = () => {
+    window.open(`/perfil/publico/${idPerfil}`, "_blank", "noopener,noreferrer");
+  };
+
+  const handleCopiarLinkPublicoPerfil = async () => {
+    const urlAbsoluta = `${window.location.origin}/perfil/publico/${idPerfil}`;
+    try {
+      await navigator.clipboard.writeText(urlAbsoluta);
+      mostrarToast("Link público do perfil copiado.", "sucesso");
+    } catch (error) {
+      console.error("Erro ao copiar link público do perfil:", error);
+      mostrarToast("Não foi possível copiar o link público.", "erro");
+    }
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -416,7 +432,7 @@ const PerfilPessoal = () => {
   return (
     <div className='perfil-container w-100'>
       {/* Cabeçalho Superior */}
-      <div className='d-flex justify-content-between align-items-center'>
+      <div className='d-flex justify-content-between align-items-center flex-wrap gap-3'>
         <div className='d-flex align-items-center gap-3'>
           <h1 className='texto-titulo-principal mb-0'>{t('perfil_pessoal')}</h1>
           {isProprioPerfil && (
@@ -427,9 +443,31 @@ const PerfilPessoal = () => {
             </button>
           )}
         </div>
-        {isProprioPerfil && (
-          <BotaoLogout_Concluir edicao={edicao} onConcluir={handleConcluir} isSaving={isSaving} />
-        )}
+        <div className="d-flex align-items-center gap-2">
+          {edicao === false && (
+            <>
+              <button
+                type="button"
+                className="badge-detalhe-botao badge-detalhe-botao--secundario"
+                onClick={handleVerPaginaPublicaPerfil}
+              >
+                <i className="fi fi-br-link-alt"></i>
+                Ver página pública
+              </button>
+              <button
+                type="button"
+                className="badge-detalhe-botao badge-detalhe-botao--primario"
+                onClick={handleCopiarLinkPublicoPerfil}
+              >
+                <i className="fi fi-br-copy"></i>
+                Copiar link público
+              </button>
+            </>
+          )}
+          {isProprioPerfil && (
+            <BotaoLogout_Concluir edicao={edicao} onConcluir={handleConcluir} isSaving={isSaving} />
+          )}
+        </div>
       </div>
 
       <div className='row g-4'>

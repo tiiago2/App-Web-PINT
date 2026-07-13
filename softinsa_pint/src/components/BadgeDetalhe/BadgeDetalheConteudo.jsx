@@ -43,6 +43,7 @@ function BadgeDetalheConteudo({
     onCopiarLinkPublico,
     onPartilharLinkedIn,
     acaoCertificado,
+    uploadDesativado,
 }) {
     if (isLoading) {
         return (
@@ -151,6 +152,7 @@ function BadgeDetalheConteudo({
                 onSelecionarFicheiroRequisito={onSelecionarFicheiroRequisito}
                 onRemoverFicheiroRequisito={onRemoverFicheiroRequisito}
                 requisitosEmProcessamento={requisitosEmProcessamento}
+                uploadDesativado={uploadDesativado}
             />
 
             <BadgeDetalheAcoes

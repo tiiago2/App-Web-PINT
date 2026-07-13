@@ -18,6 +18,7 @@ function BadgeDetalheModal({
     onCopiarLinkPublico,
     onPartilharLinkedIn,
     acaoCertificado,
+    uploadDesativado,
 }) {
     if (!isOpen) {
         return null;
@@ -74,6 +75,7 @@ function BadgeDetalheModal({
                         onCopiarLinkPublico={onCopiarLinkPublico}
                         onPartilharLinkedIn={onPartilharLinkedIn}
                         acaoCertificado={acaoCertificado}
+                        uploadDesativado={uploadDesativado}
                     />
                 </div>
             </section>

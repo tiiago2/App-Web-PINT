@@ -48,6 +48,16 @@ export async function verificarPermissaoDownloadPDF() {
     }
 }
 
+export async function verificarPermissaoUploadEvidencias() {
+    try {
+        const response = await api.get("/permissoes/upload-evidencias");
+        return response.data?.autorizado === true;
+    } catch (error) {
+        console.error("Erro ao verificar permissão Upload de Evidências:", error);
+        return false;
+    }
+}
+
 export async function verificarPermissaoExportacaoBadges({
     modo = "consultor",
 } = {}) {

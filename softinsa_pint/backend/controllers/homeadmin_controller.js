@@ -1,4 +1,4 @@
-const { Utilizador, RegistoBadges, Badges } = require("../models");
+const { Utilizador, RegistoBadges, Badges, Historico, Submissoes } = require("../models");
 const { Op, fn, col, literal } = require("sequelize");
 const { calcularRanking } = require("../helpers/rankingHelper");
 
@@ -64,4 +64,55 @@ module.exports = {
       return res.status(500).json({ error: "Erro ao buscar ranking." });
     }
   },
+  async getCandidaturasSemana_Admin(req, res) {
+    try {
+      const dataUltimaSemana = new Date();
+      dataUltimaSemana.setDate(dataUltimaSemana.getDate() - 7);
+
+      const quantidadeAceites = await Submissoes.count({
+        distinct: true, // Garante que conta cada submissão apenas 1 vez
+        col: 'id_submissao', // Coluna primária para não haver duplicações na contagem
+        where: {
+          status: 'aceite' // Filtro na tabela principal (Submissoes)
+        },
+        include: [{
+          model: Historico, // Tabela que queres cruzar
+          required: true, // Faz um INNER JOIN (só conta se existir histórico que cumpra a regra)
+          where: {
+            data_avaliacao: { // Filtro temporal na tabela de histórico
+              [Op.gte]: dataUltimaSemana
+            }
+          }
+        }]
+      });
+
+      const quantidadeRejeitadas = await Submissoes.count({
+        distinct: true,
+        col: 'id_submissao',
+        where: {
+          status: 'recusada' 
+        },
+        include: [{
+          model: Historico, 
+          required: true, 
+          where: {
+            data_avaliacao: { 
+              [Op.gte]: dataUltimaSemana
+            }
+          }
+        }]
+      });
+
+      return res.status(200).json({
+        aceites: quantidadeAceites,
+        rejeitadas: quantidadeRejeitadas,
+      });
+
+    } catch (error) {
+      console.error("Erro ao buscar candidaturas da semana:", error);
+      return res.status(500).json({
+        error: "Ocorreu um erro ao procurar as candidaturas avaliadas esta semana."
+      });
+    }
+}
 };

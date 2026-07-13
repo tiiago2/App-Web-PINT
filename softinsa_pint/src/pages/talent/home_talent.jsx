@@ -7,6 +7,7 @@ import ClassificacaoGeral from '../../components/ClassificacaoModal.jsx';
 import AtividadeRecente from '../../components/AtividadeModal.jsx';
 import LoadingSpinner from '../../components/ui/Loading/LoadingSpinner';
 import { mapearAtividadeParaModal } from '../../utils/atividadeUtils.js';
+import { formatarTempo } from '../../utils/dateUtils.js';
 import badge_logo from '../../assets/teste_badge.png';
 import { BotaoVerMais, BotaoAceitar, BotaoRejeitar, GraficoCandidaturas } from '../../components/components.jsx'
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, Label, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
@@ -268,7 +269,7 @@ const HomeTalent = ({ user, saudacao }) => {
                             </div>
                         </div>
 
-                        <div className="text-muted mb-2" style={{ fontSize: '0.7rem' }}>{candidatura?.data_submissao || '—'}</div>
+                        <div className="text-muted mb-2" style={{ fontSize: '0.7rem' }}>{formatarTempo(candidatura?.data_submissao) || '—'}</div>
 
                         <div className="d-flex justify-content-center gap-1">
                             <BotaoVerMais onClick={() => navigate('/candidaturas', { state: { selectedCandidaturaId: candidatura?.id_submissao } })} tamanho={0.7} />

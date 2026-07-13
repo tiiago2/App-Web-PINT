@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import GaleriaTodosBadges from "../../components/Galeria/GaleriaTodosBadges/GaleriaTodosBadges";
 import BadgeItemAdmin from "../../components/Galeria/BadgeItemAdmin/BadgeItemAdmin";
 import ModalConfirmacao from "../../components/ui/ModalConfirmacao/ModalConfirmacao";
@@ -198,6 +199,7 @@ function obterValorOrdenacaoTemporal(badge = {}) {
 }
 
 function Galeria() {
+  const { t } = useTranslation();
   const location = useLocation();
   const { mostrarToast } = useToast();
 
@@ -206,7 +208,7 @@ function Galeria() {
   const [filtro, setFiltro] = useState({
     tipo: "todos",
     valor: "",
-    label: "Todos",
+    label: t("todos"),
   });
   const [viewMode, setViewMode] = useState('galeria'); 
   const [badges, setBadges] = useState([]);
@@ -284,12 +286,12 @@ function Galeria() {
 
   const tratarErroExportacao = (error) => {
     if (error?.codigo === "sem_badges_para_exportar") {
-      mostrarToast("Não existem badges para exportar.", "info");
+      mostrarToast(t("sem_badges_para_exportar"), "info");
       return;
     }
 
     console.error("Erro ao exportar a galeria de badges:", error);
-    mostrarToast("Não foi possível exportar os badges.", "erro");
+    mostrarToast(t("erro_exportar_badges"), "erro");
   };
 
   const handleExportarExcel = async () => {
@@ -298,7 +300,7 @@ function Galeria() {
 
       await exportarBadgesExcel({
         badges: badgesVisiveis,
-        titulo: "Galeria de Badges",
+        titulo: t("galeria_de_badges"),
         contexto: "Catálogo Global",
         tipo: "catalogo",
         nomeFicheiro: "Galeria_Badges_Admin",
@@ -314,7 +316,7 @@ function Galeria() {
 
       await exportarBadgesPdf({
         badges: badgesVisiveis,
-        titulo: "Galeria de Badges",
+        titulo: t("galeria_de_badges"),
         contexto: "Catálogo Global",
         tipo: "catalogo",
         nomeFicheiro: "Galeria_Badges_Admin",
@@ -339,22 +341,22 @@ function Galeria() {
 
     return [
       {
-        titulo: "Total de Badges",
+        titulo: t("total_de_badges"),
         valor: badgesComCamposFiltro.length,
         icon: "fi-br-badge",
       },
       {
-        titulo: "Áreas",
+        titulo: t("areas_label"),
         valor: totalAreas,
         icon: "fi-br-target",
       },
       {
-        titulo: "Service Lines",
+        titulo: t("service_lines_label"),
         valor: totalServiceLines,
         icon: "fi-br-diagram-project",
       },
     ];
-  }, [badgesComCamposFiltro]);
+  }, [badgesComCamposFiltro, t]);
 
   const carregarDadosGaleria = useCallback(async (deveAplicar = () => true) => {
     try {
@@ -584,10 +586,10 @@ function Galeria() {
 
     try {
       await navigator.clipboard.writeText(urlAbsoluta);
-      mostrarToast("Link público copiado.", "sucesso");
+      mostrarToast(t("link_publico_copiado", "Link público copiado."), "sucesso");
     } catch (error) {
       console.error("Erro ao copiar link público:", error);
-      window.prompt("Copia o link público:", urlAbsoluta);
+      window.prompt(t("copiar_link_publico", "Copia o link público:"), urlAbsoluta);
     }
   };
 
@@ -597,17 +599,17 @@ function Galeria() {
       <div className="galeria-topo-admin">
         <div className="galeria-topo-admin-esquerda">
           <h1 className="texto-titulo-principal m-0">
-            Galeria de Badges
+            {t("galeria_de_badges")}
           </h1>
 
           <div className="seletor-vista-badges">
             <SeletorAbas
-              valorAtivo={viewMode}
-              onChange={setViewMode}
-              opcoes={[
-                { valor: "galeria", label: "Galeria", icone: "fi-br-grid" },
-                { valor: "tabela", label: "Tabela", icone: "fi-br-table" },
-              ]}
+               valorAtivo={viewMode}
+               onChange={setViewMode}
+               opcoes={[
+                 { valor: "galeria", label: t("galeria"), icone: "fi-br-grid" },
+                 { valor: "tabela", label: t("tabela"), icone: "fi-br-table" },
+               ]}
             />
           </div>
         </div>
@@ -618,7 +620,7 @@ function Galeria() {
             icone="fi-br-plus"
             onClick={handleOpenCreateModal}
           >
-            Adicionar Badge
+            {t("add_badge")}
           </BotaoAcao>
 
           <BotaoExportar
@@ -690,12 +692,12 @@ function Galeria() {
         isOpen={!!badgeAEliminar}
         onClose={handleCloseConfirmacaoDelete}
         onConfirm={handleConfirmDeleteBadge}
-        titulo="Eliminar badge"
-        mensagem={`Tem a certeza que pretende eliminar o badge "${obterNomeBadge(
-          badgeAEliminar || {}
-        )}"?`}
-        textoConfirmar="Eliminar"
-        textoCancelar="Cancelar"
+        titulo={t("eliminar_badge_confirm")}
+        mensagem={t("confirmar_eliminar_badge", {
+          nome: obterNomeBadge(badgeAEliminar || {}),
+        })}
+        textoConfirmar={t("eliminar")}
+        textoCancelar={t("cancelar")}
         isDanger={true}
       />
 

@@ -1,16 +1,8 @@
+import { useTranslation } from "react-i18next";
 import BadgeCirculo from "../BadgeCirculo/BadgeCirculo";
 import BadgeProgresso from "../BadgeProgresso/BadgeProgresso";
 import BadgeStatusIndicador from "../BadgeStatusIndicador/BadgeStatusIndicador";
 import "./CardBadgeSugerido.css";
-
-const LABEL_ESTADO = {
-  conquistados: "Conquistado",
-  emProgresso: "Em progresso",
-  pendentes: "Pendente",
-  expirados: "Expirado",
-  recusados: "Recusado",
-  bloqueados: "Bloqueado",
-};
 
 const ICONE_ESTADO = {
   conquistados: "fi-br-check",
@@ -19,15 +11,6 @@ const ICONE_ESTADO = {
   expirados: "fi-br-time-past",
   recusados: "fi-br-cross",
   bloqueados: "fi-br-lock",
-};
-
-const LABEL_ACAO = {
-  conquistados: "Ver detalhes",
-  emProgresso: "Continuar",
-  pendentes: "Ver candidatura",
-  expirados: "Renovar",
-  recusados: "Ver feedback",
-  bloqueados: "Ver requisitos",
 };
 
 function PontosPill({ pontos }) {
@@ -60,8 +43,7 @@ function MetaLinha({ badge }) {
   );
 }
 
-function EstadoResumo({ estado, progresso }) {
-  const label = LABEL_ESTADO[estado] || "Badge";
+function EstadoResumo({ estado, progresso, label }) {
   const icone = ICONE_ESTADO[estado] || "fi-br-badge";
 
   if (estado === "emProgresso") {
@@ -70,7 +52,7 @@ function EstadoResumo({ estado, progresso }) {
     return (
       <div
         className="card-badge-sugerido-progresso"
-        aria-label={`Em progresso ${progressoSeguro}%`}
+        aria-label={`${label} ${progressoSeguro}%`}
       >
         <BadgeProgresso progresso={progressoSeguro} />
         <span className="card-badge-sugerido-progresso-numero">
@@ -89,6 +71,26 @@ function EstadoResumo({ estado, progresso }) {
 }
 
 function CardBadgeSugerido({ badge, onBadgeClick }) {
+  const { t } = useTranslation();
+
+  const LABEL_ESTADO = {
+    conquistados: t("estado_conquistado"),
+    emProgresso: t("em_progresso"),
+    pendentes: t("estado_pendente"),
+    expirados: t("estado_expirado"),
+    recusados: t("estado_recusado"),
+    bloqueados: t("estado_bloqueado"),
+  };
+
+  const LABEL_ACAO = {
+    conquistados: t("acao_ver_detalhes"),
+    emProgresso: t("acao_continuar"),
+    pendentes: t("acao_ver_candidatura"),
+    expirados: t("acao_renovar"),
+    recusados: t("acao_ver_feedback"),
+    bloqueados: t("acao_ver_requisitos"),
+  };
+
   if (!badge) {
     return null;
   }
@@ -97,7 +99,8 @@ function CardBadgeSugerido({ badge, onBadgeClick }) {
   const nomeBadge = badge.nomeBadge || badge.nome || "Badge";
   const pontosBadge = badge.pontosBadge ?? badge.pontos ?? 0;
   const descricao = badge.descricao || badge.descricaoBadge || "";
-  const labelAcao = LABEL_ACAO[estado] || "Ver detalhes";
+  const labelAcao = LABEL_ACAO[estado] || t("acao_ver_detalhes");
+  const labelEstado = LABEL_ESTADO[estado] || "Badge";
 
   function handleAcaoClick() {
     if (onBadgeClick) {
@@ -110,7 +113,7 @@ function CardBadgeSugerido({ badge, onBadgeClick }) {
       className={`card-badge-sugerido ${
         estado === "bloqueados" ? "card-badge-sugerido-bloqueado" : ""
       }`}
-      aria-label={`Badge sugerido ${nomeBadge}`}
+      aria-label={`${t("badge_sugerido")} ${nomeBadge}`}
     >
       <div className="card-badge-sugerido-visual">
         <BadgeCirculo
@@ -136,12 +139,12 @@ function CardBadgeSugerido({ badge, onBadgeClick }) {
         </div>
 
         <p className="card-badge-sugerido-justificacao">
-          {badge.justificacao || "Sugestão personalizada para si."}
+          {badge.justificacao || t("sugestao_personalizada")}
         </p>
 
         <div className="card-badge-sugerido-rodape">
           <div className="card-badge-sugerido-estado">
-            <EstadoResumo estado={estado} progresso={badge.progresso} />
+            <EstadoResumo estado={estado} progresso={badge.progresso} label={labelEstado} />
           </div>
 
           <button
@@ -166,7 +169,7 @@ function CardBadgeSugerido({ badge, onBadgeClick }) {
         <div className="card-badge-sugerido-expansor">
           <div className="card-badge-sugerido-expansor-inner">
             <p className="card-badge-sugerido-expansor-titulo">
-              Sobre este badge
+              {t("sobre_este_badge")}
             </p>
             <p className="card-badge-sugerido-expansor-texto">{descricao}</p>
           </div>

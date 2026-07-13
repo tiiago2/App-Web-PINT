@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import BarraPesquisa from "../../ui/BarraPesquisa/BarraPesquisa";
 import BotaoDropdown from "../../ui/BotaoDropdown/BotaoDropdown";
 import GaleriaFiltroDropdown from "../GaleriaFiltroDropdown/GaleriaFiltroDropdown";
@@ -11,13 +12,17 @@ function GaleriaToolbar({
   filtro,
   onFiltroChange,
   opcoesFiltro,
-  placeholderPesquisa = "Pesquisar Badge...",
+  placeholderPesquisa,
 }) {
+  const { t } = useTranslation();
+  
+  const resolvedPlaceholder = placeholderPesquisa || t("pesquisar_item_placeholder", { nome: t("badge") });
+
   const opcoesOrdenacao = [
-    { valor: "recentes", label: "Mais recentes" },
-    { valor: "antigos", label: "Mais antigos" },
-    { valor: "az", label: "A-Z" },
-    { valor: "za", label: "Z-A" },
+    { valor: "recentes", label: t("ordenar_recentes") },
+    { valor: "antigos", label: t("ordenar_antigos") },
+    { valor: "az", label: t("ordenar_az") },
+    { valor: "za", label: t("ordenar_za") },
   ];
 
   return (
@@ -26,13 +31,13 @@ function GaleriaToolbar({
         <BarraPesquisa
           valor={pesquisa}
           onChange={onPesquisaChange}
-          placeholder={placeholderPesquisa}
+          placeholder={resolvedPlaceholder}
         />
       </div>
 
       <div className="galeria-toolbar-acao galeria-toolbar-acao--ordenar">
         <BotaoDropdown
-          titulo="Ordenar por"
+          titulo={t("ordenar_por")}
           valor={ordenacao}
           opcoes={opcoesOrdenacao}
           onChange={onOrdenacaoChange}

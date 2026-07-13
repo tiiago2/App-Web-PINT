@@ -97,7 +97,7 @@ function normalizarMeuBadgeBackend(badgePessoal, badgeData = null) {
         badgeData?.id_badge ??
         badgeData?.idBadge ??
         badgeData?.id;
-    const badge = obterBadgeCatalogoPorId(idBadge, badgeData);
+    const badge = obterBadgeCatalogoPorId(idBadge, badgePessoal.badge || badgeData);
 
     if (!badge) {
         return null;
@@ -418,10 +418,12 @@ export async function obterBadgeDetalheConsultor(idBadge, opcoes = {}) {
 }
 
 export async function obterMeuBadge(idBadge, opcoes = {}) {
-    const { badgeData = null } = opcoes;
+    const { badgeData = null, idUtilizador = null } = opcoes;
 
     try {
-        const res = await api.get(`/me/badges/${idBadge}`);
+        const res = await api.get(`/me/badges/${idBadge}`, {
+            params: idUtilizador ? { idUtilizador } : {}
+        });
         return normalizarMeuBadgeBackend(res.data, badgeData);
     } catch (error) {
         const mensagem = error.response?.data?.error ?? "";

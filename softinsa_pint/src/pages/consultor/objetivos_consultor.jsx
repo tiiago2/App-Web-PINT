@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ReactDOM from 'react-dom';
 import BadgeCirculo from '../../components/Galeria/BadgeCirculo/BadgeCirculo';
 import SeletorAbas from '../../components/ui/SeletorAbas/SeletorAbas_Galeria';
@@ -34,7 +35,9 @@ import './objetivos_consultor.css';
    HELPERS
    ───────────────────────────────────────────────────────────────────── */
 const MESES_PT    = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-const DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const DIAS_SEMANA_PT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const DIAS_SEMANA_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DIAS_SEMANA_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 
 const formatarData = (str) => {
     if (!str) return '—';
@@ -65,9 +68,21 @@ const corAgrupada = (objs) => {
    COMPONENTE: CALENDÁRIO
    ───────────────────────────────────────────────────────────────────── */
 const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
+    const { t, i18n } = useTranslation();
     const [mesVista,  setMesVista]  = useState(new Date());
     const [hoverInfo, setHoverInfo] = useState(null);
     const [hoverAcima, setHoverAcima] = useState(false);
+
+    const MESES = [
+        t('janeiro'), t('fevereiro'), t('março'), t('abril'),
+        t('maio'), t('junho'), t('julho'), t('agosto'),
+        t('setembro'), t('outubro'), t('novembro'), t('dezembro')
+    ];
+    const DIAS_SEMANA = i18n.language === 'en' || i18n.language === 'gb'
+        ? DIAS_SEMANA_EN
+        : i18n.language === 'es'
+            ? DIAS_SEMANA_ES
+            : DIAS_SEMANA_PT;
 
     const hoje = new Date();
     const ano  = mesVista.getFullYear();
@@ -113,7 +128,7 @@ const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
                 <button className="obj-cal-nav" onClick={() => setMesVista(new Date(ano, mes - 1, 1))}>
                     <i className="fi fi-br-angle-left" />
                 </button>
-                <span className="obj-cal-titulo">{MESES_PT[mes]} {ano}</span>
+                <span className="obj-cal-titulo">{MESES[mes]} {ano}</span>
                 <button className="obj-cal-nav" onClick={() => setMesVista(new Date(ano, mes + 1, 1))}>
                     <i className="fi fi-br-angle-right" />
                 </button>
@@ -162,7 +177,7 @@ const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
                                 setHoverInfo({
                                     objs,
                                     dia,
-                                    mesNome: MESES_PT[mes],
+                                    mesNome: MESES[mes],
                                     top:  abreAcima ? rect.top - popupHeight - gap : rect.bottom + gap,
                                     left: rect.left + rect.width / 2,
                                 });
@@ -188,21 +203,21 @@ const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
                 <div className="obj-cal-leg-grupo">
                     <div className="obj-cal-leg-item">
                         <span className="obj-cal-dot" style={{ backgroundColor: 'var(--aceitar)' }} />
-                        <span>Concluído</span>
+                        <span>{t('concluidos')}</span>
                     </div>
                     <div className="obj-cal-leg-item">
                         <span className="obj-cal-dot" style={{ backgroundColor: 'var(--progresso)' }} />
-                        <span>Em progresso</span>
+                        <span>{t('em_progresso')}</span>
                     </div>
                     <div className="obj-cal-leg-item">
                         <span className="obj-cal-dot" style={{ backgroundColor: 'var(--rejeitar)' }} />
-                        <span>Expirado</span>
+                        <span>{t('expirados')}</span>
                     </div>
                 </div>
                 {diaSelecionado && (
                     <span className="obj-cal-leg-info">
                         <i className="fi fi-br-cursor-finger" style={{ fontSize: '11px' }} />
-                        Clica para remover filtro
+                        {t('clica_remover_filtro', 'Clica para remover filtro')}
                     </span>
                 )}
             </div>
@@ -214,7 +229,7 @@ const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
                     style={{ top: hoverInfo.top, left: hoverInfo.left }}
                 >
                     <div className="obj-cal-popup-titulo">
-                        {hoverInfo.dia} de {hoverInfo.mesNome}
+                        {hoverInfo.dia} {t('de', 'de')} {MESES[mes]}
                     </div>
                     {hoverInfo.objs.map(o => (
                         <div key={o.ID_Objetivo} className="obj-cal-popup-item">
@@ -236,11 +251,23 @@ const Calendario = ({ objetivos, diaSelecionado, onDiaClick }) => {
    COMPONENTE: DATE PICKER MODERNO
    ───────────────────────────────────────────────────────────────────── */
 const DatePickerPopup = ({ value, onChange, min }) => {
+    const { t, i18n } = useTranslation();
     const [open,     setOpen]     = useState(false);
     const [mesVista, setMesVista] = useState(() => {
         if (value) return new Date(value + 'T00:00:00');
         return new Date();
     });
+
+    const MESES = [
+        t('janeiro'), t('fevereiro'), t('março'), t('abril'),
+        t('maio'), t('junho'), t('julho'), t('agosto'),
+        t('setembro'), t('outubro'), t('novembro'), t('dezembro')
+    ];
+    const DIAS_SEMANA = i18n.language === 'en' || i18n.language === 'gb'
+        ? DIAS_SEMANA_EN
+        : i18n.language === 'es'
+            ? DIAS_SEMANA_ES
+            : DIAS_SEMANA_PT;
     const [popupPos, setPopupPos] = useState({ top: 0, left: 0, width: 0 });
     const [popupAcima, setPopupAcima] = useState(false);
     const inputRef = useRef(null);
@@ -325,14 +352,14 @@ const DatePickerPopup = ({ value, onChange, min }) => {
                 onClick={handleOpen}
             >
                 <span className={value ? 'obj-dp-valor' : 'obj-dp-placeholder'}>
-                    {value ? formatDisplay(value) : 'Indique a data...'}
+                    {value ? formatDisplay(value) : t('indique_data')}
                 </span>
                 <div className="obj-dp-icons">
                     {value && (
                         <i
                             className="fi fi-br-cross-circle obj-dp-clear"
                             onClick={e => { e.stopPropagation(); onChange(''); }}
-                            title="Limpar data"
+                            title={t('limpar_data')}
                         />
                     )}
                     <i className="fi fi-br-calendar" />
@@ -350,7 +377,7 @@ const DatePickerPopup = ({ value, onChange, min }) => {
                         <button className="obj-dp-nav" onClick={() => setMesVista(new Date(ano, mes - 1, 1))}>
                             <i className="fi fi-br-angle-left" />
                         </button>
-                        <span className="obj-dp-mes-titulo">{MESES_PT[mes]} {ano}</span>
+                        <span className="obj-dp-mes-titulo">{MESES[mes]} {ano}</span>
                         <button className="obj-dp-nav" onClick={() => setMesVista(new Date(ano, mes + 1, 1))}>
                             <i className="fi fi-br-angle-right" />
                         </button>
@@ -389,7 +416,7 @@ const DatePickerPopup = ({ value, onChange, min }) => {
 
                     {/* Rodapé: botão Hoje */}
                     <div className="obj-dp-footer">
-                        <button className="obj-dp-btn-hoje" onClick={handleHoje}>Hoje</button>
+                        <button className="obj-dp-btn-hoje" onClick={handleHoje}>{t('hoje')}</button>
                     </div>
                 </div>,
                 document.body
@@ -402,6 +429,7 @@ const DatePickerPopup = ({ value, onChange, min }) => {
    COMPONENTE: MODAL BADGE PICKER
    ───────────────────────────────────────────────────────────────────── */
 const BadgePickerModal = ({ onClose, onConfirm }) => {
+    const { t } = useTranslation();
     const [listaBadges, setListaBadges] = useState([]);
     const [carregando, setCarregando] = useState(true);
     const [search,    setSearch]    = useState('');
@@ -448,10 +476,10 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
     }, [onClose]);
 
     const opcoesOrdenacao = [
-        { valor: "recentes", label: "Mais recentes" },
-        { valor: "antigos", label: "Mais antigos" },
-        { valor: "az", label: "A-Z" },
-        { valor: "za", label: "Z-A" },
+        { valor: "recentes", label: t("ordenar_recentes") },
+        { valor: "antigos", label: t("ordenar_antigos") },
+        { valor: "az", label: t("ordenar_az") },
+        { valor: "za", label: t("ordenar_za") },
     ];
 
     // Lista única de áreas para as pills
@@ -499,8 +527,8 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
 
                 <div className="obj-picker-header">
                     <div className="obj-picker-title-row">
-                        <span className="obj-picker-title">Escolhe um Badge</span>
-                        <button className="obj-btn-close" onClick={onClose} title="Fechar">
+                        <span className="obj-picker-title">{t('seleciona_um_badge')}</span>
+                        <button className="obj-btn-close" onClick={onClose} title={t('fechar')}>
                             <i className="fi fi-br-cross" />
                         </button>
                     </div>
@@ -508,7 +536,7 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
                         <i className="fi fi-br-search obj-picker-search-icone" />
                         <input
                             className="obj-picker-search-input"
-                            placeholder="Pesquisar badge, área, learning path..."
+                            placeholder={t('pesquisar_badge_placeholder')}
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             autoFocus
@@ -542,18 +570,18 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
                 <div className="obj-picker-body">
                     {!carregando && (
                         <div className="obj-picker-counter">
-                            {filtrados.length} {filtrados.length === 1 ? 'badge encontrado' : 'badges encontrados'}
+                            {filtrados.length} {filtrados.length === 1 ? t('badge_encontrado') : t('badges_encontrados')}
                         </div>
                     )}
                     {carregando ? (
                         <div className="obj-picker-estado-vazio">
-                            <LoadingSpinner tamanho="md" texto="A carregar badges da base de dados..." centralizado />
+                            <LoadingSpinner tamanho="md" texto={t('a_carregar_badges_db')} centralizado />
                         </div>
                     ) : filtrados.length === 0 ? (
                         <div className="obj-picker-estado-vazio">
                             <i className="fi fi-br-search obj-picker-estado-icone" />
-                            <span>Nenhum badge encontrado</span>
-                            <span className="obj-picker-estado-sub">Tenta ajustar os filtros ou a pesquisa.</span>
+                            <span>{t('nenhum_badge_encontrado')}</span>
+                            <span className="obj-picker-estado-sub">{t('tenta_ajustar_filtros')}</span>
                         </div>
                     ) : (
                         <div className="obj-badge-grid">
@@ -586,14 +614,14 @@ const BadgePickerModal = ({ onClose, onConfirm }) => {
 
                 <div className="obj-picker-footer">
                     <button className="obj-btn-cancelar" onClick={onClose}>
-                        Cancelar
+                        {t('cancelar')}
                     </button>
                     <button
                         className="obj-btn-confirmar"
                         disabled={!selected}
                         onClick={() => { onConfirm(selected); onClose(); }}
                     >
-                        {selected ? `Confirmar — ${selected.Nome_Badge}` : 'Seleciona um badge'}
+                        {selected ? t('confirmar_selecao', { nome: selected.Nome_Badge }) : t('seleciona_um_badge')}
                     </button>
                 </div>
             </div>
@@ -611,6 +639,7 @@ function obterIdBadge(badge = {}) {
    ───────────────────────────────────────────────────────────────────── */
 const ObjetivosConsultor = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const [badgeSelecionado, setBadgeSelecionado] = useState(null);
     const [data,             setData]             = useState('');
@@ -640,7 +669,7 @@ const ObjetivosConsultor = () => {
             setObjetivos(dados);
         } catch (error) {
             console.error("Erro ao carregar objetivos da API:", error);
-            setErroAPIObjetivos("Não foi possível carregar os teus objetivos.");
+            setErroAPIObjetivos(t('erro_carregar_objetivos'));
         } finally {
             setIsLoadingObjetivos(false);
         }
@@ -696,13 +725,13 @@ const ObjetivosConsultor = () => {
         // Validação: data não pode ser anterior a hoje
         const hojeStr = new Date().toISOString().split('T')[0];
         if (data < hojeStr) {
-            mostrarToast('A data limite não pode ser anterior a hoje.', 'erro');
+            mostrarToast(t('data_limite_anterior_hoje'), 'erro');
             return;
         }
 
         // Validação: impedir objetivo duplicado ativo
         if (objetivoDuplicadoAtivo(idBadge)) {
-            mostrarToast('Já tens um objetivo ativo para este badge.', 'erro');
+            mostrarToast(t('objetivo_duplicado_ativo'), 'erro');
             return;
         }
 
@@ -717,7 +746,7 @@ const ObjetivosConsultor = () => {
             setObjetivos(prev => [novoObj, ...prev]);
             setBadgeSelecionado(null);
             setData('');
-            mostrarToast('Objetivo proposto com sucesso!', 'sucesso');
+            mostrarToast(t('objetivo_proposto_sucesso'), 'sucesso');
 
             if (diaSelecionado && !mesmoDia(new Date(novoObj.Data_Objetivo), diaSelecionado)) {
                 setDiaSelecionado(null);
@@ -726,9 +755,9 @@ const ObjetivosConsultor = () => {
             console.error("Erro ao criar objetivo:", error);
             const mensagem =
                 error.response?.status === 409
-                    ? 'Já tens um objetivo ativo para este badge.'
+                    ? t('objetivo_duplicado_ativo')
                     : error.response?.data?.error ||
-                      'Não foi possível propor o objetivo. Tenta novamente.';
+                      t('erro_propor_objetivo');
             mostrarToast(mensagem, 'erro');
         } finally {
             setIsSubmitting(false);
@@ -754,7 +783,7 @@ const ObjetivosConsultor = () => {
             }
         } catch (error) {
             console.error("Erro ao remover objetivo:", error);
-            mostrarToast('Não foi possível remover o objetivo. Tenta novamente.', 'erro');
+            mostrarToast(t('erro_remover_objetivo'), 'erro');
         } finally {
             setObjetivoParaRemover(null);
         }
@@ -833,7 +862,7 @@ const ObjetivosConsultor = () => {
             );
         } catch (error) {
             console.error("Erro ao anexar requisito:", error);
-            mostrarToast('Não foi possível anexar o requisito.', 'erro');
+            mostrarToast(t('erro_anexar_requisito'), 'erro');
         } finally {
             setIsLoadingDetalheBadge(false);
             setAnexoPendente(null);
@@ -867,7 +896,7 @@ const ObjetivosConsultor = () => {
             );
         } catch (error) {
             console.error("Erro ao submeter candidatura:", error);
-            mostrarToast('Não foi possível submeter a candidatura.', 'erro');
+            mostrarToast(t('erro_submeter_candidatura'), 'erro');
         } finally {
             setIsLoadingDetalheBadge(false);
         }
@@ -887,10 +916,10 @@ const ObjetivosConsultor = () => {
         const urlAbsoluta = `${window.location.origin}${urlPublica}`;
         try {
             await navigator.clipboard.writeText(urlAbsoluta);
-            mostrarToast('Link público copiado.', 'sucesso');
+            mostrarToast(t('link_publico_copiado'), 'sucesso');
         } catch (error) {
             console.error("Erro ao copiar link público:", error);
-            window.prompt("Copia o link público:", urlAbsoluta);
+            window.prompt(t('copiar_link_publico'), urlAbsoluta);
         }
     };
 
@@ -948,18 +977,18 @@ const ObjetivosConsultor = () => {
 
             {/* ══ FORMULÁRIO — PROPOR OBJETIVO ══════════════════════════ */}
             <div className="obj-form-card">
-                <h1 className="texto-titulo-principal m-0">Propor Objetivos</h1>
+                <h1 className="texto-titulo-principal m-0">{t('propor_objetivos')}</h1>
 
                 <form onSubmit={handleSubmeter}>
                     <div className="obj-form-grid">
 
                         {/* Campo: Badge a conquistar → abre badge picker */}
                         <div>
-                            <label className="obj-form-label">Badge a conquistar</label>
+                            <label className="obj-form-label">{t('badge_a_conquistar')}</label>
                             <div
                                 className={`obj-badge-picker${badgeSelecionado ? ' selecionado' : ''}`}
                                 onClick={() => setShowPicker(true)}
-                                title="Clique para escolher um badge"
+                                title={t('clique_escolher_badge')}
                                 role="button"
                                 tabIndex={0}
                                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowPicker(true); }}
@@ -980,8 +1009,8 @@ const ObjetivosConsultor = () => {
                                             type="button"
                                             className="obj-badge-picker-limpar"
                                             onClick={e => { e.stopPropagation(); setBadgeSelecionado(null); }}
-                                            title="Remover seleção"
-                                            aria-label="Remover seleção de badge"
+                                            title={t('remover_selecao')}
+                                            aria-label={t('remover_selecao_badge')}
                                         >
                                             <i className="fi fi-br-cross-circle" />
                                         </button>
@@ -989,23 +1018,23 @@ const ObjetivosConsultor = () => {
                                 ) : (
                                     <>
                                         <i className="fi fi-br-award obj-badge-picker-icone-vazio" />
-                                        <span className="obj-badge-picker-placeholder">Escolhe um badge...</span>
+                                        <span className="obj-badge-picker-placeholder">{t('escolhe_um_badge')}</span>
                                         <i className="fi fi-br-expand obj-badge-picker-icone-expand" />
                                     </>
                                 )}
                             </div>
-                            <span className="obj-form-ajuda">Seleciona o badge que pretendes conquistar.</span>
+                            <span className="obj-form-ajuda">{t('ajuda_badge_conquistar')}</span>
                         </div>
 
                         {/* Campo: Data Limite */}
                         <div>
-                            <label className="obj-form-label">Data Limite Proposta</label>
+                            <label className="obj-form-label">{t('data_limite_proposta')}</label>
                             <DatePickerPopup
                                 value={data}
                                 onChange={setData}
                                 min={new Date().toISOString().split('T')[0]}
                             />
-                            <span className="obj-form-ajuda">Define a data até quando pretendes completar este objetivo.</span>
+                            <span className="obj-form-ajuda">{t('ajuda_data_limite')}</span>
                         </div>
                     </div>
 
@@ -1013,12 +1042,12 @@ const ObjetivosConsultor = () => {
                         <span className="obj-form-info">
                             <i className="fi fi-br-info" />
                             {!badgeSelecionado && !data
-                                ? 'Seleciona um badge e uma data para submeteres.'
+                                ? t('info_seleciona_badge_e_data')
                                 : !badgeSelecionado
-                                    ? 'Seleciona um badge para continuar.'
+                                    ? t('info_seleciona_badge')
                                     : !data
-                                        ? 'Seleciona uma data limite para continuar.'
-                                        : 'Podes agora propor o teu objetivo.'}
+                                        ? t('info_seleciona_data')
+                                        : t('info_podes_propor')}
                         </span>
                         <button
                             type="submit"
@@ -1028,10 +1057,10 @@ const ObjetivosConsultor = () => {
                             {isSubmitting ? (
                                 <>
                                     <LoadingSpinner tamanho="sm" />
-                                    <span className="ms-2">A submeter...</span>
+                                    <span className="ms-2">{t('a_submeter')}</span>
                                 </>
                             ) : (
-                                'Submeter Objetivo'
+                                t('submeter_objetivo')
                             )}
                         </button>
                     </div>
@@ -1047,8 +1076,8 @@ const ObjetivosConsultor = () => {
                         <div className="obj-tabs-container">
                             <SeletorAbas
                                 opcoes={[
-                                    { valor: "progresso", label: "Em progresso" },
-                                    { valor: "historico", label: "Histórico" }
+                                    { valor: "progresso", label: t('em_progresso') },
+                                    { valor: "historico", label: t('historico') }
                                 ]}
                                 valorAtivo={viewMode}
                                 onChange={(val) => {
@@ -1084,13 +1113,13 @@ const ObjetivosConsultor = () => {
                                 className={`obj-sub-btn ${historicoFiltro === 'concluidos' ? 'active' : ''}`}
                                 onClick={() => setHistoricoFiltro('concluidos')}
                             >
-                                Concluídos
+                                {t('concluidos')}
                             </button>
                             <button 
                                 className={`obj-sub-btn ${historicoFiltro === 'expirados' ? 'active' : ''}`}
                                 onClick={() => setHistoricoFiltro('expirados')}
                             >
-                                Expirados
+                                {t('expirados')}
                             </button>
                         </div>
                     )}
@@ -1099,7 +1128,7 @@ const ObjetivosConsultor = () => {
                     <div className="obj-lista-scroll">
                         {isLoadingObjetivos ? (
                             <div className="obj-painel-vazio fade-in">
-                                <LoadingSpinner tamanho="md" texto="A carregar os teus objetivos..." centralizado />
+                                <LoadingSpinner tamanho="md" texto={t('a_carregar_objetivos')} centralizado />
                             </div>
                         ) : erroAPIObjetivos ? (
                             <div className="obj-painel-vazio fade-in">
@@ -1119,10 +1148,10 @@ const ObjetivosConsultor = () => {
                                 <i className={viewMode === 'historico' ? "fi fi-br-time-past" : "fi fi-br-calendar"} />
                                 <span>
                                     {viewMode === 'historico' 
-                                        ? 'Ainda não tens histórico de objetivos.'
+                                        ? t('sem_historico_objetivos')
                                         : diaSelecionado
-                                            ? 'Nenhum objetivo expira neste dia.'
-                                            : 'Ainda não tens objetivos em progresso.'
+                                            ? t('nenhum_objetivo_neste_dia')
+                                            : t('sem_objetivos_em_progresso')
                                     }
                                 </span>
                             </div>
@@ -1162,8 +1191,8 @@ const ObjetivosConsultor = () => {
                                                 <div className="obj-item-titulo">{obj.badge.Nome_Badge}</div>
                                                 <div className="obj-item-area">
                                                     {obj.badge.Nome_Area}
-                                                    {` • ${obj.badge.Nome_Service_Line || 'Sem Service Line'}`}
-                                                    {` • ${obj.badge.Nome_Learning_Path || 'Sem Learning Path'}`}
+                                                    {` • ${obj.badge.Nome_Service_Line || t('sem_service_line')}`}
+                                                    {` • ${obj.badge.Nome_Learning_Path || t('sem_learning_path')}`}
                                                 </div>
                                                 <div className="obj-progress-wrap">
                                                     <div
@@ -1180,7 +1209,7 @@ const ObjetivosConsultor = () => {
                                                 </div>
                                                 <div className="obj-estado-label" style={{ color: cor }}>
                                                     <div className="obj-estado-dot" style={{ backgroundColor: cor }} />
-                                                    {isConcluido ? 'Concluído' : (isExpirado ? 'Expirado' : `${obj.progresso}%`)}
+                                                    {isConcluido ? t('concluidos') : (isExpirado ? t('expirados') : `${obj.progresso}%`)}
                                                 </div>
                                             </div>
                                         </div>
@@ -1191,9 +1220,9 @@ const ObjetivosConsultor = () => {
                                                     <div className="obj-item-divider" />
                                                     <div className="obj-item-expansor-content">
                                                         <div className="obj-item-descricao-wrap">
-                                                            <span className="obj-item-descricao-titulo">Sobre este badge</span>
+                                                            <span className="obj-item-descricao-titulo">{t('sobre_este_badge')}</span>
                                                             <p className="obj-item-descricao-texto">
-                                                                {obj.badge.descricao || obj.badge.Descricao_Badge || "Desenvolva esta competência realizando as submissões e provas necessárias para obter esta certificação."}
+                                                                {obj.badge.descricao || obj.badge.Descricao_Badge || t('descricao_badge_default')}
                                                             </p>
                                                         </div>
                                                         <button
@@ -1242,10 +1271,10 @@ const ObjetivosConsultor = () => {
                         executarRemover(objetivoParaRemover);
                     }
                 }}
-                titulo="Remover Objetivo"
-                mensagem="Tens a certeza que desejas remover este objetivo? Esta ação não poderá ser revertida."
-                textoConfirmar="Remover"
-                textoCancelar="Cancelar"
+                titulo={t('remover_objetivo')}
+                mensagem={t('remover_objetivo_confirmacao')}
+                textoConfirmar={t('remover')}
+                textoCancelar={t('cancelar')}
                 isDanger={true}
             />
 
@@ -1268,10 +1297,10 @@ const ObjetivosConsultor = () => {
                 isOpen={avisoPermissaoLinkedIn}
                 onClose={() => setAvisoPermissaoLinkedIn(false)}
                 onConfirm={() => setAvisoPermissaoLinkedIn(false)}
-                titulo="Sem autorização"
-                mensagem="Não tens autorização para partilhar badges no LinkedIn. Esta permissão pode ser ativada nas definições pelo Administrador."
-                textoConfirmar="Compreendido"
-                textoCancelar="Fechar"
+                titulo={t('sem_autorizacao')}
+                mensagem={t('sem_autorizacao_linkedin')}
+                textoConfirmar={t('compreendido')}
+                textoCancelar={t('fechar')}
                 isDanger={false}
             />
 
@@ -1280,16 +1309,16 @@ const ObjetivosConsultor = () => {
                 isOpen={!!anexoPendente}
                 onClose={() => setAnexoPendente(null)}
                 onConfirm={handleConfirmarAnexoRequisito}
-                titulo="Confirmar Envio de Requisito"
-                mensagem={`Deseja enviar o ficheiro "${
+                titulo={t('confirmar_envio_requisito')}
+                mensagem={`${t('deseja_enviar_ficheiro')} "${
                     anexoPendente?.ficheiro?.name ?? ""
-                }" como comprovativo para o requisito "${
+                }" ${t('como_comprovativo')} "${
                     anexoPendente?.requisito?.nome_requisito ??
                     anexoPendente?.requisito?.nome ??
                     ""
                 }"?`}
-                textoConfirmar="Enviar Comprovativo"
-                textoCancelar="Cancelar"
+                textoConfirmar={t('enviar_comprovativo')}
+                textoCancelar={t('cancelar')}
                 isDanger={false}
             />
 

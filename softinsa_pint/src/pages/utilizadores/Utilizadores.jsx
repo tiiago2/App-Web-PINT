@@ -437,6 +437,8 @@ export default function Utilizadores({ userRole }) {
                   <th>Email</th>
                   <th>Telefone</th>
                   <th>Roles</th>
+                  <th>{t('area')}</th>
+                  <th>Service Line</th>
                   <th>Estado</th>
                   {isAdmin && <th className="text-end">Ações</th>}
                 </tr>
@@ -444,7 +446,7 @@ export default function Utilizadores({ userRole }) {
               <tbody>
                 {filtrados.length === 0 ? (
                   <tr>
-                    <td colSpan={isAdmin ? "6" : "5"} className="utilizadores-vazio">
+                    <td colSpan={isAdmin ? "8" : "7"} className="utilizadores-vazio">
                       Nenhum utilizador encontrado.
                     </td>
                   </tr>
@@ -487,6 +489,8 @@ export default function Utilizadores({ userRole }) {
                           ))}
                         </div>
                       </td>
+                      <td>{u.area?.nome_area || "-"}</td>
+                      <td>{u.serviceLine?.nome_service_line || "-"}</td>
                       <td>
                         <span
                           className={`utilizadores-estado-badge ${

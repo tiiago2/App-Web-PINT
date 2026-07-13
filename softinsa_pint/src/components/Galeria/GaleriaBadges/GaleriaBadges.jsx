@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import SeletorAbas from "../../ui/SeletorAbas/SeletorAbas_Galeria";
 import GaleriaSugeridos from "../GaleriaSugeridos/GaleriaSugeridos";
 import GaleriaTodosBadges from "../GaleriaTodosBadges/GaleriaTodosBadges";
@@ -29,6 +30,7 @@ import {
     obterUtilizadorAutenticadoBasico,
     verificarPermissaoExportacaoBadges,
     verificarPermissaoPartilhaLinkedIn,
+    verificarPermissaoDownloadPDF,
 } from "../../../services/permissoesService";
 
 function normalizarTexto(texto = "") {
@@ -229,6 +231,7 @@ function badgeTemConquistaConfirmada(detalhe) {
 }
 
 function GaleriaBadges({ modo = "consultor" }) {
+    const { t } = useTranslation();
     const isConsultor = modo === "consultor";
 
     const [badgesConsultor, setBadgesConsultor] = useState([]);
@@ -239,7 +242,7 @@ function GaleriaBadges({ modo = "consultor" }) {
     const [filtro, setFiltro] = useState({
         tipo: "todos",
         valor: "",
-        label: "Todos",
+        label: t("todos"),
     });
     const [estadoBadgeAtivo, setEstadoBadgeAtivo] = useState("todos");
 
@@ -300,7 +303,7 @@ function GaleriaBadges({ modo = "consultor" }) {
                 console.error("Erro ao carregar catálogo de badges:", error);
 
                 if (ativo) {
-                    setErroCatalogo("Não foi possível carregar o catálogo de badges.");
+                    setErroCatalogo(t("erro_carregar_catalogo"));
                 }
             } finally {
                 if (ativo) {
@@ -374,13 +377,13 @@ function GaleriaBadges({ modo = "consultor" }) {
     const abaAtual = isConsultor ? abaAtiva : "todos";
 
     const opcoesEstadoBadge = [
-        { valor: "todos", label: "Todos" },
-        { valor: "conquistados", label: "Conquistados" },
-        { valor: "emProgresso", label: "Em Progresso" },
-        { valor: "pendentes", label: "Pendentes" },
-        { valor: "expirados", label: "Expirados" },
-        { valor: "recusados", label: "Recusados" },
-        { valor: "bloqueados", label: "Bloqueados" },
+        { valor: "todos", label: t("todos") },
+        { valor: "conquistados", label: t("conquistados") },
+        { valor: "emProgresso", label: t("em_progresso") },
+        { valor: "pendentes", label: t("pendentes") },
+        { valor: "expirados", label: t("expirados") },
+        { valor: "recusados", label: t("recusados") },
+        { valor: "bloqueados", label: t("bloqueados") },
     ];
 
     const badgesParaContagem = useMemo(() => {
@@ -414,7 +417,7 @@ function GaleriaBadges({ modo = "consultor" }) {
     }, [badgesParaContagem]);
 
     const mensagemGaleriaVazia = isLoadingCatalogo
-        ? "A carregar badges..."
+        ? t("a_carregar_badges")
         : erroCatalogo || undefined;
 
     const atualizarBadgeConsultorNaGaleria = (detalheAtualizado) => {
@@ -538,8 +541,8 @@ function GaleriaBadges({ modo = "consultor" }) {
             atualizarBadgeConsultorNaGaleria(detalheAtualizado);
             mostrarToast(
                 resposta.substituida
-                    ? "Evidência substituída com sucesso."
-                    : "Evidência anexada com sucesso."
+                    ? t("anexo_evidencia_substituida")
+                    : t("anexo_evidencia_anexada")
             );
         } catch (error) {
             console.error("Erro ao anexar requisito:", error);
@@ -569,8 +572,8 @@ function GaleriaBadges({ modo = "consultor" }) {
             atualizarBadgeConsultorNaGaleria(detalheAtualizado);
             mostrarToast(
                 resposta.reutilizado
-                    ? "Rascunho existente carregado."
-                    : "Rascunho criado com sucesso."
+                    ? t("rascunho_carregado")
+                    : t("rascunho_criado")
             );
         } catch (error) {
             console.error("Erro ao criar ou obter rascunho:", error);
@@ -607,7 +610,7 @@ function GaleriaBadges({ modo = "consultor" }) {
             setDetalheBadge(detalheAtualizado);
             atualizarBadgeConsultorNaGaleria(detalheAtualizado);
             setSubmissaoPendenteConfirmacao(null);
-            mostrarToast("Candidatura submetida com sucesso.");
+            mostrarToast(t("candidatura_submetida"));
         } catch (error) {
             console.error("Erro ao submeter candidatura:", error);
             mostrarToast(obterMensagemErroOperacao(error), "erro");
@@ -645,7 +648,7 @@ function GaleriaBadges({ modo = "consultor" }) {
 
             setDetalheBadge(detalheAtualizado);
             atualizarBadgeConsultorNaGaleria(detalheAtualizado);
-            mostrarToast("Evidência removida com sucesso.");
+            mostrarToast(t("evidencia_removida"));
         } catch (error) {
             console.error("Erro ao remover evidência:", error);
             mostrarToast(obterMensagemErroOperacao(error), "erro");
@@ -682,10 +685,10 @@ function GaleriaBadges({ modo = "consultor" }) {
 
         try {
             await navigator.clipboard.writeText(urlAbsoluta);
-            mostrarToast("Link público copiado.", "sucesso");
+            mostrarToast(t("link_publico_copiado", "Link público copiado."), "sucesso");
         } catch (error) {
             console.error("Erro ao copiar link público:", error);
-            window.prompt("Copia o link público:", urlAbsoluta);
+            window.prompt(t("copiar_link_publico", "Copia o link público:"), urlAbsoluta);
         }
     };
 
@@ -788,6 +791,12 @@ function GaleriaBadges({ modo = "consultor" }) {
             return;
         }
 
+        const temPermissao = await verificarPermissaoDownloadPDF();
+        if (!temPermissao) {
+            mostrarToast("Não tens autorização para fazer download de PDFs.", "erro");
+            return;
+        }
+
         setIsGerandoCertificado(true);
 
         try {
@@ -804,9 +813,9 @@ function GaleriaBadges({ modo = "consultor" }) {
                 urlPublica: `${window.location.origin}${urlPublica}`,
             });
         } catch (error) {
-            console.error("Erro ao gerar certificado do badge:", error);
+            console.error(t("erro_gerar_certificado_badge"), error);
             mostrarToast(
-                "Não foi possível gerar o certificado do badge.",
+                t("erro_certificado_badge"),
                 "erro"
             );
         } finally {
@@ -819,7 +828,7 @@ function GaleriaBadges({ modo = "consultor" }) {
             <div className="galeria-badges-topo">
                 <div className="galeria-badges-topo-esquerda">
                     <h1 className="texto-titulo-principal galeria-badges-titulo">
-                        Galeria de Badges
+                        {t("galeria_de_badges")}
                     </h1>
 
                     {isConsultor && (
@@ -828,10 +837,10 @@ function GaleriaBadges({ modo = "consultor" }) {
                                 valorAtivo={abaAtiva}
                                 onChange={setAbaAtiva}
                                 opcoes={[
-                                    { valor: "sugeridos", label: "Sugeridos" },
+                                    { valor: "sugeridos", label: t("sugeridos") },
                                     {
                                         valor: "todos",
-                                        label: "Todos os Badges",
+                                        label: t("todos_os_badges"),
                                     },
                                 ]}
                             />
@@ -948,9 +957,9 @@ function GaleriaBadges({ modo = "consultor" }) {
                 isOpen={isConsultor && avisoPermissaoLinkedIn}
                 onClose={() => setAvisoPermissaoLinkedIn(false)}
                 onConfirm={() => setAvisoPermissaoLinkedIn(false)}
-                titulo="Sem autorização"
-                mensagem="Não tens autorização para partilhar badges no LinkedIn. Esta permissão pode ser ativada nas definições pelo Administrador."
-                textoConfirmar="Compreendido"
+                titulo={t("sem_autorizacao", "Sem autorização")}
+                mensagem={t("sem_autorizacao_linkedin")}
+                textoConfirmar={t("compreendido")}
                 textoCancelar="Fechar"
                 isDanger={false}
             />
@@ -959,13 +968,13 @@ function GaleriaBadges({ modo = "consultor" }) {
                 isOpen={isConsultor && !!anexoPendente}
                 onClose={() => setAnexoPendente(null)}
                 onConfirm={handleConfirmarAnexoRequisito}
-                titulo="Anexar requisito"
+                titulo={t("anexar_requisito")}
                 mensagem={criarMensagemConfirmacaoAnexo(
                     anexoPendente,
                     detalheBadge
                 )}
-                textoConfirmar="Anexar requisito"
-                textoCancelar="Cancelar"
+                textoConfirmar={t("anexar_requisito")}
+                textoCancelar={t("cancelar")}
                 isDanger={false}
             />
 
@@ -973,14 +982,14 @@ function GaleriaBadges({ modo = "consultor" }) {
                 isOpen={isConsultor && !!submissaoPendenteConfirmacao}
                 onClose={() => setSubmissaoPendenteConfirmacao(null)}
                 onConfirm={handleConfirmarSubmeterCandidatura}
-                titulo="Submeter candidatura"
-                mensagem="Vais submeter esta candidatura para avaliaÃ§Ã£o. Queres continuar?"
+                titulo={t("submeter_candidatura", "Submeter candidatura")}
+                mensagem={t("submeter_candidatura_msg", "Vais submeter esta candidatura para avaliação. Queres continuar?")}
                 textoConfirmar={
                     isSubmetendoCandidatura
-                        ? "A submeter..."
-                        : "Submeter candidatura"
+                        ? t("a_submeter", "A submeter...")
+                        : t("submeter_candidatura", "Submeter candidatura")
                 }
-                textoCancelar="Cancelar"
+                textoCancelar={t("cancelar")}
                 isDanger={false}
             />
 
@@ -988,14 +997,14 @@ function GaleriaBadges({ modo = "consultor" }) {
                 isOpen={isConsultor && !!remocaoPendente}
                 onClose={() => setRemocaoPendente(null)}
                 onConfirm={handleConfirmarRemoverEvidencia}
-                titulo="Remover evidência"
+                titulo={t("remover_evidencia")}
                 mensagem={
                     remocaoPendente
-                        ? `Vais remover a evidência do requisito "${obterDescricaoRequisito(remocaoPendente.requisito)}". Queres continuar?`
+                        ? t("remover_evidencia_msg", { req: obterDescricaoRequisito(remocaoPendente.requisito) }, `Vais remover a evidência do requisito "${obterDescricaoRequisito(remocaoPendente.requisito)}". Queres continuar?`)
                         : ""
                 }
-                textoConfirmar="Remover evidência"
-                textoCancelar="Cancelar"
+                textoConfirmar={t("remover_evidencia")}
+                textoCancelar={t("cancelar")}
                 isDanger
             />
 

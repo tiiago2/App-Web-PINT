@@ -1,28 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import "./GaleriaFiltroDropdown.css";
-
-const categoriasFiltro = [
-  {
-    tipo: "learningPath",
-    label: "Learning Path",
-  },
-  {
-    tipo: "serviceLine",
-    label: "Service Line",
-  },
-  {
-    tipo: "area",
-    label: "Área",
-  },
-];
-
-function obterTextoFiltro(valor) {
-  if (!valor || valor.tipo === "todos") {
-    return "Filtrar: Todos";
-  }
-
-  return `Filtrar: ${valor.label || valor.valor}`;
-}
 
 function GaleriaFiltroDropdown({
   valor = { tipo: "todos", valor: "", label: "Todos" },
@@ -33,9 +11,33 @@ function GaleriaFiltroDropdown({
   },
   onChange,
 }) {
+  const { t } = useTranslation();
   const [aberto, setAberto] = useState(false);
   const [categoriaAberta, setCategoriaAberta] = useState(null);
   const dropdownRef = useRef(null);
+
+  const categoriasFiltro = [
+    {
+      tipo: "learningPath",
+      label: t("learning_path", "Learning Path"),
+    },
+    {
+      tipo: "serviceLine",
+      label: t("service_line", "Service Line"),
+    },
+    {
+      tipo: "area",
+      label: t("area", "Área"),
+    },
+  ];
+
+  function obterTextoFiltro(valor) {
+    if (!valor || valor.tipo === "todos") {
+      return `${t("filtrar", "Filtrar")}: ${t("todos", "Todos")}`;
+    }
+
+    return `${t("filtrar", "Filtrar")}: ${valor.label || valor.valor}`;
+  }
 
   useEffect(() => {
     function handleClickFora(event) {
@@ -105,7 +107,7 @@ function GaleriaFiltroDropdown({
             }`}
             onClick={selecionarTodos}
           >
-            Todos
+            {t("todos")}
           </button>
 
           {categoriasFiltro.map((categoria) => {
@@ -156,7 +158,7 @@ function GaleriaFiltroDropdown({
                       ))
                     ) : (
                       <span className="galeria-filtro-dropdown-vazio">
-                        Sem opções
+                        {t("sem_opcoes")}
                       </span>
                     )}
                   </div>

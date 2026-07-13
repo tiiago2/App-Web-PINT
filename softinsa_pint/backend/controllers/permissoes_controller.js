@@ -1,7 +1,24 @@
 const { Utilizador, Role, Permissoes } = require("../models");
 
 const MAPA_PERMISSOES = {
-    "partilha-linkedin": "Partilha Externa (LinkedIn)",
+    "partilha-linkedin": {
+        "Talent Manager": ["Partilha Externa (LinkedIn)"],
+        "Service Line Leader": ["Partilha Externa (LinkedIn)"],
+        "Consultor": ["Partilha Externa (LinkedIn)"],
+        "Administrador": ["Partilha Externa (LinkedIn)"]
+    },
+    "exportar": {
+        "Talent Manager": ["Exportação de Dados"],
+        "Service Line Leader": ["Gerar Relatórios de Área"],
+        "Consultor": ["Download de PDFs"],
+        "Administrador": ["Exportação de Dados", "Gerar Relatórios de Área", "Download de PDFs"]
+    },
+    "download-pdf": {
+        "Talent Manager": ["Download de PDFs", "Exportação de Dados"],
+        "Service Line Leader": ["Download de PDFs", "Gerar Relatórios de Área"],
+        "Consultor": ["Download de PDFs"],
+        "Administrador": ["Download de PDFs", "Exportação de Dados", "Gerar Relatórios de Área"]
+    }
 };
 
 module.exports = {
@@ -9,15 +26,27 @@ module.exports = {
         try {
             const { chave } = req.params;
             const idUtilizador = req.utilizadorLogado.id_utilizador;
+            const perfil = req.headers['x-user-role']; // Obtido do intercetor de pedidos do frontend
 
-            const descricaoPermissao = MAPA_PERMISSOES[chave];
+            const mapaChave = MAPA_PERMISSOES[chave];
 
-            if (!descricaoPermissao) {
+            if (!mapaChave) {
                 return res.status(400).json({
                     autorizado: false,
                     error: "Permissão inválida.",
                 });
             }
+
+            // Descobrir a permissão correspondente para o perfil ativo
+            let descricaoPermissao = perfil ? mapaChave[perfil] : null;
+            if (!descricaoPermissao) {
+                // Fallback para todas as descrições da chave caso não venha o perfil
+                descricaoPermissao = Object.values(mapaChave).flat();
+            }
+
+            const descricoes = Array.isArray(descricaoPermissao)
+                ? descricaoPermissao
+                : [descricaoPermissao];
 
             const utilizador = await Utilizador.findOne({
                 where: {
@@ -27,6 +56,7 @@ module.exports = {
                     {
                         model: Role,
                         attributes: ["id_role", "nome_role"],
+                        where: perfil ? { nome_role: perfil } : {}, // Garante que o utilizador tem esse Role atribuído na BD
                         through: {
                             attributes: [],
                         },
@@ -43,7 +73,7 @@ module.exports = {
                                     attributes: [],
                                 },
                                 where: {
-                                    descricao_permissao: descricaoPermissao,
+                                    descricao_permissao: descricoes,
                                 },
                                 required: true,
                             },
@@ -55,7 +85,7 @@ module.exports = {
             if (!utilizador) {
                 return res.status(200).json({
                     chave,
-                    descricao_permissao: descricaoPermissao,
+                    descricao_permissao: descricoes,
                     autorizado: false,
                     toggle: false,
                     mensagem:
@@ -67,14 +97,14 @@ module.exports = {
                 .flatMap((role) => role.Permissoes || [])
                 .find(
                     (permissao) =>
-                        permissao.descricao_permissao === descricaoPermissao
+                        descricoes.includes(permissao.descricao_permissao)
                 );
 
             const autorizado = permissaoEncontrada?.toggle === true;
 
             return res.status(200).json({
                 chave,
-                descricao_permissao: descricaoPermissao,
+                descricao_permissao: permissaoEncontrada ? permissaoEncontrada.descricao_permissao : null,
                 autorizado,
                 toggle: autorizado,
                 permissao: permissaoEncontrada || null,

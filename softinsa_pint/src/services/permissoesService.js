@@ -38,6 +38,16 @@ export async function verificarPermissaoPartilhaLinkedIn() {
     }
 }
 
+export async function verificarPermissaoDownloadPDF() {
+    try {
+        const response = await api.get("/permissoes/download-pdf");
+        return response.data?.autorizado === true;
+    } catch (error) {
+        console.error("Erro ao verificar permissão Download de PDFs:", error);
+        return false;
+    }
+}
+
 export async function verificarPermissaoExportacaoBadges({
     modo = "consultor",
 } = {}) {

@@ -629,8 +629,8 @@ export default function Candidaturas({ loggedUser }) {
         }
     } catch (erro) {
         console.error("Erro ao verificar permissão:", erro);
-        // Fallback — abre na mesma se a rota não existir
-        setMostrarExportar(estadoAtual => !estadoAtual);
+        setMostrarExportar(false);
+        mostrarToast("Erro ao verificar permissão de exportação.", "erro");
     }
   };
 

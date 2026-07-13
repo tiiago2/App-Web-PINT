@@ -63,6 +63,74 @@ async function uploadImagemCloudinary(file) {
   return uploadResult.secure_url;
 }
 
+const includeUtilizadorCompleto = [
+  {
+    model: Role,
+    attributes: ['id_role', 'nome_role', 'icone_role'],
+    through: { attributes: [] }
+  },
+  {
+    model: Consultor,
+    attributes: ['id_area'],
+    required: false,
+    include: [
+      {
+        model: Area,
+        attributes: ['id_area', 'nome_area'],
+        required: false,
+        include: [
+          {
+            model: ServiceLine,
+            attributes: ['id_service_line', 'nome_service_line'],
+            required: false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    model: ServiceLine,
+    attributes: ['id_service_line', 'nome_service_line'],
+    required: false
+  }
+];
+
+function formatarUtilizadorJSON(u) {
+  if (!u) return null;
+  const uJson = u.toJSON ? u.toJSON() : u;
+  
+  let area = null;
+  let serviceLine = null;
+  
+  if (uJson.Consultor && uJson.Consultor.Area) {
+    area = {
+      id_area: uJson.Consultor.Area.id_area,
+      nome_area: uJson.Consultor.Area.nome_area
+    };
+    if (uJson.Consultor.Area.ServiceLine) {
+      serviceLine = {
+        id_service_line: uJson.Consultor.Area.ServiceLine.id_service_line,
+        nome_service_line: uJson.Consultor.Area.ServiceLine.nome_service_line
+      };
+    }
+  }
+  
+  if (!serviceLine && uJson.ServiceLines && uJson.ServiceLines.length > 0) {
+    serviceLine = {
+      id_service_line: uJson.ServiceLines[0].id_service_line,
+      nome_service_line: uJson.ServiceLines[0].nome_service_line
+    };
+  }
+
+  return {
+    ...uJson,
+    roles: uJson.Roles || [],
+    consultor: uJson.Consultor || null,
+    area: area,
+    serviceLine: serviceLine
+  };
+}
+
 module.exports = {
   async getUtilizadores(req, res) {
     try {
@@ -88,6 +156,25 @@ module.exports = {
         {
           model: Consultor,
           attributes: ['id_area'],
+          required: false,
+          include: [
+            {
+              model: Area,
+              attributes: ['id_area', 'nome_area'],
+              required: false,
+              include: [
+                {
+                  model: ServiceLine,
+                  attributes: ['id_service_line', 'nome_service_line'],
+                  required: false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          model: ServiceLine,
+          attributes: ['id_service_line', 'nome_service_line'],
           required: false
         }
       ];
@@ -127,11 +214,7 @@ module.exports = {
         order
       });
 
-      let resultado = utilizadores.map(u => ({
-        ...u.toJSON(),
-        roles: u.Roles || [],
-        consultor: u.Consultor || null
-      }));
+      let resultado = utilizadores.map(formatarUtilizadorJSON);
 
       // Filtro por role no backend (garantir match exato)
       if (role) {
@@ -256,15 +339,10 @@ module.exports = {
         return res.status(409).json({ error: "Já existe um utilizador com este email." });
       }
 
-      let imagem_perfil = 'utilizador.png';
-      if (req.file) {
-        imagem_perfil = await uploadImagemCloudinary(req.file);
-      }
-
       const hashedPassword = await bcrypt.hash(passwordFinal, 10);
       const agora = new Date();
 
-      const novoUtilizador = await Utilizador.create({
+      const dadosUtilizador = {
         nome_user,
         email,
         telefone,
@@ -275,9 +353,14 @@ module.exports = {
         aceitacao_politicas: false,
         aceitacao_sla: false,
         ativo: true,
-        imagem_perfil,
         primeiro_login: true
-      }, { transaction });
+      };
+
+      if (req.file) {
+        dadosUtilizador.imagem_perfil = await uploadImagemCloudinary(req.file);
+      }
+
+      const novoUtilizador = await Utilizador.create(dadosUtilizador, { transaction });
 
       let rolesArray = [];
       try {
@@ -301,7 +384,7 @@ module.exports = {
       });
 
       if (id_area && roleConsultor && rolesArray.includes(roleConsultor.id_role)) {
-        await Consultor.create({
+        const dadosConsultor = {
           id_utilizador: novoUtilizador.id_utilizador,
           id_area: Number(id_area),
           nome_user,
@@ -314,10 +397,15 @@ module.exports = {
           aceitacao_politicas: false,
           aceitacao_sla: false,
           ativo: true,
-          imagem_perfil,
           pontos_totais: 0,
           primeiro_login: true
-        }, { transaction });
+        };
+
+        if (dadosUtilizador.imagem_perfil) {
+          dadosConsultor.imagem_perfil = dadosUtilizador.imagem_perfil;
+        }
+
+        await Consultor.create(dadosConsultor, { transaction });
       }
 
       // Se for Service Line Leader, associar à service line escolhida
@@ -360,19 +448,10 @@ module.exports = {
       }
 
       const utilizadorCompleto = await Utilizador.findByPk(novoUtilizador.id_utilizador, {
-        include: [
-          {
-            model: Role,
-            attributes: ['id_role', 'nome_role', 'icone_role'],
-            through: { attributes: [] }
-          }
-        ]
+        include: includeUtilizadorCompleto
       });
 
-      return res.status(201).json({
-        ...utilizadorCompleto.toJSON(),
-        roles: utilizadorCompleto.Roles || []
-      });
+      return res.status(201).json(formatarUtilizadorJSON(utilizadorCompleto));
     } catch (error) {
       await transaction.rollback();
       console.error("Erro ao criar utilizador:", error);
@@ -394,6 +473,37 @@ module.exports = {
         id_area,
         id_service_line
       } = req.body;
+
+      // Verificar permissões: Administrador ou o próprio utilizador
+      const idLogado = req.utilizadorLogado?.id_utilizador;
+      if (!idLogado) {
+        await transaction.rollback();
+        return res.status(401).json({ error: "Utilizador não autenticado." });
+      }
+
+      const logado = await Utilizador.findByPk(idLogado, {
+        include: [{ model: Role, attributes: ['nome_role'] }]
+      });
+      const rolesLogado = (logado?.Roles || []).map(r => r.nome_role.toLowerCase());
+      const logadoIsAdmin = rolesLogado.includes('admin') || rolesLogado.includes('administrador');
+
+      if (!logadoIsAdmin && Number(idLogado) !== Number(id)) {
+        await transaction.rollback();
+        return res.status(403).json({ error: "Acesso negado. Apenas administradores ou o próprio utilizador podem atualizar este perfil." });
+      }
+
+      // Sanitizar dados para utilizadores não administradores
+      let finalAtivo = ativo;
+      let finalRoles = roles;
+      let finalIdArea = id_area;
+      let finalIdServiceLine = id_service_line;
+
+      if (!logadoIsAdmin) {
+        finalAtivo = undefined;
+        finalRoles = undefined;
+        finalIdArea = undefined;
+        finalIdServiceLine = undefined;
+      }
 
       const user = await Utilizador.findByPk(id);
       if (!user) {
@@ -427,8 +537,8 @@ module.exports = {
         update_user: new Date()
       };
 
-      if (ativo !== undefined) {
-        updateData.ativo = String(ativo).toLowerCase() === 'true' || ativo === true || ativo === 1;
+      if (finalAtivo !== undefined) {
+        updateData.ativo = String(finalAtivo).toLowerCase() === 'true' || finalAtivo === true || finalAtivo === 1;
       }
 
       if (password) {
@@ -444,11 +554,11 @@ module.exports = {
       await user.update(updateData, { transaction });
 
       let rolesArray = idsRolesAtuais;
-      if (roles !== undefined) {
+      if (finalRoles !== undefined) {
         try {
-          rolesArray = roles ? JSON.parse(roles) : [];
+          rolesArray = finalRoles ? JSON.parse(finalRoles) : [];
         } catch {
-          rolesArray = roles ? [roles] : [];
+          rolesArray = finalRoles ? [finalRoles] : [];
         }
         rolesArray = rolesArray.map(r => Number(r));
 
@@ -481,7 +591,7 @@ module.exports = {
       const temRoleServiceLineLeader = roleServiceLineLeader && rolesArray.includes(roleServiceLineLeader.id_role);
 
       if (temRoleConsultor) {
-        const areaId = id_area ? Number(id_area) : null;
+        const areaId = finalIdArea ? Number(finalIdArea) : null;
         const consultorExistente = await Consultor.findOne({ where: { id_utilizador: id }, transaction });
 
         if (consultorExistente) {
@@ -493,11 +603,11 @@ module.exports = {
             ativo: updateData.ativo,
             update_user: new Date()
           };
-          if (areaId) {
+          if (logadoIsAdmin && areaId !== null) {
             updateConsultor.id_area = areaId;
           }
           await consultorExistente.update(updateConsultor, { transaction });
-        } else if (areaId) {
+        } else if (logadoIsAdmin && areaId) {
           const agora = new Date();
           await Consultor.create({
             id_utilizador: Number(id),
@@ -517,51 +627,38 @@ module.exports = {
             primeiro_login: user.primeiro_login
           }, { transaction });
         }
-      } else {
+      } else if (logadoIsAdmin) {
         await Consultor.destroy({ where: { id_utilizador: id }, transaction });
       }
 
-      if (temRoleServiceLineLeader) {
-        const serviceLineId = id_service_line ? Number(id_service_line) : null;
-        if (serviceLineId) {
+      if (logadoIsAdmin) {
+        if (temRoleServiceLineLeader) {
+          const serviceLineId = finalIdServiceLine ? Number(finalIdServiceLine) : null;
+          if (serviceLineId) {
+            await ServiceLine.update(
+              { id_lider: null, updated_service: new Date() },
+              { where: { id_lider: id }, transaction }
+            );
+            await ServiceLine.update(
+              { id_lider: Number(id), updated_service: new Date() },
+              { where: { id_service_line: serviceLineId }, transaction }
+            );
+          }
+        } else {
           await ServiceLine.update(
             { id_lider: null, updated_service: new Date() },
             { where: { id_lider: id }, transaction }
           );
-          await ServiceLine.update(
-            { id_lider: Number(id), updated_service: new Date() },
-            { where: { id_service_line: serviceLineId }, transaction }
-          );
         }
-      } else {
-        await ServiceLine.update(
-          { id_lider: null, updated_service: new Date() },
-          { where: { id_lider: id }, transaction }
-        );
       }
 
       await transaction.commit();
 
       const utilizadorAtualizado = await Utilizador.findByPk(id, {
-        include: [
-          {
-            model: Role,
-            attributes: ['id_role', 'nome_role', 'icone_role'],
-            through: { attributes: [] }
-          },
-          {
-            model: Consultor,
-            attributes: ['id_area'],
-            required: false
-          }
-        ]
+        include: includeUtilizadorCompleto
       });
 
-      return res.status(200).json({
-        ...utilizadorAtualizado.toJSON(),
-        roles: utilizadorAtualizado.Roles || [],
-        consultor: utilizadorAtualizado.Consultor || null
-      });
+      return res.status(200).json(formatarUtilizadorJSON(utilizadorAtualizado));
     } catch (error) {
       await transaction.rollback();
       console.error("Erro ao atualizar utilizador:", error);

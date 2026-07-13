@@ -7,7 +7,8 @@ const {
   Nivel,
   Submissoes,
   RequisitosBadge,
-  Documentos
+  Documentos,
+  RegistoBadges
 } = require("../models");
 
 const { Op } = require("sequelize");
@@ -255,8 +256,53 @@ module.exports = {
   // 4. Obter badges disponíveis para propor como objetivo (com Nível, Área, Service Line e Learning Path)
   async getBadgesDisponiveis(req, res) {
     try {
+      const id_utilizador = req.utilizadorLogado.id_utilizador;
+
+      // 1. Obter badges que o utilizador já obteve e que ainda estão válidos
+      const registos = await RegistoBadges.findAll({
+        where: { id_utilizador, expirado: false },
+        include: [{
+          model: Badges,
+          attributes: ["validade"]
+        }]
+      });
+
+      const agora = new Date();
+      const obtidosEValidosIds = registos
+        .filter(reg => {
+          const badge = reg.Badge;
+          if (!badge) return false;
+          if (badge.validade === null || badge.validade === undefined) return true; // Sem validade = eterno
+          const validade = Number(badge.validade);
+          if (!Number.isInteger(validade) || validade <= 0) return true; // Eterno
+          const dataExpiracao = new Date(reg.data_obtencao);
+          dataExpiracao.setDate(dataExpiracao.getDate() + validade);
+          return dataExpiracao > agora;
+        })
+        .map(reg => reg.id_badge);
+
+      // 2. Obter badges com objetivos em curso (ativos e não concluídos)
+      const objetivosAtivos = await Objetivos.findAll({
+        where: {
+          id_utilizador,
+          deleted_objetivo: false,
+          data_conclusao: null
+        },
+        attributes: ["id_badge"]
+      });
+      const emProgressoIds = objetivosAtivos.map(obj => obj.id_badge);
+
+      const excludeIds = [...new Set([...obtidosEValidosIds, ...emProgressoIds])];
+
       const badges = await Badges.findAll({
-        where: { deleted_badge: false },
+        where: {
+          deleted_badge: false,
+          ...(excludeIds.length > 0 && {
+            id_badge: {
+              [Op.notIn]: excludeIds
+            }
+          })
+        },
         include: [
           {
             model: Nivel,

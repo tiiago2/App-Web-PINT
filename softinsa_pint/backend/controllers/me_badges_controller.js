@@ -438,6 +438,48 @@ function montarRequisitosDetalhe(requisitos, submissaoDocumento, documentosPorSu
     }));
 }
 
+function formatarBadgeRelacoes(badge) {
+    if (!badge) return null;
+    const nivel = badge.Nivel;
+    const area = badge.Area;
+    const serviceLine = area?.ServiceLine;
+    const learningPath = serviceLine?.LearningPath;
+
+    return {
+        id_badge: badge.id_badge,
+        nome_badge: badge.nome_badge,
+        descricao_badge: badge.descricao_badge,
+        imagem: badge.imagem,
+        pontos_badge: badge.pontos_badge,
+        validade: badge.validade ?? null,
+        especial: badge.especial,
+        nivel: nivel
+            ? {
+                id_nivel: nivel.id_nivel,
+                nome_nivel: nivel.nome_nivel
+            }
+            : null,
+        area: area
+            ? {
+                id_area: area.id_area,
+                nome_area: area.nome_area,
+                service_line: serviceLine
+                    ? {
+                        id_service_line: serviceLine.id_service_line,
+                        nome_service_line: serviceLine.nome_service_line,
+                        learning_path: learningPath
+                            ? {
+                                id_learning_path: learningPath.id_learning_path,
+                                nome_learning_path: learningPath.nome_learning_path
+                            }
+                            : null
+                    }
+                    : null
+            }
+            : null
+    };
+}
+
 function montarEstadoPessoal({
     badge,
     submissoes,
@@ -464,6 +506,7 @@ function montarEstadoPessoal({
 
     const resposta = {
         id_badge: badge.id_badge,
+        badge: formatarBadgeRelacoes(badge),
         estado: estadoInfo.estado,
         progresso: calcularProgresso(documentos, Boolean(registo), estadoInfo.progressoForcado),
         renovacao: estadoInfo.renovacao,
@@ -549,11 +592,45 @@ async function carregarEstadoPessoalBadges(idUtilizador, { idBadge = null, inclu
     }
 
     const badges = await db.Badges.findAll({
-        attributes: ['id_badge', 'validade'],
+        attributes: [
+            'id_badge',
+            'nome_badge',
+            'descricao_badge',
+            'imagem',
+            'pontos_badge',
+            'validade',
+            'especial'
+        ],
         where: {
             id_badge: { [Op.in]: [...idsBadgesComInfo] },
             deleted_badge: false
         },
+        include: [
+            {
+                model: db.Nivel,
+                attributes: ['id_nivel', 'nome_nivel'],
+                required: false
+            },
+            {
+                model: db.Area,
+                attributes: ['id_area', 'nome_area'],
+                required: false,
+                include: [
+                    {
+                        model: db.ServiceLine,
+                        attributes: ['id_service_line', 'nome_service_line'],
+                        required: false,
+                        include: [
+                            {
+                                model: db.LearningPath,
+                                attributes: ['id_learning_path', 'nome_learning_path'],
+                                required: false
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
         order: [['id_badge', 'ASC']]
     });
 
@@ -1337,8 +1414,17 @@ exports.listarSugestoesBadges = async (req, res) => {
 exports.obterMeuBadge = async (req, res) => {
     try {
         const idBadge = validarInteiroPositivo(req.params.id, 'id');
-        const idUtilizador = req.utilizadorLogado?.id_utilizador;
-        await obterConsultorAutenticado(idUtilizador);
+        let idUtilizador = req.utilizadorLogado?.id_utilizador;
+
+        // Verificar a role ativa para permitir gestores verem badges de consultores
+        const perfil = req.headers['x-user-role'];
+        const isGestor = ['Administrador', 'Talent Manager', 'Service Line Leader'].includes(perfil);
+
+        if (isGestor && req.query.idUtilizador) {
+            idUtilizador = Number(req.query.idUtilizador);
+        } else {
+            await obterConsultorAutenticado(idUtilizador);
+        }
 
         const badge = await db.Badges.findOne({
             attributes: ['id_badge'],

@@ -119,7 +119,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
       }
 
       try {
-        const res = await api.get(`/commun/candidaturasweek/${idGuardado}`);
+        const res = await api.get(`/homeadmin/candidaturasadmin`);
 
         setDados_grafico_candidaturas(prevDados =>
           prevDados.map(item => {

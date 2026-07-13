@@ -9,7 +9,9 @@ import { handleLogout } from '../../functions/log_out.js';
 import { obterUrlPublicaBadge } from '../../utils/badgeDetalheNormalizadores';
 import BadgeItem from '../../components/Galeria/BadgeItem/BadgeItem.jsx';
 import BadgeDetalheModal from '../../components/BadgeDetalhe/BadgeDetalheModal.jsx';
-import { obterBadgeDetalheConsultor, obterUrlPublicaDoBadge } from '../../services/badgeDetalheService.js';
+import ModalConfirmacao from '../../components/ui/ModalConfirmacao/ModalConfirmacao.jsx';
+import { obterMeuBadge, obterUrlPublicaDoBadge, obterUrlPartilhaLinkedInDoBadge } from '../../services/badgeDetalheService.js';
+import { verificarPermissaoPartilhaLinkedIn, verificarPermissaoDownloadPDF } from '../../services/permissoesService.js';
 
 import user_logo from "../../assets/utilizador.png";
 import badge_logo from '../../assets/teste_badge.png';
@@ -132,6 +134,7 @@ const PerfilPessoal = () => {
   const [detalheBadge, setDetalheBadge] = useState(null);
   const [isLoadingDetalheBadge, setIsLoadingDetalheBadge] = useState(false);
   const [isGerandoCertificado, setIsGerandoCertificado] = useState(false);
+  const [avisoPermissaoLinkedIn, setAvisoPermissaoLinkedIn] = useState(false);
 
   const fileInputRef = useRef(null);
   const assinaturaRef = useRef(null);
@@ -161,7 +164,8 @@ const PerfilPessoal = () => {
     telefone: "",
     cargo: "",
     pontos: 0,
-    foto: user_logo
+    foto: user_logo,
+    area: ""
   });
   const [assinaturaBadges, setAssinaturaBadges] = useState([]);
   const [badgesObtidos, setBadgesObtidos] = useState([]); // Adicionado novo estado para os badges totais
@@ -197,7 +201,8 @@ const PerfilPessoal = () => {
         telefone: data.telefone || "",
         cargo: data.cargo || "",
         pontos: data.pontos || 0,
-        foto: data.foto || user_logo // Fallback de segurança da foto
+        foto: data.foto || user_logo, // Fallback de segurança da foto
+        area: data.area || ""
       });
 
       // 2. Formatar e guardar todos os Badges obtidos
@@ -257,8 +262,8 @@ const PerfilPessoal = () => {
 
     try {
       const idGuardado = localStorage.getItem('utilizador_id') || 1;
-      const detalhe = await obterBadgeDetalheConsultor(idBadge, { 
-        idUtilizador: parseInt(idGuardado),
+      const detalhe = await obterMeuBadge(idBadge, { 
+        idUtilizador: parseInt(idPerfil),
         badgeData: {
           id_badge: badge.id,
           nome_badge: badge.nome,
@@ -310,9 +315,29 @@ const PerfilPessoal = () => {
     }
   };
 
+  const handlePartilharLinkedIn = async (badgeDetalhe) => {
+    const idBadge = badgeDetalhe?.id_badge ?? badgeDetalhe?.id;
+    if (!idBadge) return;
+
+    const temPermissao = await verificarPermissaoPartilhaLinkedIn();
+    if (!temPermissao) {
+      setAvisoPermissaoLinkedIn(true);
+      return;
+    }
+
+    const urlLinkedIn = obterUrlPartilhaLinkedInDoBadge(idBadge);
+    window.open(urlLinkedIn, "_blank", "noopener,noreferrer");
+  };
+
   const handleDownloadCertificadoBadge = async (badgeDetalhe) => {
     if (!badgeDetalhe || isGerandoCertificado) return;
     
+    const temPermissao = await verificarPermissaoDownloadPDF();
+    if (!temPermissao) {
+      mostrarToast("Não tens autorização para fazer download de PDFs.", "erro");
+      return;
+    }
+
     setIsGerandoCertificado(true);
 
     try {
@@ -447,6 +472,12 @@ const PerfilPessoal = () => {
                 <Componente_Editavel value={profileData.telefone} onChange={(e) => setProfileData({ ...profileData, telefone: e.target.value })}
                   edicao={edicao} />
               </p>
+              {profileData.area && (
+                <p className='info_dado_item m-0'>
+                  <span className='info_label'>{t('area')}:</span>
+                  <span className='info_valor'>{profileData.area}</span>
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -493,6 +524,7 @@ const PerfilPessoal = () => {
         isLoading={isLoadingDetalheBadge}
         onVerPaginaPublica={handleVerPaginaPublicaBadge}
         onCopiarLinkPublico={handleCopiarLinkPublicoBadge}
+        onPartilharLinkedIn={handlePartilharLinkedIn}
         acaoCertificado={
           detalheBadge && (detalheBadge.estado === "conquistados" || detalheBadge.estado === "conquistado")
             ? {
@@ -501,6 +533,17 @@ const PerfilPessoal = () => {
               }
             : undefined
         }
+      />
+
+      <ModalConfirmacao
+        isOpen={avisoPermissaoLinkedIn}
+        onClose={() => setAvisoPermissaoLinkedIn(false)}
+        onConfirm={() => setAvisoPermissaoLinkedIn(false)}
+        titulo={t("sem_autorizacao", "Sem autorização")}
+        mensagem={t("sem_autorizacao_linkedin")}
+        textoConfirmar={t("compreendido")}
+        textoCancelar="Fechar"
+        isDanger={false}
       />
     </div>
   );

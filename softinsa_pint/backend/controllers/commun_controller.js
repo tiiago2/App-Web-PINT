@@ -1,26 +1,27 @@
 const {
-  Utilizador,
-  Consultor,
-  Area,
-  Historico
+    Utilizador,
+    Consultor,
+    Area,
+    Historico
 } = require("../models");
+const { Op } = require('sequelize');
 
 module.exports = {
-    async getRanking(req, res){
+    async getRanking(req, res) {
         try {
             const ranking = await Consultor.findAll({
-                attributes: ['pontos_totais'], 
+                attributes: ['pontos_totais'],
                 order: [
-                    ['pontos_totais', 'DESC'] 
+                    ['pontos_totais', 'DESC']
                 ],
                 include: [
                     {
                         model: Utilizador,
-                        attributes: ['nome_user', 'imagem_perfil'] 
+                        attributes: ['nome_user', 'imagem_perfil']
                     },
                     {
                         model: Area,
-                        attributes: ['nome_area'] 
+                        attributes: ['nome_area']
                     }
                 ]
             });
@@ -39,25 +40,35 @@ module.exports = {
             return res.status(500).json({ error: "Ocorreu um erro ao obter o ranking." });
         }
     },
-    async getCandidaturasSemana(req, res){
-        try{
+    async getCandidaturasSemana(req, res) {
+        try {
             const userId = req.user?.id || req.params.id;
 
             if (!userId) {
                 return res.status(400).json({ error: "ID do utilizador não fornecido ou não autorizado." });
             }
 
+            const dataUltimaSemana = new Date();
+            dataUltimaSemana.setDate(dataUltimaSemana.getDate() - 7);
+
+
             const quantidadeAceites = await Historico.count({
                 where: {
                     id_utilizador: userId,
-                    aceite: true
+                    aceite: true,
+                    data_avaliacao: {
+                        [Op.gte]: dataUltimaSemana 
+                    }
                 }
             });
 
             const quantidadeRejeitadas = await Historico.count({
                 where: {
                     id_utilizador: userId,
-                    aceite: false
+                    aceite: false,
+                    data_avaliacao: {
+                        [Op.gte]: dataUltimaSemana
+                    }
                 }
             });
 
@@ -65,10 +76,11 @@ module.exports = {
                 aceites: quantidadeAceites,
                 rejeitadas: quantidadeRejeitadas,
             });
-        } catch(error) {
-            console.error("Erro ao buscar candidaturas:", error);
-            return res.status(500).json({ 
-                error: "Ocorreu um erro ao procurar as candidaturas realizadas esta semana." 
+
+        } catch (error) {
+            console.error("Erro ao buscar candidaturas da semana:", error);
+            return res.status(500).json({
+                error: "Ocorreu um erro ao procurar as candidaturas avaliadas esta semana."
             });
         }
     },
@@ -85,7 +97,7 @@ module.exports = {
                     {
                         model: Badge,
                         attributes: [],
-                        required: true  
+                        required: true
                     }
                 ],
                 group: [Sequelize.fn('MONTH', Sequelize.col('Historico.createdAt'))],
@@ -97,8 +109,8 @@ module.exports = {
             const dados_linhas = estatisticasBrutas.map(linha => {
                 return {
                     // Converte o número do mês (1 a 12) para a string do array (índice 0 a 11)
-                    periodo: nomesMeses[linha.mes - 1], 
-                    
+                    periodo: nomesMeses[linha.mes - 1],
+
                     // Garante que os números vêm no formato certo (ex: 2.1 em vez de "2.1000")
                     media_badges: parseFloat(Number(linha.media_badges).toFixed(1)),
                     pontos: Number(linha.pontos),

@@ -13,7 +13,8 @@ const {
   Logs,
   Permissoes,
   Recetor,
-  Documentos
+  Documentos,
+  Consultor
 } = require("../models");
 const { Op } = require("sequelize");
 const { enviarEmail } = require('../helpers/emailHelper');
@@ -403,8 +404,15 @@ module.exports = {
             id_alvo: novoRegisto.id_registo,
             data_log: new Date()
           });
+          // Atualizar pontos_totais do consultor na BD
+          const consultor = await Consultor.findOne({ where: { id_utilizador: submissao.id_utilizador } });
+          if (consultor) {
+            const pontosBadge = badgeObj?.pontos_badge || 0;
+            consultor.pontos_totais = (consultor.pontos_totais || 0) + pontosBadge;
+            await consultor.save();
+          }
         } catch (erroRegisto) {
-          console.error('Erro ao criar registo de badge/log de atividade:', erroRegisto);
+          console.error('Erro ao criar registo de badge/log de atividade/pontos:', erroRegisto);
           // Não falhar a operação principal se o log falhar
         }
       }

@@ -1,4 +1,4 @@
-const { sequelize, Utilizador, Consultor, Assinatura, RegistoBadges, Badges, BadgesAssinatura } = require('../models');
+const { sequelize, Utilizador, Consultor, Assinatura, RegistoBadges, Badges, BadgesAssinatura, Area } = require('../models');
 const jwt = require('jsonwebtoken');
 
 module.exports = {
@@ -17,6 +17,7 @@ module.exports = {
                 pontos: 0,
                 cargo: cargo || null,
                 foto: null,
+                area: null,
                 assinaturas_ids: [], // Passou a plural e a vetor (array) para guardar os IDs
                 badges: []
             };
@@ -24,9 +25,20 @@ module.exports = {
             // 3. Procurar Utilizador (Primeiro no Consultor)
             let user = await Consultor.findOne({
                 where: { id_utilizador: id },
-                attributes: ['nome_user', 'email', 'telefone', 'pontos_totais', 'imagem_perfil'],
+                attributes: ['nome_user', 'email', 'telefone', 'pontos_totais', 'imagem_perfil', 'id_area'],
                 raw: true
             });
+
+            let areaName = null;
+            if (user && user.id_area) {
+                const areaRecord = await Area.findByPk(user.id_area, {
+                    attributes: ['nome_area'],
+                    raw: true
+                });
+                if (areaRecord) {
+                    areaName = areaRecord.nome_area;
+                }
+            }
 
             // 4. Se não encontrar, procurar no Utilizador Geral
             if (!user) {
@@ -46,6 +58,7 @@ module.exports = {
             utilizadorFinal.email = user.email;
             utilizadorFinal.telefone = user.telefone;
             utilizadorFinal.foto = user.imagem_perfil;
+            utilizadorFinal.area = areaName;
 
             if (user.pontos_totais !== undefined) {
                 utilizadorFinal.pontos = user.pontos_totais;

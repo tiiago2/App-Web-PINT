@@ -205,8 +205,7 @@ export default function Atividade() {
 
   const handleAbrirMenuExportacao = async () => {
     try {
-      // FAZER_API_PARA_RECEBER_TOGGLE
-      const response = await api.get('/api/permissoes/exportar');
+      const response = await api.get('/permissoes/exportar');
 
       if (response.data.toggle) {
         setMostrarExportar((estadoAtual) => !estadoAtual);
@@ -216,8 +215,8 @@ export default function Atividade() {
       }
     } catch (erro) {
       console.error("Erro ao verificar permissão:", erro);
-      // Fallback
-      setMostrarExportar((estadoAtual) => !estadoAtual);
+      setMostrarExportar(false);
+      mostrarToast("Erro ao verificar permissão de exportação.", "erro");
     }
   };
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import BotaoAcao from "../BotaoAcao/BotaoAcao";
 import "./BotaoExportar.css";
 
@@ -7,6 +8,7 @@ function BotaoExportar({
     onExportarPDF,
     className = "",
 }) {
+    const { t } = useTranslation();
     const [aberto, setAberto] = useState(false);
     const [isExportando, setIsExportando] = useState(false);
     const wrapperRef = useRef(null);
@@ -53,7 +55,7 @@ function BotaoExportar({
                 icone="fi-br-download"
                 onClick={alternarMenu}
             >
-                {isExportando ? "A exportar..." : "Exportar"}
+                {isExportando ? t("a_exportar") : t("exportar")}
             </BotaoAcao>
 
             {aberto && (

@@ -132,25 +132,25 @@ module.exports = {
 
         const requisitos = sub.Badge?.Requisitos
           ? sub.Badge.Requisitos.map(r => {
-              const docAssociado = documentosDaSubmissao.find(d => d.id_requisito === r.id_requisito);
-              return {
-                 id: r.id_requisito,
-                 nome: r.nome_requisito,
-                 descricao: r.descricao_requisito,
-                 temAnexo: !!docAssociado,
-                 documento: docAssociado ? { id_ficheiro: docAssociado.id_ficheiro, ficheiro: docAssociado.ficheiro } : null
-              };
-            })
+            const docAssociado = documentosDaSubmissao.find(d => d.id_requisito === r.id_requisito);
+            return {
+              id: r.id_requisito,
+              nome: r.nome_requisito,
+              descricao: r.descricao_requisito,
+              temAnexo: !!docAssociado,
+              documento: docAssociado ? { id_ficheiro: docAssociado.id_ficheiro, ficheiro: docAssociado.ficheiro } : null
+            };
+          })
           : [];
 
         const historicos = sub.Historicos
           ? sub.Historicos.map(h => ({
-              idUtilizador: h.id_utilizador,
-              avaliador: h.Utilizador?.nome_user || 'Avaliador',
-              aceite: h.aceite,
-              feedback: h.feedback,
-              dataAvaliacao: h.data_avaliacao
-            }))
+            idUtilizador: h.id_utilizador,
+            avaliador: h.Utilizador?.nome_user || 'Avaliador',
+            aceite: h.aceite,
+            feedback: h.feedback,
+            dataAvaliacao: h.data_avaliacao
+          }))
           : [];
 
         return {
@@ -336,12 +336,12 @@ module.exports = {
         });
 
         if (candidato?.email && emailValido(candidato.email)) {
-          await enviarEmail({
+          enviarEmail({
             to: candidato.email,
-            subject: `Resultado da candidatura - ${nomeBadge}`,
+            subject: `Resultado da candidatura`,
             text: msgNotif,
             html: `<p>${msgNotif}</p>`
-          });
+          }).catch(erro => console.error("Falha ao enviar email:", erro));
         }
       }
 
@@ -364,12 +364,12 @@ module.exports = {
           });
 
           if (lider.email && emailValido(lider.email)) {
-            await enviarEmail({
-              to: lider.email,
-              subject: `Nova validação final pendente - ${nomeBadge}`,
-              text: msgSLL,
-              html: `<p>${msgSLL}</p>`
-            });
+            enviarEmail({
+              to: candidato.email,
+              subject: `Resultado da candidatura`,
+              text: msgNotif,
+              html: `<p>${msgNotif}</p>`
+            }).catch(erro => console.error("Falha ao enviar email:", erro));
           }
         }
       }

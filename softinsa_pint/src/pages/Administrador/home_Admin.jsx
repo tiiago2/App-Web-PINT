@@ -206,7 +206,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
             cor="#00b4d8"
             icone="fi-br-user-add"
             texto={t("add_utilizador")}
-            onClick={() => navigate('/utilizadores')}
+            onClick={() => navigate('/utilizadores/criar-utilizador')}
           />
 
           <AcaoRapida

@@ -1,10 +1,11 @@
 .editar-container {
-    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo);
+    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo) var(--margem-inferior-conteudo);
     height: 100%;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
     background-color: var(--fundo);
+    box-sizing: border-box;
 }
 
 .editar-tabs-container {
@@ -333,13 +334,33 @@
 
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
+    min-height: 0;
 }
 
 .editar-badges-resultados {
     width: 100%;
 
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0;
+
     margin-top: var(--espacamento-seccao-conteudo);
-    padding-bottom: var(--padding-bottom-scroll-galeria);
+}
+
+/* A tabela preenche a altura disponível para manter a margem inferior
+   consistente com as restantes páginas. */
+.editar-badges-resultados .vista-tabela-base {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.editar-badges-resultados .vista-tabela-base-scroll {
+    max-height: none;
+    flex-grow: 1;
 }
 
 @media (max-width: 1199.98px) {

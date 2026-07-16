@@ -149,7 +149,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
       try {
         setCarregandoAtividade(true);
         const res = await api.get('/atividade/get', {
-          params: { perfil: 'Administrador', limit: 6 }
+          params: { perfil: 'Administrador', limit: 20 }
         });
         const atividades = res.data.data || [];
         setDadosAtividade(atividades.map(mapearAtividadeParaModal).filter(Boolean));
@@ -206,7 +206,7 @@ const HomeAdmin = ({ saudacao = "Boa Noite, Gonçalo!", onCriarAviso }) => {
             cor="#00b4d8"
             icone="fi-br-user-add"
             texto={t("add_utilizador")}
-            onClick={() => { }}
+            onClick={() => navigate('/utilizadores')}
           />
 
           <AcaoRapida

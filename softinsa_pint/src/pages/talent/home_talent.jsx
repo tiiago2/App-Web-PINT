@@ -127,7 +127,7 @@ const HomeTalent = ({ user, saudacao }) => {
             try {
                 setCarregandoAtividade(true);
                 const res = await api.get('/atividade/get', {
-                    params: { perfil: 'Talent Manager', limit: 6 }
+                    params: { perfil: 'Talent Manager', limit: 20 }
                 });
                 const atividades = res.data.data || [];
                 setAtividadeRecente(atividades.map(mapearAtividadeParaModal).filter(Boolean));
@@ -252,7 +252,7 @@ const HomeTalent = ({ user, saudacao }) => {
 
             return (
                 <div key={candidatura?.id_submissao || index} className="col-12 col-sm-6 col-xl-4">
-                    <div className="card text-center border-0 p-1" style={{ height: '100%' }}>
+                    <div className="card text-center border-0 p-1 card-candidatura" style={{ height: '100%' }}>
                         <div className="mx-auto mt-2 rounded-circle d-flex align-items-center justify-content-center">
                             <img className="rounded-circle badge_logo_candidaturas" src={imagemBadge} alt={nomeBadge} />
                         </div>
@@ -271,7 +271,7 @@ const HomeTalent = ({ user, saudacao }) => {
 
                         <div className="text-muted mb-2" style={{ fontSize: '0.7rem' }}>{formatarTempo(candidatura?.data_submissao) || '—'}</div>
 
-                        <div className="d-flex justify-content-center gap-1">
+                        <div className="d-flex justify-content-center gap-1 mt-auto">
                             <BotaoVerMais onClick={() => navigate('/candidaturas', { state: { selectedCandidaturaId: candidatura?.id_submissao } })} tamanho={0.7} />
                             <BotaoAceitar onClick={() => navigate('/candidaturas', { state: { selectedCandidaturaId: candidatura?.id_submissao } })} tamanho={0.7} />
                             <BotaoRejeitar onClick={() => navigate('/candidaturas', { state: { selectedCandidaturaId: candidatura?.id_submissao } })} tamanho={0.7} />
@@ -283,50 +283,48 @@ const HomeTalent = ({ user, saudacao }) => {
     };
 
     return (
-        <div className="home-talent-container gap-3">
+        <div className="home-talent-container">
             <div className="flex-shrink-0">
                 <h1 className="texto-titulo-principal m-0">{saudacao}</h1>
             </div>
 
-            <div className="d-flex flex-column gap-3" style={{ flex: '1 1 auto' }}>
-                {/* Primeira linha: Candidaturas e Gráfico Estatísticas */}
-                <div className="row g-2 g-md-3 primeira-linha-home">
-                    <div className="col-12 col-xl-8 candidaturas-column">
-                        <div>
-                            <div className="d-flex justify-content-between align-items-center mb-2">
-                                <h5 className="m-0" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>{t('candidaturas_recentes')}</h5>
-                                {infoCandidaturas !== null && infoCandidaturas !== undefined && (
-                                    <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.6} />
-                                )}
-                            </div>
-                            <div className="row g-2 g-md-3">
-                                {RenderCandidaturas()}
-                            </div>
+            {/* Primeira linha: Candidaturas e Gráfico Estatísticas */}
+            <div className="row primeira-linha-home" style={{ rowGap: 'var(--gap-default-seccoes)' }}>
+                <div className="col-12 col-xl-8 candidaturas-column">
+                    <div>
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                            <h5 className="m-0" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>{t('candidaturas_recentes')}</h5>
+                            {infoCandidaturas !== null && infoCandidaturas !== undefined && (
+                                <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.6} />
+                            )}
                         </div>
-                    </div>
-                    <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
-                        <div className="grafico-estatistica-container" style={{ overflow: 'hidden' }}>
-                            <GraficoEstatistica />
+                        <div className="row g-2 g-md-3">
+                            {RenderCandidaturas()}
                         </div>
                     </div>
                 </div>
+                <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
+                    <div className="grafico-estatistica-container" style={{ overflow: 'hidden' }}>
+                        <GraficoEstatistica />
+                    </div>
+                </div>
+            </div>
 
-                {/* Segunda linha: Atividade, Classificação e Gráfico Candidaturas */}
-                <div className="row g-2 g-md-3 segunda-linha-home">
-                    <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
-                        <div style={{ height: '100%', overflow: 'hidden' }}>
-                            <AtividadeRecente atividades={atividadeRecente} isLoading={carregandoAtividade} />
-                        </div>
+            {/* Segunda linha: Atividade, Classificação e Gráfico Candidaturas */}
+            <div className="row segunda-linha-home" style={{ minHeight: 0, rowGap: 'var(--gap-default-seccoes)' }}>
+                <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
+                    <div style={{ height: '100%', overflow: 'hidden' }}>
+                        <AtividadeRecente atividades={atividadeRecente} fullHeight={true} isLoading={carregandoAtividade} />
                     </div>
-                    <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
-                        <div style={{ height: '100%', overflow: 'hidden' }}>
-                            <ClassificacaoGeral user={user} classificacao={classificacao} />
-                        </div>
+                </div>
+                <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
+                    <div style={{ height: '100%', overflow: 'hidden' }}>
+                        <ClassificacaoGeral user={user} classificacao={classificacao} fullHeight={true} />
                     </div>
-                    <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
-                        <div className="grafico-wrapper" style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                            <GraficoCandidaturas dados_grafico_candidaturas={dados_grafico_candidaturas} loading={loadingGraficos} />
-                        </div>
+                </div>
+                <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
+                    <div className="grafico-wrapper" style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                        <GraficoCandidaturas dados_grafico_candidaturas={dados_grafico_candidaturas} loading={loadingGraficos} />
                     </div>
                 </div>
             </div>

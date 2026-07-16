@@ -396,7 +396,7 @@ const EstatisticasTalent = () => {
                     <ClassificacaoGeral
                         classificacao={classificacao}
                         fullHeight={true}
-                        maxItems={10}
+                        maxItems={12}
                     />
                 </div>
             </div>

@@ -111,7 +111,7 @@ const HomeService = ({ user, saudacao }) => {
             try {
                 setCarregandoAtividade(true);
                 const res = await api.get('/atividade/get', {
-                    params: { perfil: 'Service Line Leader', limit: 6 }
+                    params: { perfil: 'Service Line Leader', limit: 20 }
                 });
                 const atividades = res.data.data || [];
                 setAtividadeRecente(atividades.map(mapearAtividadeParaModal).filter(Boolean));
@@ -188,60 +188,58 @@ const HomeService = ({ user, saudacao }) => {
     }
 
     return (
-        <div className="home-service-container gap-3">
+        <div className="home-service-container">
             <div className="flex-shrink-0">
                 <h1 className="texto-titulo-principal m-0">{saudacao}</h1>
             </div>
 
-            <div className="d-flex flex-column gap-3" style={{ flex: '1 1 auto' }}>
-                
-                {/* Primeira linha: Candidaturas Recentes e Gráfico de Candidaturas */}
-                <div className="row g-2 g-md-3 primeira-linha-home">
-                    <div className="col-12 col-xl-8 candidaturas-column">
-                        <div>
-                            <div className="d-flex justify-content-between align-items-center mb-2">
-                                <h5 className="m-0" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>{t('candidaturas_recentes')}</h5>
-                                <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.6} />
-                            </div>
-                            <div className="row g-2 g-md-3">
-                                {RenderCandidaturas()}       
-                            </div>
+            {/* Primeira linha: Candidaturas da Semana e Gráfico de Candidaturas */}
+            <div className="row primeira-linha-home" style={{ rowGap: 'var(--gap-default-seccoes)' }}>
+                <div className="col-12 col-xl-8 candidaturas-column">
+                    <div>
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                            <h5 className="m-0" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>{t('candidaturas_da_semana')}</h5>
+                            <BotaoVerMais onClick={() => navigate('/candidaturas')} tamanho={0.6} />
                         </div>
-                    </div>
-                    <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
-                        <div className="grafico-estatistica-container" style={{ overflow: 'hidden' }}>
-                            <GraficoCandidaturas dados_grafico_candidaturas={dados_grafico_candidaturas}/>
+                        <div className="row g-2 g-md-3">
+                            {RenderCandidaturas()}
                         </div>
                     </div>
                 </div>
+                <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
+                    <div className="grafico-estatistica-container" style={{ overflow: 'hidden' }}>
+                        <GraficoCandidaturas dados_grafico_candidaturas={dados_grafico_candidaturas}/>
+                    </div>
+                </div>
+            </div>
 
-                {/* Segunda linha: Atividade Recente, Classificação Geral e Classificação da Service Line */}
-                <div className="row g-2 g-md-3 segunda-linha-home">
-                    <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
-                        <div style={{ height: '100%', overflow: 'hidden' }}>
-                            <AtividadeRecente atividades={atividadeRecente} isLoading={carregandoAtividade} />
-                        </div>
+            {/* Segunda linha: Atividade Recente, Classificação Geral e Classificação da Service Line */}
+            <div className="row segunda-linha-home" style={{ minHeight: 0, rowGap: 'var(--gap-default-seccoes)' }}>
+                <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
+                    <div style={{ height: '100%', overflow: 'hidden' }}>
+                        <AtividadeRecente atividades={atividadeRecente} fullHeight={true} isLoading={carregandoAtividade} />
                     </div>
-                    <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
-                        <div style={{ height: '100%', overflow: 'hidden' }}>
-                            <ClassificacaoGeral user={user} classificacao={classificacaoGeral}/>
-                        </div>
+                </div>
+                <div className="col-12 col-sm-6 col-xl-4" style={{ minHeight: 0 }}>
+                    <div style={{ height: '100%', overflow: 'hidden' }}>
+                        <ClassificacaoGeral user={user} classificacao={classificacaoGeral} fullHeight={true} />
                     </div>
-                    <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
-                        <div style={{ height: '100%', overflow: 'hidden' }}>
-                            <ClassificacaoGeral
-                                user={user}
-                                classificacao={classificacaoServiceLine}
-                                titulo={t('service_line')}
-                            />
-                        </div>
+                </div>
+                <div className="col-12 col-xl-4" style={{ minHeight: 0 }}>
+                    <div style={{ height: '100%', overflow: 'hidden' }}>
+                        <ClassificacaoGeral
+                            user={user}
+                            classificacao={classificacaoServiceLine}
+                            titulo={t('service_line')}
+                            fullHeight={true}
+                        />
                     </div>
                 </div>
             </div>
 
             {/* Modal de Detalhes da Candidatura */}
             {isModalOpen && selectedCandidature && (
-                <CandidaturaModal 
+                <CandidaturaModal
                     candidature={selectedCandidature}
                     user={users.find(u => u.id === selectedCandidature.user_id)}
                     badge={badges.find(b => b.id === selectedCandidature.badge_id)}

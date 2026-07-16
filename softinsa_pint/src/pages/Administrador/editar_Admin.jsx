@@ -125,7 +125,7 @@ function EditarAdmin() {
       </div>
 
       {/* Conteúdo dinâmico da Aba */}
-      <div className="d-flex flex-column flex-grow-1 pb-2">
+      <div className="d-flex flex-column flex-grow-1">
         {renderAbaConteudo()}
       </div>
     </div>

@@ -1,22 +1,17 @@
 const {
-  Consultor,
-  Badges,
-  Area,
   Submissoes,
   RegistoBadges,
+  Badges,
+  Area,
   Objetivos,
   Nivel,
   Permissoes
 } = require("../models");
 
 const { Op, Sequelize } = require("sequelize");
+const { calcularRanking } = require("../helpers/rankingHelper");
 
 // ── Helpers de data ─────────────────────────────────────────────
-function inicioAno() {
-  const agora = new Date();
-  return new Date(agora.getFullYear(), 0, 1);
-}
-
 function inicioMes() {
   const agora = new Date();
   return new Date(agora.getFullYear(), agora.getMonth(), 1);
@@ -30,22 +25,6 @@ function inicioSemana() {
 
 // ── Helpers de formato ───────────────────────────────────────────
 const NOMES_MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-
-// ── Função auxiliar para calcular pontos do ano de um utilizador ──
-async function calcularPontosAno(id_utilizador, inicioAnoDate) {
-  const registos = await RegistoBadges.findAll({
-    where: {
-      id_utilizador,
-      data_obtencao: { [Op.gte]: inicioAnoDate }
-    },
-    include: [{ model: Badges, attributes: ["pontos_badge"] }]
-  });
-  let pontos = 0;
-  for (const r of registos) {
-    pontos += r.Badge ? r.Badge.pontos_badge : 0;
-  }
-  return pontos;
-}
 
 module.exports = {
   // 1. KPIs da página de Estatísticas do consultor logado
@@ -99,26 +78,11 @@ module.exports = {
         : 0;
 
       // ── Lugar no ranking por pontos do ano ──
-      const inicioAnoDate = inicioAno();
+      const ranking = await calcularRanking();
+      ranking.sort((a, b) => b.pontos_ano - a.pontos_ano);
 
-      const consultores = await Consultor.findAll({
-        where: { ativo: true },
-        attributes: ["id_utilizador"]
-      });
-
-      // Calcula os pontos do ano de todos os consultores
-      const pontosTodos = [];
-      for (const c of consultores) {
-        const pontosAno = await calcularPontosAno(c.id_utilizador, inicioAnoDate);
-        pontosTodos.push({ id: c.id_utilizador, pontos: pontosAno });
-      }
-
-      // Pontos do ano do utilizador logado
-      const meusPontos = pontosTodos.find(p => p.id === id_utilizador);
-      const meusPontosAno = meusPontos ? meusPontos.pontos : 0;
-
-      // Conta quantos têm mais pontos que o user logado
-      const lugar_atual = pontosTodos.filter(p => p.pontos > meusPontosAno).length + 1;
+      const posicao = ranking.findIndex(r => r.id === id_utilizador);
+      const lugar_atual = posicao >= 0 ? posicao + 1 : '-';
 
       return res.status(200).json({
         total_badges,
@@ -291,10 +255,19 @@ module.exports = {
   },
 
   // 4. Badges conquistados pelo user, agrupados por nível
+  // Garante que todos os níveis existentes no sistema são devolvidos,
+  // mesmo que o consultor ainda não tenha conquistado badges nesse nível.
   async getEstatisticasBadgesNivel(req, res) {
     try {
       const id_utilizador = req.utilizadorLogado.id_utilizador;
 
+      // 1. Todos os níveis definidos no sistema
+      const niveis = await Nivel.findAll({
+        attributes: ["id_nivel", "nome_nivel"],
+        order: [["id_nivel", "ASC"]]
+      });
+
+      // 2. Registos de badges conquistados pelo consultor
       const registos = await RegistoBadges.findAll({
         where: { id_utilizador },
         include: [
@@ -306,16 +279,33 @@ module.exports = {
         ]
       });
 
-      // Agrupa por nível
+      // 3. Inicializa um mapa com todos os níveis existentes a 0 badges
       const porNivel = {};
+      for (const n of niveis) {
+        porNivel[n.id_nivel] = {
+          id_nivel: n.id_nivel,
+          nome_nivel: n.nome_nivel,
+          total_badges: 0
+        };
+      }
+
+      // 4. Acumula badges conquistados por nível
       for (const r of registos) {
         const nivel = r.Badge && r.Badge.Nivel;
         const id_nivel = nivel ? nivel.id_nivel : 0;
-        const nome = nivel ? nivel.nome_nivel : "Sem nível";
-        if (!porNivel[id_nivel]) {
-          porNivel[id_nivel] = { id_nivel, nome_nivel: nome, total_badges: 0 };
+        if (porNivel[id_nivel]) {
+          porNivel[id_nivel].total_badges++;
+        } else {
+          // Nível removido ou "Sem nível" — cria entrada temporária para manter compatibilidade
+          if (!porNivel[id_nivel]) {
+            porNivel[id_nivel] = {
+              id_nivel,
+              nome_nivel: nivel ? nivel.nome_nivel : "Sem nível",
+              total_badges: 0
+            };
+          }
+          porNivel[id_nivel].total_badges++;
         }
-        porNivel[id_nivel].total_badges++;
       }
 
       const total = Object.values(porNivel).reduce((s, e) => s + e.total_badges, 0);

@@ -77,7 +77,7 @@ const AtividadeModalContent = ({ atividades, onClose }) => {
                 </div>
 
                 <div className="ativ-lista">
-                    {atividades.map((item, i) => {
+                    {atividades.slice(0, 20).map((item, i) => {
                         const config = obterConfiguracaoNotificacao(item);
                         return (
                             <div key={i} className="ativ-item">
@@ -133,7 +133,7 @@ const AtividadeRecente = ({ atividades, fullHeight, isLoading = false }) => {
 
             {/* Lista de atividades alinhada ao topo */}
             <div className="ativ-widget-lista flex-grow-1 overflow-y-auto pe-1">
-                {atividades.slice(0, 6).map((item, i) => {
+                {atividades.slice(0, 10).map((item, i) => {
                     const config = obterConfiguracaoNotificacao(item);
                     return (
                         <div key={i} className="ativ-widget-item">

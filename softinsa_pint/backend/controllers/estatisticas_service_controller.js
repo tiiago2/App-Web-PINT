@@ -13,9 +13,14 @@ const { Op, Sequelize } = require("sequelize");
 const { calcularRanking } = require("../helpers/rankingHelper");
 
 const NOMES_MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const NOMES_DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
 
 function getMesAbrev(data) {
   return NOMES_MESES[data.getMonth()];
+}
+
+function formatarDataCurta(data) {
+  return NOMES_DIAS[data.getDay()];
 }
 
 // ── Mapeamento dos nomes dos níveis para as chaves de tradução ──
@@ -228,7 +233,7 @@ module.exports = {
 
           dados.push({
             chave: `semana_${inicio}`,
-            label: `${dataInicio.getDate()}/${dataInicio.getMonth() + 1}`,
+            label: `${inicio}-${fim}`,
             atribuidos: total
           });
         }

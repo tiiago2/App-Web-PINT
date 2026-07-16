@@ -399,7 +399,7 @@ const EstatisticasConsultor = ({ user }) => {
 
                 {/* COLUNA DIREITA — Classificação Geral */}
                 <div className="estat-col-dir">
-                    <ClassificacaoGeral user={user} classificacao={classificacao} fullHeight={true} maxItems={9} />
+                    <ClassificacaoGeral user={user} classificacao={classificacao} fullHeight={true} maxItems={12} periodoInicial="ano" />
                 </div>
             </div>
         </div>

@@ -47,7 +47,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                     api.get('/homeconsultor/objetivos'),
                     api.get('/homeconsultor/progresso'),
                     api.get('/homeconsultor/ranking'),
-                    api.get('/atividade/get', { params: { perfil: 'consultor', limit: 6 } })
+                    api.get('/atividade/get', { params: { perfil: 'consultor', limit: 20 } })
                 ]);
 
                 setBadgesProgresso(resBadges.data || []);
@@ -71,6 +71,12 @@ const HomeConsultor = ({ user, saudacao }) => {
             .sort((a, b) => (Number(b.progresso) || 0) - (Number(a.progresso) || 0))
             .slice(0, 3);
     }, [badgesProgresso]);
+
+    const objetivosFiltrados = useMemo(() => {
+        return objetivos
+            .filter((obj) => !obj.data_conclusao)
+            .slice(0, 3);
+    }, [objetivos]);
 
     return (
         <div className="home-consultor-container">
@@ -146,13 +152,13 @@ const HomeConsultor = ({ user, saudacao }) => {
                 <div className="col-12 col-lg-4 d-flex flex-column">
                     <div className="home-card p-3 h-100">
                         <h5 className="home-card-title mb-3 fw-medium flex-shrink-0">{t('objetivos_propostos')}</h5>
-                        {carregando && objetivos.length === 0 ? (
+                        {carregando && objetivosFiltrados.length === 0 ? (
                             <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
                                 <div className="objetivos-estado-vazio">
                                     <LoadingSpinner tamanho="md" texto={t('a_carregar') || 'A carregar...'} centralizado />
                                 </div>
                             </div>
-                        ) : objetivos.length === 0 ? (
+                        ) : objetivosFiltrados.length === 0 ? (
                             <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
                                 <div className="objetivos-estado-vazio" style={{ margin: 0 }}>
                                     <span>{t('sem_objetivos') || 'Sem objetivos propostos.'}</span>
@@ -160,7 +166,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                             </div>
                         ) : (
                             <div className="objetivos-lista-v3 flex-grow-1">
-                                {objetivos.slice(0, 3).map((obj, idx) => {
+                                {objetivosFiltrados.map((obj, idx) => {
                                     const pct = Math.max(0, Math.min(100, Number(obj.progresso) || 0));
                                     const cor = corPorProgresso(pct);
                                     return (
@@ -172,8 +178,12 @@ const HomeConsultor = ({ user, saudacao }) => {
                                             tabIndex={0}
                                             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate('/objetivos'); }}
                                         >
-                                            <div className="objetivo-icone-v3" style={{ backgroundColor: cor.fundo, color: cor.principal }}>
-                                                <i className={`fi ${obj.icone || iconeObjetivo(idx)}`}></i>
+                                            <div className="objetivo-icone-v3" style={{ backgroundColor: cor.fundo, color: cor.principal, overflow: 'hidden' }}>
+                                                {obj.imagem ? (
+                                                    <img src={obj.imagem} alt={obj.titulo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    <i className={`fi ${obj.icone || iconeObjetivo(idx)}`}></i>
+                                                )}
                                             </div>
                                             <div className="objetivo-corpo-v3">
                                                 <div className="objetivo-topo-v3">
@@ -216,7 +226,7 @@ const HomeConsultor = ({ user, saudacao }) => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="progresso-lista flex-grow-1 overflow-y-auto pe-1">
+                            <div className="progresso-lista flex-grow-1 overflow-y-auto">
                                 {progressoItems.map((prog, i) => {
                                     const pct = Math.max(0, Math.min(100, Number(prog.pct) || 0));
                                     const cor = corPorProgresso(pct);

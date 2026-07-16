@@ -1,20 +1,61 @@
 .home-talent-container {
-    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo);
+    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo) var(--margem-inferior-conteudo);
     background-color: var(--fundo);
     height: 100%;
     overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: auto minmax(auto, 0.45fr) minmax(auto, 0.55fr);
+    gap: var(--gap-default-seccoes);
+}
+
+.home-talent-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* As rows são grid items — garantimos que esticam e não crescem para além do espaço */
+.home-talent-container > .row {
+    min-height: 0;
+    margin: 0;
+}
+
+/* Garante altura mínima para as secções principais, evitando que fiquem
+   demasiado comprimidas em ecrãs de menor altura ou quando empilhadas. */
+.home-talent-container > .row:nth-child(2) {
+    min-height: 260px;
+}
+
+.home-talent-container > .row:nth-child(3) {
+    min-height: 240px;
+}
+
+/* As colunas devem esticar para preencher a row e permitir scroll interno */
+.home-talent-container > .row > [class*="col-"] {
+    min-height: 0;
+    height: 100%;
+}
+
+/* Os filhos diretos das colunas (cards e widgets) também precisam de min-height: 0
+   para o overflow interno funcionar e não crescerem para além do espaço */
+.home-talent-container > .row > [class*="col-"] > * {
+    min-height: 0;
+}
+
+.card-candidatura {
     display: flex;
     flex-direction: column;
 }
 
-.user_image_candidaturas{
+.user_image_candidaturas {
     min-height: 3vh;
     max-height: 3vh;
 }
 
-.badge_logo_candidaturas{
-    min-height: 13vh;
-    max-height: 13vh;
+.badge_logo_candidaturas {
+    min-height: 7vh;
+    max-height: 7vh;
 }
 
 .chart-container-relative {
@@ -26,9 +67,8 @@
 .donut-center-text {
     position: absolute;
     top: 50%;
-    /* 🔒 LOCK nos 45% */
-    left: 45%; 
-    transform: translate(-50%, -50%); /* Centra o bloco de texto no ponto 45% */
+    left: 45%;
+    transform: translate(-50%, -50%);
     text-align: center;
     pointer-events: none;
     display: flex;
@@ -36,62 +76,78 @@
     z-index: 5;
 }
 
-#total_meio{
-    font-size: 28px; 
+#total_meio {
+    font-size: 28px;
     fill: var(--fontes);
 }
 
-#total_meio_palavra{
+#total_meio_palavra {
     font-size: 12px;
 }
 
-/* === Classes de Estrutura Híbrida (Portátil vs Monitor) === */
-/* Comportamento base para portátil (até 1439px) ideal para zooms de 125% */
-.primeira-linha-home {
-    flex: 0 0 auto;
+.candidaturas-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
-.segunda-linha-home {
-    flex: 0 0 auto;
-}
-
-/* Força uma altura de 265px no portátil. Elimina scroll global poupando 20px vitais. */
+.badges-container,
 .grafico-estatistica-container {
-    height: 265px;
+    height: 100%;
 }
 
 /* === Correções de Alinhamento (Geral) === */
 .segunda-linha-home .card,
 .segunda-linha-home > div > div > div,
 .home-talent-container .grafico-wrapper > div {
-    height: 265px !important;
-    max-height: 265px !important;
+    height: 100% !important;
+    max-height: 100% !important;
     margin-bottom: 0 !important;
-    overflow-y: hidden; /* Oculta restritamente qualquer barra de scroll interna dos gráficos */
+    overflow-y: hidden;
 }
 
-/* === Comportamento Específico para Monitor Grande === */
-@media (min-width: 1440px) and (min-height: 800px) {
-    .candidaturas-column {
+/* === Responsividade === */
+@media (max-width: 1199px) {
+    .home-talent-container {
         display: flex;
         flex-direction: column;
-        justify-content: center; /* Desce as candidaturas para eliminar o fosso vazio em baixo */
+        gap: var(--gap-default-seccoes);
     }
 
-    .primeira-linha-home, .segunda-linha-home {
-        flex: 1 1 50%;
+    .home-talent-container > .row {
+        flex-shrink: 0;
+        min-height: auto;
+        height: auto;
     }
 
-    .grafico-estatistica-container {
-        height: 100%;
+    .home-talent-container > .row > [class*="col-"] {
+        height: auto;
+        min-height: auto;
     }
 
-    /* Devolve o comportamento elástico 100% no monitor */
-    .segunda-linha-home .card,
-    .segunda-linha-home > div > div > div,
-    .home-talent-container .grafico-wrapper > div {
-        height: 100% !important;
+    .home-talent-container > .row:nth-child(2) > [class*="col-"] > *,
+    .home-talent-container > .row:nth-child(3) > [class*="col-"] > * {
+        height: auto !important;
         max-height: none !important;
-        overflow-y: visible;
+    }
+}
+
+/* Ecrãs de menor altura: middle ground entre a parte de cima (candidaturas +
+   gráfico) e a parte de baixo, evitando scroll sem ocupar demasiado espaço. */
+@media (max-height: 900px) and (min-width: 1200px) {
+    .home-talent-container {
+        grid-template-rows: auto minmax(295px, 0.52fr) minmax(240px, 1fr);
+    }
+}
+
+@media (max-height: 750px) and (min-width: 1200px) {
+    .home-talent-container {
+        grid-template-rows: auto minmax(295px, 0.6fr) minmax(220px, 1fr);
+    }
+}
+
+@media (max-height: 650px) and (min-width: 1200px) {
+    .home-talent-container {
+        grid-template-rows: auto minmax(295px, 0.68fr) minmax(200px, 1fr);
     }
 }

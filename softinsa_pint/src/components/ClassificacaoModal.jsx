@@ -4,14 +4,14 @@ import ReactDOM from 'react-dom';
 import LoadingSpinner from "./ui/Loading/LoadingSpinner";
 import './ClassificacaoModal.css';
 import user_logo from '../assets/utilizador.png';
-import { mockClassificacao } from '../defs/classificacao_mock';
 
 /* ── 1. COMPONENTE INTERNO: O MODAL ─────────────────────── */
-const ClassificacaoModal = ({ 
-    classificacao = mockClassificacao, 
-    filtroInicial = null, 
+const ClassificacaoModal = ({
+    classificacao = [],
+    filtroInicial = null,
     filtroValorInicial = null,
-    onClose 
+    periodoInicial = 'ano',
+    onClose
 }) => {
     const { t } = useTranslation();
 
@@ -22,7 +22,7 @@ const ClassificacaoModal = ({
     const [filtroSel, setFiltroSel] = useState(filtroInicial); // e.g. 'area', 'service_line', 'funcao'
     const [filtroValorSel, setFiltroValorSel] = useState(filtroValorInicial); // e.g. 'Hybrid Systems'
     const [subMenuActive, setSubMenuActive] = useState(null); // e.g. 'area', 'service_line', 'funcao'
-    const [semanaSel, setSemanaSel] = useState('sempre'); // Default to Always/Sempre
+    const [semanaSel, setSemanaSel] = useState(periodoInicial);
 
     const filtrarRef = useRef(null);
     const semanaRef = useRef(null);
@@ -243,11 +243,12 @@ const ClassificacaoModal = ({
 
 
 /* ── 2. COMPONENTE EXPORTADO: O WIDGET DA HOMEPAGE ────────── */
-const ClassificacaoGeral = ({ 
-    classificacao = mockClassificacao, 
-    user, 
-    filtroInicial = null, 
+const ClassificacaoGeral = ({
+    classificacao = [],
+    user,
+    filtroInicial = null,
     filtroValorInicial = null,
+    periodoInicial = 'ano',
     titulo,
     fullHeight = false,
     maxItems = 5,
@@ -281,12 +282,13 @@ const ClassificacaoGeral = ({
             }
         }
 
-        // Always sort by pontos_sempre (All-time points) in the preview
-        dadosFiltrados.sort((a, b) => (b.pontos_sempre || 0) - (a.pontos_sempre || 0));
+        // Sort preview by the selected timeframe
+        const pontosChave = `pontos_${periodoInicial}`;
+        dadosFiltrados.sort((a, b) => (b[pontosChave] || 0) - (a[pontosChave] || 0));
 
         return dadosFiltrados.map((item, idx) => {
             const pos = idx + 1;
-            const formattedPontos = (item.pontos_sempre || 0).toLocaleString('pt-PT');
+            const formattedPontos = (item[pontosChave] || 0).toLocaleString('pt-PT');
             return {
                 ...item,
                 pos,
@@ -345,12 +347,13 @@ const ClassificacaoGeral = ({
             </div>
 
             {showClassificacao && (
-                <ClassificacaoModal 
-                    classificacao={classificacao} 
+                <ClassificacaoModal
+                    classificacao={classificacao}
                     user={user}
                     filtroInicial={filtroInicial}
                     filtroValorInicial={valorFiltro}
-                    onClose={() => setShowClassificacao(false)} 
+                    periodoInicial={periodoInicial}
+                    onClose={() => setShowClassificacao(false)}
                 />
             )}
         </div>

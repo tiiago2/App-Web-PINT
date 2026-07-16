@@ -54,7 +54,7 @@
     position: absolute;
     top: 50%;
     /* 🔒 LOCK nos 45% */
-    left: 45%; 
+    left: 45%;
     transform: translate(-50%, -50%); /* Centra o bloco de texto no ponto 45% */
     text-align: center;
     pointer-events: none;
@@ -64,7 +64,7 @@
 }
 
 #total_meio{
-    font-size: 28px; 
+    font-size: 28px;
     fill: var(--fontes);
 }
 
@@ -72,55 +72,154 @@
     font-size: 12px;
 }
 
-/* === Classes de Estrutura Híbrida (Portátil vs Monitor) === */
+/* === Layout da Homepage (grid, consistente com as outras homepages) === */
 .home-service-container {
-    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo);
+    padding: var(--margem-superior-conteudo) var(--margem-lateral-conteudo) var(--margem-inferior-conteudo);
     background-color: var(--fundo);
     height: 100%;
     overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: auto minmax(auto, 0.45fr) minmax(auto, 0.55fr);
+    gap: var(--gap-default-seccoes);
+}
+
+.home-service-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* As rows são grid items — garantimos que esticam e não crescem para além do espaço */
+.home-service-container > .row {
+    min-height: 0;
+    margin: 0;
+}
+
+/* Garante altura mínima para as secções principais, evitando que fiquem
+   demasiado comprimidas em ecrãs de menor altura ou quando empilhadas. */
+.home-service-container > .row:nth-child(2) {
+    min-height: 260px;
+}
+
+.home-service-container > .row:nth-child(3) {
+    min-height: 240px;
+}
+
+/* As colunas devem esticar para preencher a row e permitir scroll interno */
+.home-service-container > .row > [class*="col-"] {
+    min-height: 0;
+    height: 100%;
+}
+
+/* Os filhos diretos das colunas (cards e widgets) também precisam de min-height: 0
+   para o overflow interno funcionar e não crescerem para além do espaço */
+.home-service-container > .row > [class*="col-"] > * {
+    min-height: 0;
+}
+
+.candidaturas-column {
     display: flex;
     flex-direction: column;
-}
-
-.primeira-linha-home {
-    flex: 0 0 auto;
-}
-
-.segunda-linha-home {
-    flex: 0 0 auto;
+    justify-content: flex-start;
 }
 
 .grafico-estatistica-container {
-    height: 265px;
+    height: 100%;
 }
 
-.segunda-linha-home .card,
-.segunda-linha-home > div > div > div {
-    height: 265px !important;
-    max-height: 265px !important;
-    margin-bottom: 0 !important;
-    overflow-y: hidden;
+/* Os cards/componentes inferiores preenchem a altura disponível e
+   mantêm scroll interno na lista (controlado pelos componentes) */
+.segunda-linha-home > [class*="col-"] > div {
+    height: 100%;
+    min-height: 0;
 }
 
-@media (min-width: 1440px) and (min-height: 800px) {
-    .candidaturas-column {
+/* As listas internas dos cards inferiores ocupam o espaço disponível
+   e mantêm o scroll quando o conteúdo excede a altura */
+.segunda-linha-home .ativ-widget-lista,
+.segunda-linha-home .overflow-y-auto {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.segunda-linha-home .ativ-widget-lista::-webkit-scrollbar,
+.segunda-linha-home .overflow-y-auto::-webkit-scrollbar {
+    display: none;
+}
+
+/* Itens da atividade com altura fixa (~30px) e sem expandir,
+   garantindo scroll interno quando há mais itens */
+.segunda-linha-home .ativ-widget-item {
+    flex: 0 0 auto !important;
+    min-height: 30px;
+    max-height: 36px;
+    overflow: hidden;
+}
+
+/* Itens da classificação mantêm a altura natural das outras homepages */
+.segunda-linha-home .ranking-row {
+    flex: 0 0 auto !important;
+    min-height: 0;
+}
+
+/* Atividade: limita o texto a uma linha para manter a altura fixa */
+.segunda-linha-home .ativ-widget-texto .texto {
+    -webkit-line-clamp: 1 !important;
+}
+
+/* === Responsividade === */
+@media (max-width: 1199px) {
+    .home-service-container {
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        gap: var(--gap-default-seccoes);
     }
 
-    .primeira-linha-home, .segunda-linha-home {
-        flex: 1 1 50%;
+    .home-service-container > .row {
+        flex-shrink: 0;
+        min-height: auto;
+        height: auto;
     }
 
-    .grafico-estatistica-container {
-        height: 100%;
+    .home-service-container > .row > [class*="col-"] {
+        height: auto;
+        min-height: auto;
     }
 
-    .segunda-linha-home .card,
-    .segunda-linha-home > div > div > div {
-        height: 100% !important;
+    .home-service-container > .row:nth-child(2) > [class*="col-"] > *,
+    .home-service-container > .row:nth-child(3) > [class*="col-"] > * {
+        height: auto !important;
         max-height: none !important;
-        overflow-y: visible;
+    }
+}
+
+/* Ecrãs de menor altura: middle ground entre a parte de cima (candidaturas +
+   gráfico) e a parte de baixo, evitando scroll sem ocupar demasiado espaço. */
+@media (max-height: 900px) and (min-width: 1200px) {
+    .home-service-container {
+        grid-template-rows: auto minmax(295px, 0.52fr) minmax(240px, 1fr);
+    }
+}
+
+@media (max-height: 750px) and (min-width: 1200px) {
+    .home-service-container {
+        grid-template-rows: auto minmax(295px, 0.6fr) minmax(220px, 1fr);
+    }
+}
+
+@media (max-height: 650px) and (min-width: 1200px) {
+    .home-service-container {
+        grid-template-rows: auto minmax(295px, 0.68fr) minmax(200px, 1fr);
+    }
+}
+
+@media (max-width: 575px) {
+    .badge_logo_candidaturas {
+        min-height: 10vh;
+        max-height: 10vh;
     }
 }

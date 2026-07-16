@@ -75,6 +75,7 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
+    overflow: hidden;
 }
 
 .badges-container {
@@ -266,10 +267,11 @@
 
 /* ── Objetivos Propostos (v3) ─────────────────────────────── */
 .objetivos-lista-v3 {
-    display: grid;
-    grid-template-rows: repeat(3, 1fr);
+    display: flex;
+    flex-direction: column;
     flex-grow: 1;
     gap: 10px;
+    min-height: 0;
     overflow-y: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -298,7 +300,7 @@
 
 /* Item de objetivo alinhado com o card de Progresso */
 .objetivo-item-v3 {
-    flex: 1;
+    flex: 0 0 calc((100% - 20px) / 3);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -413,10 +415,11 @@
 
 /* ── Progresso ───────────────────────────────────────────── */
 .progresso-lista {
-    display: grid;
-    grid-template-rows: repeat(3, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 10px;
     flex-grow: 1;
+    min-height: 0;
     overflow-y: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -444,16 +447,17 @@
 }
 
 .progresso-card {
-    flex: 1;
+    flex: 0 0 calc((100% - 20px) / 3);
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     border: var(--borda-principal) solid var(--contorno);
     border-radius: var(--border-radius-pequeno);
-    padding: 10px 12px;
+    padding: 8px 10px;
     background-color: #ffffff;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
     min-height: 0;
+    overflow: hidden;
 }
 
 .progresso-card:hover {
@@ -463,14 +467,14 @@
 }
 
 .progresso-icone-wrap {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
+    font-size: 0.9rem;
     transition: transform 0.2s ease;
 }
 
@@ -483,21 +487,21 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .progresso-cabecalho {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    gap: 8px;
+    gap: 6px;
 }
 
 .progresso-titulo {
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     font-weight: 600;
     color: var(--fontes);
-    line-height: 1.25;
+    line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -517,7 +521,7 @@
 }
 
 .progresso-barra-wrap {
-    height: 8px;
+    height: 6px;
     border-radius: 10px;
     background-color: #eef1f6;
     overflow: hidden;

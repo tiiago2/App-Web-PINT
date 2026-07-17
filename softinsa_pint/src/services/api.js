@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL:  'http://localhost:5000/api'
+  baseURL:  'https://pint-he77.onrender.com/api'
 });
-{/* 'https://pint-he77.onrender.com/api' */ }
+{/* 'http://localhost:5000/api' */ }
 
 api.interceptors.request.use(
   (config) => {

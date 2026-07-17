@@ -33,6 +33,16 @@ Versão auditada: Fase 10. Namespace único: `/api/mobile`.
 | `POST /api/mobile/submissions/:idSubmissao/submit` | Bearer | Sim | JSON vazio | `200 {success,submission}` | `400`, `401`, `403`, `404`, `409`, `500` |
 | `GET /api/mobile/submissions/:idSubmissao` | Bearer | Não | — | `200 {success,submission}` | `400`, `401`, `403`, `404`, `500` |
 
+No login e em `/auth/me`, o objeto `user` inclui sempre:
+
+```json
+{
+  "primeiro_login": true
+}
+```
+
+`primeiro_login` é booleano e vem diretamente de `utilizador.primeiro_login`. Quando é `true`, o cliente deve encaminhar o utilizador para o fluxo existente de primeiro acesso antes de continuar.
+
 ## Sync
 
 `contract_version` é `3`.

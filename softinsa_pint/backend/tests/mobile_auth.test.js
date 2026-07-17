@@ -30,7 +30,7 @@ function criarResposta() {
   };
 }
 
-function criarContexto() {
+function criarContexto({ primeiroLogin = true } = {}) {
   let currentTime = Date.now();
   let nextTokenId = 1;
   let transactionCalls = 0;
@@ -42,7 +42,8 @@ function criarContexto() {
     telefone: 912345678,
     imagem_perfil: 'https://example.com/foto.png',
     password: 'password-hash',
-    ativo: true
+    ativo: true,
+    primeiro_login: primeiroLogin
   };
   const consultor = {
     id_utilizador: 7,
@@ -290,7 +291,7 @@ test('12. /me com access token válido disponibiliza o perfil mobile mínimo', a
   assert.equal(nextCalled, true);
   assert.equal(response.statusCode, 200);
   assert.deepEqual(Object.keys(response.body.user), [
-    'id', 'nome', 'email', 'telefone', 'foto', 'area_id'
+    'id', 'nome', 'email', 'telefone', 'foto', 'area_id', 'primeiro_login'
   ]);
 });
 
@@ -337,4 +338,83 @@ test('15. POST /api/login web permanece registado e separado do router mobile', 
   assert.match(webAuth, /expiresIn:\s*['"]8h['"]/);
   assert.doesNotMatch(mobileRoutes, /\.\.\/controllers\/auth_controller/);
   assert.doesNotMatch(mobileRoutes, /\.\.\/middleware\/auth_middleware/);
+});
+
+test('16. login mobile devolve primeiro_login true para primeiro acesso pendente', async () => {
+  const context = criarContexto({ primeiroLogin: true });
+  const result = await loginValido(context);
+
+  assert.equal(result.user.primeiro_login, true);
+});
+
+test('17. login mobile devolve primeiro_login false para primeiro acesso concluído', async () => {
+  const context = criarContexto({ primeiroLogin: false });
+  const result = await loginValido(context);
+
+  assert.equal(result.user.primeiro_login, false);
+});
+
+test('18. contrato HTTP do login contém explicitamente user.primeiro_login', async () => {
+  const context = criarContexto({ primeiroLogin: true });
+  const controller = mobileAuthControllerModule._criarParaTestes(context.service);
+  const response = criarResposta();
+
+  await controller.login({
+    body: {
+      email: context.utilizador.email,
+      password: 'correct-password',
+      device_id: 'device-first-access'
+    }
+  }, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.user.primeiro_login, true);
+});
+
+test('19. perfil mobile com primeiro_login não expõe password, hash ou dados sensíveis', async () => {
+  const context = criarContexto();
+  const result = await loginValido(context);
+  const serialized = JSON.stringify(result.user);
+
+  assert.doesNotMatch(serialized, /password|token_hash|refresh_token|access_token|fcm_token/i);
+  assert.equal(Object.hasOwn(result.user, 'primeiro_login'), true);
+});
+
+test('20. refresh token permanece compatível após acrescentar primeiro_login ao perfil', async () => {
+  const context = criarContexto({ primeiroLogin: true });
+  const login = await loginValido(context);
+  const refreshed = await context.service.refresh({
+    refreshToken: login.refreshToken,
+    deviceId: 'device-1'
+  });
+
+  assert.ok(refreshed.accessToken);
+  assert.ok(refreshed.refreshToken);
+  assert.equal(Object.hasOwn(refreshed, 'password'), false);
+});
+
+test('21. /auth/me devolve o mesmo primeiro_login do login mobile', async () => {
+  const context = criarContexto({ primeiroLogin: false });
+  const login = await loginValido(context);
+  const middleware = mobileAuthMiddlewareModule._criarParaTestes(context.service);
+  const controller = mobileAuthControllerModule._criarParaTestes(context.service);
+  const request = { headers: { authorization: `Bearer ${login.accessToken}` } };
+  const middlewareResponse = criarResposta();
+
+  await middleware(request, middlewareResponse, () => {});
+  const response = criarResposta();
+  controller.me(request, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.user.primeiro_login, false);
+});
+
+test('22. fluxo web de primeiro acesso mantém o campo e endpoint existentes', () => {
+  const root = path.join(__dirname, '..');
+  const centralRoutes = fs.readFileSync(path.join(root, 'routes', 'central_rotas.js'), 'utf8');
+  const webAuth = fs.readFileSync(path.join(root, 'controllers', 'auth_controller.js'), 'utf8');
+
+  assert.match(centralRoutes, /router\.post\(["']\/primeiro-acesso["'], controller_login\.primeiroAcesso\)/);
+  assert.match(webAuth, /primeiro_login:\s*false/);
+  assert.match(webAuth, /primeiro_login:\s*user\.primeiro_login/);
 });

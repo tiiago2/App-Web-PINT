@@ -45,7 +45,8 @@ function criarMobileAuthService({ db, bcrypt, jwt, crypto, env, now }) {
       email: utilizador.email,
       telefone: utilizador.telefone,
       foto: utilizador.imagem_perfil,
-      area_id: consultor.id_area
+      area_id: consultor.id_area,
+      primeiro_login: Boolean(utilizador.primeiro_login)
     };
   }
 

@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
@@ -20,9 +21,26 @@ module.exports = (sequelize) => {
       type: DataTypes.DATE,
       allowNull: false
     },
-    expirado: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
+    expirado: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    updated_registo: { type: DataTypes.DATE, allowNull: true, defaultValue: DataTypes.NOW },
+    deleted_registo: { type: DataTypes.BOOLEAN, allowNull: true, defaultValue: false }
   }, {
     tableName: 'registo_badges',
-    timestamps: false
+    timestamps: false,
+    defaultScope: {
+      where: {
+        [Op.or]: [{ deleted_registo: false }, { deleted_registo: null }]
+      }
+    },
+    hooks: {
+      beforeUpdate: (instance) => {
+        instance.updated_registo = new Date();
+      },
+      beforeBulkUpdate: (options) => {
+        if (options.attributes) {
+          options.attributes.updated_registo = new Date();
+        }
+      }
+    }
   });
 };

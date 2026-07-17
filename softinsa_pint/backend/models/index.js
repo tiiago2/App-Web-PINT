@@ -131,5 +131,41 @@ db.Notificacoes.belongsToMany(db.Utilizador, { through: db.Recetor, foreignKey: 
 db.Utilizador.belongsToMany(db.Notificacoes, { through: db.Recetor, foreignKey: 'id_utilizador' });
 
 
+// =========================================================================
+// 6. GATILHOS GLOBAIS (SEQUELIZE HOOKS) E INTEGRAÇÃO DO FIREBASE (NON-INVASIVE)
+// =========================================================================
+const firebaseService = require('../services/firebaseService');
+
+let syncDebounceTimeout = null;
+const scheduleSyncNotification = () => {
+  if (syncDebounceTimeout) {
+    clearTimeout(syncDebounceTimeout);
+  }
+  // Debounce de 2 segundos para evitar sobrecarga no Firebase se houverem alterações em massa
+  syncDebounceTimeout = setTimeout(() => {
+    firebaseService.notifySyncAvailable();
+  }, 2000);
+};
+
+// Lista de hooks de mutação de dados para monitorizar a base de dados
+const globalMutationHooks = [
+  'afterCreate', 
+  'afterUpdate', 
+  'afterDestroy', 
+  'afterRestore', 
+  'afterBulkCreate', 
+  'afterBulkUpdate', 
+  'afterBulkDestroy'
+];
+
+// Registo de hooks globais na instância do Sequelize
+globalMutationHooks.forEach(hookName => {
+  sequelize.addHook(hookName, (instanceOrOptions) => {
+    console.log(`[Sequelize Global Hook] Disparado: ${hookName}. Agendando notificação de Sync...`);
+    scheduleSyncNotification();
+  });
+});
+
+
 // 5. Exportar a base de dados montada e pronta a usar
 module.exports = db;

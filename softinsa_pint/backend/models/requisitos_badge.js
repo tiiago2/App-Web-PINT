@@ -6,7 +6,7 @@ module.exports = (sequelize) => {
     id_requisito: { type: DataTypes.INTEGER, primaryKey: true },
     updated_requisito_badge: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
       defaultValue: DataTypes.NOW
     }
   }, { tableName: 'requisitos_badge', timestamps: false });

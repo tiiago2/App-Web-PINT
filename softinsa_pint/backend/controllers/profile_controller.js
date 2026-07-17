@@ -1,5 +1,9 @@
 const { sequelize, Utilizador, Consultor, Assinatura, RegistoBadges, Badges, BadgesAssinatura, Area, Role } = require('../models');
 const jwt = require('jsonwebtoken');
+const {
+    scheduleUsersDataChanged,
+    scheduleAllActiveConsultantsDataChanged
+} = require('../services/sync_push_service');
 
 module.exports = {
     async getUserLogin(req, res) {
@@ -147,12 +151,14 @@ module.exports = {
         const t = await sequelize.transaction();
 
         try {
+            const agora = new Date();
             await Promise.all([
                 Utilizador.update(
                     {
                         nome_user: nome,
                         email: email,
-                        telefone: telefone
+                        telefone: telefone,
+                        update_user: agora
                     },
                     {
                         where: { id_utilizador: id_utilizador },
@@ -163,7 +169,8 @@ module.exports = {
                     {
                         nome_user: nome,
                         email: email,
-                        telefone: telefone
+                        telefone: telefone,
+                        update_user: agora
                     },
                     {
                         where: { id_utilizador: id_utilizador },
@@ -180,11 +187,11 @@ module.exports = {
             if (!assinaturaUser) {
                 assinaturaUser = await Assinatura.create({
                     id_proprietario: id_utilizador,
-                    update_assinatura: new Date()
+                    update_assinatura: agora
                 }, { transaction: t });
             } else {
                 await assinaturaUser.update(
-                    { update_assinatura: new Date() },
+                    { update_assinatura: agora },
                     { transaction: t }
                 );
             }
@@ -205,6 +212,9 @@ module.exports = {
 
             await t.commit();
 
+            scheduleUsersDataChanged({ userIds: [id_utilizador], entity: 'profile' });
+            scheduleUsersDataChanged({ userIds: [id_utilizador], entity: 'signature' });
+            scheduleAllActiveConsultantsDataChanged({ entity: 'outros_users' });
             return res.status(200).json({
                 mensagem: "Perfil e assinatura atualizados com sucesso em todas as tabelas!"
             });

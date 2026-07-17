@@ -12,6 +12,7 @@ const {
 } = require("../models");
 
 const { Op } = require("sequelize");
+const { scheduleUsersDataChanged } = require('../services/sync_push_service');
 
 // Include comum para trazer toda a hierarquia do Badge (Nível, Área, Service Line e Learning Path)
 // 1. O teu objeto (mantém-se igual, pois estava muito bem estruturado)
@@ -219,6 +220,7 @@ module.exports = {
         badge: badgeFormatado
       };
 
+      scheduleUsersDataChanged({ userIds: [id_utilizador], entity: 'objectives' });
       return res.status(201).json(payload);
     } catch (error) {
       console.error("Erro ao criar objetivo:", error);
@@ -244,8 +246,12 @@ module.exports = {
         return res.status(404).json({ error: "Objetivo não encontrado ou já removido." });
       }
 
-      await objetivo.update({ deleted_objetivo: true });
+      await objetivo.update({
+        deleted_objetivo: true,
+        data_eliminacao: new Date()
+      });
 
+      scheduleUsersDataChanged({ userIds: [id_utilizador], entity: 'objectives' });
       return res.status(200).json({ message: "Objetivo removido com sucesso.", id_objetivo: Number(id) });
     } catch (error) {
       console.error("Erro ao remover objetivo:", error);

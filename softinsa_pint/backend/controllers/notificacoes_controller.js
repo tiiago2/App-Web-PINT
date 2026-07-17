@@ -1,5 +1,13 @@
-const { Utilizador, Role, Notificacoes, Recetor } = require('../models');
+const {
+    sequelize,
+    Utilizador,
+    Role,
+    Notificacoes,
+    Recetor,
+    SyncRecetorDeleted
+} = require('../models');
 const { Op } = require('sequelize');
+const { scheduleUsersDataChanged } = require('../services/sync_push_service');
 
 module.exports = {
     async getNotificacoes(req, res) {
@@ -126,6 +134,10 @@ module.exports = {
                 await Recetor.bulkCreate(dadosRecetores);
             }
 
+            scheduleUsersDataChanged({
+                userIds: destinatariosIds,
+                entity: 'notifications'
+            });
             return res.status(201).json({
                 message: "Aviso enviado com sucesso!",
                 id_notificacao: novaNotif.id_notificacao
@@ -216,70 +228,113 @@ module.exports = {
                 return res.status(403).json({ error: "Não autorizado a editar este aviso." });
             }
 
-            // 3. Atualizar na tabela principal
-            await aviso.update({
-                descricao_notificacao: mensagem,
-                data_envio: new Date(),
-                tipo_notificacao: `aviso:${tipoDestino || 'grupo'}:${destino || 'Todos'}`
-            });
-
-            // 4. Determinar novos destinatários
-            let destinatariosIds = [];
-            if (tipoDestino === 'grupo') {
-                let roleQuery = null;
-                if (destino === 'Todos os Consultores') {
-                    roleQuery = 'Consultor';
-                } else if (destino === 'Todos os Talent Managers') {
-                    roleQuery = 'Talent Manager';
-                } else if (destino === 'Todos os Service Line Leaders') {
-                    roleQuery = 'Service Line Leader';
-                }
-
-                if (roleQuery) {
-                    const users = await Utilizador.findAll({
-                        include: [{
-                            model: Role,
-                            where: { nome_role: roleQuery },
-                            through: { attributes: [] }
-                        }],
-                        attributes: ['id_utilizador']
-                    });
-                    destinatariosIds = users.map(u => u.id_utilizador);
-                } else {
-                    const users = await Utilizador.findAll({
-                        where: { ativo: true },
-                        attributes: ['id_utilizador']
-                    });
-                    destinatariosIds = users.map(u => u.id_utilizador);
-                }
-            } else if (tipoDestino === 'individual' && destino) {
-                const user = await Utilizador.findOne({
-                    where: {
-                        [Op.or]: [
-                            { nome_user: destino },
-                            { email: destino }
-                        ]
-                    },
-                    attributes: ['id_utilizador']
+            const destinatariosAfetados = await sequelize.transaction(async (transaction) => {
+                const avisoTransacao = await Notificacoes.findByPk(id, {
+                    transaction,
+                    lock: transaction.LOCK.UPDATE
                 });
-                if (user) {
-                    destinatariosIds = [user.id_utilizador];
-                }
-            }
+                const recetoresAtuais = await Recetor.findAll({
+                    where: { id_notificacao: id },
+                    attributes: ['id_utilizador'],
+                    transaction,
+                    raw: true
+                });
 
-            // 5. Atualizar na tabela intermédia Recetor
-            await Recetor.destroy({
-                where: { id_notificacao: id }
+                // 3. Determinar novos destinatários antes de alterar as relações atuais
+                let destinatariosIds = [];
+                if (tipoDestino === 'grupo') {
+                    let roleQuery = null;
+                    if (destino === 'Todos os Consultores') {
+                        roleQuery = 'Consultor';
+                    } else if (destino === 'Todos os Talent Managers') {
+                        roleQuery = 'Talent Manager';
+                    } else if (destino === 'Todos os Service Line Leaders') {
+                        roleQuery = 'Service Line Leader';
+                    }
+
+                    if (roleQuery) {
+                        const users = await Utilizador.findAll({
+                            include: [{
+                                model: Role,
+                                where: { nome_role: roleQuery },
+                                through: { attributes: [] }
+                            }],
+                            attributes: ['id_utilizador'],
+                            transaction
+                        });
+                        destinatariosIds = users.map((user) => user.id_utilizador);
+                    } else {
+                        const users = await Utilizador.findAll({
+                            where: { ativo: true },
+                            attributes: ['id_utilizador'],
+                            transaction
+                        });
+                        destinatariosIds = users.map((user) => user.id_utilizador);
+                    }
+                } else if (tipoDestino === 'individual' && destino) {
+                    const user = await Utilizador.findOne({
+                        where: {
+                            [Op.or]: [
+                                { nome_user: destino },
+                                { email: destino }
+                            ]
+                        },
+                        attributes: ['id_utilizador'],
+                        transaction
+                    });
+                    if (user) {
+                        destinatariosIds = [user.id_utilizador];
+                    }
+                }
+
+                const idsAtuais = new Set(recetoresAtuais.map((recetor) => recetor.id_utilizador));
+                const idsFinais = new Set(destinatariosIds);
+                const idsAdicionados = [...idsFinais].filter((idUtilizador) => !idsAtuais.has(idUtilizador));
+                const idsRemovidos = [...idsAtuais].filter((idUtilizador) => !idsFinais.has(idUtilizador));
+                const agora = new Date();
+
+                // 4. Manter data_envio como data original e registar apenas a alteração
+                await avisoTransacao.update({
+                    descricao_notificacao: mensagem,
+                    updated_notificacao: agora,
+                    tipo_notificacao: `aviso:${tipoDestino || 'grupo'}:${destino || 'Todos'}`
+                }, { transaction });
+
+                if (idsRemovidos.length > 0) {
+                    await SyncRecetorDeleted.bulkCreate(
+                        idsRemovidos.map((idUtilizador) => ({
+                            id_notificacao: Number(id),
+                            id_utilizador: idUtilizador,
+                            deleted_at: agora
+                        })),
+                        { transaction }
+                    );
+
+                    await Recetor.destroy({
+                        where: {
+                            id_notificacao: id,
+                            id_utilizador: { [Op.in]: idsRemovidos }
+                        },
+                        transaction
+                    });
+                }
+
+                if (idsAdicionados.length > 0) {
+                    await Recetor.bulkCreate(
+                        idsAdicionados.map((idUtilizador) => ({
+                            id_notificacao: Number(id),
+                            id_utilizador: idUtilizador
+                        })),
+                        { transaction }
+                    );
+                }
+                return [...new Set([...idsAtuais, ...idsFinais])];
             });
 
-            if (destinatariosIds.length > 0) {
-                const dadosRecetores = destinatariosIds.map(id_dest => ({
-                    id_notificacao: id,
-                    id_utilizador: id_dest
-                }));
-                await Recetor.bulkCreate(dadosRecetores);
-            }
-
+            scheduleUsersDataChanged({
+                userIds: destinatariosAfetados,
+                entity: 'notifications'
+            });
             return res.status(200).json({
                 message: "Aviso atualizado com sucesso!",
                 id_notificacao: id

@@ -18,6 +18,10 @@ const {
 } = require("../models");
 const { Op } = require("sequelize");
 const { enviarEmail } = require('../helpers/emailHelper');
+const {
+  scheduleUsersDataChanged,
+  scheduleAllActiveConsultantsDataChanged
+} = require('../services/sync_push_service');
 const { getRolesFromRequest } = require("../helpers/roleHelper");
 const { getBadgeIdsForServiceLeader } = require("../helpers/serviceLineHelper");
 
@@ -408,7 +412,9 @@ module.exports = {
           const consultor = await Consultor.findOne({ where: { id_utilizador: submissao.id_utilizador } });
           if (consultor) {
             const pontosBadge = badgeObj?.pontos_badge || 0;
+            const agora = new Date();
             consultor.pontos_totais = (consultor.pontos_totais || 0) + pontosBadge;
+            consultor.update_user = agora;
             await consultor.save();
           }
         } catch (erroRegisto) {
@@ -417,6 +423,13 @@ module.exports = {
         }
       }
 
+      scheduleUsersDataChanged({
+        userIds: [submissao.id_utilizador],
+        entity: 'submissions'
+      });
+      if (dbStatus === 'aceite') {
+        scheduleAllActiveConsultantsDataChanged({ entity: 'outros_users' });
+      }
       return res.status(200).json({ message: "Estado, histórico e objetivos atualizados com sucesso.", submissao });
     } catch (error) {
       console.error("Erro ao atualizar candidatura:", error);

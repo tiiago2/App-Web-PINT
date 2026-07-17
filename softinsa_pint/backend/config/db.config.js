@@ -32,8 +32,8 @@ sequelize
   .then(() => {
     console.log("Sequelize: Ligação à BD PostgreSQL estabelecida com sucesso.");
   })
-  .catch((err) => {
-    console.error("Sequelize: Não foi possível ligar à BD PostgreSQL:", err.message);
+  .catch(() => {
+    console.error("Sequelize: Não foi possível ligar à BD PostgreSQL.");
   });
 
 module.exports = sequelize;

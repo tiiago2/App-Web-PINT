@@ -8,6 +8,7 @@ module.exports = (sequelize) => {
     data_inicial: { type: DataTypes.DATE, allowNull: false },
     data_final: { type: DataTypes.DATE, allowNull: false },
     deleted_objetivo: { type: DataTypes.BOOLEAN, allowNull: false },
+    data_eliminacao: { type: DataTypes.DATE, allowNull: true },
     data_conclusao: { type: DataTypes.DATE, allowNull: true },
     notificacao_fim: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
   }, { tableName: 'objetivos', timestamps: false });

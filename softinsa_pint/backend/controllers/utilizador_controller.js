@@ -4,6 +4,10 @@ const sequelize = require('../config/db.config');
 const cloudinary = require('cloudinary').v2;
 const bcrypt = require('bcrypt');
 const { enviarEmail } = require('../helpers/emailHelper');
+const {
+  scheduleUsersDataChanged,
+  scheduleAllActiveConsultantsDataChanged
+} = require('../services/sync_push_service');
 
 // ── Helpers para permissões de Service Line Leader ─────────────────────────
 async function getRolesDoUtilizador(id_utilizador) {
@@ -423,6 +427,11 @@ module.exports = {
       }
 
       await transaction.commit();
+      scheduleUsersDataChanged({
+        userIds: [novoUtilizador.id_utilizador],
+        entity: 'profile'
+      });
+      scheduleAllActiveConsultantsDataChanged({ entity: 'outros_users' });
 
       // Enviar email de boas-vindas com as credenciais (assíncrono, não bloqueia a resposta)
       if (email) {
@@ -529,12 +538,13 @@ module.exports = {
         imagem_perfil = await uploadImagemCloudinary(req.file);
       }
 
+      const agora = new Date();
       const updateData = {
         nome_user: nome_user ?? user.nome_user,
         email: email ?? user.email,
         telefone: telefone ?? user.telefone,
         imagem_perfil,
-        update_user: new Date()
+        update_user: agora
       };
 
       if (finalAtivo !== undefined) {
@@ -601,14 +611,13 @@ module.exports = {
             telefone: updateData.telefone,
             imagem_perfil,
             ativo: updateData.ativo,
-            update_user: new Date()
+            update_user: agora
           };
           if (logadoIsAdmin && areaId !== null) {
             updateConsultor.id_area = areaId;
           }
           await consultorExistente.update(updateConsultor, { transaction });
         } else if (logadoIsAdmin && areaId) {
-          const agora = new Date();
           await Consultor.create({
             id_utilizador: Number(id),
             id_area: areaId,
@@ -653,6 +662,8 @@ module.exports = {
       }
 
       await transaction.commit();
+      scheduleUsersDataChanged({ userIds: [Number(id)], entity: 'profile' });
+      scheduleAllActiveConsultantsDataChanged({ entity: 'outros_users' });
 
       const utilizadorAtualizado = await Utilizador.findByPk(id, {
         include: includeUtilizadorCompleto
@@ -695,6 +706,7 @@ module.exports = {
         });
       }
 
+      scheduleUsersDataChanged({ userIds: [Number(id)], entity: 'profile' });
       return res.status(200).json({ message: "Políticas RGPD aceites com sucesso." });
     } catch (error) {
       console.error("Erro ao aceitar políticas RGPD:", error);

@@ -25,8 +25,8 @@ async function iniciar_bd() {
         app.listen(porta, () => {
             console.log("Servidor a ouvir na porta 5000");
         });
-    } catch (err) {
-        console.error("Erro ao arrancar:", err);
+    } catch (_) {
+        console.error("Erro interno ao arrancar o servidor.");
     }
 }
 

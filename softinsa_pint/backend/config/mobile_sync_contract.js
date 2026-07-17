@@ -1,0 +1,5 @@
+const MOBILE_SYNC_CONTRACT_VERSION = '3';
+
+module.exports = {
+  MOBILE_SYNC_CONTRACT_VERSION
+};

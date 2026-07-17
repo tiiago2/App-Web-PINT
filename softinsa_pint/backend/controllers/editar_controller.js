@@ -1,5 +1,6 @@
 const db = require('../models');
 const { Op } = db.Sequelize;
+const { scheduleAllActiveConsultantsDataChanged } = require('../services/sync_push_service');
 
 /**
  * 1. Obter utilizadores elegíveis para serem Líderes de Service Line
@@ -140,6 +141,7 @@ exports.criarLearningPath = async (req, res) => {
             data_log: new Date()
         });
 
+        scheduleAllActiveConsultantsDataChanged({ entity: 'catalog' });
         return res.status(201).json(novoLP);
     } catch (error) {
         console.error('Erro ao criar Learning Path:', error);
@@ -172,6 +174,7 @@ exports.atualizarLearningPath = async (req, res) => {
             data_log: new Date()
         });
 
+        scheduleAllActiveConsultantsDataChanged({ entity: 'catalog' });
         return res.status(200).json(lp);
     } catch (error) {
         console.error('Erro ao atualizar Learning Path:', error);
@@ -216,6 +219,7 @@ exports.removerLearningPath = async (req, res) => {
             data_log: new Date()
         });
 
+        scheduleAllActiveConsultantsDataChanged({ entity: 'catalog' });
         return res.status(200).json({ message: 'Learning Path removido com sucesso.' });
     } catch (error) {
         console.error('Erro ao remover Learning Path:', error);
@@ -394,6 +398,7 @@ exports.criarServiceLine = async (req, res) => {
             data_log: new Date()
         });
 
+        scheduleAllActiveConsultantsDataChanged({ entity: 'catalog' });
         return res.status(201).json(novaSL);
     } catch (error) {
         console.error('Erro ao criar Service Line:', error);
@@ -457,6 +462,7 @@ exports.atualizarServiceLine = async (req, res) => {
             data_log: new Date()
         });
 
+        scheduleAllActiveConsultantsDataChanged({ entity: 'catalog' });
         return res.status(200).json(sl);
     } catch (error) {
         console.error('Erro ao atualizar Service Line:', error);
@@ -501,6 +507,7 @@ exports.removerServiceLine = async (req, res) => {
             data_log: new Date()
         });
 
+        scheduleAllActiveConsultantsDataChanged({ entity: 'catalog' });
         return res.status(200).json({ message: 'Service Line removida com sucesso.' });
     } catch (error) {
         console.error('Erro ao remover Service Line:', error);
@@ -608,6 +615,7 @@ exports.criarArea = async (req, res) => {
             data_log: new Date()
         });
 
+        scheduleAllActiveConsultantsDataChanged({ entity: 'catalog' });
         return res.status(201).json(novaArea);
     } catch (error) {
         console.error('Erro ao criar Área:', error);
@@ -643,6 +651,8 @@ exports.atualizarArea = async (req, res) => {
             data_log: new Date()
         });
 
+        scheduleAllActiveConsultantsDataChanged({ entity: 'catalog' });
+        scheduleAllActiveConsultantsDataChanged({ entity: 'outros_users' });
         return res.status(200).json(area);
     } catch (error) {
         console.error('Erro ao atualizar Área:', error);
@@ -687,6 +697,8 @@ exports.removerArea = async (req, res) => {
             data_log: new Date()
         });
 
+        scheduleAllActiveConsultantsDataChanged({ entity: 'catalog' });
+        scheduleAllActiveConsultantsDataChanged({ entity: 'outros_users' });
         return res.status(200).json({ message: 'Área removida com sucesso.' });
     } catch (error) {
         console.error('Erro ao remover Área:', error);

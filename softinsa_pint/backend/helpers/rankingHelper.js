@@ -8,18 +8,15 @@ const {
 } = require("../models");
 
 // ── Helpers de data ─────────────────────────────────────────────
-function inicioAno() {
-  const agora = new Date();
+function inicioAno(agora = new Date()) {
   return new Date(agora.getFullYear(), 0, 1);
 }
 
-function inicioMes() {
-  const agora = new Date();
+function inicioMes(agora = new Date()) {
   return new Date(agora.getFullYear(), agora.getMonth(), 1);
 }
 
-function inicioSemana() {
-  const agora = new Date();
+function inicioSemana(agora = new Date()) {
   const diaSemana = agora.getDay() || 7;
   return new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() - diaSemana + 1);
 }
@@ -31,7 +28,8 @@ function inicioSemana() {
  *                                        Se null, devolve ranking global.
  * @returns {Promise<Array>} Array de objetos de ranking.
  */
-async function calcularRanking(id_service_line = null) {
+async function calcularRanking(id_service_line = null, options = {}) {
+  const { includeAreaId = false, transaction, agora = new Date() } = options;
   const includeArea = {
     model: Area,
     attributes: ["nome_area"],
@@ -50,6 +48,7 @@ async function calcularRanking(id_service_line = null) {
 
   const consultores = await Consultor.findAll({
     where: { ativo: true },
+    transaction,
     include: [
       {
         model: Utilizador,
@@ -59,9 +58,9 @@ async function calcularRanking(id_service_line = null) {
     ]
   });
 
-  const inicioAnoDate = inicioAno();
-  const inicioMesDate = inicioMes();
-  const inicioSemanaDate = inicioSemana();
+  const inicioAnoDate = inicioAno(agora);
+  const inicioMesDate = inicioMes(agora);
+  const inicioSemanaDate = inicioSemana(agora);
 
   const ranking = [];
 
@@ -71,6 +70,7 @@ async function calcularRanking(id_service_line = null) {
 
     const registos = await RegistoBadges.findAll({
       where: { id_utilizador: c.id_utilizador },
+      transaction,
       include: [
         {
           model: Badges,
@@ -94,7 +94,7 @@ async function calcularRanking(id_service_line = null) {
       pontosSempre += pontos;
     }
 
-      ranking.push({
+    const itemRanking = {
       id: c.id_utilizador,
       nome: user ? user.nome_user : c.nome_user,
       area: area ? area.nome_area : "",
@@ -105,7 +105,11 @@ async function calcularRanking(id_service_line = null) {
       pontos_ano: pontosAno,
       pontos_sempre: pontosSempre > 0 ? pontosSempre : c.pontos_totais,
       total_badges: registos.length
-    });
+    };
+    if (includeAreaId) {
+      itemRanking.id_area = c.id_area;
+    }
+    ranking.push(itemRanking);
   }
 
   return ranking;

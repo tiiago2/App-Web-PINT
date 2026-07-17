@@ -30,6 +30,13 @@ db.Logs = require('./logs.js')(sequelize);
 db.Defs_notificacao = require('./defs_notificacao.js')(sequelize);
 db.Notificacoes = require('./notificacoes.js')(sequelize);
 db.Recetor = require('./recetor.js')(sequelize);
+db.SyncRequisitoBadgeDeleted = require('./sync_requisito_badge_deleted.js')(sequelize);
+db.SyncRecetorDeleted = require('./sync_recetor_deleted.js')(sequelize);
+db.MobileDevice = require('./mobile_device.js')(sequelize);
+db.MobileRefreshToken = require('./mobile_refresh_token.js')(sequelize);
+db.MobileSyncChange = require('./mobile_sync_change.js')(sequelize);
+db.MobileOperation = require('./mobile_operation.js')(sequelize);
+db.MobilePushOutbox = require('./mobile_push_outbox.js')(sequelize);
 db.PoliticasRgpd = require('./politicas_rgpd.js')(sequelize);
 db.Sla = require('./sla.js')(sequelize);
 
@@ -41,6 +48,29 @@ db.Sla = require('./sla.js')(sequelize);
 // --- Herança: Utilizador <-> Consultor (1 para 1) ---
 db.Utilizador.hasOne(db.Consultor, { foreignKey: 'id_utilizador' });
 db.Consultor.belongsTo(db.Utilizador, { foreignKey: 'id_utilizador' });
+
+db.Utilizador.hasMany(db.MobileDevice, {
+  foreignKey: 'id_utilizador',
+  constraints: false
+});
+db.MobileDevice.belongsTo(db.Utilizador, {
+  foreignKey: 'id_utilizador',
+  constraints: false
+});
+
+db.Utilizador.hasMany(db.MobileRefreshToken, {
+  foreignKey: 'id_utilizador'
+});
+db.MobileRefreshToken.belongsTo(db.Utilizador, {
+  foreignKey: 'id_utilizador'
+});
+
+db.Utilizador.hasMany(db.MobilePushOutbox, {
+  foreignKey: 'id_utilizador'
+});
+db.MobilePushOutbox.belongsTo(db.Utilizador, {
+  foreignKey: 'id_utilizador'
+});
 
 // --- Estrutura da Empresa ---
 db.LearningPath.hasMany(db.ServiceLine, { foreignKey: 'id_learning_path' });

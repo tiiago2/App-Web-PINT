@@ -81,8 +81,9 @@ module.exports = {
 
       // 2. Repor aceitação de políticas de todos os utilizadores ativos para false (Opção A)
       // (Será feito pelo trigger na BD no futuro, mas mantemos no código por segurança imediata)
+      const agora = new Date();
       await Utilizador.update(
-        { aceitacao_politicas: false },
+        { aceitacao_politicas: false, update_user: agora },
         { where: { ativo: true } }
       );
 

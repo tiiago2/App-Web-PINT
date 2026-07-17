@@ -1,5 +1,7 @@
 const db = require('../models');
+const { Op } = require('sequelize');
 const cloudinary = require('cloudinary').v2;
+const { scheduleAllActiveConsultantsDataChanged } = require('../services/sync_push_service');
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -474,14 +476,15 @@ async function resolverRequisitos(requisitos, transaction) {
     return idsRequisitos;
 }
 
-async function criarRelacoesRequisitos(idBadge, idsRequisitos, transaction) {
+async function criarRelacoesRequisitos(idBadge, idsRequisitos, transaction, agora = new Date()) {
     if (idsRequisitos.length === 0) {
         return;
     }
 
     const relacoes = idsRequisitos.map((idRequisito) => ({
         id_badge: idBadge,
-        id_requisito: idRequisito
+        id_requisito: idRequisito,
+        updated_requisito_badge: agora
     }));
 
     await db.RequisitosBadge.bulkCreate(relacoes, { transaction });
@@ -560,6 +563,8 @@ exports.criarBadgeAdmin = async (req, res) => {
         await transaction.commit();
         transaction = null;
 
+        scheduleAllActiveConsultantsDataChanged({ entity: 'badges' });
+        scheduleAllActiveConsultantsDataChanged({ entity: 'outros_users' });
         return res.status(201).json(resposta);
     } catch (error) {
         if (transaction) {
@@ -645,13 +650,43 @@ exports.atualizarBadgeAdmin = async (req, res) => {
 
         if (requisitosInfo.presente) {
             const idsRequisitos = await resolverRequisitos(requisitosInfo.requisitos, transaction);
-
-            await db.RequisitosBadge.destroy({
+            const relacoesAtuais = await db.RequisitosBadge.findAll({
                 where: { id_badge: badge.id_badge },
-                transaction
+                attributes: ['id_requisito'],
+                transaction,
+                raw: true
             });
+            const idsAtuais = new Set(relacoesAtuais.map((relacao) => relacao.id_requisito));
+            const idsFinais = new Set(idsRequisitos);
+            const idsAdicionados = [...idsFinais].filter((idRequisito) => !idsAtuais.has(idRequisito));
+            const idsRemovidos = [...idsAtuais].filter((idRequisito) => !idsFinais.has(idRequisito));
+            const agoraRelacoes = new Date();
 
-            await criarRelacoesRequisitos(badge.id_badge, idsRequisitos, transaction);
+            if (idsRemovidos.length > 0) {
+                await db.SyncRequisitoBadgeDeleted.bulkCreate(
+                    idsRemovidos.map((idRequisito) => ({
+                        id_badge: badge.id_badge,
+                        id_requisito: idRequisito,
+                        deleted_at: agoraRelacoes
+                    })),
+                    { transaction }
+                );
+
+                await db.RequisitosBadge.destroy({
+                    where: {
+                        id_badge: badge.id_badge,
+                        id_requisito: { [Op.in]: idsRemovidos }
+                    },
+                    transaction
+                });
+            }
+
+            await criarRelacoesRequisitos(
+                badge.id_badge,
+                idsAdicionados,
+                transaction,
+                agoraRelacoes
+            );
         }
 
         await db.Logs.create({
@@ -671,6 +706,8 @@ exports.atualizarBadgeAdmin = async (req, res) => {
         await transaction.commit();
         transaction = null;
 
+        scheduleAllActiveConsultantsDataChanged({ entity: 'badges' });
+        scheduleAllActiveConsultantsDataChanged({ entity: 'outros_users' });
         return res.status(200).json(resposta);
     } catch (error) {
         if (transaction) {
@@ -719,6 +756,8 @@ exports.removerBadgeAdmin = async (req, res) => {
         await transaction.commit();
         transaction = null;
 
+        scheduleAllActiveConsultantsDataChanged({ entity: 'badges' });
+        scheduleAllActiveConsultantsDataChanged({ entity: 'outros_users' });
         return res.status(200).json({ message: 'Badge removido com sucesso.' });
     } catch (error) {
         if (transaction) {
@@ -953,6 +992,8 @@ exports.atualizarBadge = async (req, res) => {
         badge.update_badge = new Date();
         await badge.save();
 
+        scheduleAllActiveConsultantsDataChanged({ entity: 'badges' });
+        scheduleAllActiveConsultantsDataChanged({ entity: 'outros_users' });
         return res.status(200).json(badge);
     } catch (error) {
         console.error('Erro ao atualizar Badge:', error);
@@ -976,6 +1017,8 @@ exports.removerBadge = async (req, res) => {
         badge.update_badge = new Date();
         await badge.save();
 
+        scheduleAllActiveConsultantsDataChanged({ entity: 'badges' });
+        scheduleAllActiveConsultantsDataChanged({ entity: 'outros_users' });
         return res.status(200).json({ message: 'Badge removido com sucesso.' });
     } catch (error) {
         console.error('Erro ao remover Badge:', error);

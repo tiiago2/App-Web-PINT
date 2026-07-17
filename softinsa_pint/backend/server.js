@@ -16,7 +16,7 @@ app.use("/api", rotas);
 
 async function iniciar_bd() {
     try {
-        await db.sequelize.sync({ force: false }); // Sincroniza e altera tabelas conforme os modelos
+        await db.sequelize.sync({ force: true }); // Sincroniza e altera tabelas conforme os modelos
         console.log("Base de dados sincronizada.");
 
         // Iniciar os cron jobs

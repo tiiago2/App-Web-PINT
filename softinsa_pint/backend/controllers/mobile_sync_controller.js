@@ -239,7 +239,7 @@ function criarMobileSyncController(service = mobileSyncService) {
           return res.status(error.statusCode).json({ error: error.message });
         }
 
-        console.error('Erro interno na sincronização mobile.');
+        console.error('❌ Erro interno na sincronização mobile:', error); 
         return res.status(500).json({ error: 'Erro interno ao sincronizar dados mobile.' });
       }
     },

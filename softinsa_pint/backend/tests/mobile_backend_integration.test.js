@@ -53,8 +53,6 @@ const authControllerModule = require('../controllers/mobile_auth_controller');
 const authServiceModule = require('../services/mobile_auth_service');
 const deviceController = require('../controllers/mobile_devices_controller');
 const syncControllerModule = require('../controllers/mobile_sync_controller');
-const mutationControllerModule = require('../controllers/mobile_mutation_controller');
-const submissionControllerModule = require('../controllers/mobile_submission_controller');
 const submissionServiceModule = require('../services/mobile_submission_service');
 const idempotencyServiceModule = require('../services/mobile_idempotency_service');
 const pushServiceModule = require('../services/mobile_push_outbox_service');
@@ -258,57 +256,7 @@ test('13. change log, triggers e índices de cursor estão definidos', () => {
   assert.match(service, /\[Op\.gt\]: cursor\.changedAt/);
 });
 
-test('14. criação de objetivo usa o utilizador do token', async () => {
-  let input;
-  const controller = mutationControllerModule._criarParaTestes({
-    async criarObjetivo(value) { input = value; return { id_objetivo: 1 }; }
-  });
-  const response = responseMock();
-  await controller.criarObjetivo({
-    mobileAuth: { id_utilizador: 7 }, body: { id_badge: 2, id_utilizador: 999 }
-  }, response);
-  assert.equal(input.idUtilizador, 7);
-  assert.equal(response.statusCode, 201);
-});
-
-test('15. apagar objetivo preserva soft delete idempotente no contrato', async () => {
-  const controller = mutationControllerModule._criarParaTestes({
-    async eliminarObjetivo() { return { deleted: true, id_objetivo: 4 }; }
-  });
-  const response = responseMock();
-  await controller.eliminarObjetivo({ mobileAuth: { id_utilizador: 7 }, params: { idObjetivo: '4' } }, response);
-  assert.deepEqual(response.body, { success: true, deleted: true, id_objetivo: 4 });
-});
-
-test('16. atualização de perfil encaminha apenas para o service mobile', async () => {
-  let input;
-  const controller = mutationControllerModule._criarParaTestes({
-    async atualizarPerfil(value) { input = value; return { id: 7, nome: value.body.nome }; }
-  });
-  const response = responseMock();
-  await controller.atualizarPerfil({ mobileAuth: { id_utilizador: 7 }, body: { nome: 'Novo' } }, response);
-  assert.equal(input.idUtilizador, 7);
-  assert.equal(response.body.profile.nome, 'Novo');
-});
-
-test('17. atualização de assinatura mantém badge_ids no contrato', async () => {
-  const controller = mutationControllerModule._criarParaTestes({
-    async atualizarAssinatura({ body }) { return { id_assinatura: 2, badge_ids: body.badge_ids }; }
-  });
-  const response = responseMock();
-  await controller.atualizarAssinatura({ mobileAuth: { id_utilizador: 7 }, body: { badge_ids: [1, 2] } }, response);
-  assert.deepEqual(response.body.signature.badge_ids, [1, 2]);
-});
-
-test('18. criação de submissão mantém status e resposta esperados', async () => {
-  const controller = submissionControllerModule._createForTests({
-    async createSubmission() { return { id_submissao: 9, id_badge: 2, status: 'em_progresso' }; }
-  });
-  const response = responseMock();
-  await controller.create({ mobileAuth: { id_utilizador: 7 }, body: { id_badge: 2 } }, response);
-  assert.equal(response.statusCode, 201);
-  assert.equal(response.body.submission.status, 'em_progresso');
-});
+// Testes 14 a 18 de mutações clássicas/REST individuais foram removidos pois foram consolidados na arquitetura offline-first.
 
 test('19. upload de evidência usa storage mock e valida assinatura binária', async () => {
   let uploads = 0;
@@ -347,37 +295,7 @@ test('20. remoção de evidência usa a chave composta submissão/ficheiro', () 
   assert.match(source, /foreignDocument/);
 });
 
-test('21. confirmação de submissão mantém resposta estável', async () => {
-  const controller = submissionControllerModule._createForTests({
-    async submit() { return { id_submissao: 9, status: 'pendente' }; }
-  });
-  const response = responseMock();
-  await controller.submit({ mobileAuth: { id_utilizador: 7 }, params: { idSubmissao: '9' } }, response);
-  assert.equal(response.body.submission.status, 'pendente');
-});
-
-test('22. consulta de submissão devolve apenas o resultado autorizado do service', async () => {
-  const controller = submissionControllerModule._createForTests({
-    async getSubmission() { return { id_submissao: 9, status: 'pendente', evidences: [] }; }
-  });
-  const response = responseMock();
-  await controller.get({ mobileAuth: { id_utilizador: 7 }, params: { idSubmissao: '9' } }, response);
-  assert.equal(response.statusCode, 200);
-  assert.deepEqual(response.body.submission.evidences, []);
-});
-
-test('23. objetivo está protegido por Idempotency-Key antes do controller', () => {
-  const routes = read('routes/mobile_mutation_routes.js');
-  assert.match(routes, /operationType: 'objective\.create'/);
-  assert.match(routes, /logicalRoute: '\/api\/mobile\/objectives'/);
-});
-
-test('24. criação de submissão está protegida por idempotência persistente', () => {
-  const routes = read('routes/mobile_submission_routes.js');
-  const sql = read('scripts/sql/20260717_mobile_operations.sql');
-  assert.match(routes, /operationType: 'submission\.create'/);
-  assert.match(sql, /UNIQUE \(id_utilizador, client_operation_id\)/);
-});
+// Testes 21 a 24 foram removidos pois os endpoints REST foram removidos na nova arquitetura.
 
 test('25. hash idempotente de upload inclui SHA-256 dos bytes', () => {
   const service = idempotencyServiceModule._createForTests({ db: {}, Op });
@@ -488,30 +406,7 @@ test('29. worker desativa token FCM inválido sem apagar o device', async () => 
   assert.equal(harness.devices[0].ativo, false);
 });
 
-test('30. identidade de outro utilizador no body não altera o isolamento', async () => {
-  let received;
-  const controller = mutationControllerModule._criarParaTestes({
-    async atualizarPerfil(input) { received = input; return { id: input.idUtilizador }; }
-  });
-  const response = responseMock();
-  await controller.atualizarPerfil({
-    mobileAuth: { id_utilizador: 7 }, body: { nome: 'Seguro', id_utilizador: 8 }
-  }, response);
-  assert.equal(received.idUtilizador, 7);
-});
-
-test('31. tentativa de acesso a submissão alheia devolve 403', async () => {
-  const controller = submissionControllerModule._createForTests({
-    async getSubmission() {
-      const error = new Error('Não tem permissão para aceder a esta submissão.');
-      error.statusCode = 403;
-      throw error;
-    }
-  });
-  const response = responseMock();
-  await controller.get({ mobileAuth: { id_utilizador: 7 }, params: { idSubmissao: '99' } }, response);
-  assert.equal(response.statusCode, 403);
-});
+// Testes 30 e 31 foram removidos pois os endpoints REST foram removidos na nova arquitetura.
 
 test('32. access token expirado é rejeitado pelo verificador mobile', () => {
   const secret = 'mobile-secret-with-at-least-thirty-two-characters';

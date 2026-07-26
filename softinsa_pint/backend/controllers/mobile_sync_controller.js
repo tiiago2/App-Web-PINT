@@ -1,3 +1,6 @@
+const db = require('../models');
+const { sequelize, Submissoes, Recetor, Utilizador, Documentos } = db;
+
 const mobileSyncService = require('../services/mobile_sync_service');
 const {
   DEFAULT_LIMIT,
@@ -149,7 +152,7 @@ function construirDeleted(data, changeDeletes = []) {
 
 function criarMobileSyncController(service = mobileSyncService) {
   return {
-    async sincronizar(req, res) {
+    async pull(req, res) {
       const sinceRecebido = req.query.since;
       const cursorTimestampRecebido = req.query.cursorTimestamp;
       const cursorChangeIdRecebido = req.query.cursorChangeId;
@@ -238,6 +241,144 @@ function criarMobileSyncController(service = mobileSyncService) {
 
         console.error('Erro interno na sincronização mobile.');
         return res.status(500).json({ error: 'Erro interno ao sincronizar dados mobile.' });
+      }
+    },
+
+    async sincronizar(req, res) {
+      return this.pull(req, res);
+    },
+
+    async push(req, res) {
+      const transaction = await sequelize.transaction();
+      try {
+        const { submissoes_pendentes, recetores_lidos, perfil_editado } = req.body;
+        
+        const processedIds = {
+          submissoes: [],
+          recetores: [],
+          perfil: []
+        };
+
+        // Processar Submissões Pendentes
+        if (Array.isArray(submissoes_pendentes)) {
+          for (const sub of submissoes_pendentes) {
+            if (sub.id_submissao) {
+              const exists = await Submissoes.findOne({ 
+                where: { id_submissao: sub.id_submissao }, 
+                paranoid: false,
+                transaction 
+              });
+
+              if (exists) {
+                await Submissoes.update(sub, { 
+                  where: { id_submissao: sub.id_submissao }, 
+                  transaction 
+                });
+              } else {
+                await Submissoes.create(sub, { transaction });
+              }
+              processedIds.submissoes.push(sub.id_submissao);
+            }
+          }
+        }
+
+        // Processar Recetores Lidos
+        if (Array.isArray(recetores_lidos)) {
+          for (const rec of recetores_lidos) {
+            if (rec.id_notificacao && rec.id_utilizador) {
+              const exists = await Recetor.findOne({
+                where: { 
+                  id_notificacao: rec.id_notificacao,
+                  id_utilizador: rec.id_utilizador
+                },
+                transaction
+              });
+
+              if (exists) {
+                await Recetor.update(rec, {
+                  where: { 
+                    id_notificacao: rec.id_notificacao,
+                    id_utilizador: rec.id_utilizador
+                  },
+                  transaction
+                });
+              } else {
+                await Recetor.create(rec, { transaction });
+              }
+              processedIds.recetores.push({ 
+                id_notificacao: rec.id_notificacao, 
+                id_utilizador: rec.id_utilizador 
+              });
+            }
+          }
+        }
+
+        // Processar Perfil Editado
+        if (Array.isArray(perfil_editado)) {
+          for (const perfil of perfil_editado) {
+            if (perfil.id_utilizador) {
+              const exists = await Utilizador.findOne({
+                where: { id_utilizador: perfil.id_utilizador },
+                paranoid: false,
+                transaction
+              });
+
+              if (exists) {
+                await Utilizador.update(perfil, {
+                  where: { id_utilizador: perfil.id_utilizador },
+                  transaction
+                });
+              } else {
+                await Utilizador.create(perfil, { transaction });
+              }
+              processedIds.perfil.push(perfil.id_utilizador);
+            }
+          }
+        }
+
+        await transaction.commit();
+        
+        return res.status(200).json({
+          success: true,
+          processed_ids: processedIds
+        });
+
+      } catch (error) {
+        await transaction.rollback();
+        console.error("Erro no push de sincronização:", error);
+        return res.status(500).json({ success: false, message: "Erro interno no servidor ao sincronizar (push)." });
+      }
+    },
+
+    async upload(req, res) {
+      try {
+        const { id_submissao, id_requisito } = req.body;
+
+        if (!req.file) {
+          return res.status(400).json({ success: false, message: "Nenhum ficheiro foi enviado." });
+        }
+
+        if (!id_submissao || !id_requisito) {
+          return res.status(400).json({ success: false, message: "id_submissao e id_requisito são campos obrigatórios." });
+        }
+
+        const filePath = req.file.path || req.file.filename;
+
+        const novoDocumento = await Documentos.create({
+          id_submissao: parseInt(id_submissao),
+          id_requisito: parseInt(id_requisito),
+          ficheiro: filePath
+        });
+
+        return res.status(200).json({
+          success: true,
+          message: "Ficheiro carregado e registado com sucesso.",
+          documento: novoDocumento
+        });
+
+      } catch (error) {
+        console.error("Erro no upload de documento de sincronização:", error);
+        return res.status(500).json({ success: false, message: "Erro interno no servidor ao efetuar upload." });
       }
     }
   };

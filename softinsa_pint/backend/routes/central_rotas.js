@@ -28,7 +28,6 @@ const rotas_sla = require('./sla_routes');
 const rotas_notificacoes = require('./notificacoes_routes');
 const rotasMe = require('./me_routes');
 const rotas_documentos = require('./documentos_routes');
-const rotas_sync = require('./sync.routes');
 const rotasMobileSync = require('./mobile_sync_routes');
 
 router.use("/hometalent", rotas_home_talent);
@@ -59,7 +58,6 @@ router.use("/permissoes", rotas_permissoes);
 router.use("/sla", rotas_sla);
 router.use("/notificacoes", rotas_notificacoes);
 router.use("/documentos", rotas_documentos);
-router.use("/sync", rotas_sync);
 router.use('/mobile', rotasMobileSync);
 
 module.exports = router;

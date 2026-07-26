@@ -402,15 +402,11 @@ test('20. outbox e push nao incluem dados pessoais ou segredos', async () => {
   assert.deepEqual(Object.keys(sentMessages[0].data).sort(), ['entity', 'type', 'version']);
 });
 
-test('21. auth, devices, sync, mutations, submissions e idempotencia mantem os contratos', () => {
+test('21. auth, devices, sync e idempotencia mantem os contratos', () => {
   const central = fs.readFileSync(path.join(__dirname, '../routes/mobile_sync_routes.js'), 'utf8');
-  const mutations = fs.readFileSync(path.join(__dirname, '../routes/mobile_mutation_routes.js'), 'utf8');
-  const submissions = fs.readFileSync(path.join(__dirname, '../routes/mobile_submission_routes.js'), 'utf8');
   assert.match(central, /router\.use\('\/auth', mobileAuthRoutes\)/);
   assert.match(central, /router\.use\('\/devices', mobileDeviceRoutes\)/);
   assert.match(central, /router\.get\('\/sync', mobileAuthMiddleware, mobileSyncController\.sincronizar\)/);
-  assert.equal((mutations.match(/operationType:/g) || []).length, 4);
-  assert.equal((submissions.match(/operationType:/g) || []).length, 4);
 });
 
 test('22. rotas e controllers web permanecem sem dependencia da push outbox', () => {

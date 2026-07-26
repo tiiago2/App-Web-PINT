@@ -475,15 +475,11 @@ test('19. rotas e contratos web permanecem sem middleware mobile', () => {
 
 test('20. auth, devices, sync, mutations e submissões mantêm montagem e âmbito', () => {
   const central = fs.readFileSync(path.join(__dirname, '../routes/mobile_sync_routes.js'), 'utf8');
-  const mutations = fs.readFileSync(path.join(__dirname, '../routes/mobile_mutation_routes.js'), 'utf8');
-  const submissionsRoutes = fs.readFileSync(path.join(__dirname, '../routes/mobile_submission_routes.js'), 'utf8');
   const sql = fs.readFileSync(path.join(__dirname, '../scripts/sql/20260717_mobile_operations.sql'), 'utf8');
   const model = fs.readFileSync(path.join(__dirname, '../models/mobile_operation.js'), 'utf8');
   assert.match(central, /router\.use\('\/auth', mobileAuthRoutes\)/);
   assert.match(central, /router\.use\('\/devices', mobileDeviceRoutes\)/);
   assert.match(central, /router\.get\('\/sync', mobileAuthMiddleware, mobileSyncController\.sincronizar\)/);
-  assert.equal((mutations.match(/operationType:/g) || []).length, 4);
-  assert.equal((submissionsRoutes.match(/operationType:/g) || []).length, 4);
   assert.doesNotMatch(central, /mobileIdempotencyMiddleware/);
   assert.match(sql, /UNIQUE \(id_utilizador, client_operation_id\)/);
   assert.match(sql, /failed_retryable/);

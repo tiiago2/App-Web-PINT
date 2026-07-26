@@ -573,8 +573,7 @@ async function sincronizacaoIncremental(
         id_utilizador: idUtilizador,
         [Op.or]: [
           { data_inicial: intervalo },
-          { data_conclusao: intervalo },
-          { data_eliminacao: intervalo }
+          { data_conclusao: intervalo }
         ]
       },
       order: [['id_objetivo', 'ASC']],

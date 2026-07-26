@@ -130,7 +130,6 @@ function criarMobileMutationService({ db = dbPadrao, Op = opPadrao, now = () => 
       data_inicial: dataInicial,
       data_final: dataFinal,
       deleted_objetivo: false,
-      data_eliminacao: null,
       data_conclusao: null,
       notificacao_fim: false
     });
@@ -152,7 +151,7 @@ function criarMobileMutationService({ db = dbPadrao, Op = opPadrao, now = () => 
     if (!objetivo.deleted_objetivo) {
       await objetivo.update({
         deleted_objetivo: true,
-        data_eliminacao: now()
+        data_conclusao: now()
       });
     }
     return { deleted: true, id_objetivo: normalizedId };

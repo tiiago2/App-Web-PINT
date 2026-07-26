@@ -73,7 +73,7 @@ function construirDeleted(data, changeDeletes = []) {
       .filter((objetivo) => objetivo.deleted_objetivo)
       .map((objetivo) => ({
         id_objetivo: objetivo.id_objetivo,
-        data_eliminacao: objetivo.data_eliminacao
+        data_eliminacao: objetivo.data_conclusao
       })),
     submission_documents: (data.documentos || [])
       .filter((documento) => documento.deleted_file)

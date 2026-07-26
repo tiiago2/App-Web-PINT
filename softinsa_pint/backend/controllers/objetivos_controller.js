@@ -248,7 +248,7 @@ module.exports = {
 
       await objetivo.update({
         deleted_objetivo: true,
-        data_eliminacao: new Date()
+        data_conclusao: new Date()
       });
 
       scheduleUsersDataChanged({ userIds: [id_utilizador], entity: 'objectives' });

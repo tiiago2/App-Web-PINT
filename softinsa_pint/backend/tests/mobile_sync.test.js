@@ -74,14 +74,13 @@ const objetivoAtivo = {
   data_inicial: new Date('2026-07-16T18:00:00.000Z'),
   data_final: new Date('2026-08-16T18:00:00.000Z'),
   deleted_objetivo: false,
-  data_eliminacao: null,
   data_conclusao: null,
   notificacao_fim: false
 };
 const objetivoEliminado = {
   ...objetivoAtivo,
   deleted_objetivo: true,
-  data_eliminacao: new Date('2026-07-16T20:15:00.000Z')
+  data_conclusao: new Date('2026-07-16T20:15:00.000Z')
 };
 const cursorEvent = {
   change_id: 10,

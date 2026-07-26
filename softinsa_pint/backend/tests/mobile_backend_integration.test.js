@@ -238,7 +238,7 @@ test('11. paginação respeita limit e has_more', async () => {
 
 test('12. tombstones são projetados sem conteúdo completo da entidade', () => {
   const data = emptySyncData();
-  data.objetivos = [{ id_objetivo: 4, deleted_objetivo: true, data_eliminacao: syncTime }];
+  data.objetivos = [{ id_objetivo: 4, deleted_objetivo: true, data_conclusao: syncTime }];
   const deleted = syncControllerModule._construirDeleted(data, [{
     entity: 'signature_badges', record_id: '3:8', changed_at: syncTime,
     metadata: { id_assinatura: 3, id_badge: 8 }

@@ -199,56 +199,21 @@ async function obterNotificacoesAtuais(idUtilizador, filtroAtualizacao, transact
   });
 
   if (resultados.length === 0) {
-    return { notificacoes: [], recetores: [] };
+    return [];
   }
 
-  const notificacoes = [];
-  const recetores = [];
-
-  for (const row of resultados) {
-    notificacoes.push({
-      id_notificacao: row.id_notificacao,
-      id_utilizador: row.id_utilizador, // id do emissor (ex: admin)
-      descricao_notificacao: row.descricao_notificacao,
-      data_envio: row.data_envio,
-      tipo_notificacao: row.tipo_notificacao,
-      updated_notificacao: row.updated_notificacao,
-      deleted_notificacao: row.deleted_notificacao
-    });
-
-    recetores.push({
-      id_notificacao: row.id_notificacao,
-      id_utilizador: idUtilizador, // o recetor logado
-      lida: row.lida,
-      last_read: row.last_read
-    });
-  }
-
-  return { notificacoes, recetores };
-}
-
-async function obterAssinatura(idUtilizador, filtroAtualizacao, transaction) {
-  const assinatura = await db.Assinatura.findOne({
-    where: {
-      id_proprietario: idUtilizador,
-      ...(filtroAtualizacao && { update_assinatura: filtroAtualizacao })
-    },
-    raw: true,
-    transaction
-  });
-
-  if (!assinatura) {
-    return { assinatura: null, badgesAssinatura: [] };
-  }
-
-  const badgesAssinatura = await db.BadgesAssinatura.findAll({
-    where: { id_assinatura: assinatura.id_assinatura },
-    order: [['id_badge', 'ASC']],
-    raw: true,
-    transaction
-  });
-
-  return { assinatura, badgesAssinatura };
+  // Devolve uma lista direta e plana de notificações com o estado de leitura embutido
+  return resultados.map(row => ({
+    id_notificacao: row.id_notificacao,
+    id_utilizador: row.id_utilizador,
+    descricao_notificacao: row.descricao_notificacao,
+    data_envio: row.data_envio,
+    tipo_notificacao: row.tipo_notificacao,
+    updated_notificacao: row.updated_notificacao,
+    deleted_notificacao: row.deleted_notificacao,
+    lida: row.lida ?? 0,
+    last_read: row.last_read ?? null
+  }));
 }
 
 async function obterSubmissoesFull(idUtilizador, transaction) {

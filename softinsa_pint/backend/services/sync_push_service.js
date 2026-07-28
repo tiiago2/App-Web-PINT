@@ -1,5 +1,6 @@
 const { MOBILE_SYNC_CONTRACT_VERSION } = require('../config/mobile_sync_contract');
 const mobilePushOutboxService = require('./mobile_push_outbox_service');
+const firebaseAdminService = require('./firebase_admin_service');
 
 function emptySummary() {
   return { enviados: 0, falhados: 0, tokens_desativados: 0, enfileirados: 0 };
@@ -31,10 +32,38 @@ async function notifyUsersDataChanged({ userIds, entity }) {
   return summary;
 }
 
-async function notifyAllActiveConsultantsDataChanged() {
-  // Eventos globais nao fazem fan-out sincrono. O sync continua a ser a fonte
-  // de verdade e uma estrategia agregada pode ser adicionada futuramente.
-  return emptySummary();
+async function notifyAllActiveConsultantsDataChanged(options = {}) {
+  const summary = emptySummary();
+
+  try {
+    const messaging = firebaseAdminService.getMessaging();
+
+    if (!messaging) {
+      // Firebase nao configurado neste ambiente — comportamento silencioso esperado.
+      return summary;
+    }
+
+    const entity = (typeof options?.entity === 'string' && options.entity.trim())
+      ? options.entity.trim()
+      : 'global';
+
+    await messaging.send({
+      topic: 'sync_updates',
+      data: {
+        type: 'SYNC_TRIGGER',
+        action: 'pull_sync',
+        entity
+      }
+    });
+
+    console.log(`[SyncPush] Notificacao de catalogo enviada para topico sync_updates (entity: ${entity})`);
+    summary.enviados = 1;
+  } catch (_) {
+    // Totalmente nao-bloqueante: falhas do Firebase nunca propagam para a API.
+    summary.falhados = 1;
+  }
+
+  return summary;
 }
 
 function scheduleUsersDataChanged({ userIds, entity }) {

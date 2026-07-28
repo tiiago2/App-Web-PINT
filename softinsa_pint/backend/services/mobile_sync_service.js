@@ -160,35 +160,71 @@ async function obterSnapshotsCalculados(idUtilizador, transaction, syncUntil) {
 }
 
 async function obterNotificacoesAtuais(idUtilizador, filtroAtualizacao, transaction) {
-  const recetores = await db.Recetor.findAll({
-    where: { id_utilizador: idUtilizador },
-    attributes: ['id_notificacao', 'id_utilizador', 'lida', 'last_read'],
-    raw: true,
+  let query = `
+    SELECT 
+      n.id_notificacao, 
+      n.id_utilizador, 
+      n.descricao_notificacao, 
+      n.data_envio, 
+      n.tipo_notificacao, 
+      n.updated_notificacao, 
+      n.deleted_notificacao,
+      r.lida,
+      r.last_read,
+      r.updated_recetor
+    FROM notificacoes n
+    INNER JOIN recetor r ON n.id_notificacao = r.id_notificacao
+    WHERE r.id_utilizador = :idUtilizador
+      AND n.deleted_notificacao = false
+      AND (r.deleted_recetor = false OR r.deleted_recetor IS NULL)
+  `;
+
+  let replacements = { idUtilizador };
+
+  if (filtroAtualizacao) {
+    query += ` AND (
+      (n.updated_notificacao > :since AND n.updated_notificacao <= :syncUntil) OR
+      (r.updated_recetor > :since AND r.updated_recetor <= :syncUntil)
+    )`;
+    replacements.since = filtroAtualizacao[Op.gt];
+    replacements.syncUntil = filtroAtualizacao[Op.lte];
+  }
+
+  query += ` ORDER BY n.id_notificacao ASC`;
+
+  const resultados = await db.sequelize.query(query, {
+    replacements,
+    type: QueryTypes.SELECT,
     transaction
   });
-  const idsNotificacoes = [...new Set(recetores.map((recetor) => recetor.id_notificacao))];
 
-  if (idsNotificacoes.length === 0) {
+  if (resultados.length === 0) {
     return { notificacoes: [], recetores: [] };
   }
 
-  const notificacoes = await db.Notificacoes.findAll({
-    where: {
-      id_notificacao: { [Op.in]: idsNotificacoes },
-      ...(filtroAtualizacao && { updated_notificacao: filtroAtualizacao })
-    },
-    order: [['id_notificacao', 'ASC']],
-    raw: true,
-    transaction
-  });
-  const idsDevolvidos = new Set(
-    notificacoes.map((notificacao) => notificacao.id_notificacao)
-  );
+  const notificacoes = [];
+  const recetores = [];
 
-  return {
-    notificacoes,
-    recetores: recetores.filter((recetor) => idsDevolvidos.has(recetor.id_notificacao))
-  };
+  for (const row of resultados) {
+    notificacoes.push({
+      id_notificacao: row.id_notificacao,
+      id_utilizador: row.id_utilizador, // id do emissor (ex: admin)
+      descricao_notificacao: row.descricao_notificacao,
+      data_envio: row.data_envio,
+      tipo_notificacao: row.tipo_notificacao,
+      updated_notificacao: row.updated_notificacao,
+      deleted_notificacao: row.deleted_notificacao
+    });
+
+    recetores.push({
+      id_notificacao: row.id_notificacao,
+      id_utilizador: idUtilizador, // o recetor logado
+      lida: row.lida,
+      last_read: row.last_read
+    });
+  }
+
+  return { notificacoes, recetores };
 }
 
 async function obterAssinatura(idUtilizador, filtroAtualizacao, transaction) {

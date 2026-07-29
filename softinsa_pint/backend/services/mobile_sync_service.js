@@ -645,9 +645,9 @@ async function obterSyncUntil(transaction) {
 
 async function sincronizarMobile({ idUtilizador, since, cursor, limit }) {
   return db.sequelize.transaction({
-    isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ,
-    readOnly: true
+    isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ
   }, async (transaction) => {
+
     const syncUntil = await obterSyncUntil(transaction);
     const { utilizador, consultor } = await obterUtilizadorConsultor(
       idUtilizador,

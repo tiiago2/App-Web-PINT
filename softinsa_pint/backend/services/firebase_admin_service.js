@@ -88,9 +88,18 @@ function createFirebaseAdminService({
         }
       }
 
+      const activeApps = admin.apps || (admin.default && admin.default.apps) || [];
+
       let credential;
       if (serviceAccount) {
-        credential = admin.credential.cert(serviceAccount);
+        if (admin.credential && typeof admin.credential.cert === 'function') {
+          credential = admin.credential.cert(serviceAccount);
+        } else if (admin.default && admin.default.credential) {
+          credential = admin.default.credential.cert(serviceAccount);
+        } else {
+          const { cert } = require('firebase-admin/app');
+          credential = cert(serviceAccount);
+        }
       } else if (env.GOOGLE_APPLICATION_CREDENTIALS) {
         credential = admin.credential.applicationDefault();
       } else {
@@ -98,9 +107,8 @@ function createFirebaseAdminService({
         return false;
       }
 
-      const existingApps = (admin && Array.isArray(admin.apps)) ? admin.apps : [];
-      const app = existingApps.length > 0
-        ? admin.app()
+      const app = activeApps.length > 0
+        ? (admin.app ? admin.app() : admin.default.app())
         : admin.initializeApp({ credential });
       messaging = app.messaging();
       available = Boolean(messaging);

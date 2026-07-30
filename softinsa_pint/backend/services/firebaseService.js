@@ -55,20 +55,40 @@ try {
     }
   }
 
-  // 3. Verificação Segura de Apps Inicializadas (à prova de undefined)
-  const existingApps = (admin && Array.isArray(admin.apps)) ? admin.apps : [];
+  // 3. Inicialização Resiliente do Firebase SDK
+  if (serviceAccount) {
+    try {
+      const activeApps = admin.apps || (admin.default && admin.default.apps) || [];
 
-  if (serviceAccount && existingApps.length === 0) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
-    isInitialized = true;
-    console.log("Firebase Admin SDK inicializado com sucesso.");
-  } else if (existingApps.length > 0) {
-    isInitialized = true;
-    console.log('ℹ️ [Firebase Admin SDK] Já se encontrava inicializado.');
+      if (activeApps.length === 0) {
+        // Obter a função cert de forma segura para qualquer versão do SDK
+        let credentialObj;
+
+        if (admin.credential && typeof admin.credential.cert === 'function') {
+          credentialObj = admin.credential.cert(serviceAccount);
+        } else if (admin.default && admin.default.credential) {
+          credentialObj = admin.default.credential.cert(serviceAccount);
+        } else {
+          // Fallback para o módulo modern firebase-admin/app
+          const { cert } = require('firebase-admin/app');
+          credentialObj = cert(serviceAccount);
+        }
+
+        admin.initializeApp({
+          credential: credentialObj
+        });
+
+        isInitialized = true;
+        console.log('🚀 [Firebase Admin SDK] Inicializado com SUCESSO!');
+      } else {
+        isInitialized = true;
+        console.log('ℹ️ [Firebase Admin SDK] Já se encontrava inicializado.');
+      }
+    } catch (initErr) {
+      console.error('❌ Erro fatal ao inicializar Firebase Admin SDK:', initErr.message);
+    }
   } else {
-    console.warn("Aviso: Credenciais do Firebase não detetadas. O envio de notificações automáticas de sync estará inativo.");
+    console.warn('⚠️ Aviso: Credenciais do Firebase não detetadas. O envio de notificações automáticas de sync estará inativo.');
   }
 } catch (error) {
   console.error("Erro fatal ao inicializar Firebase Admin SDK:", error);

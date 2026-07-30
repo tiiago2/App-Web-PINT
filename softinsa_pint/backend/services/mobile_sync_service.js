@@ -644,89 +644,89 @@ async function obterSyncUntil(transaction) {
 }
 
 async function sincronizarMobile({ idUtilizador, since, cursor, limit }) {
-  return db.sequelize.transaction({
-    isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ
-  }, async (transaction) => {
+  // A rota /pull e 100% de leitura — nao faz qualquer escrita na BD.
+  // Usar uma transacao partilhada com dezenas de queries em Promise.all
+  // causava "rollback has been called on this transaction" quando qualquer
+  // query colide na mesma ligacao pg. Cada query corre agora de forma
+  // independente, sem objeto de transacao partilhado.
+  const syncUntil = await obterSyncUntil(null);
+  const { utilizador, consultor } = await obterUtilizadorConsultor(
+    idUtilizador,
+    null
+  );
+  const watermark = await mobileSyncChangeService.obterWatermark({
+    idUtilizador,
+    transaction: null,
+    fallbackTimestamp: syncUntil
+  });
 
-    const syncUntil = await obterSyncUntil(transaction);
-    const { utilizador, consultor } = await obterUtilizadorConsultor(
+  if (cursor) {
+    const page = await mobileSyncChangeService.listarAlteracoes({
+      cursor,
+      watermark,
       idUtilizador,
-      transaction
-    );
-    const watermark = await mobileSyncChangeService.obterWatermark({
-      idUtilizador,
-      transaction,
-      fallbackTimestamp: syncUntil
+      limit,
+      transaction: null
     });
-
-    if (cursor) {
-      const page = await mobileSyncChangeService.listarAlteracoes({
-        cursor,
-        watermark,
-        idUtilizador,
-        limit,
-        transaction
-      });
-      const fullData = await sincronizacaoFull(
-        idUtilizador,
-        utilizador,
-        consultor,
-        transaction,
-        syncUntil
-      );
-
-      return {
-        data: mobileSyncChangeService.projectarDados(fullData, page.changes),
-        syncUntil,
-        nextCursor: page.nextCursor,
-        hasMore: page.hasMore,
-        changeDeletes: mobileSyncChangeService.deletesDoChangeLog(page.changes)
-      };
-    }
-
-    if (since) {
-      const compatibilityCursor = { changedAt: since, changeId: 0 };
-      const pending = await mobileSyncChangeService.listarAlteracoes({
-        cursor: compatibilityCursor,
-        watermark,
-        idUtilizador,
-        limit: 1,
-        transaction
-      });
-      const data = await sincronizacaoIncremental(
-        idUtilizador,
-        utilizador,
-        consultor,
-        since,
-        syncUntil,
-        transaction
-      );
-
-      return {
-        data,
-        syncUntil,
-        nextCursor: compatibilityCursor,
-        hasMore: pending.changes.length > 0,
-        changeDeletes: []
-      };
-    }
-
-    const data = await sincronizacaoFull(
+    const fullData = await sincronizacaoFull(
       idUtilizador,
       utilizador,
       consultor,
-      transaction,
+      null,
       syncUntil
+    );
+
+    return {
+      data: mobileSyncChangeService.projectarDados(fullData, page.changes),
+      syncUntil,
+      nextCursor: page.nextCursor,
+      hasMore: page.hasMore,
+      changeDeletes: mobileSyncChangeService.deletesDoChangeLog(page.changes)
+    };
+  }
+
+  if (since) {
+    const compatibilityCursor = { changedAt: since, changeId: 0 };
+    const pending = await mobileSyncChangeService.listarAlteracoes({
+      cursor: compatibilityCursor,
+      watermark,
+      idUtilizador,
+      limit: 1,
+      transaction: null
+    });
+    const data = await sincronizacaoIncremental(
+      idUtilizador,
+      utilizador,
+      consultor,
+      since,
+      syncUntil,
+      null
     );
 
     return {
       data,
       syncUntil,
-      nextCursor: watermark,
-      hasMore: false,
+      nextCursor: compatibilityCursor,
+      hasMore: pending.changes.length > 0,
       changeDeletes: []
     };
-  });
+  }
+
+  const data = await sincronizacaoFull(
+    idUtilizador,
+    utilizador,
+    consultor,
+    null,
+    syncUntil
+  );
+
+  return {
+    data,
+    syncUntil,
+    nextCursor: watermark,
+    hasMore: false,
+    changeDeletes: []
+  };
 }
 
 module.exports = {

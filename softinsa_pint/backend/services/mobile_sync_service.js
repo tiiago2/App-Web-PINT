@@ -159,7 +159,36 @@ async function obterSnapshotsCalculados(idUtilizador, transaction, syncUntil) {
   };
 }
 
+async function obterAssinatura(idUtilizador, filtroAtualizacao, transaction) {
+  const whereAssinatura = { id_proprietario: idUtilizador };
+
+  // No modo incremental aplica o filtro temporal sobre update_assinatura
+  if (filtroAtualizacao) {
+    whereAssinatura.update_assinatura = filtroAtualizacao;
+  }
+
+  const assinatura = await db.Assinatura.findOne({
+    where: whereAssinatura,
+    raw: true,
+    transaction
+  });
+
+  if (!assinatura) {
+    return { assinatura: null, badgesAssinatura: [] };
+  }
+
+  const badgesAssinatura = await db.BadgesAssinatura.findAll({
+    where: { id_assinatura: assinatura.id_assinatura },
+    order: [['id_badge', 'ASC']],
+    raw: true,
+    transaction
+  });
+
+  return { assinatura, badgesAssinatura };
+}
+
 async function obterNotificacoesAtuais(idUtilizador, filtroAtualizacao, transaction) {
+
   let query = `
     SELECT 
       n.id_notificacao, 

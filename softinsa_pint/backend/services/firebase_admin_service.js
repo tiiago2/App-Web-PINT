@@ -1,4 +1,6 @@
 const firebaseAdmin = require('firebase-admin');
+const fs = require('fs');
+const path = require('path');
 
 function createFirebaseAdminService({
   admin = firebaseAdmin,
@@ -34,19 +36,38 @@ function createFirebaseAdminService({
     initialized = true;
 
     try {
-      const serviceAccountJson = String(env.FIREBASE_SERVICE_ACCOUNT_JSON || '').trim();
+      const renderPath1 = '/etc/secrets/firebase-service-account.json';
+      const renderPath2 = '/etc/secrets/firebase-adminsdk.json';
+      const localDefaultPath = path.join(__dirname, '..', 'firebase-adminsdk.json');
+
+      const serviceAccountJson = String(env.FIREBASE_SERVICE_ACCOUNT_JSON || env.FIREBASE_CREDENTIALS || '').trim();
       const applicationCredentials = String(env.GOOGLE_APPLICATION_CREDENTIALS || '').trim();
       let credential;
 
-      if (serviceAccountJson) {
+      if (fs.existsSync(renderPath1)) {
+        credential = admin.credential.cert(renderPath1);
+        console.log('📂 [Firebase Admin SDK] Credenciais carregadas de /etc/secrets/firebase-service-account.json');
+      } else if (fs.existsSync(renderPath2)) {
+        credential = admin.credential.cert(renderPath2);
+        console.log('📂 [Firebase Admin SDK] Credenciais carregadas de /etc/secrets/firebase-adminsdk.json');
+      } else if (serviceAccountJson) {
         const serviceAccount = parseServiceAccount(serviceAccountJson);
-        if (!serviceAccount) {
-          warnOnce('invalid_service_account_json');
-          return false;
+        if (serviceAccount) {
+          credential = admin.credential.cert(serviceAccount);
+        } else {
+          // Se não for JSON válido, tenta carregar como path
+          try {
+            credential = admin.credential.cert(serviceAccountJson);
+          } catch (_) {
+            warnOnce('invalid_service_account_json');
+            return false;
+          }
         }
-        credential = admin.credential.cert(serviceAccount);
       } else if (applicationCredentials) {
         credential = admin.credential.applicationDefault();
+      } else if (fs.existsSync(localDefaultPath)) {
+        credential = admin.credential.cert(localDefaultPath);
+        console.log('📂 [Firebase Admin SDK] Credenciais locais carregadas.');
       } else {
         warnOnce('credentials_not_configured');
         return false;

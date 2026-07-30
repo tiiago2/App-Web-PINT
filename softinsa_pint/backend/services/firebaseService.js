@@ -6,9 +6,18 @@ let isInitialized = false;
 
 try {
   let credential;
+  const renderPath1 = '/etc/secrets/firebase-service-account.json';
+  const renderPath2 = '/etc/secrets/firebase-adminsdk.json';
+  const defaultPath = path.join(__dirname, '..', 'firebase-adminsdk.json');
 
-  // 1. Tentar ler as credenciais do Firebase a partir das Variáveis de Ambiente
-  if (process.env.FIREBASE_CREDENTIALS) {
+  // 1. Tentar ler de caminhos conhecidos do Render
+  if (fs.existsSync(renderPath1)) {
+    credential = admin.credential.cert(renderPath1);
+    console.log('📂 Credenciais do Firebase carregadas de /etc/secrets/firebase-service-account.json');
+  } else if (fs.existsSync(renderPath2)) {
+    credential = admin.credential.cert(renderPath2);
+    console.log('📂 Credenciais do Firebase carregadas de /etc/secrets/firebase-adminsdk.json');
+  } else if (process.env.FIREBASE_CREDENTIALS) {
     try {
       // Se for uma string JSON contendo as credenciais completas
       const parsedCreds = JSON.parse(process.env.FIREBASE_CREDENTIALS);
@@ -19,7 +28,6 @@ try {
     }
   } else {
     // 2. Se não houver variável de ambiente, tenta carregar o ficheiro padrão no projeto
-    const defaultPath = path.join(__dirname, '..', 'firebase-adminsdk.json');
     if (fs.existsSync(defaultPath)) {
       credential = admin.credential.cert(defaultPath);
     } else {
@@ -27,11 +35,11 @@ try {
     }
   }
 
-  // Inicializar o SDK apenas se conseguirmos obter credenciais válidas
+  // Inicializar o SDK apenas se conseguirmos obter credenciais válidas e evitamos conflito se já inicializado
   if (credential) {
-    admin.initializeApp({
-      credential: credential
-    });
+    const app = admin.apps.length > 0
+      ? admin.app()
+      : admin.initializeApp({ credential });
     isInitialized = true;
     console.log("Firebase Admin SDK inicializado com sucesso.");
   }

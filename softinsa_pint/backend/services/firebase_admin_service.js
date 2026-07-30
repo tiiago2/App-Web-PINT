@@ -98,7 +98,8 @@ function createFirebaseAdminService({
         return false;
       }
 
-      const app = Array.isArray(admin.apps) && admin.apps.length > 0
+      const existingApps = (admin && Array.isArray(admin.apps)) ? admin.apps : [];
+      const app = existingApps.length > 0
         ? admin.app()
         : admin.initializeApp({ credential });
       messaging = app.messaging();

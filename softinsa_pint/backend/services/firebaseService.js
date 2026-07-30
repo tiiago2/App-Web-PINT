@@ -55,15 +55,18 @@ try {
     }
   }
 
-  // Inicializar o SDK apenas se conseguirmos obter credenciais válidas e evitamos conflito se já inicializado
-  if (serviceAccount) {
-    const app = admin.apps.length > 0
-      ? admin.app()
-      : admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount)
-        });
+  // 3. Verificação Segura de Apps Inicializadas (à prova de undefined)
+  const existingApps = (admin && Array.isArray(admin.apps)) ? admin.apps : [];
+
+  if (serviceAccount && existingApps.length === 0) {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
     isInitialized = true;
     console.log("Firebase Admin SDK inicializado com sucesso.");
+  } else if (existingApps.length > 0) {
+    isInitialized = true;
+    console.log('ℹ️ [Firebase Admin SDK] Já se encontrava inicializado.');
   } else {
     console.warn("Aviso: Credenciais do Firebase não detetadas. O envio de notificações automáticas de sync estará inativo.");
   }

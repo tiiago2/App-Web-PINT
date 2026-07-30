@@ -228,22 +228,32 @@ async function obterNotificacoesAtuais(idUtilizador, filtroAtualizacao, transact
   });
 
   if (resultados.length === 0) {
-    return [];
+    return { notificacoes: [], recetores: [] };
   }
 
-  // Devolve uma lista direta e plana de notificações com o estado de leitura embutido
-  return resultados.map(row => ({
+  // Separa os campos de cada tabela em duas listas distintas.
+  // O JOIN com r.id_utilizador garante exatamente um recetor por linha.
+  const notificacoes = resultados.map(row => ({
     id_notificacao: row.id_notificacao,
     id_utilizador: row.id_utilizador,
     descricao_notificacao: row.descricao_notificacao,
     data_envio: row.data_envio,
     tipo_notificacao: row.tipo_notificacao,
     updated_notificacao: row.updated_notificacao,
-    deleted_notificacao: row.deleted_notificacao,
-    lida: row.lida ?? 0,
-    last_read: row.last_read ?? null
+    deleted_notificacao: row.deleted_notificacao
   }));
+
+  const recetores = resultados.map(row => ({
+    id_notificacao: row.id_notificacao,
+    id_utilizador: idUtilizador,
+    lida: row.lida ?? 0,
+    last_read: row.last_read ?? null,
+    updated_recetor: row.updated_recetor
+  }));
+
+  return { notificacoes, recetores };
 }
+
 
 async function obterSubmissoesFull(idUtilizador, transaction) {
   const submissoes = await db.Submissoes.findAll({

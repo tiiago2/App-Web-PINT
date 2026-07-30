@@ -36,38 +36,63 @@ function createFirebaseAdminService({
     initialized = true;
 
     try {
-      const renderPath1 = '/etc/secrets/firebase-service-account.json';
-      const renderPath2 = '/etc/secrets/firebase-adminsdk.json';
-      const localDefaultPath = path.join(__dirname, '..', 'firebase-adminsdk.json');
+      let serviceAccount = null;
+      const secretsDir = '/etc/secrets';
 
-      const serviceAccountJson = String(env.FIREBASE_SERVICE_ACCOUNT_JSON || env.FIREBASE_CREDENTIALS || '').trim();
-      const applicationCredentials = String(env.GOOGLE_APPLICATION_CREDENTIALS || '').trim();
-      let credential;
+      // 1. Procurar dinamicamente por qualquer ficheiro .json na pasta /etc/secrets do Render
+      if (fs.existsSync(secretsDir)) {
+        const files = fs.readdirSync(secretsDir);
+        const jsonFile = files.find(f => f.endsWith('.json'));
+        
+        if (jsonFile) {
+          const fullPath = path.join(secretsDir, jsonFile);
+          serviceAccount = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+          console.log(`📂 [Firebase Admin SDK] Credenciais carregadas de: ${fullPath}`);
+        }
+      }
 
-      if (fs.existsSync(renderPath1)) {
-        credential = admin.credential.cert(renderPath1);
-        console.log('📂 [Firebase Admin SDK] Credenciais carregadas de /etc/secrets/firebase-service-account.json');
-      } else if (fs.existsSync(renderPath2)) {
-        credential = admin.credential.cert(renderPath2);
-        console.log('📂 [Firebase Admin SDK] Credenciais carregadas de /etc/secrets/firebase-adminsdk.json');
-      } else if (serviceAccountJson) {
-        const serviceAccount = parseServiceAccount(serviceAccountJson);
-        if (serviceAccount) {
-          credential = admin.credential.cert(serviceAccount);
-        } else {
-          // Se não for JSON válido, tenta carregar como path
-          try {
-            credential = admin.credential.cert(serviceAccountJson);
-          } catch (_) {
-            warnOnce('invalid_service_account_json');
-            return false;
+      // 2. Fallbacks secundários (Variáveis de Ambiente)
+      if (!serviceAccount) {
+        const envCreds = env.FIREBASE_SERVICE_ACCOUNT || env.FIREBASE_SERVICE_ACCOUNT_JSON || env.FIREBASE_CREDENTIALS;
+        if (envCreds) {
+          const parsed = parseServiceAccount(envCreds);
+          if (parsed) {
+            serviceAccount = parsed;
+            console.log('📂 [Firebase Admin SDK] Credenciais carregadas de variável de ambiente.');
+          } else {
+            // Se não for JSON válido, tenta carregar como path
+            try {
+              serviceAccount = JSON.parse(fs.readFileSync(envCreds, 'utf8'));
+              console.log(`📂 [Firebase Admin SDK] Credenciais carregadas de ficheiro da variável de ambiente: ${envCreds}`);
+            } catch (_) {
+              serviceAccount = envCreds;
+            }
           }
         }
-      } else if (applicationCredentials) {
+      }
+
+      // 3. Fallbacks para ficheiros locais por omissão
+      if (!serviceAccount) {
+        const localPaths = [
+          path.join(__dirname, 'aplicacaopint-firebase-adminsdk-fbsvc-6e8dee6143.json'),
+          path.join(__dirname, '..', 'firebase-adminsdk.json')
+        ];
+        for (const p of localPaths) {
+          if (fs.existsSync(p)) {
+            try {
+              serviceAccount = JSON.parse(fs.readFileSync(p, 'utf8'));
+              console.log(`📂 [Firebase Admin SDK] Credenciais carregadas do caminho local: ${p}`);
+              break;
+            } catch (_) {}
+          }
+        }
+      }
+
+      let credential;
+      if (serviceAccount) {
+        credential = admin.credential.cert(serviceAccount);
+      } else if (env.GOOGLE_APPLICATION_CREDENTIALS) {
         credential = admin.credential.applicationDefault();
-      } else if (fs.existsSync(localDefaultPath)) {
-        credential = admin.credential.cert(localDefaultPath);
-        console.log('📂 [Firebase Admin SDK] Credenciais locais carregadas.');
       } else {
         warnOnce('credentials_not_configured');
         return false;

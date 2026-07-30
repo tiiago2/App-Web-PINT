@@ -5,43 +5,67 @@ const fs = require('fs');
 let isInitialized = false;
 
 try {
-  let credential;
-  const renderPath1 = '/etc/secrets/firebase-service-account.json';
-  const renderPath2 = '/etc/secrets/firebase-adminsdk.json';
-  const defaultPath = path.join(__dirname, '..', 'firebase-adminsdk.json');
+  let serviceAccount = null;
+  const secretsDir = '/etc/secrets';
 
-  // 1. Tentar ler de caminhos conhecidos do Render
-  if (fs.existsSync(renderPath1)) {
-    credential = admin.credential.cert(renderPath1);
-    console.log('📂 Credenciais do Firebase carregadas de /etc/secrets/firebase-service-account.json');
-  } else if (fs.existsSync(renderPath2)) {
-    credential = admin.credential.cert(renderPath2);
-    console.log('📂 Credenciais do Firebase carregadas de /etc/secrets/firebase-adminsdk.json');
-  } else if (process.env.FIREBASE_CREDENTIALS) {
-    try {
-      // Se for uma string JSON contendo as credenciais completas
-      const parsedCreds = JSON.parse(process.env.FIREBASE_CREDENTIALS);
-      credential = admin.credential.cert(parsedCreds);
-    } catch (e) {
-      // Se não for JSON válido, assume-se que é o caminho absoluto/relativo para o ficheiro JSON
-      credential = admin.credential.cert(process.env.FIREBASE_CREDENTIALS);
+  // 1. Procurar dinamicamente por qualquer ficheiro .json na pasta /etc/secrets do Render
+  if (fs.existsSync(secretsDir)) {
+    const files = fs.readdirSync(secretsDir);
+    const jsonFile = files.find(f => f.endsWith('.json'));
+    
+    if (jsonFile) {
+      const fullPath = path.join(secretsDir, jsonFile);
+      serviceAccount = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+      console.log(`📂 Credenciais do Firebase carregadas com sucesso de: ${fullPath}`);
     }
-  } else {
-    // 2. Se não houver variável de ambiente, tenta carregar o ficheiro padrão no projeto
-    if (fs.existsSync(defaultPath)) {
-      credential = admin.credential.cert(defaultPath);
-    } else {
-      console.warn("Aviso: Credenciais do Firebase não detetadas. O envio de notificações automáticas de sync estará inativo.");
+  }
+
+  // 2. Fallbacks secundários (Variáveis de Ambiente)
+  if (!serviceAccount) {
+    const envCreds = process.env.FIREBASE_SERVICE_ACCOUNT || process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.FIREBASE_CREDENTIALS;
+    if (envCreds) {
+      try {
+        serviceAccount = JSON.parse(envCreds);
+        console.log('📂 Credenciais do Firebase carregadas de variável de ambiente (JSON).');
+      } catch (e) {
+        try {
+          serviceAccount = JSON.parse(fs.readFileSync(envCreds, 'utf8'));
+          console.log(`📂 Credenciais do Firebase carregadas de ficheiro da variável de ambiente: ${envCreds}`);
+        } catch (_) {
+          serviceAccount = envCreds;
+        }
+      }
+    }
+  }
+
+  // 3. Fallbacks para ficheiros locais por omissão
+  if (!serviceAccount) {
+    const localPaths = [
+      path.join(__dirname, 'aplicacaopint-firebase-adminsdk-fbsvc-6e8dee6143.json'),
+      path.join(__dirname, '..', 'firebase-adminsdk.json')
+    ];
+    for (const p of localPaths) {
+      if (fs.existsSync(p)) {
+        try {
+          serviceAccount = JSON.parse(fs.readFileSync(p, 'utf8'));
+          console.log(`📂 Credenciais do Firebase carregadas do caminho local: ${p}`);
+          break;
+        } catch (_) {}
+      }
     }
   }
 
   // Inicializar o SDK apenas se conseguirmos obter credenciais válidas e evitamos conflito se já inicializado
-  if (credential) {
+  if (serviceAccount) {
     const app = admin.apps.length > 0
       ? admin.app()
-      : admin.initializeApp({ credential });
+      : admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount)
+        });
     isInitialized = true;
     console.log("Firebase Admin SDK inicializado com sucesso.");
+  } else {
+    console.warn("Aviso: Credenciais do Firebase não detetadas. O envio de notificações automáticas de sync estará inativo.");
   }
 } catch (error) {
   console.error("Erro fatal ao inicializar Firebase Admin SDK:", error);

@@ -249,103 +249,237 @@ function criarMobileSyncController(service = mobileSyncService) {
     },
 
     async push(req, res) {
-      const transaction = await sequelize.transaction();
+      const ENTITY_MAP = {
+        'submission': 'submissoes', 'submissao': 'submissoes', 'submissoes': 'submissoes',
+        'objective': 'objetivos', 'objetivo': 'objetivos', 'objetivos': 'objetivos',
+        'document': 'documentos_submissao', 'documento': 'documentos_submissao', 'documentos_submissao': 'documentos_submissao',
+        'notification': 'notificacoes', 'notificacao': 'notificacoes', 'notificacoes': 'notificacoes',
+        'user_badge': 'user_badges', 'user_badges': 'user_badges',
+        'recetores': 'recetores', 'recetor': 'recetores', 'recetores_lidos': 'recetores',
+        'perfil': 'perfil', 'perfil_editado': 'perfil'
+      };
+
+      const MODEL_CONFIGS = {
+        'submissoes': { model: Submissoes, pkField: 'id_submissao', userIdField: 'id_utilizador' },
+        'objetivos': { model: Objetivos, pkField: 'id_objetivo', userIdField: 'id_utilizador' },
+        'documentos_submissao': { model: Documentos, pkField: 'id_ficheiro', userIdField: null },
+        'notificacoes': { model: Notificacoes, pkField: 'id_notificacao', userIdField: 'id_utilizador' },
+        'user_badges': { model: RegistoBadges, pkField: 'id_registo', userIdField: 'id_utilizador' },
+        'recetores': { model: Recetor, pkField: null, userIdField: 'id_utilizador' },
+        'perfil': { model: Utilizador, pkField: 'id_utilizador', userIdField: 'id_utilizador' }
+      };
+
+      const processedIds = {
+        submissoes: [],
+        objetivos: [],
+        documentos_submissao: [],
+        notificacoes: [],
+        user_badges: [],
+        recetores: [],
+        perfil: []
+      };
+
+      const submissaoIdMap = new Map();
+      const operations = [];
+
       try {
-        const { submissoes_pendentes, recetores_lidos, perfil_editado } = req.body;
-        
-        const processedIds = {
-          submissoes: [],
-          recetores: [],
-          perfil: []
-        };
-
-        // Processar Submissões Pendentes
-        if (Array.isArray(submissoes_pendentes)) {
-          for (const sub of submissoes_pendentes) {
-            if (sub.id_submissao) {
-              const exists = await Submissoes.findOne({ 
-                where: { id_submissao: sub.id_submissao }, 
-                paranoid: false,
-                transaction 
-              });
-
-              if (exists) {
-                await Submissoes.update(sub, { 
-                  where: { id_submissao: sub.id_submissao }, 
-                  transaction 
-                });
-              } else {
-                await Submissoes.create(sub, { transaction });
+        // 1. Extrair e unificar todas as operações do request body
+        if (Array.isArray(req.body)) {
+          operations.push(...req.body);
+        } else if (Array.isArray(req.body?.operations)) {
+          operations.push(...req.body.operations);
+        } else if (Array.isArray(req.body?.changes)) {
+          operations.push(...req.body.changes);
+        } else {
+          // Se for enviado em chaves agrupadas (ex: submissoes_pendentes: [...])
+          for (const key of Object.keys(req.body || {})) {
+            const normalizedKey = key.replace(/_pendentes$/, '').replace(/_lidos$/, '').replace(/_editado$/, '');
+            const canonical = ENTITY_MAP[normalizedKey] || ENTITY_MAP[key];
+            if (canonical && Array.isArray(req.body[key])) {
+              for (const item of req.body[key]) {
+                if (item && item.payload !== undefined) {
+                  operations.push({ ...item, entity: canonical });
+                } else {
+                  operations.push({
+                    entity: canonical,
+                    user_id: item.id_utilizador || item.user_id || item.id_user,
+                    local_record_id: item.id_local !== undefined ? item.id_local : null,
+                    payload: item
+                  });
+                }
               }
-              processedIds.submissoes.push(sub.id_submissao);
             }
           }
         }
 
-        // Processar Recetores Lidos
-        if (Array.isArray(recetores_lidos)) {
-          for (const rec of recetores_lidos) {
-            if (rec.id_notificacao && rec.id_utilizador) {
+        // 2. Ordenar operações para processar 'submissoes' primeiro (necessário para FK de documentos)
+        operations.sort((a, b) => {
+          const aName = ENTITY_MAP[a.entity] || a.entity;
+          const bName = ENTITY_MAP[b.entity] || b.entity;
+          if (aName === 'submissoes' && bName !== 'submissoes') return -1;
+          if (aName !== 'submissoes' && bName === 'submissoes') return 1;
+          return 0;
+        });
+
+        // 3. Processar cada operação individualmente com resiliência
+        for (const op of operations) {
+          const rawEntity = op.entity;
+          const canonicalEntity = ENTITY_MAP[rawEntity] || rawEntity;
+          const config = MODEL_CONFIGS[canonicalEntity];
+
+          if (!config) {
+            console.warn(`⚠️ [PUSH AUDIT] Entidade desconhecida ignorada: ${rawEntity}`);
+            continue;
+          }
+
+          const opPayload = op.payload || {};
+          const tempId = op.local_record_id !== undefined && op.local_record_id !== null
+            ? op.local_record_id
+            : (opPayload.id_local !== undefined ? opPayload.id_local : opPayload[config.pkField]);
+
+          // Injetar user_id no payload
+          const rawUserId = op.user_id ||
+                            opPayload.id_utilizador ||
+                            opPayload.user_id ||
+                            opPayload.id_user ||
+                            (req.mobileAuth && req.mobileAuth.id_utilizador) ||
+                            (req.user && req.user.id);
+          const userId = rawUserId ? Number(rawUserId) : null;
+
+          // Traduzir FK id_submissao para documentos_submissao
+          if (canonicalEntity === 'documentos_submissao' && opPayload.id_submissao !== undefined) {
+            if (submissaoIdMap.has(opPayload.id_submissao)) {
+              opPayload.id_submissao = submissaoIdMap.get(opPayload.id_submissao);
+            }
+          }
+
+          let operationType = op.operation;
+          if (!operationType) {
+            operationType = (opPayload[config.pkField] && opPayload[config.pkField] > 0) ? 'update' : 'insert';
+          }
+
+          // Executar numa transação isolada por registo
+          const localTransaction = await sequelize.transaction();
+          try {
+            let serverId = null;
+
+            if (canonicalEntity === 'recetores') {
+              const recKey = `${opPayload.id_notificacao}:${opPayload.id_utilizador || userId}`;
               const exists = await Recetor.findOne({
-                where: { 
-                  id_notificacao: rec.id_notificacao,
-                  id_utilizador: rec.id_utilizador
+                where: {
+                  id_notificacao: opPayload.id_notificacao,
+                  id_utilizador: opPayload.id_utilizador || userId
                 },
-                transaction
+                transaction: localTransaction
               });
 
               if (exists) {
-                await Recetor.update(rec, {
-                  where: { 
-                    id_notificacao: rec.id_notificacao,
-                    id_utilizador: rec.id_utilizador
+                const { id_notificacao, id_utilizador, ...updateData } = opPayload;
+                await Recetor.update(updateData, {
+                  where: {
+                    id_notificacao: opPayload.id_notificacao,
+                    id_utilizador: opPayload.id_utilizador || userId
                   },
-                  transaction
+                  transaction: localTransaction
                 });
               } else {
-                await Recetor.create(rec, { transaction });
+                const createData = { ...opPayload };
+                if (userId && !createData.id_utilizador) {
+                  createData.id_utilizador = userId;
+                }
+                await Recetor.create(createData, { transaction: localTransaction });
               }
-              processedIds.recetores.push({ 
-                id_notificacao: rec.id_notificacao, 
-                id_utilizador: rec.id_utilizador 
-              });
-            }
-          }
-        }
+              serverId = recKey;
+            } else {
+              const pkValue = opPayload[config.pkField];
+              let exists = null;
 
-        // Processar Perfil Editado
-        if (Array.isArray(perfil_editado)) {
-          for (const perfil of perfil_editado) {
-            if (perfil.id_utilizador) {
-              const exists = await Utilizador.findOne({
-                where: { id_utilizador: perfil.id_utilizador },
-                paranoid: false,
-                transaction
-              });
+              if (pkValue && pkValue > 0) {
+                exists = await config.model.findOne({
+                  where: { [config.pkField]: pkValue },
+                  paranoid: false,
+                  transaction: localTransaction
+                });
+              }
 
               if (exists) {
-                await Utilizador.update(perfil, {
-                  where: { id_utilizador: perfil.id_utilizador },
-                  transaction
+                // Caso UPDATE
+                const updateData = { ...opPayload };
+                delete updateData[config.pkField];
+                delete updateData.id_local;
+
+                if (userId && config.userIdField) {
+                  updateData[config.userIdField] = userId;
+                }
+
+                await config.model.update(updateData, {
+                  where: { [config.pkField]: exists[config.pkField] },
+                  transaction: localTransaction
                 });
+                serverId = exists[config.pkField];
               } else {
-                await Utilizador.create(perfil, { transaction });
+                // Caso INSERT
+                const createData = { ...opPayload };
+                delete createData[config.pkField];
+                delete createData.id_local;
+
+                // Fallbacks para campos obrigatórios
+                if (canonicalEntity === 'submissoes' && !createData.data_submissao) {
+                  createData.data_submissao = new Date();
+                }
+                if (canonicalEntity === 'objetivos' && !createData.data_inicial) {
+                  createData.data_inicial = new Date();
+                }
+                if (canonicalEntity === 'objetivos' && !createData.data_final) {
+                  const df = new Date();
+                  df.setMonth(df.getMonth() + 1);
+                  createData.data_final = df;
+                }
+                if (canonicalEntity === 'user_badges' && !createData.data_obtencao) {
+                  createData.data_obtencao = new Date();
+                }
+
+                if (userId && config.userIdField) {
+                  createData[config.userIdField] = userId;
+                  createData.user_id = userId;
+                  createData.id_user = userId;
+                }
+
+                const newRecord = await config.model.create(createData, { transaction: localTransaction });
+                serverId = newRecord[config.pkField] || newRecord.id;
               }
-              processedIds.perfil.push(perfil.id_utilizador);
+            }
+
+            await localTransaction.commit();
+
+            if (canonicalEntity === 'submissoes' && tempId !== undefined && tempId !== null) {
+              submissaoIdMap.set(tempId, serverId);
+            }
+
+            if (processedIds[canonicalEntity]) {
+              processedIds[canonicalEntity].push({
+                id_local: tempId !== undefined && tempId !== null ? (isNaN(tempId) ? tempId : Number(tempId)) : null,
+                id_servidor: isNaN(serverId) ? serverId : Number(serverId)
+              });
+            }
+
+          } catch (err) {
+            await localTransaction.rollback();
+            console.error(`\x1b[31m💥 [PUSH AUDIT ERROR] Falha na entidade '${canonicalEntity}' (Operação: ${operationType}):\x1b[0m`, err.message);
+            if (err.errors) {
+              console.error('  Detalhes Sequelize:', err.errors.map(e => e.message));
             }
           }
         }
 
-        await transaction.commit();
-        
         return res.status(200).json({
           success: true,
+          message: "Sincronização Push concluída com sucesso.",
           processed_ids: processedIds
         });
 
       } catch (error) {
-        await transaction.rollback();
-        console.error("Erro no push de sincronização:", error);
+        console.error("Erro global no push de sincronização:", error);
         return res.status(500).json({ success: false, message: "Erro interno no servidor ao sincronizar (push)." });
       }
     },

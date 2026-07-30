@@ -2,22 +2,21 @@ const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * Tenta inicializar o Firebase apenas quando for necessário (Lazy Load)
+ */
 function inicializarFirebaseSeNecessario() {
-  // 1. Se já existirem apps inicializadas no admin, retorna true
-  if (admin.apps && admin.apps.length > 0) {
-    return true;
-  }
-
-  // Tentar via getApps() modular
+  // 1. Se já existirem apps inicializadas, considera PRONTO
   try {
+    if (admin.apps && admin.apps.length > 0) return true;
+
     const { getApps } = require('firebase-admin/app');
-    if (getApps().length > 0) {
-      return true;
-    }
+    if (getApps().length > 0) return true;
   } catch (e) {
-    // Ignorar se o módulo de app não estiver disponível
+    // Ignorar erro de verificação modular
   }
 
+  // 2. Se não estiver inicializado, tenta ler as credenciais
   try {
     let serviceAccount = null;
     const secretsDir = '/etc/secrets';
@@ -32,11 +31,6 @@ function inicializarFirebaseSeNecessario() {
 
     if (!serviceAccount && process.env.FIREBASE_SERVICE_ACCOUNT) {
       serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    } else if (!serviceAccount) {
-      const localPath = path.join(__dirname, 'aplicacaopint-firebase-adminsdk-fbsvc-6e8dee6143.json');
-      if (fs.existsSync(localPath)) {
-        serviceAccount = require(localPath);
-      }
     }
 
     if (serviceAccount) {
@@ -45,11 +39,7 @@ function inicializarFirebaseSeNecessario() {
         const { cert } = require('firebase-admin/app');
         credentialObj = cert(serviceAccount);
       } catch (e) {
-        if (admin.credential && typeof admin.credential.cert === 'function') {
-          credentialObj = admin.credential.cert(serviceAccount);
-        } else if (admin.default && admin.default.credential) {
-          credentialObj = admin.default.credential.cert(serviceAccount);
-        }
+        credentialObj = admin.credential.cert(serviceAccount);
       }
 
       admin.initializeApp({ credential: credentialObj });
@@ -57,7 +47,7 @@ function inicializarFirebaseSeNecessario() {
       return true;
     }
   } catch (err) {
-    // 🌟 SE O ERRO FOR QUE O DEFAULT JÁ EXISTE, SIGNIFICA QUE ESTÁ PRONTO!
+    // Se disser que já existe (default app already exists), é um SUCESSO
     if (err.message && err.message.includes('already exists')) {
       return true;
     }
@@ -67,39 +57,31 @@ function inicializarFirebaseSeNecessario() {
   return false;
 }
 
-// Tentar inicializar imediatamente ao carregar o módulo
-inicializarFirebaseSeNecessario();
+// ⚠️ NOTA: Não chamamos nada no topo do ficheiro para não bloquear o boot do servidor!
 
+/**
+ * Função de envio de Push Silencioso para a app Flutter
+ */
 async function sendSyncPush() {
-  const pronto = inicializarFirebaseSeNecessario();
-
-  if (!pronto) {
-    console.warn('⚠️ [FCM Push] Envio ignorado: Firebase não pôde ser inicializado.');
-    return;
-  }
-
   try {
+    const pronto = inicializarFirebaseSeNecessario();
+
+    if (!pronto) {
+      console.warn('⚠️ [FCM Push] Envio ignorado: Firebase não pôde ser inicializado.');
+      return;
+    }
+
     let messaging;
     try {
       const { getMessaging } = require('firebase-admin/messaging');
       messaging = getMessaging();
     } catch (e) {
-      if (admin.messaging && typeof admin.messaging === 'function') {
-        messaging = admin.messaging();
-      } else if (admin.default && typeof admin.default.messaging === 'function') {
-        messaging = admin.default.messaging();
-      }
-    }
-
-    if (!messaging) {
-      console.warn('⚠️ [FCM Push] Não foi possível obter a instância do Messaging.');
-      return;
+      messaging = admin.messaging();
     }
 
     await messaging.send({
       topic: 'sync_updates',
       data: {
-        action: 'SYNC_NOW',
         type: 'DATABASE_CHANGE',
         timestamp: new Date().toISOString()
       }
@@ -111,8 +93,4 @@ async function sendSyncPush() {
   }
 }
 
-module.exports = {
-  sendSyncPush,
-  notifySyncAvailable: sendSyncPush,
-  inicializarFirebaseSeNecessario
-};
+module.exports = { sendSyncPush };

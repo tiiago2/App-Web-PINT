@@ -1,3 +1,15 @@
+// 1º Inicializar Firebase de forma imediata antes de carregar modelos/Sequelize
+require('./services/firebaseService');
+
+// Proteção global contra crashes por exceções não capturadas.
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('⚠️ [FATAL PREVENTED] Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('⚠️ [FATAL PREVENTED] Uncaught Exception thrown:', err);
+});
+
 const express = require("express");
 const cors = require("cors");
 const rotas = require("./routes/central_rotas");
@@ -16,7 +28,8 @@ app.use("/api", rotas);
 
 async function iniciar_bd() {
     try {
-        await db.sequelize.sync({ alter: false }); // Sincroniza e altera tabelas conforme os modelos
+        // sync() sem alter:true — as tabelas já foram criadas pelos scripts .sql manuais.
+        await db.sequelize.sync();
         console.log("Base de dados sincronizada.");
 
         // Iniciar os cron jobs

@@ -161,10 +161,51 @@ db.Notificacoes.belongsToMany(db.Utilizador, { through: db.Recetor, foreignKey: 
 db.Utilizador.belongsToMany(db.Notificacoes, { through: db.Recetor, foreignKey: 'id_utilizador' });
 
 
-// =========================================================================
-// 6. GATILHOS GLOBAIS (SEQUELIZE HOOKS) E INTEGRAÇÃO DO FIREBASE (NON-INVASIVE)
-// =========================================================================
-const firebaseService = require('../services/firebaseService');
+const admin = require('firebase-admin');
+let getMessaging;
+try {
+  getMessaging = require('firebase-admin/messaging').getMessaging;
+} catch (e) {
+  console.warn('⚠️ Módulo firebase-admin/messaging não pôde ser carregado diretamente.');
+}
+
+async function enviarNotificacaoSyncHook() {
+  try {
+    const activeApps = admin.apps || (admin.default && admin.default.apps) || [];
+    if (activeApps.length === 0) {
+      console.warn('⚠️ [FCM Hook] Notificação ignorada: Firebase ainda não foi inicializado.');
+      return;
+    }
+
+    let messagingInstance = null;
+    if (typeof getMessaging === 'function') {
+      messagingInstance = getMessaging();
+    } else if (admin.messaging && typeof admin.messaging === 'function') {
+      messagingInstance = admin.messaging();
+    } else if (admin.default && typeof admin.default.messaging === 'function') {
+      messagingInstance = admin.default.messaging();
+    }
+
+    if (!messagingInstance) {
+      console.warn('⚠️ [FCM Hook] Não foi possível obter a instância do Messaging.');
+      return;
+    }
+
+    // Disparar a mensagem silenciosa de sync para o tópico
+    await messagingInstance.send({
+      topic: 'sync_updates',
+      data: {
+        action: 'SYNC_NOW',
+        type: 'DATABASE_CHANGE',
+        timestamp: new Date().toISOString()
+      }
+    });
+
+    console.log('🚀 [FCM Hook] Notificação de Sync enviada com SUCESSO para o tópico sync_updates!');
+  } catch (err) {
+    console.error('❌ [FCM Hook] Erro ao disparar notificação silenciosa:', err.message);
+  }
+}
 
 let syncDebounceTimeout = null;
 const scheduleSyncNotification = () => {
@@ -173,7 +214,9 @@ const scheduleSyncNotification = () => {
   }
   // Debounce de 2 segundos para evitar sobrecarga no Firebase se houverem alterações em massa
   syncDebounceTimeout = setTimeout(() => {
-    firebaseService.notifySyncAvailable();
+    enviarNotificacaoSyncHook().catch((err) => {
+      console.error('❌ [FCM Hook] Erro no agendamento do Hook:', err.message);
+    });
   }, 2000);
 };
 

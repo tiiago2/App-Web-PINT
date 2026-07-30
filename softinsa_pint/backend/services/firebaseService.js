@@ -2,31 +2,34 @@ const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
 
-/**
- * Função interna para garantir que o Firebase Admin SDK está inicializado
- */
 function inicializarFirebaseSeNecessario() {
-  const activeApps = admin.apps || (admin.default && admin.default.apps) || [];
-  if (activeApps.length > 0) {
+  // 1. Se já existirem apps inicializadas no admin, retorna true
+  if (admin.apps && admin.apps.length > 0) {
     return true;
+  }
+
+  // Tentar via getApps() modular
+  try {
+    const { getApps } = require('firebase-admin/app');
+    if (getApps().length > 0) {
+      return true;
+    }
+  } catch (e) {
+    // Ignorar se o módulo de app não estiver disponível
   }
 
   try {
     let serviceAccount = null;
     const secretsDir = '/etc/secrets';
 
-    // 1. Procurar por ficheiro .json na pasta de segredos do Render
     if (fs.existsSync(secretsDir)) {
       const files = fs.readdirSync(secretsDir);
       const jsonFile = files.find(f => f.endsWith('.json'));
       if (jsonFile) {
-        const fullPath = path.join(secretsDir, jsonFile);
-        serviceAccount = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
-        console.log(`📂 [Firebase] Credenciais carregadas de: ${fullPath}`);
+        serviceAccount = JSON.parse(fs.readFileSync(path.join(secretsDir, jsonFile), 'utf8'));
       }
     }
 
-    // 2. Fallback para variável de ambiente ou ficheiro local por omissão
     if (!serviceAccount && process.env.FIREBASE_SERVICE_ACCOUNT) {
       serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     } else if (!serviceAccount) {
@@ -36,7 +39,6 @@ function inicializarFirebaseSeNecessario() {
       }
     }
 
-    // 3. Tentar inicializar se encontrou credenciais
     if (serviceAccount) {
       let credentialObj;
       try {
@@ -53,10 +55,12 @@ function inicializarFirebaseSeNecessario() {
       admin.initializeApp({ credential: credentialObj });
       console.log('🚀 [Firebase] SDK Inicializado com SUCESSO!');
       return true;
-    } else {
-      console.warn('⚠️ [Firebase] Nenhum ficheiro .json encontrado em /etc/secrets/ nem em variáveis de ambiente.');
     }
   } catch (err) {
+    // 🌟 SE O ERRO FOR QUE O DEFAULT JÁ EXISTE, SIGNIFICA QUE ESTÁ PRONTO!
+    if (err.message && err.message.includes('already exists')) {
+      return true;
+    }
     console.error('❌ [Firebase] Erro ao inicializar SDK:', err.message);
   }
 
@@ -66,11 +70,7 @@ function inicializarFirebaseSeNecessario() {
 // Tentar inicializar imediatamente ao carregar o módulo
 inicializarFirebaseSeNecessario();
 
-/**
- * Função de envio de Push Silencioso para a app Flutter
- */
 async function sendSyncPush() {
-  // Garantir que está inicializado (Auto-Init em tempo de execução)
   const pronto = inicializarFirebaseSeNecessario();
 
   if (!pronto) {

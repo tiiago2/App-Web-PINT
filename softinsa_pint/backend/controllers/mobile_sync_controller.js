@@ -1,5 +1,5 @@
 const db = require('../models');
-const { sequelize, Submissoes, Recetor, Utilizador, Documentos } = db;
+const { sequelize, Submissoes, Recetor, Utilizador, Documentos, Objetivos, RegistoBadges, Notificacoes } = db;
 
 const mobileSyncService = require('../services/mobile_sync_service');
 const {

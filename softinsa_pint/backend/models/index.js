@@ -173,7 +173,23 @@ const scheduleSyncNotification = () => {
   }
   // Debounce de 2 segundos para evitar sobrecarga no Firebase se houverem alterações em massa
   syncDebounceTimeout = setTimeout(() => {
-    firebaseService.notifySyncAvailable();
+    try {
+      if (firebaseService) {
+        if (typeof firebaseService.sendSyncPush === 'function') {
+          firebaseService.sendSyncPush().catch(err => {
+            console.error('❌ [FCM Hook Error] Erro ao disparar push de sync (sendSyncPush):', err.message);
+          });
+        } else if (typeof firebaseService.notifySyncAvailable === 'function') {
+          firebaseService.notifySyncAvailable().catch(err => {
+            console.error('❌ [FCM Hook Error] Erro ao disparar push de sync (notifySyncAvailable):', err.message);
+          });
+        } else {
+          console.warn('⚠️ [FCM Hook Warning] Nenhuma função de envio de push foi encontrada no firebaseService.');
+        }
+      }
+    } catch (err) {
+      console.error('❌ [FCM Hook Error] Falha grave ao executar o Hook:', err.message);
+    }
   }, 2000);
 };
 

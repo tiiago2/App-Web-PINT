@@ -95,6 +95,36 @@ try {
 }
 
 /**
+ * Obtém a instância do Firebase Messaging de forma compatível com todas as versões do SDK
+ */
+function getMessagingInstance() {
+  try {
+    // 1. Tentar o método moderno (firebase-admin/messaging)
+    try {
+      const { getMessaging } = require('firebase-admin/messaging');
+      return getMessaging();
+    } catch (e) {
+      // Ignorar se a sub-biblioteca modular não estiver disponível
+    }
+
+    // 2. Tentar o método clássico admin.messaging()
+    if (admin && typeof admin.messaging === 'function') {
+      return admin.messaging();
+    }
+
+    // 3. Tentar via admin.default.messaging()
+    if (admin && admin.default && typeof admin.default.messaging === 'function') {
+      return admin.default.messaging();
+    }
+
+    throw new Error('Não foi possível obter a função de messaging do Firebase Admin SDK.');
+  } catch (err) {
+    console.error('❌ Erro ao obter instância do Messaging:', err.message);
+    return null;
+  }
+}
+
+/**
  * Envia uma mensagem silenciosa (Data Message) para o tópico 'sync_updates'
  * notificando a aplicação móvel de que existem novos dados para descarregar.
  */
@@ -115,7 +145,12 @@ exports.notifySyncAvailable = async () => {
   };
 
   try {
-    const response = await admin.messaging().send(message);
+    const messaging = getMessagingInstance();
+    if (!messaging) {
+      console.warn('⚠️ [FCM] Notificação ignorada: Serviço de Messaging não disponível.');
+      return;
+    }
+    const response = await messaging.send(message);
     console.log(`[Firebase Cloud Messaging] Notificação de sync enviada com sucesso para o tópico "${topic}":`, response);
   } catch (error) {
     // Envolvido em try/catch robusto para que falhas de rede ou credenciais do Firebase

@@ -110,7 +110,22 @@ function createFirebaseAdminService({
       const app = activeApps.length > 0
         ? (admin.app ? admin.app() : admin.default.app())
         : admin.initializeApp({ credential });
-      messaging = app.messaging();
+
+      if (app && typeof app.messaging === 'function') {
+        messaging = app.messaging();
+      } else {
+        try {
+          const { getMessaging } = require('firebase-admin/messaging');
+          messaging = getMessaging(app);
+        } catch (e) {
+          if (admin && typeof admin.messaging === 'function') {
+            messaging = admin.messaging(app);
+          } else if (admin && admin.default && typeof admin.default.messaging === 'function') {
+            messaging = admin.default.messaging(app);
+          }
+        }
+      }
+
       available = Boolean(messaging);
       return available;
     } catch (_) {

@@ -346,12 +346,31 @@ function criarMobileSyncController(service = mobileSyncService) {
                             (req.user && req.user.id);
           const userId = rawUserId ? Number(rawUserId) : null;
 
-          // Traduzir FK id_submissao para documentos_submissao
-          if (canonicalEntity === 'documentos_submissao' && opPayload.id_submissao !== undefined) {
-            if (submissaoIdMap.has(opPayload.id_submissao)) {
-              opPayload.id_submissao = submissaoIdMap.get(opPayload.id_submissao);
+          // ── RESOLUÇÃO DE FK id_submissao (para documentos_submissao) ──────────────────────
+          // O Flutter envia sempre o id_submissao real do servidor se a submissão já estava
+          // sincronizada, ou o id_submissao_local para submissões criadas no mesmo lote.
+          if (canonicalEntity === 'documentos_submissao') {
+            // FONTE 1: id_submissao já é o ID real do servidor (submissão previamente sincronizada)
+            let realSubmissaoId = opPayload.id_submissao || null;
+
+            // FONTE 2: Submissão criada no mesmo lote — traduzir via mapa em memória
+            if (!realSubmissaoId && opPayload.id_submissao_local !== undefined) {
+              realSubmissaoId = submissaoIdMap.get(opPayload.id_submissao_local) ?? null;
+            }
+
+            if (realSubmissaoId) {
+              opPayload.id_submissao = realSubmissaoId;
+            } else {
+              // Submissão pai não encontrada — omitir documento para evitar violação de FK
+              console.warn(
+                `⚠️ [PUSH SYNC] Documento omitido: Submissão ` +
+                `'${opPayload.id_submissao_local ?? opPayload.id_submissao}' ` +
+                `não existe no PostgreSQL nem no lote atual.`
+              );
+              continue; // Salta para a próxima operação do lote sem crashar
             }
           }
+          // ─────────────────────────────────────────────────────────────────────────────────
 
           let operationType = op.operation;
           if (!operationType) {
@@ -390,6 +409,32 @@ function criarMobileSyncController(service = mobileSyncService) {
                 await Recetor.create(createData, { transaction: localTransaction });
               }
               serverId = recKey;
+            } else if (canonicalEntity === 'documentos_submissao') {
+              console.log('📄 [PUSH] A processar documento para id_submissao:', opPayload.id_submissao);
+
+              const targetSubId = opPayload.id_submissao;
+
+              if (!targetSubId) {
+                console.log('⚠️ [PUSH] Submissão não encontrada para o documento:', opPayload);
+                await localTransaction.rollback();
+                continue;
+              }
+
+              // Mapear campos para garantir compatibilidade com o Modelo Documentos
+              const docData = {
+                id_submissao: targetSubId,
+                id_requisito: opPayload.id_requisito || 1,
+                ficheiro: opPayload.url_ficheiro || opPayload.caminho_local || opPayload.url || opPayload.nome_ficheiro || opPayload.nome || '',
+                nome_ficheiro: opPayload.nome_ficheiro || opPayload.nome,
+                url_ficheiro: opPayload.url_ficheiro || opPayload.caminho_local || opPayload.url,
+                user_id: op.user_id || req.user.id,
+                updated_file: new Date(),
+                deleted_file: false
+              };
+
+              const novoDoc = await Documentos.create(docData, { transaction: localTransaction });
+              console.log('✅ [PUSH] Documento criado com sucesso no Postgres! ID:', novoDoc.id_ficheiro || novoDoc.id);
+              serverId = novoDoc.id_ficheiro || novoDoc.id;
             } else {
               const pkValue = opPayload[config.pkField];
               let exists = null;

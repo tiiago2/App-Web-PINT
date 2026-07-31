@@ -409,89 +409,149 @@ function criarMobileSyncController(service = mobileSyncService) {
                 await Recetor.create(createData, { transaction: localTransaction });
               }
               serverId = recKey;
-            } else if (canonicalEntity === 'documentos_submissao') {
-              console.log('📄 [PUSH] A processar documento para id_submissao:', opPayload.id_submissao);
+            } else if (canonicalEntity === 'perfil') {
+              if (operationType === 'update') {
+                const targetProfileId = userId;
 
-              const targetSubId = opPayload.id_submissao;
+                const updateData = { ...opPayload };
+                delete updateData.id_utilizador;
+                delete updateData.id_local;
 
-              if (!targetSubId) {
-                console.log('⚠️ [PUSH] Submissão não encontrada para o documento:', opPayload);
-                await localTransaction.rollback();
-                continue;
+                await Utilizador.update(updateData, {
+                  where: { id_utilizador: targetProfileId },
+                  transaction: localTransaction
+                });
+                console.log(`✅ [PUSH] Perfil de utilizador ${targetProfileId} atualizado.`);
+                serverId = targetProfileId;
+              } else {
+                console.log(`⚠️ [PUSH] Operação não suportada para perfil: ${operationType}`);
               }
+            } else if (canonicalEntity === 'documentos_submissao') {
+              if (operationType === 'delete') {
+                const targetDocId = opPayload.id_ficheiro || opPayload.id || opPayload.id_servidor;
+                const doc = await Documentos.findOne({
+                  where: { id_ficheiro: targetDocId },
+                  include: [{
+                    model: Submissoes,
+                    where: { id_utilizador: userId }
+                  }],
+                  transaction: localTransaction
+                });
 
-              // Mapear campos para garantir compatibilidade com o Modelo Documentos
-              const docData = {
-                id_submissao: targetSubId,
-                id_requisito: opPayload.id_requisito || 1,
-                ficheiro: opPayload.url_ficheiro || opPayload.caminho_local || opPayload.url || opPayload.nome_ficheiro || opPayload.nome || '',
-                nome_ficheiro: opPayload.nome_ficheiro || opPayload.nome,
-                url_ficheiro: opPayload.url_ficheiro || opPayload.caminho_local || opPayload.url,
-                user_id: op.user_id || req.user.id,
-                updated_file: new Date(),
-                deleted_file: false
-              };
+                if (doc) {
+                  await Documentos.destroy({
+                    where: { id_ficheiro: targetDocId },
+                    transaction: localTransaction
+                  });
+                  console.log(`✅ [PUSH] Documento ${targetDocId} removido com sucesso.`);
+                  serverId = targetDocId;
+                } else {
+                  console.log(`⚠️ [PUSH] Documento ${targetDocId} não encontrado ou sem autorização BOLA.`);
+                }
+              } else {
+                // INSERT
+                console.log('📄 [PUSH] A processar documento para id_submissao:', opPayload.id_submissao);
 
-              const novoDoc = await Documentos.create(docData, { transaction: localTransaction });
-              console.log('✅ [PUSH] Documento criado com sucesso no Postgres! ID:', novoDoc.id_ficheiro || novoDoc.id);
-              serverId = novoDoc.id_ficheiro || novoDoc.id;
+                const targetSubId = opPayload.id_submissao;
+
+                if (!targetSubId) {
+                  console.log('⚠️ [PUSH] Submissão não encontrada para o documento:', opPayload);
+                  await localTransaction.rollback();
+                  continue;
+                }
+
+                // Mapear campos para garantir compatibilidade com o Modelo Documentos
+                const docData = {
+                  id_submissao: targetSubId,
+                  id_requisito: opPayload.id_requisito || 1,
+                  ficheiro: opPayload.url_ficheiro || opPayload.caminho_local || opPayload.url || opPayload.nome_ficheiro || opPayload.nome || '',
+                  nome_ficheiro: opPayload.nome_ficheiro || opPayload.nome,
+                  url_ficheiro: opPayload.url_ficheiro || opPayload.caminho_local || opPayload.url,
+                  user_id: op.user_id || req.user.id,
+                  updated_file: new Date(),
+                  deleted_file: false
+                };
+
+                const novoDoc = await Documentos.create(docData, { transaction: localTransaction });
+                console.log('✅ [PUSH] Documento criado com sucesso no Postgres! ID:', novoDoc.id_ficheiro || novoDoc.id);
+                serverId = novoDoc.id_ficheiro || novoDoc.id;
+              }
             } else {
               const pkValue = opPayload[config.pkField];
               let exists = null;
 
-              if (pkValue && pkValue > 0) {
-                exists = await config.model.findOne({
-                  where: { [config.pkField]: pkValue },
-                  paranoid: false,
-                  transaction: localTransaction
-                });
+              // Blindagem BOLA: Adicionar filtro por dono nos Updates e Deletes
+              const whereCondition = { [config.pkField]: pkValue };
+              if (userId && config.userIdField) {
+                whereCondition[config.userIdField] = userId;
               }
 
-              if (exists) {
-                // Caso UPDATE
-                const updateData = { ...opPayload };
-                delete updateData[config.pkField];
-                delete updateData.id_local;
-
-                if (userId && config.userIdField) {
-                  updateData[config.userIdField] = userId;
-                }
-
-                await config.model.update(updateData, {
-                  where: { [config.pkField]: exists[config.pkField] },
+              if (operationType === 'delete') {
+                const affectedRows = await config.model.destroy({
+                  where: whereCondition,
                   transaction: localTransaction
                 });
-                serverId = exists[config.pkField];
+                if (affectedRows > 0) {
+                  console.log(`✅ [PUSH] Registo ${pkValue} de ${canonicalEntity} removido.`);
+                  serverId = pkValue;
+                } else {
+                  console.log(`⚠️ [PUSH] Falha ao remover registo ${pkValue} em ${canonicalEntity} (não encontrado ou sem autorização BOLA).`);
+                }
               } else {
-                // Caso INSERT
-                const createData = { ...opPayload };
-                delete createData[config.pkField];
-                delete createData.id_local;
-
-                // Fallbacks para campos obrigatórios
-                if (canonicalEntity === 'submissoes' && !createData.data_submissao) {
-                  createData.data_submissao = new Date();
-                }
-                if (canonicalEntity === 'objetivos' && !createData.data_inicial) {
-                  createData.data_inicial = new Date();
-                }
-                if (canonicalEntity === 'objetivos' && !createData.data_final) {
-                  const df = new Date();
-                  df.setMonth(df.getMonth() + 1);
-                  createData.data_final = df;
-                }
-                if (canonicalEntity === 'user_badges' && !createData.data_obtencao) {
-                  createData.data_obtencao = new Date();
+                if (pkValue && pkValue > 0) {
+                  exists = await config.model.findOne({
+                    where: whereCondition,
+                    paranoid: false,
+                    transaction: localTransaction
+                  });
                 }
 
-                if (userId && config.userIdField) {
-                  createData[config.userIdField] = userId;
-                  createData.user_id = userId;
-                  createData.id_user = userId;
-                }
+                if (exists) {
+                  // Caso UPDATE com BOLA
+                  const updateData = { ...opPayload };
+                  delete updateData[config.pkField];
+                  delete updateData.id_local;
 
-                const newRecord = await config.model.create(createData, { transaction: localTransaction });
-                serverId = newRecord[config.pkField] || newRecord.id;
+                  if (userId && config.userIdField) {
+                    updateData[config.userIdField] = userId;
+                  }
+
+                  await config.model.update(updateData, {
+                    where: whereCondition,
+                    transaction: localTransaction
+                  });
+                  serverId = exists[config.pkField];
+                } else {
+                  // Caso INSERT
+                  const createData = { ...opPayload };
+                  delete createData[config.pkField];
+                  delete createData.id_local;
+
+                  // Fallbacks para campos obrigatórios
+                  if (canonicalEntity === 'submissoes' && !createData.data_submissao) {
+                    createData.data_submissao = new Date();
+                  }
+                  if (canonicalEntity === 'objetivos' && !createData.data_inicial) {
+                    createData.data_inicial = new Date();
+                  }
+                  if (canonicalEntity === 'objetivos' && !createData.data_final) {
+                    const df = new Date();
+                    df.setMonth(df.getMonth() + 1);
+                    createData.data_final = df;
+                  }
+                  if (canonicalEntity === 'user_badges' && !createData.data_obtencao) {
+                    createData.data_obtencao = new Date();
+                  }
+
+                  if (userId && config.userIdField) {
+                    createData[config.userIdField] = userId;
+                    createData.user_id = userId;
+                    createData.id_user = userId;
+                  }
+
+                  const newRecord = await config.model.create(createData, { transaction: localTransaction });
+                  serverId = newRecord[config.pkField] || newRecord.id;
+                }
               }
             }
 

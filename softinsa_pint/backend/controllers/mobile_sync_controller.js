@@ -1,5 +1,5 @@
 const db = require('../models');
-const { sequelize, Submissoes, Recetor, Utilizador, Documentos, Objetivos, RegistoBadges, Notificacoes } = db;
+const { sequelize, Submissoes, Recetor, Utilizador, Documentos, Objetivos, RegistoBadges, Notificacoes, Assinatura, BadgesAssinatura } = db;
 
 const mobileSyncService = require('../services/mobile_sync_service');
 const {
@@ -256,7 +256,8 @@ function criarMobileSyncController(service = mobileSyncService) {
         'notification': 'notificacoes', 'notificacao': 'notificacoes', 'notificacoes': 'notificacoes',
         'user_badge': 'user_badges', 'user_badges': 'user_badges',
         'recetores': 'recetores', 'recetor': 'recetores', 'recetores_lidos': 'recetores',
-        'perfil': 'perfil', 'perfil_editado': 'perfil'
+        'perfil': 'perfil', 'perfil_editado': 'perfil',
+        'assinatura': 'assinatura', 'assinaturas': 'assinatura'
       };
 
       const MODEL_CONFIGS = {
@@ -266,7 +267,8 @@ function criarMobileSyncController(service = mobileSyncService) {
         'notificacoes': { model: Notificacoes, pkField: 'id_notificacao', userIdField: 'id_utilizador' },
         'user_badges': { model: RegistoBadges, pkField: 'id_registo', userIdField: 'id_utilizador' },
         'recetores': { model: Recetor, pkField: null, userIdField: 'id_utilizador' },
-        'perfil': { model: Utilizador, pkField: 'id_utilizador', userIdField: 'id_utilizador' }
+        'perfil': { model: Utilizador, pkField: 'id_utilizador', userIdField: 'id_utilizador' },
+        'assinatura': { model: Assinatura, pkField: 'id_assinatura', userIdField: 'id_proprietario' }
       };
 
       const processedIds = {
@@ -276,7 +278,8 @@ function criarMobileSyncController(service = mobileSyncService) {
         notificacoes: [],
         user_badges: [],
         recetores: [],
-        perfil: []
+        perfil: [],
+        assinatura: []
       };
 
       const submissaoIdMap = new Map();
@@ -425,6 +428,56 @@ function criarMobileSyncController(service = mobileSyncService) {
                 serverId = targetProfileId;
               } else {
                 console.log(`⚠️ [PUSH] Operação não suportada para perfil: ${operationType}`);
+              }
+            } else if (canonicalEntity === 'assinatura') {
+              try {
+                // Verificar se a assinatura já existe para o utilizador
+                const existingAss = await Assinatura.findOne({
+                  where: { id_proprietario: userId },
+                  transaction: localTransaction
+                });
+
+                let finalId;
+                if (existingAss) {
+                  // O modelo Assinatura no Postgres tem a coluna "update_assinatura" e "id_proprietario".
+                  // Os dados binários/formato do mobile não pertencem à tabela assinatura direta,
+                  // mapeamos o timestamp de atualização.
+                  await Assinatura.update({
+                    update_assinatura: new Date()
+                  }, {
+                    where: { id_assinatura: existingAss.id_assinatura, id_proprietario: userId },
+                    transaction: localTransaction
+                  });
+                  finalId = existingAss.id_assinatura;
+                  console.log(`✍️ [PUSH UPDATE] Assinatura ${finalId} atualizada no Postgres (Dono: ${userId}).`);
+                } else {
+                  const novaAss = await Assinatura.create({
+                    id_proprietario: userId,
+                    update_assinatura: new Date()
+                  }, { transaction: localTransaction });
+                  finalId = novaAss.id_assinatura;
+                  console.log(`✍️ [PUSH INSERT] Assinatura ${finalId} criada no Postgres (Dono: ${userId}).`);
+                }
+
+                // Se vierem os badges associados da assinatura no payload
+                const badgesList = opPayload.badges || opPayload.badges_ids || opPayload.id_badges;
+                if (Array.isArray(badgesList)) {
+                  await BadgesAssinatura.destroy({
+                    where: { id_assinatura: finalId },
+                    transaction: localTransaction
+                  });
+                  const relations = badgesList.map(idBadge => ({
+                    id_assinatura: finalId,
+                    id_badge: Number(idBadge)
+                  }));
+                  await BadgesAssinatura.bulkCreate(relations, { transaction: localTransaction });
+                  console.log(`✍️ [PUSH] Associados ${relations.length} badges à assinatura ${finalId}.`);
+                }
+
+                serverId = finalId;
+              } catch (err) {
+                console.error('💥 [ERRO ASSINATURA]:', err.message);
+                throw err; // Relança para acionar rollback local
               }
             } else if (canonicalEntity === 'documentos_submissao') {
               if (operationType === 'delete') {

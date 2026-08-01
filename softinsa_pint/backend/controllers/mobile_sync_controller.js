@@ -153,7 +153,7 @@ function construirDeleted(data, changeDeletes = []) {
 function criarMobileSyncController(service = mobileSyncService) {
   return {
     async pull(req, res) {
-      const sinceRecebido = req.query.since;
+      const sinceRecebido = req.query.since || req.query.last_sync_timestamp;
       const cursorTimestampRecebido = req.query.cursorTimestamp;
       const cursorChangeIdRecebido = req.query.cursorChangeId;
       const limitRecebido = req.query.limit;

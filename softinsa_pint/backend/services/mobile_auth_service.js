@@ -141,8 +141,12 @@ function criarMobileAuthService({ db, bcrypt, jwt, crypto, env, now }) {
   }
 
   async function login({ email, password, deviceId }) {
+    const emailInput = email.trim().toLowerCase();
     const utilizador = await db.Utilizador.findOne({
-      where: { email: email.trim() }
+      where: db.Sequelize.where(
+        db.Sequelize.fn('LOWER', db.Sequelize.col('email')),
+        emailInput
+      )
     });
     const passwordValida = utilizador
       ? await bcrypt.compare(password, utilizador.password)

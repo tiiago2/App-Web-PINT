@@ -272,7 +272,7 @@ function criarMobileSyncController(service = mobileSyncService) {
       };
 
       const processedIds = {
-        submissoes: [],
+        submissoes: {},
         objetivos: [],
         documentos_submissao: [],
         notificacoes: [],
@@ -569,10 +569,22 @@ function criarMobileSyncController(service = mobileSyncService) {
                     updateData[config.userIdField] = userId;
                   }
 
-                  await config.model.update(updateData, {
-                    where: whereCondition,
-                    transaction: localTransaction
-                  });
+                  let executeUpdate = true;
+                  if (canonicalEntity === 'submissoes') {
+                    const clientUpdatedAt = opPayload.updated_at ? new Date(opPayload.updated_at) : null;
+                    const serverUpdatedAt = exists.updated_submissao ? new Date(exists.updated_submissao) : null;
+                    if (clientUpdatedAt && serverUpdatedAt && clientUpdatedAt < serverUpdatedAt) {
+                      executeUpdate = false;
+                      console.log(`⚠️ [PUSH LWW] Update ignorado para submissão ${pkValue}. Data cliente (${clientUpdatedAt.toISOString()}) é anterior à do servidor (${serverUpdatedAt.toISOString()}).`);
+                    }
+                  }
+
+                  if (executeUpdate) {
+                    await config.model.update(updateData, {
+                      where: whereCondition,
+                      transaction: localTransaction
+                    });
+                  }
                   serverId = exists[config.pkField];
                 } else {
                   // Caso INSERT
@@ -614,7 +626,11 @@ function criarMobileSyncController(service = mobileSyncService) {
               submissaoIdMap.set(tempId, serverId);
             }
 
-            if (processedIds[canonicalEntity]) {
+            if (canonicalEntity === 'submissoes') {
+              if (tempId !== undefined && tempId !== null) {
+                processedIds.submissoes[tempId] = isNaN(serverId) ? serverId : Number(serverId);
+              }
+            } else if (processedIds[canonicalEntity]) {
               processedIds[canonicalEntity].push({
                 id_local: tempId !== undefined && tempId !== null ? (isNaN(tempId) ? tempId : Number(tempId)) : null,
                 id_servidor: isNaN(serverId) ? serverId : Number(serverId)

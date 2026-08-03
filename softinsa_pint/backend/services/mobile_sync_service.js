@@ -258,8 +258,7 @@ async function obterNotificacoesAtuais(idUtilizador, filtroAtualizacao, transact
 async function obterSubmissoesFull(idUtilizador, transaction) {
   const submissoes = await db.Submissoes.findAll({
     where: {
-      id_utilizador: idUtilizador,
-      status: { [Op.ne]: 'em_progresso' }
+      id_utilizador: idUtilizador
     },
     order: [['id_submissao', 'ASC']],
     raw: true,
@@ -297,7 +296,6 @@ async function obterSubmissoesIncrementais(idUtilizador, intervalo, transaction)
     db.Submissoes.findAll({
       where: {
         id_utilizador: idUtilizador,
-        status: { [Op.ne]: 'em_progresso' },
         data_submissao: intervalo
       },
       attributes: ['id_submissao'],
@@ -312,8 +310,7 @@ async function obterSubmissoesIncrementais(idUtilizador, intervalo, transaction)
         attributes: [],
         required: true,
         where: {
-          id_utilizador: idUtilizador,
-          status: { [Op.ne]: 'em_progresso' }
+          id_utilizador: idUtilizador
         }
       }],
       raw: true,
@@ -332,8 +329,7 @@ async function obterSubmissoesIncrementais(idUtilizador, intervalo, transaction)
       attributes: [],
       required: true,
       where: {
-        id_utilizador: idUtilizador,
-        status: { [Op.ne]: 'em_progresso' }
+        id_utilizador: idUtilizador
       }
     }],
     order: [['id_submissao', 'ASC'], ['id_ficheiro', 'ASC']],
@@ -349,8 +345,7 @@ async function obterSubmissoesIncrementais(idUtilizador, intervalo, transaction)
     db.Submissoes.findAll({
       where: {
         id_submissao: { [Op.in]: idsAfetados },
-        id_utilizador: idUtilizador,
-        status: { [Op.ne]: 'em_progresso' }
+        id_utilizador: idUtilizador
       },
       order: [['id_submissao', 'ASC']],
       raw: true,

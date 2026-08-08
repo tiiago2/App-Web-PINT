@@ -83,6 +83,7 @@ module.exports = {
         },
         {
           model: Historico,
+          required: false,
           include: [
             {
               model: Utilizador,

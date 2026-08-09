@@ -1,5 +1,13 @@
 const db = require('../models');
 const { sequelize, Submissoes, Recetor, Utilizador, Documentos, Objetivos, RegistoBadges, Notificacoes, Assinatura, BadgesAssinatura } = db;
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true
+});
 
 const mobileSyncService = require('../services/mobile_sync_service');
 const {
@@ -670,18 +678,25 @@ function criarMobileSyncController(service = mobileSyncService) {
           return res.status(400).json({ success: false, message: "id_submissao e id_requisito são campos obrigatórios." });
         }
 
-        const filePath = req.file.path || req.file.filename;
+        const fileBase64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+        const uploadResult = await cloudinary.uploader.upload(fileBase64, {
+          folder: 'evidencias_badges',
+          resource_type: 'auto'
+        });
 
         const novoDocumento = await Documentos.create({
           id_submissao: parseInt(id_submissao),
           id_requisito: parseInt(id_requisito),
-          ficheiro: filePath
+          ficheiro: uploadResult.secure_url
         });
 
         return res.status(200).json({
           success: true,
-          message: "Ficheiro carregado e registado com sucesso.",
-          documento: novoDocumento
+          data: {
+            id_ficheiro: novoDocumento.id_ficheiro || novoDocumento.id,
+            id_submissao: novoDocumento.id_submissao,
+            url: uploadResult.secure_url
+          }
         });
 
       } catch (error) {

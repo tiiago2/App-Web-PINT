@@ -595,35 +595,65 @@ function criarMobileSyncController(service = mobileSyncService) {
                   }
                   serverId = exists[config.pkField];
                 } else {
-                  // Caso INSERT
-                  const createData = { ...opPayload };
-                  delete createData[config.pkField];
-                  delete createData.id_local;
-
-                  // Fallbacks para campos obrigatórios
-                  if (canonicalEntity === 'submissoes' && !createData.data_submissao) {
-                    createData.data_submissao = new Date();
-                  }
-                  if (canonicalEntity === 'objetivos' && !createData.data_inicial) {
-                    createData.data_inicial = new Date();
-                  }
-                  if (canonicalEntity === 'objetivos' && !createData.data_final) {
-                    const df = new Date();
-                    df.setMonth(df.getMonth() + 1);
-                    createData.data_final = df;
-                  }
-                  if (canonicalEntity === 'user_badges' && !createData.data_obtencao) {
-                    createData.data_obtencao = new Date();
+                  // Caso INSERT (com trava de duplicação para rascunhos de submissões)
+                  let rascunhoExistente = null;
+                  if (canonicalEntity === 'submissoes') {
+                    const targetUserId = userId || opPayload.id_utilizador;
+                    const idBadge = opPayload.id_badge;
+                    
+                    if (targetUserId && idBadge) {
+                      rascunhoExistente = await db.Submissoes.findOne({
+                        where: {
+                          id_utilizador: targetUserId,
+                          id_badge: idBadge,
+                          status: 'em_progresso',
+                          deleted_submissao: false
+                        },
+                        transaction: localTransaction
+                      });
+                    }
                   }
 
-                  if (userId && config.userIdField) {
-                    createData[config.userIdField] = userId;
-                    createData.user_id = userId;
-                    createData.id_user = userId;
-                  }
+                  if (rascunhoExistente) {
+                    const updateData = { ...opPayload };
+                    delete updateData[config.pkField];
+                    delete updateData.id_local;
+                    if (userId && config.userIdField) {
+                      updateData[config.userIdField] = userId;
+                    }
+                    
+                    await rascunhoExistente.update(updateData, { transaction: localTransaction });
+                    serverId = rascunhoExistente[config.pkField] || rascunhoExistente.id;
+                  } else {
+                    const createData = { ...opPayload };
+                    delete createData[config.pkField];
+                    delete createData.id_local;
 
-                  const newRecord = await config.model.create(createData, { transaction: localTransaction });
-                  serverId = newRecord[config.pkField] || newRecord.id;
+                    // Fallbacks para campos obrigatórios
+                    if (canonicalEntity === 'submissoes' && !createData.data_submissao) {
+                      createData.data_submissao = new Date();
+                    }
+                    if (canonicalEntity === 'objetivos' && !createData.data_inicial) {
+                      createData.data_inicial = new Date();
+                    }
+                    if (canonicalEntity === 'objetivos' && !createData.data_final) {
+                      const df = new Date();
+                      df.setMonth(df.getMonth() + 1);
+                      createData.data_final = df;
+                    }
+                    if (canonicalEntity === 'user_badges' && !createData.data_obtencao) {
+                      createData.data_obtencao = new Date();
+                    }
+
+                    if (userId && config.userIdField) {
+                      createData[config.userIdField] = userId;
+                      createData.user_id = userId;
+                      createData.id_user = userId;
+                    }
+
+                    const newRecord = await config.model.create(createData, { transaction: localTransaction });
+                    serverId = newRecord[config.pkField] || newRecord.id;
+                  }
                 }
               }
             }

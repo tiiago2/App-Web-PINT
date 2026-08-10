@@ -567,6 +567,40 @@ function criarMobileSyncController(service = mobileSyncService) {
                   });
                 }
 
+                if (!exists && canonicalEntity === 'submissoes') {
+                  const targetUserId = userId || opPayload.id_utilizador;
+                  const idBadge = opPayload.id_badge;
+                  
+                  if (targetUserId && idBadge) {
+                    if (opPayload.status === 'pendente') {
+                      exists = await db.Submissoes.findOne({
+                        where: {
+                          id_utilizador: targetUserId,
+                          id_badge: idBadge,
+                          deleted_submissao: false
+                        },
+                        transaction: localTransaction
+                      });
+                      if (exists) {
+                        operationType = 'update';
+                      }
+                    } else {
+                      exists = await db.Submissoes.findOne({
+                        where: {
+                          id_utilizador: targetUserId,
+                          id_badge: idBadge,
+                          status: 'em_progresso',
+                          deleted_submissao: false
+                        },
+                        transaction: localTransaction
+                      });
+                      if (exists) {
+                        operationType = 'update';
+                      }
+                    }
+                  }
+                }
+
                 if (exists) {
                   // Caso UPDATE com BOLA
                   const updateData = { ...opPayload };
@@ -583,77 +617,47 @@ function criarMobileSyncController(service = mobileSyncService) {
                     const serverUpdatedAt = exists.updated_submissao ? new Date(exists.updated_submissao) : null;
                     if (clientUpdatedAt && serverUpdatedAt && clientUpdatedAt < serverUpdatedAt) {
                       executeUpdate = false;
-                      console.log(`⚠️ [PUSH LWW] Update ignorado para submissão ${pkValue}. Data cliente (${clientUpdatedAt.toISOString()}) é anterior à do servidor (${serverUpdatedAt.toISOString()}).`);
+                      console.log(`⚠️ [PUSH LWW] Update ignorado para submissão ${exists[config.pkField]}. Data cliente (${clientUpdatedAt.toISOString()}) é anterior à do servidor (${serverUpdatedAt.toISOString()}).`);
                     }
                   }
 
                   if (executeUpdate) {
                     await config.model.update(updateData, {
-                      where: whereCondition,
+                      where: { [config.pkField]: exists[config.pkField] },
                       transaction: localTransaction
                     });
                   }
                   serverId = exists[config.pkField];
                 } else {
-                  // Caso INSERT (com trava de duplicação para rascunhos de submissões)
-                  let rascunhoExistente = null;
-                  if (canonicalEntity === 'submissoes') {
-                    const targetUserId = userId || opPayload.id_utilizador;
-                    const idBadge = opPayload.id_badge;
-                    
-                    if (targetUserId && idBadge) {
-                      rascunhoExistente = await db.Submissoes.findOne({
-                        where: {
-                          id_utilizador: targetUserId,
-                          id_badge: idBadge,
-                          status: 'em_progresso',
-                          deleted_submissao: false
-                        },
-                        transaction: localTransaction
-                      });
-                    }
+                  // Caso INSERT
+                  const createData = { ...opPayload };
+                  delete createData[config.pkField];
+                  delete createData.id_local;
+
+                  // Fallbacks para campos obrigatórios
+                  if (canonicalEntity === 'submissoes' && !createData.data_submissao) {
+                    createData.data_submissao = new Date();
+                  }
+                  if (canonicalEntity === 'objetivos' && !createData.data_inicial) {
+                    createData.data_inicial = new Date();
+                  }
+                  if (canonicalEntity === 'objetivos' && !createData.data_final) {
+                    const df = new Date();
+                    df.setMonth(df.getMonth() + 1);
+                    createData.data_final = df;
+                  }
+                  if (canonicalEntity === 'user_badges' && !createData.data_obtencao) {
+                    createData.data_obtencao = new Date();
                   }
 
-                  if (rascunhoExistente) {
-                    const updateData = { ...opPayload };
-                    delete updateData[config.pkField];
-                    delete updateData.id_local;
-                    if (userId && config.userIdField) {
-                      updateData[config.userIdField] = userId;
-                    }
-                    
-                    await rascunhoExistente.update(updateData, { transaction: localTransaction });
-                    serverId = rascunhoExistente[config.pkField] || rascunhoExistente.id;
-                  } else {
-                    const createData = { ...opPayload };
-                    delete createData[config.pkField];
-                    delete createData.id_local;
-
-                    // Fallbacks para campos obrigatórios
-                    if (canonicalEntity === 'submissoes' && !createData.data_submissao) {
-                      createData.data_submissao = new Date();
-                    }
-                    if (canonicalEntity === 'objetivos' && !createData.data_inicial) {
-                      createData.data_inicial = new Date();
-                    }
-                    if (canonicalEntity === 'objetivos' && !createData.data_final) {
-                      const df = new Date();
-                      df.setMonth(df.getMonth() + 1);
-                      createData.data_final = df;
-                    }
-                    if (canonicalEntity === 'user_badges' && !createData.data_obtencao) {
-                      createData.data_obtencao = new Date();
-                    }
-
-                    if (userId && config.userIdField) {
-                      createData[config.userIdField] = userId;
-                      createData.user_id = userId;
-                      createData.id_user = userId;
-                    }
-
-                    const newRecord = await config.model.create(createData, { transaction: localTransaction });
-                    serverId = newRecord[config.pkField] || newRecord.id;
+                  if (userId && config.userIdField) {
+                    createData[config.userIdField] = userId;
+                    createData.user_id = userId;
+                    createData.id_user = userId;
                   }
+
+                  const newRecord = await config.model.create(createData, { transaction: localTransaction });
+                  serverId = newRecord[config.pkField] || newRecord.id;
                 }
               }
             }
@@ -772,13 +776,10 @@ function criarMobileSyncController(service = mobileSyncService) {
 
         return res.status(200).json({
           success: true,
-          message: 'Documento enviado com sucesso',
           data: {
             id_ficheiro: novoDocumento.id_ficheiro || novoDocumento.id,
             id_submissao: Number(id_submissao),
             id_requisito: Number(id_requisito),
-            nome_original: req.file.originalname,
-            tamanho: req.file.size,
             url: uploadResult.secure_url
           }
         });

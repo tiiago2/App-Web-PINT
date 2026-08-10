@@ -628,6 +628,56 @@ function criarMobileSyncController(service = mobileSyncService) {
               }
             }
 
+            if (canonicalEntity === 'submissoes' && operationType !== 'delete') {
+              const currentSubmission = await config.model.findByPk(serverId, { transaction: localTransaction });
+              if (currentSubmission && currentSubmission.status === 'pendente') {
+                const idBadge = currentSubmission.id_badge;
+                
+                const totalRequisitos = await db.RequisitosBadge.count({
+                  where: { id_badge: idBadge },
+                  transaction: localTransaction
+                });
+                
+                const dbDocsCount = await Documentos.count({
+                  where: { id_submissao: serverId, deleted_file: false },
+                  transaction: localTransaction
+                });
+
+                const docsInBatch = operations.filter(o => {
+                  const canonical = ENTITY_MAP[o.entity] || o.entity;
+                  if (canonical !== 'documentos_submissao') return false;
+                  if (o.operation === 'delete') return false;
+                  
+                  const p = o.payload || {};
+                  if (p.id_submissao === serverId) return true;
+                  if (p.id_submissao_local !== undefined && submissaoIdMap.get(p.id_submissao_local) === serverId) return true;
+                  return false;
+                }).length;
+
+                const docsDeletedInBatch = operations.filter(o => {
+                  const canonical = ENTITY_MAP[o.entity] || o.entity;
+                  if (canonical !== 'documentos_submissao') return false;
+                  if (o.operation !== 'delete') return false;
+                  
+                  const p = o.payload || {};
+                  if (p.id_submissao === serverId) return true;
+                  if (p.id_submissao_local !== undefined && submissaoIdMap.get(p.id_submissao_local) === serverId) return true;
+                  return false;
+                }).length;
+
+                const totalDocumentos = dbDocsCount + docsInBatch - docsDeletedInBatch;
+                
+                if (totalDocumentos < totalRequisitos) {
+                  await localTransaction.rollback();
+                  return res.status(400).json({
+                    success: false,
+                    code: 'requisitos_incompletos',
+                    message: `Submissão recusada. Foram anexadas ${totalDocumentos} de ${totalRequisitos} evidências necessárias.`
+                  });
+                }
+              }
+            }
+
             await localTransaction.commit();
 
             if (canonicalEntity === 'submissoes' && tempId !== undefined && tempId !== null) {
@@ -692,9 +742,13 @@ function criarMobileSyncController(service = mobileSyncService) {
 
         return res.status(200).json({
           success: true,
+          message: 'Documento enviado com sucesso',
           data: {
             id_ficheiro: novoDocumento.id_ficheiro || novoDocumento.id,
-            id_submissao: novoDocumento.id_submissao,
+            id_submissao: Number(id_submissao),
+            id_requisito: Number(id_requisito),
+            nome_original: req.file.originalname,
+            tamanho: req.file.size,
             url: uploadResult.secure_url
           }
         });

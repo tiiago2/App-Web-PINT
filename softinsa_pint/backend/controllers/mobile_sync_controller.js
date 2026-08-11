@@ -771,15 +771,17 @@ function criarMobileSyncController(service = mobileSyncService) {
         const novoDocumento = await Documentos.create({
           id_submissao: parseInt(id_submissao),
           id_requisito: parseInt(id_requisito),
-          ficheiro: uploadResult.secure_url
+          ficheiro: uploadResult.secure_url,
+          updated_file: new Date(),
+          deleted_file: false
         });
 
         return res.status(200).json({
           success: true,
           data: {
             id_ficheiro: novoDocumento.id_ficheiro || novoDocumento.id,
-            id_submissao: Number(id_submissao),
-            id_requisito: Number(id_requisito),
+            id_submissao: novoDocumento.id_submissao,
+            id_requisito: novoDocumento.id_requisito,
             url: uploadResult.secure_url
           }
         });

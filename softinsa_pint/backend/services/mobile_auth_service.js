@@ -54,7 +54,8 @@ function criarMobileAuthService({ db, bcrypt, jwt, crypto, env, now }) {
     const config = configuracao();
     const token = jwt.sign({
       id_utilizador: utilizador.id_utilizador,
-      token_type: ACCESS_TOKEN_TYPE
+      token_type: ACCESS_TOKEN_TYPE,
+      iat: Math.floor(agora().getTime() / 1000) - 10
     }, config.secret, {
       algorithm: 'HS256',
       subject: String(utilizador.id_utilizador),
@@ -218,7 +219,10 @@ function criarMobileAuthService({ db, bcrypt, jwt, crypto, env, now }) {
       }
 
       if (tokenAtual.revoked_at) {
-        throw criarErroHttp(401, 'Refresh token revogado.');
+        const tempoRevogacao = (agora().getTime() - new Date(tokenAtual.revoked_at).getTime()) / 1000;
+        if (tempoRevogacao >= 10) {
+          throw criarErroHttp(401, 'Refresh token revogado.');
+        }
       }
 
       if (new Date(tokenAtual.expires_at).getTime() <= agora().getTime()) {

@@ -10,7 +10,7 @@ function criarMobileAuthMiddleware(service = mobileAuthService) {
       });
     }
 
-    const match = /^Bearer ([^\s]+)$/.exec(authorization);
+    const match = /^Bearer ([^\s]+)$/i.exec(authorization);
     if (!match) {
       return res.status(401).json({
         success: false,

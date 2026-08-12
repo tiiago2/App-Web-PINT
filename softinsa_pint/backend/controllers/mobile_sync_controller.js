@@ -423,16 +423,39 @@ function criarMobileSyncController(service = mobileSyncService) {
             } else if (canonicalEntity === 'perfil') {
               if (operationType === 'update') {
                 const targetProfileId = userId;
+                
+                const { nome, email, telefone, id_area, area_id, foto, imagem_perfil } = opPayload;
+                
+                const updateData = {};
+                if (nome !== undefined) updateData.nome_user = nome;
+                if (email !== undefined) updateData.email = email;
+                if (telefone !== undefined) updateData.telefone = telefone;
+                if (foto !== undefined || imagem_perfil !== undefined) {
+                  updateData.imagem_perfil = foto || imagem_perfil;
+                }
 
-                const updateData = { ...opPayload };
-                delete updateData.id_utilizador;
-                delete updateData.id_local;
+                if (Object.keys(updateData).length > 0) {
+                  await Utilizador.update(updateData, {
+                    where: { id_utilizador: targetProfileId },
+                    transaction: localTransaction
+                  });
+                }
 
-                await Utilizador.update(updateData, {
-                  where: { id_utilizador: targetProfileId },
-                  transaction: localTransaction
-                });
-                console.log(`✅ [PUSH] Perfil de utilizador ${targetProfileId} atualizado.`);
+                const targetAreaId = id_area !== undefined ? id_area : area_id;
+                if (targetAreaId !== undefined) {
+                  const { Consultor } = db;
+                  if (Consultor) {
+                    await Consultor.update(
+                      { id_area: targetAreaId },
+                      {
+                        where: { id_utilizador: targetProfileId },
+                        transaction: localTransaction
+                      }
+                    );
+                  }
+                }
+
+                console.log(`✅ [PUSH] Perfil de utilizador ${targetProfileId} atualizado com mapeamento completo.`);
                 serverId = targetProfileId;
               } else if (operationType === 'update_foto') {
                 const targetProfileId = userId;

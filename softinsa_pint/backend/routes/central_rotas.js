@@ -29,6 +29,7 @@ const rotas_notificacoes = require('./notificacoes_routes');
 const rotasMe = require('./me_routes');
 const rotas_documentos = require('./documentos_routes');
 const rotasMobileSync = require('./mobile_sync_routes');
+const rotas_perfil_mobile = require('./perfil');
 
 router.use("/hometalent", rotas_home_talent);
 router.use("/homeconsultor", rotas_home_consultor);
@@ -59,5 +60,6 @@ router.use("/sla", rotas_sla);
 router.use("/notificacoes", rotas_notificacoes);
 router.use("/documentos", rotas_documentos);
 router.use('/mobile', rotasMobileSync);
+router.use('/mobile', rotas_perfil_mobile);
 
 module.exports = router;

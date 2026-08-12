@@ -442,20 +442,22 @@ function criarMobileSyncController(service = mobileSyncService) {
                 }
 
                 const targetAreaId = id_area !== undefined ? id_area : area_id;
+                const updateConsultorData = { ...updateData };
                 if (targetAreaId !== undefined) {
+                  updateConsultorData.id_area = targetAreaId;
+                }
+
+                if (Object.keys(updateConsultorData).length > 0) {
                   const { Consultor } = db;
                   if (Consultor) {
-                    await Consultor.update(
-                      { id_area: targetAreaId },
-                      {
-                        where: { id_utilizador: targetProfileId },
-                        transaction: localTransaction
-                      }
-                    );
+                    await Consultor.update(updateConsultorData, {
+                      where: { id_utilizador: targetProfileId },
+                      transaction: localTransaction
+                    });
                   }
                 }
 
-                console.log(`✅ [PUSH] Perfil de utilizador ${targetProfileId} atualizado com mapeamento completo.`);
+                console.log(`✅ [PUSH] Perfil de utilizador e consultor ${targetProfileId} atualizados transacionalmente.`);
                 serverId = targetProfileId;
               } else if (operationType === 'update_foto') {
                 const targetProfileId = userId;

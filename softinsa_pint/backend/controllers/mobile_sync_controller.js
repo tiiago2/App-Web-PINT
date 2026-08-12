@@ -434,6 +434,42 @@ function criarMobileSyncController(service = mobileSyncService) {
                 });
                 console.log(`✅ [PUSH] Perfil de utilizador ${targetProfileId} atualizado.`);
                 serverId = targetProfileId;
+              } else if (operationType === 'update_foto') {
+                const targetProfileId = userId;
+                let secureUrl = opPayload.foto || opPayload.imagem_perfil;
+
+                if (req.file) {
+                  const fileBase64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+                  const uploadResult = await cloudinary.uploader.upload(fileBase64, {
+                    folder: 'perfis',
+                    resource_type: 'auto'
+                  });
+                  secureUrl = uploadResult.secure_url;
+                } else if (opPayload.foto_base64) {
+                  const fileBase64 = opPayload.foto_base64.startsWith('data:') 
+                    ? opPayload.foto_base64 
+                    : `data:image/jpeg;base64,${opPayload.foto_base64}`;
+                  const uploadResult = await cloudinary.uploader.upload(fileBase64, {
+                    folder: 'perfis',
+                    resource_type: 'auto'
+                  });
+                  secureUrl = uploadResult.secure_url;
+                }
+
+                if (!secureUrl) {
+                  throw new Error('Nenhum ficheiro ou URL de imagem foi fornecido.');
+                }
+
+                await Utilizador.update({
+                  imagem_perfil: secureUrl
+                }, {
+                  where: { id_utilizador: targetProfileId },
+                  transaction: localTransaction
+                });
+
+                serverId = targetProfileId;
+                processedIds.perfil = { id_user: Number(targetProfileId), url: secureUrl };
+                console.log(`✅ [PUSH] Foto de perfil de utilizador ${targetProfileId} atualizada. URL: ${secureUrl}`);
               } else {
                 console.log(`⚠️ [PUSH] Operação não suportada para perfil: ${operationType}`);
               }

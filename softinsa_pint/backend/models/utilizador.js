@@ -14,10 +14,6 @@ module.exports = (sequelize) => {
     ativo: { type: DataTypes.BOOLEAN, allowNull: false },
     imagem_perfil: { type: DataTypes.TEXT, allowNull: false, defaultValue: 'https://res.cloudinary.com/nvvadzck/image/upload/v1783882405/default_pint.jpg'},
     nome_user: { type: DataTypes.TEXT, allowNull: false },
-    primeiro_login: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
-    pontos_sem: { type: DataTypes.INTEGER, allowNull: true },
-    pontos_mes: { type: DataTypes.INTEGER, allowNull: true },
-    pontos_ano: { type: DataTypes.INTEGER, allowNull: true },
-    pontos_totais: { type: DataTypes.INTEGER, allowNull: true }
+    primeiro_login: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true }
   }, { tableName: 'utilizador', timestamps: false });
 };

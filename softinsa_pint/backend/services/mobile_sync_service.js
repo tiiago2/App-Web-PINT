@@ -146,7 +146,6 @@ async function obterSnapshotsCalculados(idUtilizador, transaction, syncUntil) {
     })),
     userBadges,
     outrosUsers: ranking
-      .filter((item) => Number(item.id) !== Number(idUtilizador))
       .map((item) => ({
         id_utilizador: item.id,
         nome_user: item.nome,

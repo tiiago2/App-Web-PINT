@@ -52,7 +52,7 @@ async function calcularRanking(id_service_line = null, options = {}) {
     include: [
       {
         model: Utilizador,
-        attributes: ["id_utilizador", "nome_user", "imagem_perfil"]
+        attributes: ["id_utilizador", "nome_user", "imagem_perfil", "update_user", "ativo"]
       },
       includeArea
     ]
@@ -104,7 +104,10 @@ async function calcularRanking(id_service_line = null, options = {}) {
       pontos_mes: pontosMes,
       pontos_ano: pontosAno,
       pontos_sempre: pontosSempre > 0 ? pontosSempre : c.pontos_totais,
-      total_badges: registos.length
+      total_badges: registos.length,
+      imagem_perfil: user ? user.imagem_perfil : c.imagem_perfil,
+      update_user: user ? user.update_user : c.update_user,
+      ativo: user ? user.ativo : c.ativo
     };
     if (includeAreaId) {
       itemRanking.id_area = c.id_area;

@@ -146,17 +146,18 @@ async function obterSnapshotsCalculados(idUtilizador, transaction, syncUntil) {
     })),
     userBadges,
     outrosUsers: ranking
+      .filter((item) => Number(item.id) !== Number(idUtilizador))
       .map((item) => ({
         id_utilizador: item.id,
         nome_user: item.nome,
         id_area: item.id_area ?? null,
-        pontos_semanais: item.pontos_semana,
-        pontos_mensais: item.pontos_mes,
-        pontos_anuais: item.pontos_ano,
-        pontos_sem: item.pontos_semana,
+        imagem_perfil: item.imagem_perfil ?? null,
+        update_user: item.update_user ? new Date(item.update_user).toISOString() : new Date().toISOString(),
+        pontos_semana: item.pontos_semana,
         pontos_mes: item.pontos_mes,
         pontos_ano: item.pontos_ano,
-        pontos_totais: item.pontos_sempre
+        pontos_totais: item.pontos_sempre,
+        ativo: item.ativo ? 1 : 0
       }))
       .sort((left, right) => left.id_utilizador - right.id_utilizador)
   };

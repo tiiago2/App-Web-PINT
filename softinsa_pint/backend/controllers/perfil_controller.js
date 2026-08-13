@@ -47,16 +47,26 @@ exports.atualizarFotoPerfil = async (req, res) => {
       });
     }
 
-    // 4. Atualizar no PostgreSQL
+    // 4. Atualizar no PostgreSQL (Tabela utilizador e consultor)
     await Utilizador.update(
       { imagem_perfil: uploadResult.secure_url },
       { where: { id_utilizador: idUtilizador } }
     );
 
+    const { Consultor } = require('../models');
+    if (Consultor) {
+      await Consultor.update(
+        { imagem_perfil: uploadResult.secure_url },
+        { where: { id_utilizador: idUtilizador } }
+      );
+    }
+
     return res.status(200).json({
       success: true,
       message: 'Foto de perfil updated successfully.',
-      url: uploadResult.secure_url,
+      data: {
+        url: uploadResult.secure_url
+      }
     });
 
   } catch (error) {

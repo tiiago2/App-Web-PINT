@@ -492,9 +492,19 @@ function criarMobileSyncController(service = mobileSyncService) {
                   transaction: localTransaction
                 });
 
+                const { Consultor } = db;
+                if (Consultor) {
+                  await Consultor.update({
+                    imagem_perfil: secureUrl
+                  }, {
+                    where: { id_utilizador: targetProfileId },
+                    transaction: localTransaction
+                  });
+                }
+
                 serverId = targetProfileId;
                 processedIds.perfil = { id_user: Number(targetProfileId), url: secureUrl };
-                console.log(`✅ [PUSH] Foto de perfil de utilizador ${targetProfileId} atualizada. URL: ${secureUrl}`);
+                console.log(`✅ [PUSH] Foto de perfil de utilizador e consultor ${targetProfileId} atualizada. URL: ${secureUrl}`);
               } else {
                 console.log(`⚠️ [PUSH] Operação não suportada para perfil: ${operationType}`);
               }
@@ -508,9 +518,6 @@ function criarMobileSyncController(service = mobileSyncService) {
 
                 let finalId;
                 if (existingAss) {
-                  // O modelo Assinatura no Postgres tem a coluna "update_assinatura" e "id_proprietario".
-                  // Os dados binários/formato do mobile não pertencem à tabela assinatura direta,
-                  // mapeamos o timestamp de atualização.
                   await Assinatura.update({
                     update_assinatura: new Date()
                   }, {
@@ -522,25 +529,45 @@ function criarMobileSyncController(service = mobileSyncService) {
                 } else {
                   const novaAss = await Assinatura.create({
                     id_proprietario: userId,
-                    update_assinatura: new Date()
+                    update_assinatura: new Date(),
+                    deleted_assinatura: false
                   }, { transaction: localTransaction });
                   finalId = novaAss.id_assinatura;
                   console.log(`✍️ [PUSH INSERT] Assinatura ${finalId} criada no Postgres (Dono: ${userId}).`);
                 }
 
-                // Se vierem os badges associados da assinatura no payload
-                const badgesList = opPayload.badges || opPayload.badges_ids || opPayload.id_badges;
-                if (Array.isArray(badgesList)) {
-                  await BadgesAssinatura.destroy({
-                    where: { id_assinatura: finalId },
-                    transaction: localTransaction
-                  });
-                  const relations = badgesList.map(idBadge => ({
-                    id_assinatura: finalId,
-                    id_badge: Number(idBadge)
-                  }));
-                  await BadgesAssinatura.bulkCreate(relations, { transaction: localTransaction });
-                  console.log(`✍️ [PUSH] Associados ${relations.length} badges à assinatura ${finalId}.`);
+                // Limpa e insere na tabela de ligação 'badges_assinatura'
+                await BadgesAssinatura.destroy({
+                  where: { id_assinatura: finalId },
+                  transaction: localTransaction
+                });
+
+                const badgesList = Array.isArray(opPayload.id_badges) 
+                  ? opPayload.id_badges 
+                  : (opPayload.id_badge 
+                      ? [opPayload.id_badge] 
+                      : (Array.isArray(opPayload.badges) 
+                          ? opPayload.badges 
+                          : []));
+
+                if (badgesList.length > 0) {
+                  const relations = [];
+                  for (const badgeId of badgesList) {
+                    if (badgeId) {
+                      relations.push({
+                        id_assinatura: finalId,
+                        id_badge: Number(badgeId)
+                      });
+                    }
+                  }
+
+                  if (relations.length > 0) {
+                    await BadgesAssinatura.bulkCreate(relations, { 
+                      transaction: localTransaction,
+                      ignoreDuplicates: true
+                    });
+                    console.log(`✍️ [PUSH] Associados ${relations.length} badges à assinatura ${finalId}.`);
+                  }
                 }
 
                 serverId = finalId;

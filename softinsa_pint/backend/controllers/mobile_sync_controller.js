@@ -424,15 +424,19 @@ function criarMobileSyncController(service = mobileSyncService) {
               if (operationType === 'update') {
                 const targetProfileId = userId;
                 
-                const { nome, email, telefone, id_area, area_id, foto, imagem_perfil } = opPayload;
-                
-                const updateData = {};
-                if (nome !== undefined) updateData.nome_user = nome;
-                if (email !== undefined) updateData.email = email;
-                if (telefone !== undefined) updateData.telefone = telefone;
-                if (foto !== undefined || imagem_perfil !== undefined) {
-                  updateData.imagem_perfil = foto || imagem_perfil;
-                }
+                 const { nome, email, telefone, id_area, area_id, foto, imagem_perfil, pontos_sem, pontos_mes, pontos_ano, pontos_totais } = opPayload;
+                 
+                 const updateData = {};
+                 if (nome !== undefined) updateData.nome_user = nome;
+                 if (email !== undefined) updateData.email = email;
+                 if (telefone !== undefined) updateData.telefone = telefone;
+                 if (foto !== undefined || imagem_perfil !== undefined) {
+                   updateData.imagem_perfil = foto || imagem_perfil;
+                 }
+                 if (pontos_sem !== undefined) updateData.pontos_sem = pontos_sem;
+                 if (pontos_mes !== undefined) updateData.pontos_mes = pontos_mes;
+                 if (pontos_ano !== undefined) updateData.pontos_ano = pontos_ano;
+                 if (pontos_totais !== undefined) updateData.pontos_totais = pontos_totais;
 
                 if (Object.keys(updateData).length > 0) {
                   await Utilizador.update(updateData, {

@@ -153,7 +153,11 @@ async function obterSnapshotsCalculados(idUtilizador, transaction, syncUntil) {
         id_area: item.id_area ?? null,
         pontos_semanais: item.pontos_semana,
         pontos_mensais: item.pontos_mes,
-        pontos_anuais: item.pontos_ano
+        pontos_anuais: item.pontos_ano,
+        pontos_sem: item.pontos_semana,
+        pontos_mes: item.pontos_mes,
+        pontos_ano: item.pontos_ano,
+        pontos_totais: item.pontos_sempre
       }))
       .sort((left, right) => left.id_utilizador - right.id_utilizador)
   };

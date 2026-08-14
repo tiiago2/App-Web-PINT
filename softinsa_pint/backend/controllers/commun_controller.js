@@ -27,7 +27,7 @@ module.exports = {
             });
             const rankingLimpo = ranking.map(registo => ({
                 nome: registo.Utilizador.nome_user,
-                imagem: registo.Utilizador.imagem_prefil,
+                imagem: registo.Utilizador.imagem_perfil,
                 area: registo.Area.nome_area,
                 pontos: registo.pontos_totais
             }));

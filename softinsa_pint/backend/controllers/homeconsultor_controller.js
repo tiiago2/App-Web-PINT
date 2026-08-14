@@ -36,7 +36,8 @@ module.exports = {
             where: { deleted_badge: false }
           }
         ],
-        order: [["data_submissao", "DESC"]]
+        order: [["data_submissao", "DESC"]],
+        limit: 3
       });
 
       const badgesProgresso = [];

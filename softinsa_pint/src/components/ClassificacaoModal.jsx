@@ -208,7 +208,7 @@ const ClassificacaoModal = ({
                 <div className="classif-podio">
                     {podio.map((item) => (
                         <div key={item.id} className={`classif-podio-card ${item.classe}`}>
-                            <img src={user_logo} className="rounded-2 mb-2" width="48" height="48" alt="user" style={{ objectFit: 'cover' }} />
+                            <img src={item.imagem_perfil || item.imagem || item.foto || user_logo} className="rounded-2 mb-2" width="48" height="48" alt="user" style={{ objectFit: 'cover' }} />
                             <div className="fw-medium" style={{ fontSize: '0.85rem' }}>{item.nome}</div>
                             <div className="text-muted" style={{ fontSize: '0.7rem' }}>{item.area}</div>
                             <div className="fw-semibold mt-1" style={{ fontSize: '0.9rem' }}>{item.pontos}</div>
@@ -225,7 +225,7 @@ const ClassificacaoModal = ({
                         <div key={item.id} className="d-flex align-items-center justify-content-between p-2 mb-2" style={{ border: '1px solid #CAD5E2', borderRadius: '12px' }}>
                             <div className="d-flex align-items-center gap-2">
                                 <span className="fw-bold" style={{ minWidth: '28px', fontSize: '0.9rem' }}>{item.pos}.</span>
-                                <img src={user_logo} className="rounded-3" width="32" height="32" alt="user" style={{ objectFit: 'cover' }} />
+                                <img src={item.imagem_perfil || item.imagem || item.foto || user_logo} className="rounded-3" width="32" height="32" alt="user" style={{ objectFit: 'cover' }} />
                                 <div>
                                     <div className="fw-medium" style={{ fontSize: '0.82rem' }}>{item.nome}</div>
                                     <div className="text-muted" style={{ fontSize: '0.7rem' }}>{item.area}</div>
@@ -335,7 +335,7 @@ const ClassificacaoGeral = ({
                             ) : (
                                 <span className="fw-semibold text-muted" style={{ minWidth: '22px', fontSize: '0.82rem' }}>{item.pos}.</span>
                             )}
-                            <img src={user_logo} className="rounded-2" width="28" height="28" alt="user" style={{ objectFit: 'cover' }} />
+                            <img src={item.imagem_perfil || item.imagem || item.foto || user_logo} className="rounded-2" width="28" height="28" alt="user" style={{ objectFit: 'cover' }} />
                             <div>
                                 <div className="fw-medium" style={{ fontSize: '0.8rem'}}>{item.Nome_User || item.nome}</div>
                                 <div className="text-muted" style={{ fontSize: '0.7rem' }}>{item.Nome_Area || item.area}</div>

@@ -32,6 +32,7 @@ async function calcularRanking(id_service_line = null, options = {}) {
   const { includeAreaId = false, transaction, agora = new Date() } = options;
   const includeArea = {
     model: Area,
+    required: false,
     attributes: ["nome_area"],
     where: { deleted_area: false },
     include: [
